@@ -59,25 +59,13 @@ Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play hist
 
 **Just open it.** Download **`index.html`** and open it in any modern browser (Chrome, Edge or Firefox). It's fully self-contained — the styles, cover generator, exporter and app logic are all inlined.
 
-**Or host it on GitHub Pages.** Enable Pages for this repo (*Settings → Pages → deploy from `main`*) and open `https://<user>.github.io/<repo>/`. It works the same; the relay below handles CORS.
+**Or host it on GitHub Pages.** Enable Pages for this repo (*Settings → Pages → deploy from `main`*) and open `https://<user>.github.io/<repo>/`. It works the same; the public relay pool handles CORS.
 
 ## How the connection works
 
 BeatLeader's API doesn't send cross-origin CORS headers, so a browser can't call it directly from a file or a third-party site — it fails with *"Failed to fetch."* Playlist Studio gets around this by routing read-only public requests through a **pool of public CORS relays**, racing them and using the first that responds. Dead or slow relays are dropped automatically, and there's nothing to configure.
 
-If every public relay is briefly down, or you'd rather keep everything on your own machine, run the optional **local relay** included in the repo:
-
-```bash
-node relay.js        # or:  python relay.py
-```
-
-On Windows you can just double-click **`Start-Relay.bat`**. Then in the app open **Data Source → Advanced → custom relay** and paste:
-
-```
-http://localhost:8787/?url=
-```
-
-The local relay only forwards anonymous GET requests to `api.beatleader.xyz`. (Map previews use BeatSaver and ArcViewer directly — both are CORS-friendly, so they need no relay.)
+If you run your own CORS relay and would rather use it, point the app at it under **Data Source → Advanced: custom relay**. (Map previews use BeatSaver and ArcViewer directly — both are CORS-friendly, so they need no relay.)
 
 ## Installing a playlist in Beat Saber
 
@@ -89,7 +77,7 @@ The local relay only forwards anonymous GET requests to `api.beatleader.xyz`. (M
 
 - No account, no tracking, no analytics.
 - Presets, saved playlists, your working session, and your connected profile + synced scores are all stored in your browser's local storage — nothing is uploaded.
-- API requests hit BeatLeader and BeatSaver (public data) through a relay; the optional local relay keeps even those on your own machine.
+- API requests hit BeatLeader and BeatSaver (public data) through a public relay; only anonymous, read-only GETs are ever sent.
 
 ## Built with
 
