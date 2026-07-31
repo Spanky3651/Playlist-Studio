@@ -374,6 +374,47 @@ select{cursor:pointer;appearance:none;
 .preview-score .fc{color:var(--green);font-weight:700;}
 .preview-score a{color:var(--blue);}
 
+/* ---------- PP calculator ---------- */
+.pp-calc{border:1px solid rgba(47,140,255,.32);border-radius:12px;background:linear-gradient(180deg,#0b1420,#080d15);padding:14px 15px;margin-bottom:14px;box-shadow:inset 0 1px 0 #ffffff06;}
+.pp-calc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;}
+.pp-calc-title{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9fc6ff;}
+.pp-calc-stars{font-family:var(--mono);font-size:12px;color:var(--amber);}
+.pp-calc-note{font-size:13px;color:var(--muted);font-family:var(--mono);padding:8px 2px;}
+.pp-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:13px;}
+@media(max-width:560px){.pp-calc-grid{grid-template-columns:1fr;}}
+.pp-lbl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;font-family:var(--mono);}
+.pp-acc-input{display:flex;align-items:center;gap:6px;max-width:150px;}
+.pp-acc-input input{width:88px;background:var(--panel-2);color:var(--text);border:1px solid var(--border-2);border-radius:8px;padding:9px 10px;font-size:16px;font-family:var(--mono);text-align:right;}
+.pp-acc-input input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,140,255,.14);}
+.pp-pct{font-family:var(--mono);color:var(--muted);font-size:14px;}
+.pp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.pp-chips button{font-family:var(--mono);font-size:12px;color:var(--muted);background:#0c1220;border:1px solid var(--border-2);border-radius:6px;padding:4px 9px;cursor:pointer;transition:.13s;}
+.pp-chips button:hover{border-color:var(--blue);color:#fff;}
+.pp-chips button.active{background:rgba(47,140,255,.16);border-color:var(--blue);color:#fff;}
+.pp-mods{display:flex;gap:7px;}
+.pp-mod{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--muted);background:#0c1220;border:1px solid var(--border-2);border-radius:8px;padding:8px 0;cursor:pointer;flex:1;transition:.13s;}
+.pp-mod:hover:not(:disabled){border-color:var(--blue);color:#fff;}
+.pp-mod.active{background:rgba(47,140,255,.18);border-color:var(--blue);color:#fff;box-shadow:0 0 10px rgba(47,140,255,.25);}
+.pp-mod:disabled{opacity:.32;cursor:not-allowed;}
+.pp-modhint{margin:8px 0 0;font-size:11px;color:var(--muted-2);line-height:1.45;}
+.pp-result{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:11px 13px;border:1px solid var(--border-2);border-radius:10px;background:#0a1018;margin-bottom:11px;}
+.pp-big{display:flex;align-items:baseline;gap:6px;}
+.pp-big #ppValue{font-size:34px;font-weight:800;color:#fff;font-family:var(--sans);line-height:1;text-shadow:0 0 16px rgba(47,140,255,.4);}
+.pp-unit{font-family:var(--mono);font-size:13px;color:#7fb0ff;text-transform:uppercase;letter-spacing:1px;}
+.pp-breakdown{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--muted);}
+.pp-breakdown .ppb b{color:#cdd8e6;font-weight:700;}
+.pp-breakdown .ppb-star{color:var(--amber);}
+.pp-reference{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;}
+.pp-ref-lbl{color:var(--muted-2);text-transform:uppercase;letter-spacing:.5px;font-size:10.5px;}
+.pp-ref{color:var(--muted);}
+.pp-ref b{color:#cdd8e6;}
+.pp-ref.hot{color:#fff;}
+.pp-ref.hot b{color:var(--blue);}
+.rb-pp{color:#bcd8ff;border-color:rgba(47,140,255,.45);background:rgba(47,140,255,.1);}
+.pp-target{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:12px;color:var(--muted);}
+.pp-target input{width:52px;background:var(--panel-2);color:var(--text);border:1px solid var(--border-2);border-radius:6px;padding:4px 6px;font-size:12px;font-family:var(--mono);text-align:right;}
+.pp-target input:focus{outline:none;border-color:var(--blue);}
+
 /* ---------- Presets ---------- */
 .preset-row{display:flex;gap:8px;margin-bottom:9px;}
 .preset-row:last-child{margin-bottom:0;}
@@ -589,59 +630,23 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       </div>
     </section>
 
-    <!-- Data Source -->
-    <section class="panel">
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Data Source</h2></div>
-      <div class="panel-sub">Which slice of BeatLeader to scan and how to prioritize it. <b>Rating focus</b> only re-orders results — it never changes which maps match.</div>
+    <!-- PP Filter -->
+    <section class="panel" id="ppPanel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
+      <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
       <div class="panel-body">
         <div class="grid-2">
-          <div class="field"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
-            <select id="fType">
-              <option value="ranked" selected>Ranked</option>
-              <option value="unranked">Unranked</option>
-              <option value="nominated">Nominated</option>
-              <option value="qualified">Qualified</option>
-              <option value="all">All</option>
-            </select></div>
-          <div class="field"><label class="field-label">Rating focus <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
-            <select id="fSort">
-              <option value="stars" selected>Stars</option>
-              <option value="techRating">Tech</option>
-              <option value="accRating">Acc</option>
-              <option value="passRating">Pass</option>
-              <option value="nps">NPS</option>
-              <option value="duration">Duration</option>
-              <option value="bpm">BPM</option>
-              <option value="myAcc">My accuracy</option>
-              <option value="myRank">My rank</option>
-              <option value="myDate">Date I played</option>
-              <option value="improve">Improvement potential</option>
-            </select></div>
+          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top — 99% is worth far more than 95%.">i</span></label>
+            <div class="pp-acc-input"><input type="number" id="ppFilterAcc" min="1" max="100" step="0.5" value="95" /><span class="pp-pct">%</span></div></div>
+          <div class="field"><label class="field-label">Speed <span class="info" data-tip="Evaluate PP at this speed. FS (Faster) and SF (Super Fast) re-rate the map higher, so more PP; SS (Slower) lowers it. A map not rated for the chosen speed is skipped by the PP range filter.">i</span></label>
+            <div class="pp-mods" id="ppFilterMods"></div></div>
         </div>
-        <div class="grid-2">
-          <div class="field"><label class="field-label">Order</label>
-            <select id="fOrder">
-              <option value="desc" selected>High → Low</option>
-              <option value="asc">Low → High</option>
-            </select></div>
-          <div class="field"><label class="field-label">Max maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough but more API pages (slower). 300 is a good default; raise it for wide star ranges.">i</span></label>
-            <input type="number" id="fMaxScan" min="20" max="5000" step="20" value="300" /></div>
+        <div class="metric-row">
+          <span class="metric-name">PP range <span class="info" data-tip="Keep only ranked maps whose estimated raw PP (at the accuracy and speed above) falls in this range. Blank = no bound. Unranked maps are excluded while a bound is set.">i</span></span>
+          <input type="number" id="ppMin" min="0" step="10" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="ppMax" min="0" step="10" placeholder="max" />
         </div>
-
-        <div class="divider"></div>
-        <div class="field"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
-          <select id="connMode">
-            <option value="auto" selected>Auto — direct, then relay race</option>
-            <option value="relay">Relay — race the proxy pool</option>
-            <option value="direct">Direct only</option>
-          </select></div>
-        <details class="adv" id="relayAdv">
-          <summary>Advanced: custom relay</summary>
-          <div class="adv-body">
-            <p>Leave blank to use the built-in pool of public relays (this handles BeatLeader’s CORS block automatically). If you run your own CORS relay, paste its prefix here — end it with <code>=</code> to append the map URL encoded, or include <code>{url}</code> where the encoded URL should go.</p>
-            <input type="text" id="customProxy" placeholder="https://your-relay.example/?url=" />
-          </div>
-        </details>
       </div>
     </section>
 
@@ -660,6 +665,32 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
           <label>Max</label>
           <input type="range" id="starMax" min="0" max="15" step="0.1" value="15" />
           <input type="number" class="slider-val" id="starMaxNum" min="0" max="15" step="0.1" value="15" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Song Metrics -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Song Metrics</h2></div>
+      <div class="panel-sub">Optional numeric bounds. Blank = no limit. All applied instantly on the scanned set — no re-fetch needed.</div>
+      <div class="panel-body">
+        <div class="metric-row">
+          <span class="metric-name">NPS <span class="info" data-tip="Notes per second — raw density of the map. Higher = more notes thrown at you per second.">i</span></span>
+          <input type="number" id="fNpsMin" min="0" step="0.1" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fNpsMax" min="0" step="0.1" placeholder="max" />
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Duration <span class="unit">(sec)</span></span>
+          <input type="number" id="fDurMin" min="0" step="1" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fDurMax" min="0" step="1" placeholder="max" />
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">BPM</span>
+          <input type="number" id="fBpmMin" min="0" step="1" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fBpmMax" min="0" step="1" placeholder="max" />
         </div>
       </div>
     </section>
@@ -710,29 +741,60 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       </div>
     </section>
 
-    <!-- Song Metrics -->
+    <!-- Data Source -->
     <section class="panel">
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Song Metrics</h2></div>
-      <div class="panel-sub">Optional numeric bounds. Blank = no limit. All applied instantly on the scanned set — no re-fetch needed.</div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Data Source</h2></div>
+      <div class="panel-sub">Which slice of BeatLeader to scan and how to prioritize it. <b>Rating focus</b> only re-orders results — it never changes which maps match.</div>
       <div class="panel-body">
-        <div class="metric-row">
-          <span class="metric-name">NPS <span class="info" data-tip="Notes per second — raw density of the map. Higher = more notes thrown at you per second.">i</span></span>
-          <input type="number" id="fNpsMin" min="0" step="0.1" placeholder="min" />
-          <span class="dash">–</span>
-          <input type="number" id="fNpsMax" min="0" step="0.1" placeholder="max" />
+        <div class="grid-2">
+          <div class="field"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
+            <select id="fType">
+              <option value="ranked" selected>Ranked</option>
+              <option value="unranked">Unranked</option>
+              <option value="nominated">Nominated</option>
+              <option value="qualified">Qualified</option>
+              <option value="all">All</option>
+            </select></div>
+          <div class="field"><label class="field-label">Rating focus <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
+            <select id="fSort">
+              <option value="stars" selected>Stars</option>
+              <option value="techRating">Tech</option>
+              <option value="accRating">Acc</option>
+              <option value="passRating">Pass</option>
+              <option value="nps">NPS</option>
+              <option value="duration">Duration</option>
+              <option value="bpm">BPM</option>
+              <option value="pp">PP @ target acc</option>
+              <option value="myAcc">My accuracy</option>
+              <option value="myRank">My rank</option>
+              <option value="myDate">Date I played</option>
+              <option value="improve">Improvement potential</option>
+            </select></div>
         </div>
-        <div class="metric-row">
-          <span class="metric-name">Duration <span class="unit">(sec)</span></span>
-          <input type="number" id="fDurMin" min="0" step="1" placeholder="min" />
-          <span class="dash">–</span>
-          <input type="number" id="fDurMax" min="0" step="1" placeholder="max" />
+        <div class="grid-2">
+          <div class="field"><label class="field-label">Order</label>
+            <select id="fOrder">
+              <option value="desc" selected>High → Low</option>
+              <option value="asc">Low → High</option>
+            </select></div>
+          <div class="field"><label class="field-label">Max maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough but more API pages (slower). 300 is a good default; raise it for wide star ranges.">i</span></label>
+            <input type="number" id="fMaxScan" min="20" max="5000" step="20" value="300" /></div>
         </div>
-        <div class="metric-row">
-          <span class="metric-name">BPM</span>
-          <input type="number" id="fBpmMin" min="0" step="1" placeholder="min" />
-          <span class="dash">–</span>
-          <input type="number" id="fBpmMax" min="0" step="1" placeholder="max" />
-        </div>
+
+        <div class="divider"></div>
+        <div class="field"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
+          <select id="connMode">
+            <option value="auto" selected>Auto — direct, then relay race</option>
+            <option value="relay">Relay — race the proxy pool</option>
+            <option value="direct">Direct only</option>
+          </select></div>
+        <details class="adv" id="relayAdv">
+          <summary>Advanced: custom relay</summary>
+          <div class="adv-body">
+            <p>Leave blank to use the built-in pool of public relays (this handles BeatLeader’s CORS block automatically). If you run your own CORS relay, paste its prefix here — end it with <code>=</code> to append the map URL encoded, or include <code>{url}</code> where the encoded URL should go.</p>
+            <input type="text" id="customProxy" placeholder="https://your-relay.example/?url=" />
+          </div>
+        </details>
       </div>
     </section>
 
@@ -913,6 +975,9 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
         <span class="c3">beatleader.com ↗</span>
       </span>
     </a>
+    <div class="footlinks">
+      <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
+    </div>
   </div>
 </footer>
 
@@ -927,6 +992,38 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     <div class="modal-body">
       <div class="preview-status" id="previewStatus"></div>
       <div class="preview-score" id="previewScore" hidden></div>
+
+      <div class="pp-calc" id="ppCalc" hidden>
+        <div class="pp-calc-head">
+          <span class="pp-calc-title"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg> PP Calculator</span>
+          <span class="pp-calc-stars" id="ppCalcStars"></span>
+        </div>
+        <div class="pp-calc-note" id="ppCalcNote" hidden></div>
+        <div class="pp-calc-grid" id="ppCalcGrid">
+          <div class="pp-field">
+            <label class="pp-lbl">Target accuracy</label>
+            <div class="pp-acc-input"><input type="number" id="ppAccInput" min="1" max="100" step="0.1" value="95" /><span class="pp-pct">%</span></div>
+            <div class="pp-chips" id="ppAccChips">
+              <button type="button" data-acc="90">90</button>
+              <button type="button" data-acc="95">95</button>
+              <button type="button" data-acc="97">97</button>
+              <button type="button" data-acc="99">99</button>
+              <button type="button" data-acc="100">100</button>
+            </div>
+          </div>
+          <div class="pp-field">
+            <label class="pp-lbl">Speed modifier</label>
+            <div class="pp-mods" id="ppMods"></div>
+            <p class="pp-modhint">FS / SF re-rate the map higher (more PP); SS lowers it.</p>
+          </div>
+        </div>
+        <div class="pp-result" id="ppResult">
+          <div class="pp-big"><span id="ppValue">—</span><span class="pp-unit">raw pp</span></div>
+          <div class="pp-breakdown" id="ppBreakdown"></div>
+        </div>
+        <div class="pp-reference" id="ppReference"></div>
+      </div>
+
       <div class="preview-frame-wrap"><iframe id="previewFrame" title="Map preview" allow="autoplay; fullscreen" referrerpolicy="no-referrer"></iframe></div>
       <audio id="previewAudio" class="preview-audio" controls preload="none" hidden></audio>
     </div>
@@ -1397,6 +1494,125 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
 
 </script>
 <script>
+/* BeatLeader PP calculator.
+   Mirrors beatleader-server (Utils/ReplayUtils.cs) exactly:
+     passPP = 15.2 * exp(passRating^(1/2.62)) - 30
+     accPP  = Curve2(acc) * accRating * 34
+     techPP = exp(1.9 * acc) * 1.08 * techRating
+     rawPP  = Inflate(passPP + accPP + techPP),  Inflate(x) = 650 * x^1.3 / 650^1.3
+   Speed modifiers (SS slower / FS faster / SF super-fast) re-rate the map: the
+   map carries fs/sf/ss pass/acc/tech ratings, and PP uses those in place of the
+   base ratings. FS/SF raise the rating (more PP for the same acc); SS lowers it. */
+window.PP = (function () {
+  'use strict';
+
+  // (accuracy, multiplier) — verbatim from BeatLeader's pointList2, top → bottom.
+  var CURVE = [
+    [1.0, 7.424], [0.999, 6.241], [0.9975, 5.158], [0.995, 4.010], [0.9925, 3.241],
+    [0.99, 2.700], [0.9875, 2.303], [0.985, 2.007], [0.9825, 1.786], [0.98, 1.618],
+    [0.9775, 1.490], [0.975, 1.392], [0.9725, 1.315], [0.97, 1.256], [0.965, 1.167],
+    [0.96, 1.094], [0.955, 1.039], [0.95, 1.000], [0.94, 0.931], [0.93, 0.867],
+    [0.92, 0.813], [0.91, 0.768], [0.9, 0.729], [0.875, 0.650], [0.85, 0.581],
+    [0.825, 0.522], [0.8, 0.473], [0.75, 0.404], [0.7, 0.345], [0.65, 0.296],
+    [0.6, 0.256], [0.0, 0.000]
+  ];
+
+  function curve2(acc) {
+    var i = 0;
+    for (; i < CURVE.length; i++) { if (CURVE[i][0] <= acc) break; }
+    if (i === 0) i = 1;
+    if (i >= CURVE.length) i = CURVE.length - 1;
+    var lo = CURVE[i - 1], hi = CURVE[i];
+    var m = (acc - lo[0]) / (hi[0] - lo[0]);
+    return lo[1] + m * (hi[1] - lo[1]);
+  }
+
+  function inflate(x) { return (650 * Math.pow(x, 1.3)) / Math.pow(650, 1.3); }
+
+  // acc01 in 0..1. Returns { total, pass, acc, tech } raw (unweighted) PP.
+  function ppRaw(acc01, passRating, accRating, techRating) {
+    var passPP = 15.2 * Math.exp(Math.pow(passRating, 1 / 2.62)) - 30;
+    if (!isFinite(passPP) || isNaN(passPP) || passPP < 0) passPP = 0;
+    var accPP = curve2(acc01) * accRating * 34;
+    var techPP = Math.exp(1.9 * acc01) * 1.08 * techRating;
+    var total = inflate(passPP + accPP + techPP);
+    return { total: total, pass: passPP, acc: accPP, tech: techPP };
+  }
+
+  // Speed modifiers, in display order. key '' = no modifier (base ratings).
+  var MODIFIERS = [
+    { key: '', code: '—', label: 'No modifier' },
+    { key: 'ss', code: 'SS', label: 'Slower Song (0.85×)' },
+    { key: 'fs', code: 'FS', label: 'Faster Song (1.2×)' },
+    { key: 'sf', code: 'SF', label: 'Super Fast Song (1.5×)' }
+  ];
+
+  // Pull the pass/acc/tech ratings for a modifier off a map entry.
+  // Base ratings live on the entry; modifier ratings live on entry.mods[key].
+  // Returns null when the map isn't ranked or that modifier has no rating.
+  function ratingsFor(entry, modKey) {
+    if (!entry) return null;
+    if (!modKey) {
+      if (!(entry.passRating > 0 || entry.accRating > 0 || entry.techRating > 0)) return null;
+      return { pass: entry.passRating || 0, acc: entry.accRating || 0, tech: entry.techRating || 0 };
+    }
+    var m = entry.mods && entry.mods[modKey];
+    if (!m) return null;
+    if (!(m.pass > 0 || m.acc > 0 || m.tech > 0)) return null;
+    return { pass: m.pass, acc: m.acc, tech: m.tech };
+  }
+
+  function isRanked(entry) { return !!ratingsFor(entry, ''); }
+  function hasModifier(entry, modKey) { return !!ratingsFor(entry, modKey); }
+
+  // Effective stars for a modifier: BeatLeader's star = pass+acc+tech component sum
+  // is not a plain sum, so we approximate the shown star shift from the ratings ratio.
+  // For display we prefer the real base stars and scale by rating magnitude.
+  function starsFor(entry, modKey) {
+    var base = ratingsFor(entry, ''), mod = ratingsFor(entry, modKey);
+    if (!base) return null;
+    if (!modKey || !mod || !entry.stars) return entry.stars || null;
+    var baseSum = base.pass + base.acc + base.tech;
+    if (baseSum <= 0) return entry.stars || null;
+    var modSum = mod.pass + mod.acc + mod.tech;
+    return entry.stars * (modSum / baseSum);
+  }
+
+  // Main entry: PP for a target accuracy (percent, e.g. 95) with an optional modifier.
+  // Returns a number (raw PP) or null when not applicable (unranked / missing modifier).
+  function ppFor(entry, accPercent, modKey) {
+    var r = ratingsFor(entry, modKey || '');
+    if (!r) return null;
+    var acc01 = Math.max(0, Math.min(1, (accPercent || 0) / 100));
+    return ppRaw(acc01, r.pass, r.acc, r.tech).total;
+  }
+
+  function breakdown(entry, accPercent, modKey) {
+    var r = ratingsFor(entry, modKey || '');
+    if (!r) return null;
+    var acc01 = Math.max(0, Math.min(1, (accPercent || 0) / 100));
+    var b = ppRaw(acc01, r.pass, r.acc, r.tech);
+    return { total: b.total, pass: b.pass, acc: b.acc, tech: b.tech, ratings: r, stars: starsFor(entry, modKey || '') };
+  }
+
+  function fmt(pp) {
+    if (pp == null) return '—';
+    return (Math.round(pp * 100) / 100).toFixed(2);
+  }
+  function fmtShort(pp) {
+    if (pp == null) return '—';
+    return Math.round(pp).toString();
+  }
+
+  return {
+    MODIFIERS: MODIFIERS, curve2: curve2, ppRaw: ppRaw, ppFor: ppFor,
+    breakdown: breakdown, ratingsFor: ratingsFor, starsFor: starsFor,
+    isRanked: isRanked, hasModifier: hasModifier, fmt: fmt, fmtShort: fmtShort
+  };
+})();
+
+</script>
+<script>
 /* ============================================================
    Playlist Studio — app.js
    A BeatLeader-sourced Beat Saber playlist BUILDER.
@@ -1430,7 +1646,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     { id: 'corsproxy.io',   build: function (a) { return 'https://corsproxy.io/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse }
   ];
 
-  var state = { raw: [], filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', player: null, scores: {}, syncing: false };
+  var state = { raw: [], filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -1452,6 +1668,8 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
+   'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
+   'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
    'toast','tipbox'
   ].forEach(function (id) { el[id] = $(id); });
 
@@ -1485,7 +1703,8 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       playStatus: el.playStatus.value, accMax: num(el.accMax, null),
       npsMin: num(el.fNpsMin, null), npsMax: num(el.fNpsMax, null),
       durMin: num(el.fDurMin, null), durMax: num(el.fDurMax, null),
-      bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null)
+      bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null),
+      ppMin: num(el.ppMin, null), ppMax: num(el.ppMax, null)
     };
   }
   function buildUrl(page, f) {
@@ -1555,6 +1774,17 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
   }
 
   // ---- normalize + fetch ----------------------------------------------------
+  // Pull fs/sf/ss re-rated pass/acc/tech ratings out of a difficulty's modifiersRating.
+  function modsFrom(mr) {
+    if (!mr) return null;
+    function grab(p) {
+      var pass = mr[p + 'PassRating'] || 0, acc = mr[p + 'AccRating'] || 0, tech = mr[p + 'TechRating'] || 0;
+      return (pass || acc || tech) ? { pass: pass, acc: acc, tech: tech } : null;
+    }
+    var out = {}, any = false;
+    ['fs', 'sf', 'ss'].forEach(function (p) { var g = grab(p); if (g) { out[p] = g; any = true; } });
+    return any ? out : null;
+  }
   function normalize(item) {
     var song = item.song || {}, diff = item.difficulty || {};
     return {
@@ -1563,7 +1793,8 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       mapper: song.mapper || song.author || 'Unknown', author: song.author || '',
       bpm: song.bpm || 0, duration: song.duration || 0, cover: song.coverImage || '',
       stars: diff.stars || 0, difficultyName: diff.difficultyName || 'ExpertPlus', modeName: diff.modeName || 'Standard',
-      nps: diff.nps || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0
+      nps: diff.nps || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0,
+      mods: modsFrom(diff.modifiersRating)
     };
   }
   function runFetch() {
@@ -1621,13 +1852,27 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       if (f.durMax != null && s.duration > f.durMax) return false;
       if (f.bpmMin != null && s.bpm < f.bpmMin) return false;
       if (f.bpmMax != null && s.bpm > f.bpmMax) return false;
+      if (f.ppMin != null || f.ppMax != null) {
+        var spp = PP.ppFor(s, state.ppAcc, state.ppMod);
+        if (spp == null) return false;                      // unranked / no rating for this speed
+        if (f.ppMin != null && spp < f.ppMin) return false;
+        if (f.ppMax != null && spp > f.ppMax) return false;
+      }
       if (f.mapperTerms.length) { var hay = (s.mapper + ' ' + s.author).toLowerCase(); if (!f.mapperTerms.some(function (t) { return hay.indexOf(t) !== -1; })) return false; }
       if (f.search) { var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase(); if (blob.indexOf(f.search.toLowerCase()) === -1) return false; }
       return true;
     });
     var key = f.sort;
     var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
-    if (isMy && state.player) {
+    if (key === 'pp') {
+      // Sort by raw PP at the target accuracy (no modifier); unranked maps sink.
+      out.sort(function (a, b) {
+        var va = PP.ppFor(a, state.ppAcc, state.ppMod), vb = PP.ppFor(b, state.ppAcc, state.ppMod);
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1; if (vb == null) return -1;
+        return f.order === 'asc' ? va - vb : vb - va;
+      });
+    } else if (isMy && state.player) {
       out.sort(function (a, b) {
         var va = myVal(scoreFor(a), key), vb = myVal(scoreFor(b), key);
         if (va == null && vb == null) return 0;
@@ -1638,6 +1883,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       out.sort(function (a, b) { var av = a[key] != null ? a[key] : 0, bv = b[key] != null ? b[key] : 0; return f.order === 'asc' ? av - bv : bv - av; });
     }
     state.filtered = out;
+    if (el.ppFilterState) el.ppFilterState.textContent = ppFilterSummary();
     renderAll();
     updateStale();
   }
@@ -1715,12 +1961,14 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
   function saveSession() {
     clearTimeout(sessionTimer);
     sessionTimer = setTimeout(function () {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value } })); } catch (e) {}
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value } })); } catch (e) {}
     }, 600);
   }
   function restoreSession() {
     try {
       var s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      if (s && s.ppAcc) { state.ppAcc = Math.max(1, Math.min(100, s.ppAcc)); if (el.ppFilterAcc) el.ppFilterAcc.value = state.ppAcc; }
+      if (s && s.ppMod) { state.ppMod = s.ppMod; buildGlobalPpMods(); }
       if (s && Array.isArray(s.entries) && s.entries.length) {
         state.basket = s.entries;
         if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; }
@@ -1742,6 +1990,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
     if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
     if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
+    if (PP.isRanked(e)) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' — set in the PP Filter panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
     if (state.player) {
       var sc = scoreFor(e);
       if (sc) {
@@ -1946,7 +2195,8 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       starMin: el.starMinNum.value, starMax: el.starMaxNum.value, mapper: el.fMapper.value, search: el.fSearch.value,
       modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
       npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value,
-      durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value };
+      durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value,
+      ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod };
   }
   function applyPreset(p) {
     el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc';
@@ -1960,6 +2210,9 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     var diffs = p.diffs || ['Easy', 'Normal', 'Hard', 'Expert', 'ExpertPlus'];
     document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = diffs.indexOf(c.value) !== -1; });
     el.diffChips.classList.toggle('off', !el.diffEnable.checked);
+    el.ppMin.value = p.ppMin || ''; el.ppMax.value = p.ppMax || '';
+    if (p.ppAcc) { state.ppAcc = Math.max(1, Math.min(100, p.ppAcc)); el.ppFilterAcc.value = state.ppAcc; }
+    state.ppMod = p.ppMod || ''; buildGlobalPpMods();
     refreshStarUI(); applyClientFilters();
   }
   function populatePresets() {
@@ -2060,7 +2313,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       if (map.mapper) e.mapper = map.mapper;
       if (e.difficultyName) {
         var d = diffs.filter(function (x) { return x.difficultyName === e.difficultyName && x.modeName === e.modeName; })[0];
-        if (d) { e.stars = d.stars || 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = d.techRating || 0; e.accRating = d.accRating || 0; e.passRating = d.passRating || 0; }
+        if (d) { e.stars = d.stars || 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = d.techRating || 0; e.accRating = d.accRating || 0; e.passRating = d.passRating || 0; e.mods = modsFrom(d.modifiersRating); }
       }
     });
   }
@@ -2118,6 +2371,85 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       .then(function (m) { var v = (m.versions && m.versions[0]) || {}; var res = { id: m.id, previewURL: v.previewURL || '', name: m.name || '' }; bsCache[h] = res; return res; })
       .catch(function (e) { return { error: e.message }; });
   }
+
+  // ---- PP: global filter settings (drive row badges, PP sort, PP range filter)
+  function modCode(key) { for (var i = 0; i < PP.MODIFIERS.length; i++) if (PP.MODIFIERS[i].key === key) return PP.MODIFIERS[i].code; return '—'; }
+  function buildGlobalPpMods() {
+    el.ppFilterMods.innerHTML = '';
+    PP.MODIFIERS.forEach(function (m) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pp-mod' + (m.key === state.ppMod ? ' active' : '');
+      b.textContent = m.code; b.title = m.label; b.dataset.mod = m.key;
+      el.ppFilterMods.appendChild(b);
+    });
+  }
+  function setGlobalPpAcc(v) {
+    var n = parseFloat(v); if (isNaN(n)) n = state.ppAcc;
+    state.ppAcc = Math.max(1, Math.min(100, n));
+    if (document.activeElement !== el.ppFilterAcc) el.ppFilterAcc.value = state.ppAcc;
+    saveSession(); applyClientFilters();
+  }
+  function setGlobalPpMod(key) {
+    state.ppMod = key;
+    Array.prototype.forEach.call(el.ppFilterMods.querySelectorAll('.pp-mod'), function (b) { b.classList.toggle('active', b.dataset.mod === key); });
+    saveSession(); applyClientFilters();
+  }
+  function ppFilterSummary() {
+    var mn = num(el.ppMin, null), mx = num(el.ppMax, null);
+    if (mn == null && mx == null) return '';
+    var range = mn != null && mx != null ? mn + '–' + mx : (mn != null ? '≥' + mn : '≤' + mx);
+    return range + 'pp @' + state.ppAcc + '%' + (state.ppMod ? ' ' + modCode(state.ppMod) : '');
+  }
+
+  // ---- PP: per-map calculator in the preview modal (local exploration) ------
+  function setupPpCalc(entry) {
+    state.ppEntry = entry;
+    state.ppModalAcc = state.ppAcc;                 // start from the global setting…
+    state.ppModalMod = PP.hasModifier(entry, state.ppMod) ? state.ppMod : '';  // …if this map supports it
+    el.ppAccInput.value = state.ppModalAcc;
+    el.ppMods.innerHTML = '';
+    PP.MODIFIERS.forEach(function (m) {
+      var enabled = (m.key === '') ? PP.isRanked(entry) : PP.hasModifier(entry, m.key);
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pp-mod'; b.textContent = m.code;
+      b.title = m.label + (enabled ? '' : ' — not rated for this map');
+      b.dataset.mod = m.key; b.disabled = !enabled;
+      el.ppMods.appendChild(b);
+    });
+    renderPpCalc();
+    el.ppCalc.hidden = false;
+  }
+  function renderPpCalc() {
+    var entry = state.ppEntry; if (!entry) return;
+    var ranked = PP.isRanked(entry);
+    el.ppCalcStars.textContent = ranked && entry.stars ? entry.stars.toFixed(2) + '★ base' : '';
+    if (!ranked) {
+      el.ppCalcNote.textContent = 'This map is unranked — PP only applies to ranked maps.';
+      el.ppCalcNote.hidden = false;
+      el.ppCalcGrid.style.display = 'none'; el.ppResult.style.display = 'none'; el.ppReference.style.display = 'none';
+      return;
+    }
+    el.ppCalcNote.hidden = true;
+    el.ppCalcGrid.style.display = ''; el.ppResult.style.display = ''; el.ppReference.style.display = '';
+    Array.prototype.forEach.call(el.ppMods.querySelectorAll('.pp-mod'), function (b) { b.classList.toggle('active', b.dataset.mod === state.ppModalMod); });
+    Array.prototype.forEach.call(el.ppAccChips.querySelectorAll('button'), function (b) { b.classList.toggle('active', parseFloat(b.dataset.acc) === state.ppModalAcc); });
+    var acc = state.ppModalAcc, mod = state.ppModalMod;
+    var bd = PP.breakdown(entry, acc, mod);
+    if (!bd) { el.ppValue.textContent = '—'; el.ppBreakdown.innerHTML = ''; return; }
+    el.ppValue.textContent = PP.fmt(bd.total);
+    var starTxt = bd.stars ? bd.stars.toFixed(2) + '★' : '';
+    el.ppBreakdown.innerHTML =
+      '<span class="ppb"><b>' + PP.fmt(bd.pass) + '</b> pass</span>' +
+      '<span class="ppb"><b>' + PP.fmt(bd.acc) + '</b> acc</span>' +
+      '<span class="ppb"><b>' + PP.fmt(bd.tech) + '</b> tech</span>' +
+      (mod && starTxt ? '<span class="ppb ppb-star">' + starTxt + ' @ ' + modCode(mod) + '</span>' : '');
+    var refs = [90, 95, 97, 99, 100];
+    el.ppReference.innerHTML = '<span class="pp-ref-lbl">at this speed:</span>' + refs.map(function (a) {
+      var pp = PP.ppFor(entry, a, mod);
+      return '<span class="pp-ref' + (a === Math.round(state.ppModalAcc) ? ' hot' : '') + '">' + a + '% <b>' + PP.fmtShort(pp) + '</b></span>';
+    }).join('');
+  }
+
   function openPreview(entry) {
     el.previewModal.classList.add('show'); el.previewModal.setAttribute('aria-hidden', 'false');
     el.previewTitle.textContent = entry.songName + (entry.mapper ? ' — ' + entry.mapper : '');
@@ -2136,6 +2468,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       }
       el.previewScore.hidden = false;
     } else { el.previewScore.hidden = true; }
+    setupPpCalc(entry);
     el.previewStatus.textContent = 'Finding this map on BeatSaver…';
     el.previewFrame.src = 'about:blank';
     el.previewAudio.hidden = true; el.previewAudio.removeAttribute('src');
@@ -2156,6 +2489,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     el.previewFrame.src = 'about:blank';
     try { el.previewAudio.pause(); } catch (e) {}
     el.previewAudio.removeAttribute('src');
+    state.ppEntry = null;
   }
 
   // ---- BeatLeader profile + your scores ------------------------------------
@@ -2254,6 +2588,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
     if (el.playStatus) el.playStatus.value = 'any'; if (el.accMax) el.accMax.value = '';
+    el.ppMin.value = ''; el.ppMax.value = '';
     refreshStarUI(); applyClientFilters(); toast('Filters reset (your playlist is kept).', 'ok');
   }
 
@@ -2290,6 +2625,16 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     el.previewClose2.addEventListener('click', closePreview);
     el.previewModal.addEventListener('click', function (e) { if (e.target === el.previewModal) closePreview(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && el.previewModal.classList.contains('show')) closePreview(); });
+    // PP calculator controls (modal-local exploration — do not touch the global filter)
+    el.ppAccInput.addEventListener('input', function () { var n = parseFloat(el.ppAccInput.value); if (!isNaN(n)) { state.ppModalAcc = Math.max(1, Math.min(100, n)); renderPpCalc(); } });
+    el.ppAccChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-acc]'); if (b) { state.ppModalAcc = parseFloat(b.dataset.acc); el.ppAccInput.value = state.ppModalAcc; renderPpCalc(); } });
+    el.ppMods.addEventListener('click', function (e) { var b = e.target.closest('.pp-mod'); if (b && !b.disabled) { state.ppModalMod = b.dataset.mod; renderPpCalc(); } });
+    // PP Filter panel (global — drives badges, PP sort, PP range filter)
+    buildGlobalPpMods();
+    el.ppFilterMods.addEventListener('click', function (e) { var b = e.target.closest('.pp-mod'); if (b) setGlobalPpMod(b.dataset.mod); });
+    el.ppFilterAcc.addEventListener('input', function () { setGlobalPpAcc(el.ppFilterAcc.value); });
+    var ppRangeDeb = debounce(applyClientFilters, 160);
+    [el.ppMin, el.ppMax].forEach(function (inp) { inp.addEventListener('input', ppRangeDeb); inp.addEventListener('change', applyClientFilters); });
     el.fType.addEventListener('change', function () { applyClientFilters(); if (state.raw.length) toast('Ranked status changed — re-fetch to pull the new set.', 'warn'); });
     // Enter in any filter field triggers a fetch (a mapper search shouldn't need a mouse).
     ['fMapper','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {

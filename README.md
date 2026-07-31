@@ -19,7 +19,8 @@ Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlis
 - **Game mode** — Standard, One Saber, No Arrows, 90°/360°, Lightshow, Lawless
 - **Optional difficulty filter** (Easy → Expert+) — off by default so every difficulty comes through until you want to narrow it
 - **NPS, duration and BPM** bounds
-- **Rating-focus sort** — Stars, Tech, Acc, Pass, NPS, Duration or BPM
+- **PP range** — keep only ranked maps worth a target PP at your accuracy and speed (see below)
+- **Rating-focus sort** — Stars, Tech, Acc, Pass, NPS, Duration, BPM, or **PP at your target accuracy**
 - Live client-side filtering: tweak a value and the match count updates instantly, no re-fetch
 - Press **Enter** in any filter to fetch; the Fetch button flags when your filters have drifted from your last pull
 
@@ -43,6 +44,30 @@ Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play hist
 
 ### Preview before you commit
 - ▶ on any row opens an in-app preview — the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
+
+### PP calculator (ranked maps)
+Work out exactly what a score is worth before you grind it.
+
+![PP calculator](pp-calc.png)
+
+- **"What would 95% give me?"** — every ranked result and playlist row shows a raw-PP estimate for a target accuracy you set once (in the **PP Filter** panel). Unranked maps show nothing, because PP doesn't apply to them.
+- **Full calculator per map** — open any map and dial in an exact accuracy (type it or tap 90 / 95 / 97 / 99 / 100). You get the raw PP plus the **pass / acc / tech** breakdown so you can see where the points come from.
+- **Speed modifiers** — toggle **SS** (Slower), **FS** (Faster) or **SF** (Super Fast). BeatLeader re-rates a map at each speed, so the calculator swaps in that speed's pass/acc/tech ratings: FS/SF push the rating (and the PP) up, SS pulls it down. Modifiers a map isn't rated for are greyed out.
+- **Accuracy reference row** — a quick 90 → 100% PP ladder for the selected speed, so you can eyeball how much each extra tenth of a percent is worth.
+- **Sort by PP** — set the *Rating focus* to **PP @ target acc** to rank the whole result set by earning potential.
+
+### Filter by PP
+
+![PP filter](pp-filter.png)
+
+The **PP Filter** panel turns all of that into a real filter — "only show me maps worth grinding."
+
+- Set your **target accuracy** and **speed** once (No modifier / SS / FS / SF), then give a **PP range** — a minimum, a maximum, or both. Only ranked maps whose estimated raw PP lands in that band survive; unranked maps drop out while a bound is set.
+- That same accuracy and speed drive the **≈pp badge** on every row and the **PP sort**, so what you filter on is exactly what you see — flip to **FS** and the whole list re-evaluates at Faster Song, badges and all.
+- A map that isn't rated for the chosen speed is skipped by the range filter (it has no PP at that speed to compare).
+- The PP range, accuracy, and speed all save into **filter presets**, so "6★+ tech that pays ≥300pp at 96% FS" is one click away next time.
+
+The math mirrors BeatLeader's server exactly: `passPP = 15.2·e^(passRating^(1/2.62)) − 30`, `accPP = curve(acc)·accRating·34`, `techPP = e^(1.9·acc)·1.08·techRating`, summed and inflated (`650·x^1.3 / 650^1.3`). It reports **raw (unweighted) PP** — the value of the play itself, before your profile's weighting.
 
 ### Covers & export
 - Auto-generated neon cover art — **18 procedural styles and 13 accent palettes**, picked from a live thumbnail grid — drawn from your title and star range, or upload your own image
