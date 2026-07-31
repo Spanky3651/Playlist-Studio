@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Playlist Studio // Beat Saber Playlist Generator</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27r%27%20x1%3D%270%27%20y1%3D%271%27%20x2%3D%271%27%20y2%3D%270%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23ff2d55%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23ff9db0%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%27b%27%20x1%3D%270%27%20y1%3D%271%27%20x2%3D%271%27%20y2%3D%270%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%232f8cff%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23a9d1ff%27%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%27g%27%20x%3D%27-60%25%27%20y%3D%27-60%25%27%20width%3D%27220%25%27%20height%3D%27220%25%27%3E%3CfeGaussianBlur%20stdDeviation%3D%271.7%27%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23000000%27%2F%3E%3Crect%20x%3D%271%27%20y%3D%271%27%20width%3D%2762%27%20height%3D%2762%27%20rx%3D%2713%27%20fill%3D%27none%27%20stroke%3D%27%231a2030%27%2F%3E%3Cg%20filter%3D%27url%28%23g%29%27%20opacity%3D%270.85%27%3E%3Cline%20x1%3D%2716%27%20y1%3D%2748%27%20x2%3D%2746%27%20y2%3D%2716%27%20stroke%3D%27%23ff2d55%27%20stroke-width%3D%277%27%20stroke-linecap%3D%27round%27%2F%3E%3Cline%20x1%3D%2718%27%20y1%3D%2716%27%20x2%3D%2748%27%20y2%3D%2748%27%20stroke%3D%27%232f8cff%27%20stroke-width%3D%277%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fg%3E%3Cline%20x1%3D%2716%27%20y1%3D%2748%27%20x2%3D%2746%27%20y2%3D%2716%27%20stroke%3D%27url%28%23r%29%27%20stroke-width%3D%274.5%27%20stroke-linecap%3D%27round%27%2F%3E%3Cline%20x1%3D%2718%27%20y1%3D%2716%27%20x2%3D%2748%27%20y2%3D%2748%27%20stroke%3D%27url%28%23b%29%27%20stroke-width%3D%274.5%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2746%27%20cy%3D%2716%27%20r%3D%272.6%27%20fill%3D%27%23ffffff%27%2F%3E%3Ccircle%20cx%3D%2748%27%20cy%3D%2748%27%20r%3D%272.6%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E" />
+<style>
+/* ============================================================
+   Playlist Studio — styles.css
+   Dark-mode Beat Saber console, styled to match the HSV /
+   ReeSaber generators: true-black canvas, layered panels,
+   mono uppercase labels, self-documenting panel subtitles,
+   info tooltips, toast feedback, neon red/blue accents.
+   ============================================================ */
+
+:root{
+  --bg:#000000;
+  --panel:#0b0e14;
+  --panel-2:#070a0f;
+  --panel-3:#10141d;
+  --border:#1a2030;
+  --border-2:#28303f;
+  --border-glow:#2f8cff33;
+
+  --text:#e9edf5;
+  --muted:#8792a6;
+  --muted-2:#5a6273;
+
+  --blue:#2f8cff;      /* primary saber */
+  --blue-dim:#1b4c8a;
+  --red:#ff2d55;       /* secondary saber */
+  --red-dim:#8a2036;
+  --amber:#ffc23d;     /* stars */
+  --green:#22e0a1;     /* success */
+  --magenta:#d94bff;
+  --danger:#ff4d6d;
+  --warn:#ffb400;
+
+  --blue-glow:0 0 14px rgba(47,140,255,.45);
+  --red-glow:0 0 14px rgba(255,45,85,.45);
+
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+
+  --r:14px; --r-sm:9px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 12% -8%, #2f8cff14, transparent 45%),
+    radial-gradient(circle at 92% 0%, #ff2d5510, transparent 42%);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+a{color:var(--blue);text-decoration:none;}
+a:hover{text-decoration:underline;}
+::selection{background:var(--blue);color:#000;}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:11px;height:11px;}
+::-webkit-scrollbar-track{background:var(--panel-2);}
+::-webkit-scrollbar-thumb{background:#1e2634;border-radius:6px;border:2px solid var(--panel-2);}
+::-webkit-scrollbar-thumb:hover{background:#2a3547;}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:13px 22px;
+  background:linear-gradient(180deg,rgba(6,9,14,.97),rgba(6,9,14,.85));
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 1px 0 var(--border-glow),0 8px 30px rgba(0,0,0,.6);
+}
+.topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--red),var(--blue),transparent);opacity:.6;}
+.brand{display:flex;align-items:center;gap:13px;}
+.brand .logo{
+  position:relative;width:40px;height:40px;border-radius:10px;
+  background:radial-gradient(circle at 30% 25%,#12151d,#000);
+  border:1px solid var(--border-2);overflow:hidden;flex:none;
+}
+.brand .logo .blade{position:absolute;bottom:7px;width:5px;height:26px;border-radius:3px;}
+.brand .logo .blade.red{left:12px;background:linear-gradient(180deg,#fff,var(--red));box-shadow:var(--red-glow);transform:rotate(-26deg);transform-origin:bottom;}
+.brand .logo .blade.blue{right:12px;background:linear-gradient(180deg,#fff,var(--blue));box-shadow:var(--blue-glow);transform:rotate(26deg);transform-origin:bottom;}
+.brand h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.4px;}
+.brand h1 span{color:var(--blue);text-shadow:var(--blue-glow);}
+.brand .sub{font-family:var(--mono);font-size:10.5px;color:var(--muted-2);letter-spacing:1.4px;text-transform:uppercase;margin-top:2px;}
+.brand .sub b{color:var(--blue);}
+.spacer{flex:1;}
+.topbar-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+
+/* ---------- Buttons ---------- */
+button{
+  font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
+  background:var(--panel-3);color:var(--text);
+  border:1px solid var(--border);border-radius:8px;
+  padding:9px 14px;display:inline-flex;align-items:center;gap:7px;
+  transition:all .14s ease;white-space:nowrap;
+}
+button:hover{border-color:var(--blue);box-shadow:0 0 0 1px var(--border-glow),0 0 14px var(--border-glow);color:#fff;}
+button:active{transform:translateY(1px);}
+button.primary{background:linear-gradient(180deg,#12233a,#0a1524);border-color:var(--blue);color:#cfe4ff;text-shadow:0 0 8px rgba(47,140,255,.3);}
+button.primary:hover{box-shadow:0 0 18px rgba(47,140,255,.35);}
+button.cyan{border-color:var(--red);color:#ffc2cf;background:linear-gradient(180deg,#2a0f18,#1a0810);}
+button.cyan:hover{box-shadow:0 0 16px rgba(255,45,85,.4);border-color:var(--red);}
+button.ghost{background:transparent;}
+button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+button.big{padding:13px 20px;font-size:15px;}
+.big-fetch{width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:2px;}
+
+/* ---------- Map preview modal ---------- */
+.modal-back{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);padding:20px;}
+.modal-back.show{display:flex;}
+.modal{width:min(900px,100%);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border-2);border-radius:14px;overflow:hidden;box-shadow:0 20px 70px rgba(0,0,0,.7),0 0 40px rgba(47,140,255,.12);}
+.modal-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0e131c,#0a0e15);}
+.modal-ic{display:flex;color:var(--blue);}.modal-ic svg{width:16px;height:16px;}
+.modal-head h3{flex:1;margin:0;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.modal-body{padding:14px 16px;overflow:auto;}
+.preview-status{font-family:var(--mono);font-size:13px;color:var(--muted);padding:4px 2px 10px;}
+.preview-status:empty{display:none;}
+.preview-frame-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+#previewFrame{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;}
+.preview-audio{width:100%;margin-top:12px;}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;align-items:center;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.preview-note{font-size:11px;font-family:var(--mono);margin-right:auto;}
+
+/* preview row button + difficulty dim */
+.row-btn.preview{border-color:var(--border-2);color:var(--blue);background:rgba(47,140,255,.06);font-size:11px;}
+.row-btn.preview:hover{border-color:var(--blue);color:#001227;background:var(--blue);box-shadow:0 0 10px rgba(47,140,255,.35);}
+.diff-chips.off{opacity:.4;}
+
+/* stale re-fetch cue */
+.stale-hint{font-size:12px;color:var(--amber);font-family:var(--mono);text-align:center;padding:2px;}
+button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;animation:stalepulse 1.7s infinite;}
+@keyframes stalepulse{0%,100%{box-shadow:0 0 8px rgba(255,194,61,.3);}50%{box-shadow:0 0 18px rgba(255,194,61,.6);}}
+
+/* status pill */
+.status-pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:var(--panel-2);color:var(--muted);}
+.status-pill .led{width:9px;height:9px;border-radius:50%;background:var(--muted-2);flex:none;transition:.2s;}
+.status-pill.on .led{background:var(--green);box-shadow:0 0 10px var(--green);}
+.status-pill.busy .led{background:var(--blue);box-shadow:0 0 10px var(--blue);animation:blink 1s infinite;}
+.status-pill.err .led{background:var(--danger);box-shadow:0 0 9px var(--danger);}
+@keyframes blink{50%{opacity:.3;}}
+
+/* ---------- Layout ---------- */
+.layout{
+  display:grid;
+  grid-template-columns:minmax(370px,440px) minmax(0,1fr);
+  gap:20px;
+  padding:20px 22px 40px;
+  max-width:1640px;margin:0 auto;
+}
+@media(max-width:1080px){.layout{grid-template-columns:1fr;}.col-left{position:static !important;max-height:none !important;overflow:visible !important;}}
+.col-left{
+  position:sticky;top:80px;align-self:start;
+  display:flex;flex-direction:column;gap:16px;
+  max-height:calc(100vh - 96px);overflow-y:auto;padding-right:4px;min-width:0;
+}
+.col-right{display:flex;flex-direction:column;gap:16px;min-width:0;}
+
+/* ---------- Panels ---------- */
+.panel{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);border-radius:var(--r);
+  box-shadow:0 2px 0 rgba(0,0,0,.4),inset 0 1px 0 #ffffff06;
+  overflow:hidden;
+  flex:none;               /* never let a flex column crush a panel — the sidebar scrolls instead */
+}
+.panel-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0e131c,#0a0e15);}
+.panel-head .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue);flex:none;}
+.panel-head h2{font-size:13px;margin:0;letter-spacing:1.2px;text-transform:uppercase;font-family:var(--mono);color:#cdd8e6;font-weight:600;flex:1;}
+.panel-head .count{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.panel-sub{padding:10px 16px;border-bottom:1px solid var(--border);background:#0a0e15;color:var(--muted);font-size:12.5px;line-height:1.55;}
+.panel-sub b{color:#cdd8e6;font-weight:600;}
+.panel-sub code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:11.5px;}
+.panel-body{padding:15px 16px;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+
+/* ---------- Fields ---------- */
+.field{margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+.field-label{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-family:var(--mono);}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:var(--panel-2);color:var(--text);
+  border:1px solid var(--border-2);border-radius:8px;
+  padding:10px 11px;font-size:14px;font-family:var(--sans);
+  transition:border-color .14s,box-shadow .14s;
+}
+textarea{font-family:var(--sans);resize:vertical;min-height:44px;line-height:1.45;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,140,255,.14);}
+input::placeholder,textarea::placeholder{color:#4f5666;}
+select{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238792a6' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
+.row{display:flex;gap:10px;}.row .field{flex:1;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* advanced details */
+.adv{margin-top:12px;border:1px solid var(--border);border-radius:9px;background:var(--panel-2);}
+.adv summary{cursor:pointer;padding:9px 12px;font-size:12px;color:var(--blue);font-family:var(--mono);user-select:none;list-style:none;}
+.adv summary::-webkit-details-marker{display:none;}
+.adv summary::before{content:"▸ ";color:var(--muted-2);}
+.adv[open] summary::before{content:"▾ ";}
+.adv-body{padding:0 12px 12px;}
+.adv-body p{font-size:11.5px;color:var(--muted);line-height:1.55;margin:0 0 8px;}
+
+/* ---------- Intro ---------- */
+.intro{background:linear-gradient(180deg,#0c1622,#080d15);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:inset 0 1px 0 #ffffff06;}
+.intro h2{margin:0 0 6px;font-size:16px;}
+.intro p{margin:0 0 12px;color:var(--muted);font-size:13.5px;line-height:1.6;}
+.intro code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:12px;}
+.flow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:12px 0;}
+.flow .step{display:flex;align-items:center;gap:7px;background:#0d1620;border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-size:12.5px;}
+.flow .step .num{width:19px;height:19px;border-radius:50%;background:rgba(47,140,255,.16);border:1px solid var(--blue);color:var(--blue);font-family:var(--mono);font-size:11px;display:grid;place-items:center;flex:none;}
+.flow .arrow{color:var(--muted-2);}
+.callout{display:flex;gap:10px;align-items:flex-start;background:#0a1520;border:1px solid #17324a;border-radius:9px;padding:10px 13px;font-size:12.5px;color:#c2d8ee;line-height:1.55;}
+.callout .ci{color:var(--blue);flex:none;}
+.callout.amber{background:#1c1606;border-color:#3d3110;color:#f2e0a8;}
+.callout.amber .ci{color:var(--amber);}
+.callout b{color:#fff;}
+
+/* ---------- Star sliders ---------- */
+.starband{height:8px;border-radius:6px;background:#0c1220;border:1px solid var(--border-2);position:relative;overflow:hidden;margin-bottom:14px;}
+.starband-fill{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--blue));box-shadow:0 0 10px rgba(47,140,255,.3);left:0%;right:0%;}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.slider-row:last-child{margin-bottom:0;}
+.slider-row label{font-family:var(--mono);font-size:11px;color:var(--muted);width:30px;flex:none;text-transform:uppercase;}
+.slider-row input[type=range]{-webkit-appearance:none;appearance:none;flex:1 1 0;min-width:0;height:5px;border-radius:5px;background:#151b28;outline:none;}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--blue);cursor:pointer;box-shadow:0 0 8px var(--blue),0 0 0 3px #000;}
+.slider-row input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--blue);cursor:pointer;border:3px solid #000;}
+#starMin::-webkit-slider-thumb{background:var(--red);box-shadow:0 0 8px var(--red),0 0 0 3px #000;}
+#starMin::-moz-range-thumb{background:var(--red);}
+.slider-row input.slider-val{width:70px;flex:0 0 70px;min-width:0;padding:7px 8px;font-family:var(--mono);font-size:13px;text-align:right;}
+#starRangeLabel{color:var(--amber);font-weight:600;}
+
+/* ---------- Chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{cursor:pointer;user-select:none;}
+.chip input{position:absolute;opacity:0;pointer-events:none;}
+.chip span{display:inline-block;padding:8px 14px;border-radius:20px;border:1px solid var(--border-2);background:var(--panel-2);color:var(--muted);font-size:12px;font-weight:600;font-family:var(--mono);letter-spacing:.4px;transition:all .14s;}
+.chip:hover span{border-color:#38445a;color:var(--text);}
+.chip input:checked + span{border-color:var(--blue);background:rgba(47,140,255,.14);color:#cfe4ff;box-shadow:0 0 12px rgba(47,140,255,.22);}
+
+/* ---------- Metric rows ---------- */
+.metric-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.metric-row:last-child{margin-bottom:0;}
+.metric-name{font-family:var(--mono);font-size:12px;color:var(--muted);width:120px;flex:none;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.4px;}
+.metric-name .unit{color:var(--muted-2);text-transform:none;}
+.metric-row input{flex:1;padding:8px 10px;font-family:var(--mono);font-size:13px;}
+.metric-row .dash{color:var(--muted-2);flex:none;}
+
+/* ---------- Switch ---------- */
+.switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;}
+.switch input{display:none;}
+.switch .track{width:40px;height:22px;border-radius:12px;background:#141a26;border:1px solid var(--border-2);position:relative;transition:.16s;flex:none;}
+.switch .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#5a6273;transition:.16s;}
+.switch input:checked + .track{background:rgba(47,140,255,.2);border-color:var(--blue);}
+.switch input:checked + .track::after{transform:translateX(18px);background:var(--blue);box-shadow:0 0 8px var(--blue);}
+.switch .switch-lbl{font-size:12px;color:var(--muted);font-family:var(--mono);}
+.head-switch{margin-left:auto;}
+
+/* ---------- Fetch progress ---------- */
+.fetch-progress{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted);font-family:var(--mono);padding:2px 2px;}
+.bar{flex:1;height:6px;background:#151b28;border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--red),var(--blue));transition:width .2s;}
+
+/* ---------- Counter ---------- */
+.counter-panel{display:flex;align-items:stretch;gap:0;padding:0;overflow:hidden;}
+.counter-main{display:flex;align-items:center;gap:16px;padding:22px 26px;
+  background:radial-gradient(circle at 30% 20%,rgba(255,45,85,.12),transparent 60%),radial-gradient(circle at 90% 90%,rgba(47,140,255,.14),transparent 55%);flex:none;border-right:1px solid var(--border);}
+.counter-num{font-size:56px;font-weight:800;line-height:1;color:#fff;text-shadow:0 0 24px rgba(47,140,255,.45);font-variant-numeric:tabular-nums;}
+.counter-lbl{font-size:14px;color:var(--muted);font-weight:600;line-height:1.3;}
+.counter-side{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:22px;padding:18px 24px;}
+.cstat{display:flex;flex-direction:column;gap:2px;}
+.cstat-num{font-size:24px;font-weight:700;color:var(--blue);font-family:var(--mono);font-variant-numeric:tabular-nums;}
+.cstat-lbl{font-size:11px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.6px;font-family:var(--mono);}
+.counter-meta{flex-basis:100%;font-size:12px;color:var(--muted);font-family:var(--mono);line-height:1.5;}
+
+/* ---------- Cover ---------- */
+.cover-body{display:grid;grid-template-columns:220px 1fr;gap:18px;}
+@media(max-width:560px){.cover-body{grid-template-columns:1fr;}}
+.cover-canvas-wrap{width:220px;height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border-2);background:#000;box-shadow:0 0 20px rgba(0,0,0,.6);}
+@media(max-width:560px){.cover-canvas-wrap{width:100%;max-width:280px;height:auto;aspect-ratio:1;margin:0 auto;}}
+#coverCanvas{width:100%;height:100%;display:block;}
+.cover-controls{display:flex;flex-direction:column;gap:10px;}
+.custom-file input[type=file]{font-size:12px;padding:8px;font-family:var(--mono);}
+
+/* cover style thumbnail picker */
+.thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px;max-height:246px;overflow-y:auto;padding:2px;}
+.thumb{padding:0;border:1px solid var(--border-2);border-radius:9px;background:#000;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;transition:border-color .14s,box-shadow .14s;}
+.thumb canvas{width:100%;aspect-ratio:1;display:block;}
+.thumb .thumb-lbl{font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 2px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px;}
+.thumb:hover{border-color:var(--blue);box-shadow:none;}
+.thumb.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 0 12px rgba(47,140,255,.4);}
+.thumb.active .thumb-lbl{color:#cfe4ff;}
+/* accent swatches */
+.swatch-row{display:flex;flex-wrap:wrap;gap:8px;}
+.swatch-chip{width:30px;height:30px;border-radius:8px;border:2px solid var(--border-2);cursor:pointer;padding:0;transition:transform .12s,border-color .14s,box-shadow .14s;}
+.swatch-chip:hover{transform:translateY(-1px);border-color:#4a5670;box-shadow:none;}
+.swatch-chip.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.4);}
+
+/* ---------- Song list ---------- */
+.list-panel{display:flex;flex-direction:column;}
+.list-body{padding:12px;}
+.song-list{display:flex;flex-direction:column;gap:7px;max-height:620px;overflow-y:auto;padding-right:4px;}
+.song-row{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--panel-2);transition:border-color .14s;}
+.song-row:hover{border-color:var(--border-2);}
+.song-cover{width:50px;height:50px;border-radius:7px;object-fit:cover;background:#05070c;border:1px solid var(--border);flex:none;}
+.song-cover.ph{display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:18px;}
+.song-info{min-width:0;}
+.song-name{font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.song-name .subname{color:var(--muted-2);font-weight:400;font-size:13px;}
+.song-mapper{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);margin-top:1px;}
+.song-tags{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.tag{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;font-family:var(--mono);white-space:nowrap;border:1px solid var(--border-2);color:var(--muted);}
+.tag-star{color:var(--amber);border-color:rgba(255,194,61,.4);background:rgba(255,194,61,.08);}
+.tag-ur{color:var(--muted);border-color:var(--border-2);}
+.tag-diff{color:var(--blue);border-color:rgba(47,140,255,.4);background:rgba(47,140,255,.08);}
+.tag-mode{color:var(--magenta);border-color:rgba(217,75,255,.35);}
+.list-more{text-align:center;color:var(--muted-2);font-size:12px;font-family:var(--mono);padding:10px;}
+
+.empty{text-align:center;color:var(--muted);padding:40px 16px;}
+.empty .empty-ic{font-size:32px;color:var(--muted-2);margin-bottom:10px;}
+.empty p{margin:3px 0;font-size:13px;}
+.empty b{color:var(--text);}
+
+/* ---------- Export ---------- */
+.export-validation{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.valitem{display:flex;gap:10px;padding:9px 11px;border-radius:8px;font-size:13px;border:1px solid transparent;font-family:var(--mono);line-height:1.45;align-items:flex-start;}
+.valitem .ico{flex:none;font-weight:700;}
+.valitem.ok{background:#082018;border-color:#0f3a2a;color:#a5f5cf;}
+.valitem.ok .ico{color:var(--green);}
+.valitem.warn{background:#241d05;border-color:#463910;color:#ffe08a;}
+.valitem.warn .ico{color:var(--warn);}
+.valitem.err{background:#280f15;border-color:#4a1621;color:#ffb3bd;}
+.valitem.err .ico{color:var(--danger);}
+.export-row{display:flex;align-items:center;gap:16px;}
+.export-hint{font-size:12px;color:var(--muted);font-family:var(--mono);}
+
+/* ---------- Your Profile (BeatLeader) ---------- */
+.hint-line{font-size:11px;font-family:var(--mono);line-height:1.5;margin-top:8px;}
+.hint-line code{color:var(--blue);}
+.pcard{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.pc-avatar{width:48px;height:48px;border-radius:10px;border:1px solid var(--border-2);object-fit:cover;background:#05070c;flex:none;}
+.pc-info{min-width:0;}
+.pc-name{font-size:16px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-stats{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.pcard-actions{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.sync-progress{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;}
+.quick-lists{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+
+/* your-score badges on rows */
+.rb-you{color:#cfe4ff;border-color:rgba(47,140,255,.5);background:rgba(47,140,255,.12);}
+.rb-you.fc{color:#a5f5cf;border-color:rgba(34,224,161,.55);background:rgba(34,224,161,.12);}
+.rb-new{color:var(--muted);border-color:var(--border-2);border-style:dashed;}
+
+/* your score in the preview modal */
+.preview-score{font-family:var(--mono);font-size:13px;color:#cbd3e4;padding:9px 11px;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2);line-height:1.5;}
+.preview-score.unplayed{color:var(--muted);}
+.preview-score b{color:#fff;}
+.preview-score .fc{color:var(--green);font-weight:700;}
+.preview-score a{color:var(--blue);}
+
+/* ---------- Presets ---------- */
+.preset-row{display:flex;gap:8px;margin-bottom:9px;}
+.preset-row:last-child{margin-bottom:0;}
+.preset-row input,.preset-row select{flex:1;min-width:0;}
+.preset-row .sm{flex:none;}
+
+/* ---------- File / import button ---------- */
+.filebtn{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--panel-3);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;transition:.14s;font-family:var(--sans);flex:none;}
+.filebtn:hover{border-color:var(--blue);color:#fff;box-shadow:0 0 12px var(--border-glow);}
+.filebtn svg{width:15px;height:15px;}
+.import-row{align-items:center;}
+.import-hint{font-size:11.5px;font-family:var(--mono);}
+
+/* ---------- Summary (matches → playlist) ---------- */
+.summary-panel{display:flex;align-items:stretch;flex-wrap:wrap;padding:0;overflow:hidden;}
+.sum-block{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:20px 24px;flex:1;min-width:130px;}
+.sum-block.accent{background:radial-gradient(circle at 50% 20%,rgba(47,140,255,.14),transparent 70%);border-left:1px solid var(--border);}
+.sum-num{font-size:46px;font-weight:800;line-height:1;color:#fff;font-variant-numeric:tabular-nums;}
+.sum-block.accent .sum-num{color:var(--blue);text-shadow:0 0 22px rgba(47,140,255,.5);}
+.sum-lbl{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.35;font-family:var(--mono);}
+.sum-lbl b{color:var(--amber);}
+.sum-arrow{display:flex;align-items:center;color:var(--muted-2);padding:0 4px;}
+.sum-arrow svg{width:26px;height:26px;}
+.sum-meta{flex-basis:100%;padding:11px 20px;border-top:1px solid var(--border);background:#0a0e15;font-size:12px;color:var(--muted);font-family:var(--mono);line-height:1.5;}
+
+/* ---------- List action bars ---------- */
+.list-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:#0a0e15;}
+.addtop{display:flex;align-items:center;gap:0;}
+.addtop .sm{border-top-right-radius:0;border-bottom-right-radius:0;}
+.addtop input{width:56px;flex:none;padding:7px 8px;font-family:var(--mono);font-size:13px;text-align:center;border-top-left-radius:0;border-bottom-left-radius:0;border-left:none;}
+.mini-switch{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--mono);margin-left:auto;user-select:none;}
+.mini-switch input{width:15px;height:15px;accent-color:var(--blue);}
+
+/* ---------- Rows (results + basket) ---------- */
+.list-body{padding:10px 12px;}
+.song-list{max-height:360px;}
+.playlist-panel .song-list{max-height:340px;}
+.playlist-panel{border-color:#243550;box-shadow:0 2px 0 rgba(0,0,0,.4),inset 0 0 0 1px rgba(47,140,255,.06);}
+.accent-ic{color:var(--blue) !important;}
+
+.song-row{grid-template-columns:44px 1fr auto;gap:12px;padding:8px 10px;}
+.song-row.bk{grid-template-columns:22px 40px 1fr auto;}
+.song-cover{width:44px;height:44px;}
+.song-row.bk .song-cover{width:40px;height:40px;}
+.bk-idx{font-family:var(--mono);font-size:13px;color:var(--muted-2);text-align:center;font-variant-numeric:tabular-nums;}
+.song-name{font-size:15px;}
+.rbadges{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.rb{font-size:10.5px;font-weight:700;font-family:var(--mono);padding:2px 7px;border-radius:5px;border:1px solid var(--border-2);color:var(--muted);white-space:nowrap;letter-spacing:.2px;}
+.rb-star{color:var(--amber);border-color:rgba(255,194,61,.4);background:rgba(255,194,61,.08);}
+.rb-ur{color:var(--muted);}
+.rb-diff{color:var(--blue);border-color:rgba(47,140,255,.4);background:rgba(47,140,255,.08);}
+.rb-mode{color:var(--magenta);border-color:rgba(217,75,255,.35);}
+
+.row-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.row-link{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;border:1px solid var(--border-2);color:var(--muted);font-size:13px;text-decoration:none;transition:.14s;}
+.row-link:hover{border-color:var(--blue);color:#fff;text-decoration:none;box-shadow:0 0 8px rgba(47,140,255,.25);}
+.row-btn{width:28px;height:28px;padding:0;display:grid;place-items:center;border-radius:7px;font-size:18px;font-weight:700;line-height:1;}
+.row-btn.add{border-color:var(--blue-dim);color:var(--blue);background:rgba(47,140,255,.08);}
+.row-btn.add:hover{background:var(--blue);color:#001227;box-shadow:0 0 12px rgba(47,140,255,.4);}
+.row-btn.added{border-color:var(--green);color:var(--green);background:rgba(34,224,161,.1);cursor:default;font-size:14px;}
+.row-btn.added:hover{box-shadow:none;transform:none;}
+.row-btn.rm{border-color:var(--red-dim);color:var(--red);background:rgba(255,45,85,.08);}
+.row-btn.rm:hover{background:var(--red);color:#fff;box-shadow:0 0 12px rgba(255,45,85,.4);}
+.reorder{width:22px;height:22px;padding:0;display:grid;place-items:center;border-radius:6px;font-size:11px;color:var(--muted);border-color:var(--border-2);}
+.reorder:hover{border-color:var(--blue);color:#fff;}
+.reorder:disabled{opacity:.25;}
+.reorder-col{display:flex;flex-direction:column;gap:2px;}
+
+/* ---------- Button SVG icons ---------- */
+button svg{width:15px;height:15px;flex:none;}
+.big-fetch svg,.big svg{width:17px;height:17px;}
+
+/* ---------- Panel-head icons ---------- */
+.ph-ic{display:flex;color:var(--blue);flex:none;filter:drop-shadow(0 0 6px rgba(47,140,255,.45));}
+.ph-ic svg{width:16px;height:16px;}
+.ph-ic.star{color:var(--amber);filter:drop-shadow(0 0 6px rgba(255,194,61,.5));}
+
+/* ---------- Relay quick-actions ---------- */
+.relay-actions{display:flex;gap:8px;margin-top:10px;}
+button.sm{padding:7px 11px;font-size:12.5px;}
+.relay-btn{border-color:var(--red);color:#ffc2cf;background:linear-gradient(180deg,#2a0f18,#160810);}
+.relay-btn:hover{box-shadow:0 0 14px rgba(255,45,85,.4);border-color:var(--red);}
+.relay-btn svg{color:var(--amber);}
+
+/* ---------- Footer + developer credit ---------- */
+.appfoot{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  max-width:1640px;margin:0 auto;padding:14px 22px 40px;
+}
+.foot-left{font-size:11.5px;color:var(--muted-2);font-family:var(--mono);letter-spacing:.3px;flex:1;min-width:220px;line-height:1.6;}
+.foot-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+a.credit{display:inline-flex;align-items:center;gap:12px;padding:8px 18px 8px 8px;border:1px solid var(--border-2);border-radius:12px;background:linear-gradient(180deg,#0e131c,#080c12);text-decoration:none;transition:.16s;}
+a.credit:hover{border-color:var(--blue);box-shadow:0 0 20px rgba(47,140,255,.22);transform:translateY(-2px);}
+a.credit img{width:42px;height:42px;border-radius:10px;border:1px solid #ffffff1f;box-shadow:0 0 12px rgba(47,140,255,.28);display:block;}
+a.credit .ctxt{display:flex;flex-direction:column;line-height:1.3;text-align:left;}
+a.credit .c1{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);text-transform:uppercase;letter-spacing:1.5px;}
+a.credit .c2{font-size:15px;font-weight:800;color:var(--blue);text-shadow:0 0 10px rgba(47,140,255,.4);}
+a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
+.footlinks{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;}
+.footlinks a{color:var(--blue);text-decoration:none;padding:5px 11px;border:1px solid var(--border-2);border-radius:8px;transition:.15s;}
+.footlinks a:hover{border-color:var(--blue);box-shadow:0 0 10px rgba(47,140,255,.25);color:#fff;}
+.footlinks .sep{color:var(--muted-2);}
+@media(max-width:820px){.foot-left{display:none;}}
+
+/* ---------- Info tooltips ---------- */
+.info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--blue);color:var(--blue);font-size:9px;font-family:var(--mono);font-style:normal;font-weight:700;cursor:help;vertical-align:middle;user-select:none;flex:none;opacity:.75;transition:.15s;}
+.info:hover{opacity:1;box-shadow:0 0 8px rgba(47,140,255,.4);background:rgba(47,140,255,.12);}
+#tipbox{position:fixed;display:none;z-index:400;max-width:300px;background:#0b141f;border:1px solid var(--blue);border-radius:9px;padding:10px 13px;font-size:12.5px;line-height:1.55;color:#d7e6f5;box-shadow:0 6px 24px rgba(0,0,0,.75),0 0 16px rgba(47,140,255,.18);pointer-events:none;font-family:var(--sans);}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(140%);background:#0a1420;border:1px solid var(--blue);color:var(--text);font-size:13.5px;font-weight:600;padding:12px 20px;border-radius:10px;z-index:200;transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 30px rgba(0,0,0,.6),var(--blue-glow);display:flex;align-items:center;gap:10px;max-width:min(90vw,460px);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast::before{content:"◆";color:var(--blue);}
+.toast.err{border-color:var(--danger);box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 14px rgba(255,77,109,.4);}
+.toast.err::before{content:"✕";color:var(--danger);}
+.toast.warn{border-color:var(--warn);box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 14px rgba(255,180,0,.4);}
+.toast.warn::before{content:"!";color:var(--warn);}
+.toast.ok{border-color:var(--green);box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 14px rgba(34,224,161,.4);}
+.toast.ok::before{content:"✓";color:var(--green);}
+
+</style>
+</head>
+<body>
+
+<!-- ============ TOPBAR ============ -->
+<header class="topbar">
+  <div class="brand">
+    <div class="logo"><span class="blade red"></span><span class="blade blue"></span></div>
+    <div class="brand-txt">
+      <h1>Playlist <span>Studio</span></h1>
+      <div class="sub">BEATLEADER SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="topbar-actions">
+    <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
+    <button class="ghost" id="resetBtn" title="Reset all filters to defaults">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset</button>
+    <button class="primary" id="fetchBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch</button>
+    <button class="cyan" id="downloadBtn" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>.bplist</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ============ LEFT: FILTERS ============ -->
+  <div class="col-left">
+
+    <!-- Intro -->
+    <section class="intro">
+      <h2>How it works</h2>
+      <p>Filter BeatLeader &rarr; <b>Fetch</b> &rarr; add the maps you want to <b>Your Playlist</b> &rarr; export a <code>.bplist</code>. You're not stuck with everything that matches — cherry-pick, mix results from several searches, reorder, then export just your picks.</p>
+      <div class="flow">
+        <div class="step"><span class="num">1</span> Filter &amp; Fetch</div>
+        <span class="arrow">→</span>
+        <div class="step"><span class="num">2</span> Add picks</div>
+        <span class="arrow">→</span>
+        <div class="step"><span class="num">3</span> Reorder &amp; cover</div>
+        <span class="arrow">→</span>
+        <div class="step"><span class="num">4</span> Export</div>
+      </div>
+      <div class="callout amber"><span class="ci">◈</span><span><b>First time?</b> BeatLeader blocks direct browser requests, so Playlist Studio routes them through a pool of public relays automatically. If a fetch ever fails, the relays may be busy — just try again in a moment.</span></div>
+    </section>
+
+    <!-- Data Source -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Data Source</h2></div>
+      <div class="panel-sub">Which slice of BeatLeader to scan and how to prioritize it. <b>Rating focus</b> only re-orders results — it never changes which maps match.</div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <div class="field"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
+            <select id="fType">
+              <option value="ranked" selected>Ranked</option>
+              <option value="unranked">Unranked</option>
+              <option value="nominated">Nominated</option>
+              <option value="qualified">Qualified</option>
+              <option value="all">All</option>
+            </select></div>
+          <div class="field"><label class="field-label">Rating focus <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
+            <select id="fSort">
+              <option value="stars" selected>Stars</option>
+              <option value="techRating">Tech</option>
+              <option value="accRating">Acc</option>
+              <option value="passRating">Pass</option>
+              <option value="nps">NPS</option>
+              <option value="duration">Duration</option>
+              <option value="bpm">BPM</option>
+              <option value="myAcc">My accuracy</option>
+              <option value="myRank">My rank</option>
+              <option value="myDate">Date I played</option>
+              <option value="improve">Improvement potential</option>
+            </select></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label class="field-label">Order</label>
+            <select id="fOrder">
+              <option value="desc" selected>High → Low</option>
+              <option value="asc">Low → High</option>
+            </select></div>
+          <div class="field"><label class="field-label">Max maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough but more API pages (slower). 300 is a good default; raise it for wide star ranges.">i</span></label>
+            <input type="number" id="fMaxScan" min="20" max="5000" step="20" value="300" /></div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="field"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
+          <select id="connMode">
+            <option value="auto" selected>Auto — direct, then relay race</option>
+            <option value="relay">Relay — race the proxy pool</option>
+            <option value="direct">Direct only</option>
+          </select></div>
+        <details class="adv" id="relayAdv">
+          <summary>Advanced: custom relay</summary>
+          <div class="adv-body">
+            <p>Leave blank to use the built-in pool of public relays (this handles BeatLeader’s CORS block automatically). If you run your own CORS relay, paste its prefix here — end it with <code>=</code> to append the map URL encoded, or include <code>{url}</code> where the encoded URL should go.</p>
+            <input type="text" id="customProxy" placeholder="http://localhost:8787/?url=" />
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- Star Rating -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic star"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h2>Star Rating</h2><span class="count" id="starRangeLabel">0.0★ – 15.0★</span></div>
+      <div class="panel-sub">The BeatLeader difficulty window for rated maps. Unranked maps have no stars, so this filter <b>skips</b> them rather than dropping them — set <b>Ranked status → Unranked</b> to build from those.</div>
+      <div class="panel-body">
+        <div class="starband"><div class="starband-fill" id="starBandFill"></div></div>
+        <div class="slider-row">
+          <label>Min</label>
+          <input type="range" id="starMin" min="0" max="15" step="0.1" value="0" />
+          <input type="number" class="slider-val" id="starMinNum" min="0" max="15" step="0.1" value="0" />
+        </div>
+        <div class="slider-row">
+          <label>Max</label>
+          <input type="range" id="starMax" min="0" max="15" step="0.1" value="15" />
+          <input type="number" class="slider-val" id="starMaxNum" min="0" max="15" step="0.1" value="15" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Search -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
+      <div class="panel-sub">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated. Matches the mapper or artist name, case-insensitive. Example: Bloodcloak, Joetastic">i</span></label>
+          <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
+        <div class="field"><label class="field-label">Song / keyword</label>
+          <input type="text" id="fSearch" placeholder="e.g. camellia" /></div>
+      </div>
+    </section>
+
+    <!-- Game Mode -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><h2>Game Mode</h2></div>
+      <div class="panel-sub">Which characteristics to include. Select exactly one to also narrow the API query; leave several on to filter client-side.</div>
+      <div class="panel-body">
+        <div class="chips" id="modeChips">
+          <label class="chip"><input type="checkbox" value="Standard" checked /><span>Standard</span></label>
+          <label class="chip"><input type="checkbox" value="OneSaber" /><span>One Saber</span></label>
+          <label class="chip"><input type="checkbox" value="NoArrows" /><span>No Arrows</span></label>
+          <label class="chip"><input type="checkbox" value="90Degree" /><span>90°</span></label>
+          <label class="chip"><input type="checkbox" value="360Degree" /><span>360°</span></label>
+          <label class="chip"><input type="checkbox" value="Lightshow" /><span>Lightshow</span></label>
+          <label class="chip"><input type="checkbox" value="Lawless" /><span>Lawless</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Difficulty (optional) -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg></span><h2>Difficulty</h2>
+        <label class="switch head-switch"><input type="checkbox" id="diffEnable" /><span class="track"></span><span class="switch-lbl">Filter on</span></label>
+      </div>
+      <div class="panel-sub">Optional — off by default so every difficulty comes through. Turn it on to keep only specific difficulties (e.g. Expert+ only).</div>
+      <div class="panel-body">
+        <div class="chips diff-chips off" id="diffChips">
+          <label class="chip"><input type="checkbox" value="Easy" checked /><span>Easy</span></label>
+          <label class="chip"><input type="checkbox" value="Normal" checked /><span>Normal</span></label>
+          <label class="chip"><input type="checkbox" value="Hard" checked /><span>Hard</span></label>
+          <label class="chip"><input type="checkbox" value="Expert" checked /><span>Expert</span></label>
+          <label class="chip"><input type="checkbox" value="ExpertPlus" checked /><span>Expert+</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Song Metrics -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Song Metrics</h2></div>
+      <div class="panel-sub">Optional numeric bounds. Blank = no limit. All applied instantly on the scanned set — no re-fetch needed.</div>
+      <div class="panel-body">
+        <div class="metric-row">
+          <span class="metric-name">NPS <span class="info" data-tip="Notes per second — raw density of the map. Higher = more notes thrown at you per second.">i</span></span>
+          <input type="number" id="fNpsMin" min="0" step="0.1" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fNpsMax" min="0" step="0.1" placeholder="max" />
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Duration <span class="unit">(sec)</span></span>
+          <input type="number" id="fDurMin" min="0" step="1" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fDurMax" min="0" step="1" placeholder="max" />
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">BPM</span>
+          <input type="number" id="fBpmMin" min="0" step="1" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fBpmMax" min="0" step="1" placeholder="max" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Your Profile (BeatLeader) -->
+    <section class="panel" id="profilePanel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h2>Your Profile</h2><span class="count" id="profileState"></span></div>
+      <div class="panel-sub">Connect your BeatLeader profile to see your score on every map and filter by what you've played. Public data only — no login.</div>
+      <div class="panel-body">
+        <div id="profileConnect">
+          <div class="preset-row">
+            <input type="text" id="playerInput" placeholder="BeatLeader profile URL or ID" />
+            <button class="ghost sm" id="connectBtn">Connect</button>
+          </div>
+          <p class="muted hint-line">Open your BeatLeader profile and paste the link (e.g. <code>beatleader.xyz/u/…</code>) or just your ID.</p>
+        </div>
+        <div id="profileCard" hidden>
+          <div class="pcard">
+            <img id="pcAvatar" class="pc-avatar" alt="" />
+            <div class="pc-info">
+              <div class="pc-name" id="pcName"></div>
+              <div class="pc-stats" id="pcStats"></div>
+            </div>
+          </div>
+          <div class="pcard-actions">
+            <button class="ghost sm" id="syncBtn">⟳ Sync scores</button>
+            <button class="ghost sm danger" id="disconnectBtn">Disconnect</button>
+          </div>
+          <div class="sync-progress" id="syncProgress" hidden><div class="bar"><div class="bar-fill" id="syncBar"></div></div><span id="syncText"></span></div>
+          <div class="divider"></div>
+          <div class="field"><label class="field-label">Your play status <span class="info" data-tip="Filter results by your BeatLeader history. Near-miss FC = you've played it, didn't full-combo, but were close (few misses and a high would-be FC accuracy).">i</span></label>
+            <select id="playStatus">
+              <option value="any" selected>Any</option>
+              <option value="unplayed">Not played yet</option>
+              <option value="played">Played</option>
+              <option value="fc">Full-combo'd</option>
+              <option value="nofc">Played, not FC</option>
+              <option value="nearfc">Near-miss FC</option>
+            </select></div>
+          <div class="field"><label class="field-label">Only my acc below <small class="muted">(%, played maps)</small></label>
+            <input type="number" id="accMax" min="0" max="100" step="0.5" placeholder="e.g. 90" /></div>
+          <label class="field-label" style="margin-top:2px">Quick lists</label>
+          <div class="quick-lists" id="quickLists">
+            <button class="ghost sm" type="button" data-quick="unplayed">Unplayed</button>
+            <button class="ghost sm" type="button" data-quick="nearfc">Near-miss FC</button>
+            <button class="ghost sm" type="button" data-quick="sub90">Sub-90%</button>
+            <button class="ghost sm" type="button" data-quick="clear">Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Presets -->
+    <section class="panel" id="presetPanel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span><h2>Filter Presets</h2></div>
+      <div class="panel-sub">Save a filter combo you reuse (e.g. "6★ tech warmup") and load it in one click. Stored in this browser only.</div>
+      <div class="panel-body">
+        <div class="preset-row">
+          <input type="text" id="presetName" placeholder="Name this preset" />
+          <button class="ghost sm" id="presetSave">Save</button>
+        </div>
+        <div class="preset-row">
+          <select id="presetSelect"><option value="">— saved presets —</option></select>
+          <button class="ghost sm" id="presetLoad">Load</button>
+          <button class="ghost sm danger" id="presetDelete">Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <button class="primary big-fetch" id="fetchBtn2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch from BeatLeader</button>
+    <div class="stale-hint" id="staleHint" hidden>⟳ Filters changed since your last fetch — re-fetch to pull the new set.</div>
+    <div class="fetch-progress" id="fetchProgress" hidden>
+      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      <span id="fetchProgressText">Fetching…</span>
+    </div>
+  </div>
+
+  <!-- ============ RIGHT: BUILD ============ -->
+  <div class="col-right">
+
+    <!-- Summary -->
+    <section class="panel summary-panel">
+      <div class="sum-block">
+        <div class="sum-num" id="matchCount">0</div>
+        <div class="sum-lbl">matches in<br>results</div>
+      </div>
+      <div class="sum-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="sum-block accent">
+        <div class="sum-num" id="basketCount">0</div>
+        <div class="sum-lbl">in your playlist<br><b id="basketTime">0:00</b> · <span id="basketUnique">0</span> songs</div>
+      </div>
+      <div class="sum-meta" id="counterMeta">Set filters and fetch to begin.</div>
+    </section>
+
+    <!-- Results -->
+    <section class="panel list-panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count" id="resultCount"></span></div>
+      <div class="list-actions">
+        <button class="ghost sm" id="addAllBtn" disabled>+ Add all</button>
+        <div class="addtop">
+          <button class="ghost sm" id="addTopBtn" disabled>+ Add top</button>
+          <input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" />
+        </div>
+        <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
+        <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>Collapse dupes</span></label>
+      </div>
+      <div class="panel-body list-body">
+        <div class="song-list" id="resultList">
+          <div class="empty">
+            <div class="empty-ic">◇</div>
+            <p><b>No results yet.</b></p>
+            <p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Your Playlist -->
+    <section class="panel list-panel playlist-panel">
+      <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span></div>
+      <div class="list-actions">
+        <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
+        <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending — good for warmup → hard">↑ Sort by ★</button>
+        <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported songs from BeatLeader">↻ Enrich</button>
+        <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader — catches rating recalcs">★ Refresh</button>
+        <button class="ghost sm danger" id="clearBasketBtn" disabled>Clear</button>
+      </div>
+      <div class="panel-body list-body">
+        <div class="song-list basket" id="basketList">
+          <div class="empty">
+            <div class="empty-ic">♪</div>
+            <p><b>Your playlist is empty.</b></p>
+            <p>Add maps from <b>Search Results</b> above — or hit <b>+ Add all</b>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playlist Library -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><h2>Playlist Library</h2></div>
+      <div class="panel-sub">Save your whole playlist to reload later, or import an existing <code>.bplist</code> to edit it. Saved in this browser.</div>
+      <div class="panel-body">
+        <div class="preset-row">
+          <input type="text" id="playlistName" placeholder="Save current playlist as…" />
+          <button class="ghost sm" id="savePlaylistBtn">Save</button>
+        </div>
+        <div class="preset-row">
+          <select id="savedPlaylists"><option value="">— saved playlists —</option></select>
+          <button class="ghost sm" id="loadPlaylistBtn">Load</button>
+          <button class="ghost sm danger" id="deletePlaylistBtn">Delete</button>
+        </div>
+        <div class="preset-row import-row">
+          <label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label>
+          <input type="file" id="importBplist" accept=".bplist,application/json" hidden />
+          <span class="muted import-hint">Adds its songs to your playlist</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playlist Info -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Playlist Info</h2></div>
+      <div class="panel-sub">Metadata written into the <code>.bplist</code>. Leave the description blank to auto-fill a summary of your playlist.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Title</label>
+          <input type="text" id="metaTitle" value="Playlist Studio Mix" placeholder="My Grind Set" /></div>
+        <div class="row">
+          <div class="field"><label class="field-label">Author</label>
+            <input type="text" id="metaAuthor" value="Playlist Studio" placeholder="Your name" /></div>
+        </div>
+        <div class="field"><label class="field-label">Description</label>
+          <textarea id="metaDescription" rows="2" placeholder="Auto-filled from your playlist if left blank"></textarea></div>
+      </div>
+    </section>
+
+    <!-- Cover -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span><h2>Playlist Cover</h2>
+        <label class="switch head-switch"><input type="checkbox" id="useCustomImage" /><span class="track"></span><span class="switch-lbl">Upload custom</span></label>
+      </div>
+      <div class="panel-sub">A cover is generated from your title and star range automatically. Switch to a custom image any time — either is embedded as Base64 in the export.</div>
+      <div class="panel-body cover-body">
+        <div class="cover-canvas-wrap"><canvas id="coverCanvas" width="512" height="512" aria-label="Playlist cover preview"></canvas></div>
+        <div class="cover-controls">
+          <div class="field"><label class="field-label">Cover style <small class="muted">(click to pick)</small></label>
+            <div class="thumb-grid" id="coverStyleGrid"></div></div>
+          <div class="field"><label class="field-label">Accent</label>
+            <div class="swatch-row" id="coverAccentRow"></div></div>
+          <div class="field"><label class="field-label">Overlay text</label>
+            <input type="text" id="coverText" placeholder="(defaults to playlist title)" /></div>
+          <div class="field custom-file" id="customFileField" hidden><label class="field-label">Custom image file</label>
+            <input type="file" id="customImageInput" accept="image/*" /></div>
+          <button class="ghost" id="regenCoverBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Regenerate cover</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Export -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
+      <div class="panel-body">
+        <div class="export-validation" id="exportValidation">
+          <div class="valitem ok"><span class="ico">◇</span><span>Add songs to <b>Your Playlist</b>, then export.</span></div>
+        </div>
+        <div class="export-row">
+          <button class="primary big" id="downloadBtn2" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .bplist</button>
+          <span class="export-hint" id="exportHint">Your playlist is empty.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ FOOTER + CREDIT ============ -->
+<footer class="appfoot">
+  <div class="foot-left">Playlist Studio &middot; Map data &copy; BeatLeader (api.beatleader.xyz) &middot; Built for Beat Saber playlist crafting</div>
+  <div class="foot-right">
+    <a class="credit" href="https://beatleader.com/u/76561199153577883" target="_blank" rel="noopener" title="MSploit on BeatLeader">
+      <img src="data:image/png;base64,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" alt="MSploit" />
+      <span class="ctxt">
+        <span class="c1">Developed by</span>
+        <span class="c2">MSploit</span>
+        <span class="c3">beatleader.com ↗</span>
+      </span>
+    </a>
+    <div class="footlinks">
+      <a href="https://beatleader.xyz" target="_blank" rel="noopener">◆ BeatLeader</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MAP PREVIEW MODAL ============ -->
+<div class="modal-back" id="previewModal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+      <h3 id="previewTitle">Map preview</h3>
+      <button class="ghost sm" id="previewClose" title="Close (Esc)">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-status" id="previewStatus"></div>
+      <div class="preview-score" id="previewScore" hidden></div>
+      <div class="preview-frame-wrap"><iframe id="previewFrame" title="Map preview" allow="autoplay; fullscreen" referrerpolicy="no-referrer"></iframe></div>
+      <audio id="previewAudio" class="preview-audio" controls preload="none" hidden></audio>
+    </div>
+    <div class="modal-foot">
+      <span class="muted preview-note">Preview by ArcViewer &middot; audio by BeatSaver</span>
+      <a id="previewBeatSaver" class="filebtn" target="_blank" rel="noopener" style="display:none">BeatSaver ↗</a>
+      <a id="previewViewer" class="filebtn" target="_blank" rel="noopener" style="display:none">Open viewer ↗</a>
+      <button class="ghost sm" id="previewClose2">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="tipbox"></div>
+
+<script>
+/* ============================================================
+   Playlist Studio — iconGenerator.js
+   Canvas-based playlist cover generator.
+   Draws a themed Beat Saber cover in one of many procedural
+   styles and exports it to a Base64 PNG. Also loads a custom
+   uploaded image. Exposes: window.IconGenerator
+     - IconGenerator.styles   → [{key,label}]  (for the picker)
+     - IconGenerator.accents  → [{key,label,a,b}]
+     - generate(canvas, {style, accent, title, subtitle, seed, noText})
+     - toDataURL(canvas)
+     - loadCustomImage(canvas, file) → Promise<dataURL>
+   ============================================================ */
+(function (global) {
+  'use strict';
+
+  // ---- palettes -------------------------------------------------------------
+  var ACCENTS = {
+    rb:      { a: '#ff2d55', b: '#2f8cff', label: 'Red + Blue' },
+    red:     { a: '#ff2d55', b: '#ff7a3c', label: 'Red' },
+    blue:    { a: '#2f8cff', b: '#6fd6ff', label: 'Blue' },
+    magenta: { a: '#d94bff', b: '#ff4b9d', label: 'Magenta' },
+    green:   { a: '#22e0a1', b: '#6bff8f', label: 'Green' },
+    violet:  { a: '#8a5bff', b: '#d94bff', label: 'Violet' },
+    cyan:    { a: '#00e5ff', b: '#22e0a1', label: 'Cyan' },
+    fire:    { a: '#ff8a00', b: '#ff2d55', label: 'Fire' },
+    sunset:  { a: '#ff5f6d', b: '#ffc371', label: 'Sunset' },
+    ice:     { a: '#7ee8ff', b: '#2f8cff', label: 'Ice' },
+    gold:    { a: '#ffd54a', b: '#ff8c00', label: 'Gold' },
+    toxic:   { a: '#b6ff3a', b: '#22e0a1', label: 'Toxic' },
+    mono:    { a: '#e9edf5', b: '#8792a6', label: 'Mono' }
+  };
+  var ACCENT_ORDER = ['rb','red','blue','magenta','green','violet','cyan','fire','sunset','ice','gold','toxic','mono'];
+  function accent(name) { return ACCENTS[name] || ACCENTS.rb; }
+
+  // ---- helpers --------------------------------------------------------------
+  function fillBackground(ctx, w, h) {
+    var g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#05060a'); g.addColorStop(1, '#000000');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  }
+  function hexA(hex, a) {
+    var h = hex.replace('#', '');
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+  function radialGlow(ctx, x, y, r, color, alpha) {
+    var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, hexA(color, alpha)); g.addColorStop(1, hexA(color, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  }
+  function glowLine(ctx, x1, y1, x2, y2, color, width, blur) {
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round';
+    ctx.shadowColor = color; ctx.shadowBlur = blur;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore();
+  }
+  function roundRect(ctx, x, y, w, h, r) {
+    if (w < 2*r) r = w/2; if (h < 2*r) r = h/2;
+    ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function seededRandom(seed) {
+    var s = 0; for (var i = 0; i < seed.length; i++) s = (s*31 + seed.charCodeAt(i)) >>> 0;
+    return function () { s = (s*1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+
+  // ---- styles ---------------------------------------------------------------
+  function drawPulse(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.42, w*0.7, c.a, 0.35);
+    radialGlow(ctx, w*0.5, h*0.42, w*0.5, c.b, 0.25);
+    var cx = w/2, cy = h*0.42;
+    for (var i = 6; i >= 1; i--) {
+      var r = (w*0.08)*i + rnd()*4;
+      ctx.save(); ctx.strokeStyle = i%2===0 ? c.a : c.b; ctx.globalAlpha = 0.15 + (6-i)*0.05;
+      ctx.lineWidth = w*0.005; ctx.shadowColor = i%2===0 ? c.a : c.b; ctx.shadowBlur = 20;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+    }
+    ctx.save(); ctx.fillStyle = '#fff'; ctx.shadowColor = c.b; ctx.shadowBlur = 40;
+    ctx.beginPath(); ctx.arc(cx, cy, w*0.05, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  }
+  function drawGrid(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.9, w, c.b, 0.3);
+    var horizon = h*0.5; ctx.save(); ctx.lineWidth = Math.max(1, w*0.003);
+    for (var i = 0; i < 14; i++) {
+      var t = i/14, y = horizon + (h-horizon)*(t*t);
+      ctx.strokeStyle = hexA(c.b, 0.15 + t*0.5); ctx.shadowColor = c.b; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    for (var j = -8; j <= 8; j++) {
+      var x = w/2 + j*(w/8);
+      ctx.strokeStyle = hexA(c.a, 0.25); ctx.shadowColor = c.a; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(w/2, horizon); ctx.lineTo(x, h); ctx.stroke();
+    }
+    ctx.restore(); radialGlow(ctx, w/2, horizon, w*0.28, c.a, 0.55);
+  }
+  function drawBlades(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.45, w*0.75, c.a, 0.22);
+    radialGlow(ctx, w*0.5, h*0.45, w*0.75, c.b, 0.22);
+    var cx = w/2, cy = h*0.46, len = w*0.34;
+    glowLine(ctx, cx-len*0.7, cy+len*0.7, cx+len*0.7, cy-len*0.7, c.b, w*0.03, 30);
+    glowLine(ctx, cx-len*0.7, cy+len*0.7, cx+len*0.7, cy-len*0.7, '#ffffff', w*0.008, 10);
+    glowLine(ctx, cx-len*0.7, cy-len*0.7, cx+len*0.7, cy+len*0.7, c.a, w*0.03, 30);
+    glowLine(ctx, cx-len*0.7, cy-len*0.7, cx+len*0.7, cy+len*0.7, '#ffffff', w*0.008, 10);
+  }
+  function drawWaveform(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.42, w*0.7, c.b, 0.28);
+    var midY = h*0.42, bars = 40, bw = w/bars;
+    for (var i = 0; i < bars; i++) {
+      var amp = (0.15 + rnd()*0.85)*(h*0.22), x = i*bw + bw*0.2, col = i%2===0 ? c.a : c.b;
+      ctx.save(); ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 14; ctx.globalAlpha = 0.9;
+      roundRect(ctx, x, midY-amp, bw*0.6, amp*2, bw*0.3); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawRings(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w/2, h/2, w*0.6, c.b, 0.3);
+    var cx = w/2, cy = h/2;
+    for (var i = 1; i <= 9; i++) {
+      var r = (w*0.055)*i + rnd()*3, col = i%2 ? c.a : c.b;
+      ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 0.75 - i*0.06; ctx.lineWidth = Math.max(1, w*0.006);
+      ctx.shadowColor = col; ctx.shadowBlur = 16; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+    }
+  }
+  function drawBurst(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w/2, h/2, w*0.6, c.a, 0.3);
+    var cx = w/2, cy = h/2, n = 28;
+    for (var i = 0; i < n; i++) {
+      var ang = (i/n)*Math.PI*2, len = w*(0.28 + rnd()*0.22), col = i%2 ? c.a : c.b;
+      ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 0.55; ctx.lineWidth = w*0.012;
+      ctx.shadowColor = col; ctx.shadowBlur = 10; ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(ang)*len, cy + Math.sin(ang)*len); ctx.stroke(); ctx.restore();
+    }
+    ctx.save(); ctx.fillStyle = '#fff'; ctx.shadowColor = c.b; ctx.shadowBlur = 30;
+    ctx.beginPath(); ctx.arc(cx, cy, w*0.045, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  }
+  function hexPath(ctx, x, y, s) { ctx.beginPath(); for (var i = 0; i < 6; i++) { var a = Math.PI/180*(60*i-90), px = x+s*Math.cos(a), py = y+s*Math.sin(a); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); }
+  function drawHex(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.4, w*0.6, c.b, 0.22);
+    var s = w*0.1, hw = Math.sqrt(3)*s;
+    ctx.lineWidth = Math.max(1, w*0.005);
+    for (var row = -1; row*s*1.5 < h+s; row++) for (var col = -1; col*hw < w+hw; col++) {
+      var x = col*hw + (row%2 ? hw/2 : 0), y = row*s*1.5, cc = (row+col)%2 ? c.a : c.b;
+      ctx.save(); ctx.strokeStyle = cc; ctx.globalAlpha = 0.3 + rnd()*0.45; ctx.shadowColor = cc; ctx.shadowBlur = 8;
+      hexPath(ctx, x, y, s); ctx.stroke(); ctx.restore();
+    }
+  }
+  function drawEqualizer(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.9, w, c.b, 0.28);
+    var bars = 16, bw = w/bars;
+    for (var i = 0; i < bars; i++) {
+      var bh = (0.15 + rnd()*0.7)*h*0.72, x = i*bw + bw*0.15, col = i%2 ? c.a : c.b;
+      var g = ctx.createLinearGradient(0, h, 0, h-bh); g.addColorStop(0, hexA(col, 0.2)); g.addColorStop(1, col);
+      ctx.save(); ctx.fillStyle = g; ctx.shadowColor = col; ctx.shadowBlur = 12;
+      roundRect(ctx, x, h-bh, bw*0.7, bh, bw*0.2); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawCircuit(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.5, w*0.6, c.b, 0.2);
+    var cell = w/8; ctx.lineWidth = Math.max(1, w*0.005);
+    for (var i = 0; i < 26; i++) {
+      var x = Math.floor(rnd()*8)*cell + cell*0.5, y = Math.floor(rnd()*8)*cell + cell*0.5, col = i%2 ? c.a : c.b;
+      ctx.save(); ctx.strokeStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8; ctx.globalAlpha = 0.6;
+      ctx.beginPath(); ctx.moveTo(x, y); var cx = x, cy = y, steps = 2 + Math.floor(rnd()*3);
+      for (var s2 = 0; s2 < steps; s2++) { if (rnd() < 0.5) cx += (rnd() < 0.5 ? -1 : 1)*cell; else cy += (rnd() < 0.5 ? -1 : 1)*cell; ctx.lineTo(cx, cy); }
+      ctx.stroke(); ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx, cy, w*0.012, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawStarfield(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.4, w*0.7, c.b, 0.25);
+    for (var i = 0; i < 120; i++) {
+      var x = rnd()*w, y = rnd()*h, r = rnd()*w*0.012 + 0.5, col = rnd() < 0.5 ? c.a : (rnd() < 0.5 ? c.b : '#fff');
+      ctx.save(); ctx.fillStyle = col; ctx.globalAlpha = 0.4 + rnd()*0.6; ctx.shadowColor = col; ctx.shadowBlur = 6;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawTriangles(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.5, w*0.7, c.a, 0.2);
+    for (var i = 0; i < 22; i++) {
+      var x = rnd()*w, y = rnd()*h, s = w*(0.08 + rnd()*0.14), a = rnd()*Math.PI*2, col = i%2 ? c.a : c.b;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.strokeStyle = col; ctx.globalAlpha = 0.5;
+      ctx.lineWidth = w*0.006; ctx.shadowColor = col; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s*0.87, s*0.5); ctx.lineTo(-s*0.87, s*0.5); ctx.closePath(); ctx.stroke(); ctx.restore();
+    }
+  }
+  function drawVortex(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w/2, h/2, w*0.6, c.b, 0.3);
+    var cx = w/2, cy = h/2;
+    for (var i = 12; i >= 1; i--) {
+      var sz = (w*0.04)*i, rot = i*0.2, col = i%2 ? c.a : c.b;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.15 + (12-i)*0.05; ctx.lineWidth = w*0.006; ctx.shadowColor = col; ctx.shadowBlur = 12;
+      ctx.strokeRect(-sz/2, -sz/2, sz, sz); ctx.restore();
+    }
+  }
+  function drawSpectrum(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w/2, h/2, w*0.5, c.b, 0.28);
+    var cx = w/2, cy = h/2, n = 44, ir = w*0.14;
+    for (var i = 0; i < n; i++) {
+      var ang = (i/n)*Math.PI*2, len = ir + (0.1 + rnd()*0.85)*w*0.22, col = i%2 ? c.a : c.b;
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = w*0.013; ctx.lineCap = 'round';
+      ctx.shadowColor = col; ctx.shadowBlur = 8; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang)*ir, cy + Math.sin(ang)*ir); ctx.lineTo(cx + Math.cos(ang)*len, cy + Math.sin(ang)*len); ctx.stroke(); ctx.restore();
+    }
+  }
+  function drawGlitch(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.5, w*0.7, c.b, 0.2);
+    for (var i = 0; i < 16; i++) {
+      var y = rnd()*h, bh = w*(0.01 + rnd()*0.05), off = (rnd()-0.5)*w*0.12;
+      ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = c.a; ctx.fillRect(off, y, w, bh);
+      ctx.fillStyle = c.b; ctx.fillRect(-off, y + bh*0.4, w, bh); ctx.restore();
+    }
+    ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = '#fff'; ctx.fillRect(0, h*0.47, w, Math.max(1, w*0.006)); ctx.restore();
+  }
+  function drawDiamond(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w/2, h*0.45, w*0.5, c.b, 0.3);
+    var cx = w/2, cy = h*0.45, s = w*0.26;
+    var pts = [[0,-s],[s*0.7,-s*0.3],[s*0.5,s],[-s*0.5,s],[-s*0.7,-s*0.3]];
+    ctx.save(); ctx.translate(cx, cy);
+    for (var i = 0; i < pts.length; i++) {
+      var p1 = pts[i], p2 = pts[(i+1)%pts.length];
+      ctx.beginPath(); ctx.moveTo(0, -s*0.1); ctx.lineTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.closePath();
+      var g = ctx.createLinearGradient(p1[0], p1[1], p2[0], p2[1]);
+      g.addColorStop(0, hexA(i%2 ? c.a : c.b, 0.5)); g.addColorStop(1, hexA(i%2 ? c.b : c.a, 0.15));
+      ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = hexA('#ffffff', 0.5); ctx.lineWidth = w*0.004; ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawOrbit(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w/2, h/2, w*0.5, c.a, 0.3);
+    var cx = w/2, cy = h/2;
+    for (var o = 0; o < 3; o++) {
+      var rx = w*(0.18 + o*0.11), ry = rx*0.5, rot = rnd()*Math.PI, col = o%2 ? c.a : c.b;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+      ctx.strokeStyle = hexA(col, 0.4); ctx.lineWidth = w*0.004;
+      ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
+      var pa = rnd()*Math.PI*2; ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.arc(Math.cos(pa)*rx, Math.sin(pa)*ry, w*0.02, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    ctx.save(); ctx.fillStyle = '#fff'; ctx.shadowColor = c.b; ctx.shadowBlur = 26;
+    ctx.beginPath(); ctx.arc(cx, cy, w*0.05, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  }
+  function drawAurora(ctx, w, h, c, rnd) {
+    for (var i = 0; i < 5; i++) {
+      var y = h*(0.2 + i*0.14) + (rnd()-0.5)*h*0.08, col = i%2 ? c.a : c.b;
+      var g = ctx.createLinearGradient(0, y-h*0.1, 0, y+h*0.1);
+      g.addColorStop(0, hexA(col, 0)); g.addColorStop(0.5, hexA(col, 0.38)); g.addColorStop(1, hexA(col, 0));
+      ctx.save(); ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(0, y);
+      ctx.bezierCurveTo(w*0.33, y-h*0.08, w*0.66, y+h*0.08, w, y);
+      ctx.lineTo(w, y+h*0.12);
+      ctx.bezierCurveTo(w*0.66, y+h*0.2, w*0.33, y+h*0.04, 0, y+h*0.12);
+      ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawBolt(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.5, w*0.6, c.b, 0.25);
+    for (var b = 0; b < 3; b++) {
+      var x = w*(0.3 + b*0.2), col = b%2 ? c.a : c.b;
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = w*(0.02 - b*0.004); ctx.lineJoin = 'round';
+      ctx.shadowColor = col; ctx.shadowBlur = 18; ctx.beginPath(); ctx.moveTo(x, h*0.08);
+      var yy = h*0.08, xx = x;
+      for (var s = 0; s < 6; s++) { yy += h*0.15; xx += (rnd()-0.5)*w*0.18; ctx.lineTo(xx, yy); }
+      ctx.stroke(); ctx.restore();
+    }
+  }
+
+  var STYLES = {
+    pulse: drawPulse, grid: drawGrid, blades: drawBlades, waveform: drawWaveform,
+    rings: drawRings, burst: drawBurst, hex: drawHex, equalizer: drawEqualizer,
+    circuit: drawCircuit, starfield: drawStarfield, triangles: drawTriangles, vortex: drawVortex,
+    spectrum: drawSpectrum, glitch: drawGlitch, diamond: drawDiamond, orbit: drawOrbit,
+    aurora: drawAurora, bolt: drawBolt
+  };
+  var STYLE_META = [
+    ['pulse','Neon Pulse'],['blades','Crossed Blades'],['grid','Cyber Grid'],['waveform','Waveform'],
+    ['equalizer','Equalizer'],['spectrum','Spectrum'],['rings','Ripple Rings'],['burst','Starburst'],
+    ['hex','Hex Grid'],['circuit','Circuit'],['triangles','Low-Poly'],['vortex','Vortex'],
+    ['orbit','Orbit'],['diamond','Prism'],['starfield','Starfield'],['aurora','Aurora'],
+    ['glitch','Glitch'],['bolt','Bolt']
+  ];
+
+  // ---- text overlay ---------------------------------------------------------
+  function fontStack() { return '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'; }
+  function drawTextBlock(ctx, w, h, title, subtitle) {
+    var g = ctx.createLinearGradient(0, h*0.55, 0, h);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.82)');
+    ctx.fillStyle = g; ctx.fillRect(0, h*0.55, w, h*0.45);
+    ctx.textAlign = 'center';
+    var t = (title || 'Playlist').toUpperCase(), fontSize = w*0.11;
+    ctx.font = '800 ' + fontSize + 'px ' + fontStack();
+    while (ctx.measureText(t).width > w*0.88 && fontSize > 18) { fontSize -= 2; ctx.font = '800 ' + fontSize + 'px ' + fontStack(); }
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12; ctx.fillStyle = '#ffffff';
+    ctx.fillText(t, w/2, h*0.86); ctx.restore();
+    if (subtitle) { ctx.font = '600 ' + (w*0.045) + 'px ' + fontStack(); ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.fillText(subtitle, w/2, h*0.94); }
+  }
+
+  // ---- public API -----------------------------------------------------------
+  var IconGenerator = {
+    styles: STYLE_META.map(function (m) { return { key: m[0], label: m[1] }; }),
+    accents: ACCENT_ORDER.map(function (k) { return { key: k, label: ACCENTS[k].label, a: ACCENTS[k].a, b: ACCENTS[k].b }; }),
+
+    generate: function (canvas, opts) {
+      opts = opts || {};
+      var ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+      var c = accent(opts.accent), rnd = seededRandom(String(opts.seed || opts.title || opts.style || 'playlist-studio'));
+      ctx.clearRect(0, 0, w, h);
+      fillBackground(ctx, w, h);
+      (STYLES[opts.style] || STYLES.pulse)(ctx, w, h, c, rnd);
+      var vg = ctx.createRadialGradient(w/2, h/2, w*0.3, w/2, h/2, w*0.72);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+      ctx.save(); ctx.strokeStyle = hexA(c.b, 0.5); ctx.lineWidth = Math.max(2, w*0.008);
+      ctx.shadowColor = c.b; ctx.shadowBlur = w*0.028; ctx.strokeRect(w*0.012, w*0.012, w-w*0.024, h-w*0.024); ctx.restore();
+      if (!opts.noText) drawTextBlock(ctx, w, h, opts.title, opts.subtitle);
+      return canvas;
+    },
+
+    toDataURL: function (canvas) {
+      try { return canvas.toDataURL('image/png'); }
+      catch (e) { console.error('Cover export failed:', e); return ''; }
+    },
+
+    loadCustomImage: function (canvas, file) {
+      return new Promise(function (resolve, reject) {
+        if (!file || !/^image\//.test(file.type)) { reject(new Error('Please choose a valid image file.')); return; }
+        var reader = new FileReader();
+        reader.onerror = function () { reject(new Error('Could not read the image file.')); };
+        reader.onload = function () {
+          var img = new Image();
+          img.onload = function () {
+            var ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+            var scale = Math.max(w/img.width, h/img.height), dw = img.width*scale, dh = img.height*scale;
+            ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.onerror = function () { reject(new Error('That image could not be decoded.')); };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  global.IconGenerator = IconGenerator;
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   Playlist Studio — bplistExporter.js
+   Builds a Beat Saber .bplist (JSON) from the matched song set
+   and triggers a browser download.
+   Exposes a single global: window.BplistExporter
+
+   Format notes (verified against the ScoreSaber Reloaded /
+   PlaylistManager playlist spec):
+     - Root: playlistTitle, playlistAuthor, playlistDescription,
+       image, songs[]
+     - Song: hash, songName, levelAuthorName, difficulties[]
+     - Difficulty: { characteristic, name }
+     - Difficulty "name" is PascalCase (Easy, Normal, Hard,
+       Expert, ExpertPlus). PlaylistManager parses it
+       case-insensitively, but PascalCase matches the documented
+       example and BeatLeader's own field verbatim.
+     - "image" is a full data URI (data:image/png;base64,…),
+       which BeatSaver and modern loaders emit and
+       PlaylistManager accepts.
+   ============================================================ */
+(function (global) {
+  'use strict';
+
+  // Canonical PascalCase difficulty names, keyed by a normalized lookup.
+  var CANON = {
+    easy: 'Easy', normal: 'Normal', hard: 'Hard',
+    expert: 'Expert', expertplus: 'ExpertPlus', 'expert+': 'ExpertPlus'
+  };
+
+  function mapDifficultyName(name) {
+    if (!name) return 'ExpertPlus';
+    var key = String(name).toLowerCase().replace(/\s+/g, '');
+    if (CANON[key]) return CANON[key];
+    // Unknown value: return with a leading capital, otherwise verbatim.
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  function sanitizeFilename(name) {
+    return (name || 'playlist')
+      .replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_').replace(/_{2,}/g, '_')
+      .slice(0, 60) || 'playlist';
+  }
+
+  var BplistExporter = {
+    /**
+     * Build the .bplist object. Entries sharing a hash are merged so
+     * their difficulties combine into one song object (Beat Saber
+     * expects a single entry per hash).
+     */
+    build: function (meta, songs) {
+      meta = meta || {};
+      var byHash = {}, order = [];
+      (songs || []).forEach(function (s) {
+        if (!s || !s.hash) return;
+        var key = s.hash.toLowerCase();
+        if (!byHash[key]) {
+          byHash[key] = { hash: s.hash, songName: s.songName || '', levelAuthorName: s.mapper || '', difficulties: [] };
+          order.push(key);
+        }
+        var entry = byHash[key];
+        (s.difficulties || []).forEach(function (d) {
+          var exists = entry.difficulties.some(function (e) {
+            return e.characteristic === d.characteristic && e.name === d.name;
+          });
+          if (!exists) entry.difficulties.push({ characteristic: d.characteristic, name: d.name });
+        });
+      });
+
+      var songObjects = order.map(function (k) { return byHash[k]; });
+      return {
+        playlistTitle: meta.title || 'Playlist Studio Mix',
+        playlistAuthor: meta.author || 'Playlist Studio',
+        playlistDescription: meta.description || '',
+        image: meta.image || '',
+        songs: songObjects,
+        customData: { generator: 'Playlist Studio', source: 'api.beatleader.xyz', songCount: songObjects.length }
+      };
+    },
+
+    toJSON: function (playlist) { return JSON.stringify(playlist, null, 2); },
+
+    /** Build + trigger a browser download. Returns unique-song count. */
+    download: function (meta, songs) {
+      var playlist = this.build(meta, songs);
+      if (!playlist.songs.length) throw new Error('No songs to export.');
+      var blob = new Blob([this.toJSON(playlist)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = sanitizeFilename(playlist.playlistTitle) + '.bplist';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+      return playlist.songs.length;
+    },
+
+    mapDifficultyName: mapDifficultyName
+  };
+
+  global.BplistExporter = BplistExporter;
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   Playlist Studio — app.js
+   A BeatLeader-sourced Beat Saber playlist BUILDER.
+
+   Workflow: filter → Fetch → add picks to "Your Playlist"
+   (a persistent basket) → reorder / cover → export .bplist.
+   The basket — not the raw match set — is what gets exported,
+   so you curate instead of dumping every match.
+
+   Connection: BeatLeader sends no CORS headers, so direct
+   browser fetch() fails. We try direct first (Auto), then race
+   a pool of relays (first valid wins, pinned for the scan),
+   with per-request timeouts. A custom/local relay is supported.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var API_BASE = 'https://api.beatleader.xyz';
+  var PAGE_SIZE = 100, PAGE_DELAY_MS = 130, RELAY_DELAY_MS = 220;
+  var RELAY_TIMEOUT = 9000, DIRECT_TIMEOUT = 4500;
+  var PRESET_KEY = 'playlistStudio.presets.v1';
+  var PLIST_KEY = 'playlistStudio.playlists.v1';
+  var SESSION_KEY = 'playlistStudio.session.v1';
+  var PLAYER_KEY = 'playlistStudio.player.v1';
+
+  var RELAYS = [
+    { id: 'proxy.cors.sh',  build: function (a) { return 'https://proxy.cors.sh/' + a; }, unwrap: JSON.parse },
+    { id: 'allorigins',     build: function (a) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(a); }, unwrap: JSON.parse },
+    { id: 'codetabs',       build: function (a) { return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(a); }, unwrap: JSON.parse },
+    { id: 'allorigins-get', build: function (a) { return 'https://api.allorigins.win/get?url=' + encodeURIComponent(a); }, unwrap: function (t) { return JSON.parse(JSON.parse(t).contents); } },
+    { id: 'corsproxy.io',   build: function (a) { return 'https://corsproxy.io/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse }
+  ];
+
+  var state = { raw: [], filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', player: null, scores: {}, syncing: false };
+
+  function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {};
+  ['metaTitle','metaAuthor','metaDescription',
+   'fType','fSort','fOrder','fMaxScan','connMode','customProxy','useLocalRelayBtn','clearRelayBtn','relayAdv',
+   'presetName','presetSave','presetSelect','presetLoad','presetDelete','presetPanel',
+   'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','accMax','previewScore',
+   'starMin','starMax','starMinNum','starMaxNum','starBandFill','starRangeLabel',
+   'fMapper','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax','diffEnable','diffChips',
+   'fetchBtn','fetchBtn2','resetBtn','downloadBtn','downloadBtn2',
+   'fetchProgress','barFill','fetchProgressText','statusPill','statusText','brandCount',
+   'matchCount','basketCount','basketTime','basketUnique','counterMeta',
+   'resultCount','playlistCount','resultList','basketList',
+   'addAllBtn','addTopBtn','addTopN','addRandomBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
+   'coverCanvas','coverStyleGrid','coverAccentRow','coverText','regenCoverBtn',
+   'useCustomImage','customFileField','customImageInput',
+   'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
+   'exportHint','exportValidation',
+   'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
+   'toast','tipbox'
+  ].forEach(function (id) { el[id] = $(id); });
+
+  // ---- helpers --------------------------------------------------------------
+  function num(input, fb) { var v = parseFloat(input.value); return isNaN(v) ? fb : v; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function checkedValues(id) { return Array.prototype.slice.call(document.querySelectorAll('#' + id + ' input:checked')).map(function (c) { return c.value; }); }
+  function fmtDur(s) { s = Math.round(s || 0); var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60; var mm = (h && m<10?'0':'')+m; return (h?h+':':'')+mm+':'+(ss<10?'0':'')+ss; }
+  function keyOf(e) { return e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName; }
+  function scoreFor(e) { return e && e.hash ? (state.scores[e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName] || null) : null; }
+  function myVal(sc, key) { if (!sc) return null; if (key === 'myAcc') return sc.a; if (key === 'myRank') return sc.rk; if (key === 'myDate') return sc.t; return (sc.fa || 0) - sc.a; }
+  function fmtDate(t) { if (!t) return ''; var d = new Date(t * 1000); return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear(); }
+  function setStatus(text, kind) { el.statusText.textContent = text; el.statusPill.className = 'status-pill' + (kind ? ' ' + kind : ''); }
+  var toastTimer;
+  function toast(msg, kind) {
+    el.toast.className = 'toast' + (kind ? ' ' + kind : '') + ' show'; el.toast.textContent = msg;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.toast.className = 'toast' + (kind ? ' ' + kind : ''); }, 4200);
+  }
+
+  // ---- filters --------------------------------------------------------------
+  function getFilters() {
+    var mapperTerms = el.fMapper.value.split(',').map(function (m) { return m.trim().toLowerCase(); }).filter(Boolean);
+    return {
+      type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value,
+      maxScan: clamp(num(el.fMaxScan, 300), 20, 5000),
+      starMin: clamp(num(el.starMinNum, 0), 0, 15), starMax: clamp(num(el.starMaxNum, 15), 0, 15),
+      mapperTerms: mapperTerms, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
+      diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
+      playStatus: el.playStatus.value, accMax: num(el.accMax, null),
+      npsMin: num(el.fNpsMin, null), npsMax: num(el.fNpsMax, null),
+      durMin: num(el.fDurMin, null), durMax: num(el.fDurMax, null),
+      bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null)
+    };
+  }
+  function buildUrl(page, f) {
+    var p = new URLSearchParams();
+    p.set('page', page); p.set('count', PAGE_SIZE); p.set('sortBy', 'stars'); p.set('order', f.order); p.set('type', f.type);
+    if (f.type !== 'unranked') { if (f.starMin > 0) p.set('stars_from', f.starMin); if (f.starMax < 15) p.set('stars_to', f.starMax); }
+    var serverSearch = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
+    if (serverSearch) p.set('search', serverSearch);
+    if (f.modes.length === 1) p.set('mode', f.modes[0]);
+    return API_BASE + '/leaderboards?' + p.toString();
+  }
+
+  // ---- connection engine ----------------------------------------------------
+  function fetchTimeout(url, ms) {
+    var ctrl = new AbortController(); var t = setTimeout(function () { ctrl.abort(); }, ms);
+    return fetch(url, { signal: ctrl.signal }).then(function (r) { clearTimeout(t); return r; }, function (e) { clearTimeout(t); throw e; });
+  }
+  function customAdapter() {
+    var p = el.customProxy.value.trim(); if (!p) return null;
+    return { id: 'custom', build: function (a) {
+        if (p.indexOf('{url}') !== -1) return p.replace('{url}', encodeURIComponent(a));
+        if (p.charAt(p.length - 1) === '=') return p + encodeURIComponent(a);
+        return p + a;
+      }, unwrap: function (t) { var j = JSON.parse(t); return (j && j.contents) ? JSON.parse(j.contents) : j; } };
+  }
+  function DATA_VALID(j) { return j && Array.isArray(j.data); }
+  function viaAdapter(adapter, apiUrl, isValid) {
+    isValid = isValid || DATA_VALID;
+    return fetchTimeout(adapter.build(apiUrl), RELAY_TIMEOUT)
+      .then(function (res) { if (res.status === 429) throw new Error('rate-limited'); if (!res.ok) throw new Error('http ' + res.status); return res.text(); })
+      .then(function (txt) { var j = adapter.unwrap(txt); if (!isValid(j)) throw new Error('unexpected response'); return j; });
+  }
+  function viaDirect(apiUrl, isValid) {
+    isValid = isValid || DATA_VALID;
+    return fetchTimeout(apiUrl, DIRECT_TIMEOUT)
+      .then(function (res) { if (!res.ok) throw new Error('http ' + res.status); return res.json(); })
+      .then(function (j) { if (!isValid(j)) throw new Error('unexpected response'); return j; });
+  }
+  function raceRelays(apiUrl, isValid) {
+    var custom = customAdapter(); var pool = custom ? [custom] : RELAYS;
+    return new Promise(function (resolve, reject) {
+      var pending = pool.length, settled = false, errs = [];
+      pool.forEach(function (ad) {
+        viaAdapter(ad, apiUrl, isValid).then(function (j) { if (settled) return; settled = true; state.pinnedRelay = ad; resolve({ adapter: ad, data: j }); },
+          function (e) { errs.push(ad.id + ' (' + e.message + ')'); if (--pending === 0 && !settled) reject(new Error('All relays failed: ' + errs.join(', ') + '.')); });
+      });
+    });
+  }
+  function fetchApi(apiUrl, isValid) {
+    var mode = el.connMode.value;
+    if (state.pinnedRelay) {
+      return viaAdapter(state.pinnedRelay, apiUrl, isValid).catch(function () { state.pinnedRelay = null; return raceRelays(apiUrl, isValid).then(function (r) { return r.data; }); });
+    }
+    if (mode === 'direct') return viaDirect(apiUrl, isValid).catch(function () { throw new Error('Direct connection blocked by BeatLeader (CORS) or timed out. Switch Connection to Auto or Relay.'); });
+    if (mode === 'relay') { setStatus('Finding a working relay…', 'busy'); return raceRelays(apiUrl, isValid).then(function (r) { setStatus('Relay: ' + r.adapter.id, 'on'); toast('Connected via ' + r.adapter.id + '.', 'ok'); return r.data; }); }
+    setStatus('Connecting…', 'busy');
+    return viaDirect(apiUrl, isValid).catch(function () {
+      setStatus('Direct blocked — finding a relay…', 'busy');
+      return raceRelays(apiUrl, isValid).then(function (r) { setStatus('Relay: ' + r.adapter.id, 'on'); toast('BeatLeader blocks direct browser access — using relay: ' + r.adapter.id + '.', 'warn'); return r.data; });
+    });
+  }
+  // Quieter fetch for enrichment: reuse the pinned relay, else race — skip the slow direct probe.
+  function relayFetch(apiUrl, isValid) {
+    if (state.pinnedRelay) return viaAdapter(state.pinnedRelay, apiUrl, isValid).catch(function () { state.pinnedRelay = null; return raceRelays(apiUrl, isValid).then(function (r) { return r.data; }); });
+    if (el.connMode.value === 'direct') return viaDirect(apiUrl, isValid);
+    return raceRelays(apiUrl, isValid).then(function (r) { return r.data; });
+  }
+
+  // ---- normalize + fetch ----------------------------------------------------
+  function normalize(item) {
+    var song = item.song || {}, diff = item.difficulty || {};
+    return {
+      leaderboardId: item.id || '', hash: (song.hash || '').toString(),
+      songName: song.name || 'Unknown', subName: song.subName || '',
+      mapper: song.mapper || song.author || 'Unknown', author: song.author || '',
+      bpm: song.bpm || 0, duration: song.duration || 0, cover: song.coverImage || '',
+      stars: diff.stars || 0, difficultyName: diff.difficultyName || 'ExpertPlus', modeName: diff.modeName || 'Standard',
+      nps: diff.nps || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0
+    };
+  }
+  function runFetch() {
+    if (state.fetching) return;
+    var f = getFilters(); state.fetching = true; state.pinnedRelay = null;
+    [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = true; });
+    el.fetchProgress.hidden = false; el.fetchProgressText.textContent = 'Connecting…'; el.barFill.style.width = '8%';
+    var collected = [], page = 1;
+    function step() {
+      return fetchApi(buildUrl(page, f)).then(function (data) {
+        var items = (data && data.data) || [], total = (data && data.metadata && data.metadata.total) || 0;
+        var cap = Math.min(f.maxScan, total || f.maxScan);
+        items.forEach(function (it) { collected.push(normalize(it)); });
+        var pct = cap ? Math.max(8, Math.min(100, Math.round((collected.length / cap) * 100))) : 100;
+        el.barFill.style.width = pct + '%';
+        el.fetchProgressText.textContent = 'Scanned ' + collected.length + (total ? ' of ' + Math.min(cap, total) : '') + ' maps' + (state.pinnedRelay ? ' · relay ' + state.pinnedRelay.id : '') + '…';
+        var more = items.length === PAGE_SIZE;
+        if (collected.length < f.maxScan && more) { page++; return delay(state.pinnedRelay ? RELAY_DELAY_MS : PAGE_DELAY_MS).then(step); }
+      });
+    }
+    step().then(function () {
+        state.raw = collected; state.lastSig = serverSig(f); el.barFill.style.width = '100%';
+        if (!collected.length) { setStatus('No maps returned', 'err'); toast('BeatLeader returned no maps for this query.', 'warn'); }
+        else { setStatus('Loaded ' + collected.length + ' maps' + (state.pinnedRelay ? ' · ' + state.pinnedRelay.id : ''), 'on'); toast('Loaded ' + collected.length + ' maps — now add the ones you want.', 'ok'); }
+        applyClientFilters();
+      }).catch(function (err) {
+        console.error(err); setStatus('Fetch failed', 'err'); var msg = err.message || 'Fetch failed.';
+        el.counterMeta.textContent = msg; toast(msg, 'err');
+        if (/relays failed/i.test(msg)) toast('All public relays are down. Run relay.js and click "Use local relay".', 'warn');
+      }).then(function () {
+        state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; });
+        setTimeout(function () { el.fetchProgress.hidden = true; el.barFill.style.width = '0%'; }, 800);
+      });
+  }
+
+  // ---- client filtering -----------------------------------------------------
+  function applyClientFilters() {
+    var f = getFilters();
+    var out = state.raw.filter(function (s) {
+      if (s.stars > 0 && (s.stars < f.starMin || s.stars > f.starMax)) return false;
+      if (f.modes.length && f.modes.indexOf(s.modeName) === -1) return false;
+      if (f.diffEnabled && f.diffs.length && f.diffs.indexOf(s.difficultyName) === -1) return false;
+      if (state.player && (f.playStatus !== 'any' || f.accMax != null)) {
+        var sc = scoreFor(s), played = !!sc;
+        if (f.playStatus === 'unplayed' && played) return false;
+        if (f.playStatus === 'played' && !played) return false;
+        if (f.playStatus === 'fc' && !(sc && sc.fc)) return false;
+        if (f.playStatus === 'nofc' && (!played || sc.fc)) return false;
+        if (f.playStatus === 'nearfc' && (!played || sc.fc || !(sc.m <= 3 && (sc.fa || 0) >= 0.90))) return false;
+        if (f.accMax != null) { if (!played) return false; if (sc.a * 100 >= f.accMax) return false; }
+      }
+      if (f.npsMin != null && s.nps < f.npsMin) return false;
+      if (f.npsMax != null && s.nps > f.npsMax) return false;
+      if (f.durMin != null && s.duration < f.durMin) return false;
+      if (f.durMax != null && s.duration > f.durMax) return false;
+      if (f.bpmMin != null && s.bpm < f.bpmMin) return false;
+      if (f.bpmMax != null && s.bpm > f.bpmMax) return false;
+      if (f.mapperTerms.length) { var hay = (s.mapper + ' ' + s.author).toLowerCase(); if (!f.mapperTerms.some(function (t) { return hay.indexOf(t) !== -1; })) return false; }
+      if (f.search) { var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase(); if (blob.indexOf(f.search.toLowerCase()) === -1) return false; }
+      return true;
+    });
+    var key = f.sort;
+    var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
+    if (isMy && state.player) {
+      out.sort(function (a, b) {
+        var va = myVal(scoreFor(a), key), vb = myVal(scoreFor(b), key);
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1; if (vb == null) return -1;
+        return f.order === 'asc' ? va - vb : vb - va;
+      });
+    } else {
+      out.sort(function (a, b) { var av = a[key] != null ? a[key] : 0, bv = b[key] != null ? b[key] : 0; return f.order === 'asc' ? av - bv : bv - av; });
+    }
+    state.filtered = out;
+    renderAll();
+    updateStale();
+  }
+
+  // Signature of filters that change the SERVER query; when it drifts from the
+  // last fetch, the scanned set is incomplete and a re-fetch is warranted.
+  function serverSig(f) {
+    return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
+  }
+  function updateStale() {
+    var stale = state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
+    el.staleHint.hidden = !stale;
+    el.fetchBtn.classList.toggle('stale', stale);
+    el.fetchBtn2.classList.toggle('stale', stale);
+  }
+
+  // ---- basket ---------------------------------------------------------------
+  function collapseOn() { return el.collapseSongs.checked; }
+  function displayResults() {
+    if (!collapseOn()) return state.filtered;
+    var seen = {}, out = [];
+    state.filtered.forEach(function (e) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; out.push(e); } });
+    return out;
+  }
+  function inBasket(e) {
+    if (collapseOn()) return state.basket.some(function (b) { return b.hash.toLowerCase() === e.hash.toLowerCase(); });
+    return state.basket.some(function (b) { return keyOf(b) === keyOf(e); });
+  }
+  function addEntry(e) {
+    if (inBasket(e)) return false;
+    state.basket.push(e); return true;
+  }
+  function findFiltered(key) { for (var i = 0; i < state.filtered.length; i++) if (keyOf(state.filtered[i]) === key) return state.filtered[i]; return null; }
+  function basketIndex(key) { for (var i = 0; i < state.basket.length; i++) if (keyOf(state.basket[i]) === key) return i; return -1; }
+
+  function addAll() {
+    var before = state.basket.length; displayResults().forEach(addEntry);
+    var n = state.basket.length - before; toast(n ? 'Added ' + n + ' to your playlist.' : 'Those are already in your playlist.', n ? 'ok' : 'warn'); renderAll();
+  }
+  function addTop() {
+    var n = clamp(num(el.addTopN, 20), 1, 500), before = state.basket.length;
+    displayResults().slice(0, n).forEach(addEntry);
+    var added = state.basket.length - before; toast(added ? 'Added top ' + added + '.' : 'Those are already in your playlist.', added ? 'ok' : 'warn'); renderAll();
+  }
+  function addRandom() {
+    var pool = displayResults().slice(); if (!pool.length) return;
+    for (var i = pool.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+    var n = clamp(num(el.addTopN, 20), 1, 500), before = state.basket.length;
+    pool.slice(0, n).forEach(addEntry);
+    var added = state.basket.length - before;
+    toast(added ? 'Added ' + added + ' random map' + (added === 1 ? '' : 's') + '.' : 'Those are already in your playlist.', added ? 'ok' : 'warn'); renderAll();
+  }
+  function clearBasket() { if (!state.basket.length) return; state.basket = []; toast('Playlist cleared.', 'ok'); renderAll(); }
+  function shuffleBasket() {
+    for (var i = state.basket.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; }
+    toast('Shuffled.', 'ok'); renderAll();
+  }
+  function sortBasketByStar() { state.basket.sort(function (a, b) { return (a.stars || 0) - (b.stars || 0); }); toast('Sorted by ★ (warmup → hard).', 'ok'); renderAll(); }
+  function moveBasket(key, dir) {
+    var i = basketIndex(key); if (i < 0) return; var j = i + dir; if (j < 0 || j >= state.basket.length) return;
+    var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; renderAll();
+  }
+  function removeBasket(key) { var i = basketIndex(key); if (i < 0) return; state.basket.splice(i, 1); renderAll(); }
+
+  function uniqueHashes(list) { var m = {}; list.forEach(function (s) { if (s.hash) m[s.hash.toLowerCase()] = true; }); return Object.keys(m).length; }
+  function basketRuntime() { var seen = {}, total = 0; state.basket.forEach(function (e) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; total += e.duration || 0; } }); return total; }
+  function playlistStats() {
+    var rated = state.basket.filter(function (e) { return e.stars > 0; });
+    if (!rated.length) return null;
+    var min = Infinity, max = -Infinity, sum = 0, npsSum = 0, npsN = 0;
+    rated.forEach(function (e) { if (e.stars < min) min = e.stars; if (e.stars > max) max = e.stars; sum += e.stars; if (e.nps) { npsSum += e.nps; npsN++; } });
+    return { min: min, max: max, avg: sum / rated.length, nps: npsN ? npsSum / npsN : 0, rated: rated.length };
+  }
+  var sessionTimer;
+  function saveSession() {
+    clearTimeout(sessionTimer);
+    sessionTimer = setTimeout(function () {
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value } })); } catch (e) {}
+    }, 600);
+  }
+  function restoreSession() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      if (s && Array.isArray(s.entries) && s.entries.length) {
+        state.basket = s.entries;
+        if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; }
+        toast('Restored your last playlist (' + state.basket.length + ' maps). Clear to start fresh.', 'ok');
+      }
+    } catch (e) {}
+  }
+
+  // ---- rendering ------------------------------------------------------------
+  function coverImg(e) {
+    return e.cover
+      ? '<img class="song-cover" src="' + esc(e.cover) + '" alt="" loading="lazy" onerror="this.classList.add(\'ph\');this.removeAttribute(\'src\');this.textContent=\'♪\';">'
+      : '<div class="song-cover ph">♪</div>';
+  }
+  function badges(e) {
+    var b = [];
+    b.push(e.stars > 0 ? '<span class="rb rb-star">' + e.stars.toFixed(2) + '★</span>' : '<span class="rb rb-ur">UR</span>');
+    b.push('<span class="rb rb-diff">' + esc(e.difficultyName ? (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) : 'All diffs') + '</span>');
+    if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
+    if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
+    if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
+    if (state.player) {
+      var sc = scoreFor(e);
+      if (sc) {
+        var acc = (sc.a * 100).toFixed(2) + '%';
+        if (sc.fc) b.push('<span class="rb rb-you fc" title="Full combo · rank #' + sc.rk + '">FC ' + acc + '</span>');
+        else b.push('<span class="rb rb-you" title="rank #' + sc.rk + (sc.m ? ' · ' + sc.m + ' miss' : '') + '">' + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
+      } else {
+        b.push('<span class="rb rb-new" title="You haven\'t played this yet">NEW</span>');
+      }
+    }
+    return b.join('');
+  }
+  function infoBlock(e) {
+    return '<div class="song-info"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
+      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + '</div></div>';
+  }
+  function blLink(e) {
+    return e.leaderboardId ? '<a class="row-link" href="https://beatleader.xyz/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener" title="Open on BeatLeader">↗</a>' : '';
+  }
+  function renderResults() {
+    var rows = displayResults(), list = el.resultList;
+    el.resultCount.textContent = rows.length ? rows.length + (collapseOn() && rows.length !== state.filtered.length ? ' songs' : '') : '';
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-ic">◇</div>' +
+        (state.raw.length ? '<p><b>No matches.</b></p><p>Loosen your filters or raise "Max maps to scan".</p>' : '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>') + '</div>';
+      return;
+    }
+    var MAX = 400, frag = '';
+    rows.slice(0, MAX).forEach(function (e) {
+      var added = inBasket(e);
+      frag += '<div class="song-row" data-key="' + esc(keyOf(e)) + '">' + coverImg(e) + infoBlock(e) +
+        '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
+        (added ? '<button class="row-btn added" disabled title="In your playlist">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
+        '</div></div>';
+    });
+    if (rows.length > MAX) frag += '<div class="list-more">+ ' + (rows.length - MAX) + ' more — narrow your filters to see them</div>';
+    list.innerHTML = frag;
+  }
+  function renderBasket() {
+    var list = el.basketList, n = state.basket.length;
+    el.playlistCount.textContent = n ? n + (n === 1 ? ' map' : ' maps') : '';
+    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above — or hit <b>+ Add all</b>.</p></div>'; return; }
+    var last = n - 1, frag = '';
+    state.basket.forEach(function (e, i) {
+      frag += '<div class="song-row bk" data-key="' + esc(keyOf(e)) + '"><span class="bk-idx">' + (i + 1) + '</span>' + coverImg(e) + infoBlock(e) +
+        '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) + '<div class="reorder-col">' +
+          '<button class="reorder" data-act="up" ' + (i === 0 ? 'disabled' : '') + ' title="Move up">▲</button>' +
+          '<button class="reorder" data-act="down" ' + (i === last ? 'disabled' : '') + ' title="Move down">▼</button></div>' +
+          '<button class="row-btn rm" data-act="remove" title="Remove">×</button></div></div>';
+    });
+    list.innerHTML = frag;
+  }
+  function renderSummary() {
+    var matched = state.filtered.length, entries = state.basket.length, uniq = uniqueHashes(state.basket);
+    el.matchCount.textContent = matched;
+    el.basketCount.textContent = entries;
+    el.basketUnique.textContent = uniq;
+    el.basketTime.textContent = fmtDur(basketRuntime());
+    el.brandCount.textContent = uniq + ' in playlist';
+    if (!state.raw.length) el.counterMeta.textContent = 'Set filters and fetch to begin.';
+    else if (!entries) el.counterMeta.textContent = matched + ' maps matched. Add the ones you want to build your playlist.';
+    else {
+      var st = playlistStats();
+      var line = uniq + ' unique song' + (uniq === 1 ? '' : 's') + ' · ' + entries + ' map' + (entries === 1 ? '' : 's') + ' · ' + fmtDur(basketRuntime()) + ' runtime';
+      if (st) line += ' · ★' + st.min.toFixed(1) + '–' + st.max.toFixed(1) + ' (avg ' + st.avg.toFixed(1) + ')' + (st.nps ? ' · ' + st.nps.toFixed(1) + ' NPS avg' : '');
+      if (state.player) {
+        var played = 0, fc = 0, accSum = 0;
+        state.basket.forEach(function (e) { var sc = scoreFor(e); if (sc) { played++; if (sc.fc) fc++; accSum += sc.a; } });
+        line += played ? ' · you: ' + fc + '/' + entries + ' FC, ' + (accSum / played * 100).toFixed(1) + '% avg' : ' · you: none played yet';
+      }
+      el.counterMeta.textContent = line + '.';
+    }
+  }
+  function renderControls() {
+    var hasResults = state.filtered.length > 0, hasBasket = state.basket.length > 0;
+    el.addAllBtn.disabled = !hasResults; el.addTopBtn.disabled = !hasResults; el.addRandomBtn.disabled = !hasResults;
+    el.shuffleBtn.disabled = el.sortPlaylistBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
+    el.enrichBtn.disabled = state.enriching || needsEnrich().length === 0;
+    el.refreshStarsBtn.disabled = state.enriching || !hasBasket;
+    [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.disabled = !hasBasket; });
+  }
+  function renderExport() {
+    var entries = state.basket.length, uniq = uniqueHashes(state.basket);
+    el.exportHint.textContent = entries ? uniq + ' songs · ' + entries + ' maps · ' + fmtDur(basketRuntime()) : 'Your playlist is empty.';
+    var items = [];
+    if (!entries) items.push({ level: 'ok', ico: '◇', msg: 'Add songs to Your Playlist, then export.' });
+    else {
+      items.push({ level: 'ok', ico: '✓', msg: uniq + ' unique song' + (uniq === 1 ? '' : 's') + ' (' + entries + ' map' + (entries === 1 ? '' : 's') + ') · ' + fmtDur(basketRuntime()) + ' total.' });
+      var missing = state.basket.filter(function (s) { return !s.hash; }).length;
+      if (missing) items.push({ level: 'warn', ico: '!', msg: missing + ' entr' + (missing === 1 ? 'y is' : 'ies are') + ' missing a hash and will be skipped.' });
+      var imgKB = Math.round((state.coverDataUrl || '').length / 1024);
+      items.push({ level: imgKB > 1400 ? 'warn' : 'ok', ico: imgKB > 1400 ? '!' : '✓', msg: 'Cover embedded (~' + imgKB + ' KB Base64)' + (imgKB > 1400 ? ' — large covers can slow some clients.' : '.') });
+      items.push({ level: 'ok', ico: '✓', msg: 'Difficulty names PascalCase (ExpertPlus) — PlaylistManager compliant. Play order = list order.' });
+    }
+    el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
+  }
+  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); saveSession(); }
+
+  // ---- cover ----------------------------------------------------------------
+  function coverSubtitle() {
+    var n = uniqueHashes(state.basket), st = playlistStats();
+    if (st) return st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★' + (n ? '  ·  ' + n + ' songs' : '');
+    var f = getFilters();
+    var base = f.type === 'unranked' ? 'Unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★';
+    return base + (n ? '  ·  ' + n + ' songs' : '');
+  }
+  function updateCover(force) {
+    if (state.usingCustom) return;
+    var title = el.coverText.value.trim() || el.metaTitle.value.trim() || 'Playlist Studio';
+    var subtitle = coverSubtitle();
+    // Skip the expensive canvas redraw + toDataURL when nothing that affects the
+    // cover has changed (e.g. typing in a search filter). Same pixels either way.
+    var sig = title + ' ' + subtitle + ' ' + state.coverStyle + ' ' + state.coverAccent;
+    if (!force && sig === state._coverSig && state.coverDataUrl) return;
+    state._coverSig = sig;
+    IconGenerator.generate(el.coverCanvas, { style: state.coverStyle, accent: state.coverAccent, title: title, subtitle: subtitle, seed: title + '|' + state.coverStyle });
+    state.coverDataUrl = IconGenerator.toDataURL(el.coverCanvas);
+  }
+  // Build the clickable style thumbnails + accent swatches.
+  function coverHighlight(container, sel, active) { container.querySelectorAll(sel).forEach(function (x) { x.classList.remove('active'); }); active.classList.add('active'); }
+  function renderCoverThumbs() {
+    var thumbs = el.coverStyleGrid.querySelectorAll('.thumb');
+    for (var i = 0; i < thumbs.length; i++) {
+      IconGenerator.generate(thumbs[i].querySelector('canvas'), { style: thumbs[i].dataset.style, accent: state.coverAccent, seed: thumbs[i].dataset.style, noText: true });
+    }
+  }
+  function buildCoverPickers() {
+    el.coverStyleGrid.innerHTML = '';
+    IconGenerator.styles.forEach(function (s) {
+      var btn = document.createElement('button'); btn.type = 'button';
+      btn.className = 'thumb' + (s.key === state.coverStyle ? ' active' : ''); btn.dataset.style = s.key; btn.title = s.label;
+      var cv = document.createElement('canvas'); cv.width = 120; cv.height = 120; btn.appendChild(cv);
+      var lbl = document.createElement('span'); lbl.className = 'thumb-lbl'; lbl.textContent = s.label; btn.appendChild(lbl);
+      btn.addEventListener('click', function () { state.coverStyle = this.dataset.style; coverHighlight(el.coverStyleGrid, '.thumb', this); updateCover(); });
+      el.coverStyleGrid.appendChild(btn);
+    });
+    renderCoverThumbs();
+    el.coverAccentRow.innerHTML = '';
+    IconGenerator.accents.forEach(function (a) {
+      var sw = document.createElement('button'); sw.type = 'button';
+      sw.className = 'swatch-chip' + (a.key === state.coverAccent ? ' active' : ''); sw.dataset.accent = a.key; sw.title = a.label;
+      sw.style.background = 'linear-gradient(135deg,' + a.a + ',' + a.b + ')';
+      sw.addEventListener('click', function () { state.coverAccent = this.dataset.accent; coverHighlight(el.coverAccentRow, '.swatch-chip', this); renderCoverThumbs(); updateCover(); });
+      el.coverAccentRow.appendChild(sw);
+    });
+  }
+  function handleCustomImage(file) {
+    IconGenerator.loadCustomImage(el.coverCanvas, file)
+      .then(function (d) { state.coverDataUrl = d; state.usingCustom = true; renderExport(); toast('Custom cover loaded.', 'ok'); })
+      .catch(function (err) { toast(err.message, 'err'); });
+  }
+  // Paint a data-URL cover (used when importing a .bplist that carries an image).
+  function setCoverFromDataUrl(dataUrl) {
+    var img = new Image();
+    img.onload = function () {
+      var ctx = el.coverCanvas.getContext('2d'), w = el.coverCanvas.width, h = el.coverCanvas.height;
+      ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+      var sc = Math.max(w / img.width, h / img.height), dw = img.width * sc, dh = img.height * sc;
+      ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    };
+    img.src = dataUrl;
+    state.coverDataUrl = dataUrl; state.usingCustom = true;
+    el.useCustomImage.checked = true; el.customFileField.hidden = false;
+  }
+
+  // ---- export ---------------------------------------------------------------
+  function doDownload() {
+    if (!state.basket.length) return;
+    if (!state.coverDataUrl) updateCover();
+    var songs = state.basket.map(function (s) {
+      var diffs = s.difficultyName ? [{ characteristic: s.modeName || 'Standard', name: BplistExporter.mapDifficultyName(s.difficultyName) }] : [];
+      return { hash: s.hash, songName: s.songName, mapper: s.mapper, difficulties: diffs };
+    });
+    var f = getFilters(), uniq = uniqueHashes(state.basket);
+    var autoDesc = uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' +
+      (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★') + '. Built with Playlist Studio (BeatLeader).';
+    var meta = { title: el.metaTitle.value.trim() || 'Playlist Studio Mix', author: el.metaAuthor.value.trim() || 'Playlist Studio', description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '' };
+    try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist.', 'ok'); }
+    catch (err) { toast(err.message, 'err'); }
+  }
+
+  // ---- star range -----------------------------------------------------------
+  function refreshStarUI() {
+    var lo = clamp(num(el.starMinNum, 0), 0, 15), hi = clamp(num(el.starMaxNum, 15), 0, 15);
+    el.starMin.value = lo; el.starMax.value = hi;
+    el.starBandFill.style.left = (lo / 15 * 100) + '%'; el.starBandFill.style.right = ((15 - hi) / 15 * 100) + '%';
+    el.starRangeLabel.textContent = lo.toFixed(1) + '★ – ' + hi.toFixed(1) + '★';
+  }
+  function setStar(side, value) {
+    var lo = clamp(num(el.starMinNum, 0), 0, 15), hi = clamp(num(el.starMaxNum, 15), 0, 15);
+    value = clamp(value, 0, 15);
+    if (side === 'min') lo = Math.min(value, hi); else hi = Math.max(value, lo);
+    el.starMinNum.value = lo.toFixed(1); el.starMaxNum.value = hi.toFixed(1);
+    refreshStarUI(); applyClientFilters();
+  }
+
+  // ---- presets (localStorage) ----------------------------------------------
+  function lsGet() { try { return JSON.parse(localStorage.getItem(PRESET_KEY) || '{}'); } catch (e) { return {}; } }
+  function lsSet(o) { try { localStorage.setItem(PRESET_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
+  function captureFilters() {
+    return { type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value, maxScan: el.fMaxScan.value,
+      starMin: el.starMinNum.value, starMax: el.starMaxNum.value, mapper: el.fMapper.value, search: el.fSearch.value,
+      modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
+      npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value,
+      durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value };
+  }
+  function applyPreset(p) {
+    el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc';
+    el.fMaxScan.value = p.maxScan || '300'; el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
+    el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
+    el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fDurMin.value = p.durMin || '';
+    el.fDurMax.value = p.durMax || ''; el.fBpmMin.value = p.bpmMin || ''; el.fBpmMax.value = p.bpmMax || '';
+    var modes = p.modes || ['Standard'];
+    document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = modes.indexOf(c.value) !== -1; });
+    el.diffEnable.checked = !!p.diffEnabled;
+    var diffs = p.diffs || ['Easy', 'Normal', 'Hard', 'Expert', 'ExpertPlus'];
+    document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = diffs.indexOf(c.value) !== -1; });
+    el.diffChips.classList.toggle('off', !el.diffEnable.checked);
+    refreshStarUI(); applyClientFilters();
+  }
+  function populatePresets() {
+    var o = lsGet(), names = Object.keys(o).sort();
+    el.presetSelect.innerHTML = '<option value="">— saved presets —</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+  }
+  function savePreset() {
+    var name = el.presetName.value.trim(); if (!name) { toast('Give the preset a name first.', 'warn'); return; }
+    var o = lsGet(); o[name] = captureFilters();
+    if (lsSet(o)) { populatePresets(); el.presetSelect.value = name; el.presetName.value = ''; toast('Preset "' + name + '" saved.', 'ok'); }
+    else toast('Could not save — browser storage is unavailable here.', 'err');
+  }
+  function loadPreset() {
+    var name = el.presetSelect.value; if (!name) { toast('Pick a saved preset first.', 'warn'); return; }
+    var p = lsGet()[name]; if (!p) { toast('That preset is gone.', 'warn'); return; }
+    applyPreset(p); toast('Loaded "' + name + '" — hit Fetch to pull it.', 'ok');
+  }
+  function deletePreset() {
+    var name = el.presetSelect.value; if (!name) { toast('Pick a preset to delete.', 'warn'); return; }
+    var o = lsGet(); delete o[name]; lsSet(o); populatePresets(); toast('Deleted "' + name + '".', 'ok');
+  }
+
+  // ---- playlist library (save / load / import) -----------------------------
+  function lsGetPl() { try { return JSON.parse(localStorage.getItem(PLIST_KEY) || '{}'); } catch (e) { return {}; } }
+  function lsSetPl(o) { try { localStorage.setItem(PLIST_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
+  function populatePlaylists() {
+    var o = lsGetPl(), names = Object.keys(o).sort();
+    el.savedPlaylists.innerHTML = '<option value="">— saved playlists —</option>' +
+      names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + ' (' + ((o[n].entries || []).length) + ')</option>'; }).join('');
+  }
+  function savePlaylist() {
+    var name = el.playlistName.value.trim(); if (!name) { toast('Name the playlist first.', 'warn'); return; }
+    if (!state.basket.length) { toast('Add some songs before saving.', 'warn'); return; }
+    var o = lsGetPl();
+    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value }, entries: state.basket };
+    if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
+    else toast('Could not save — browser storage is full or unavailable.', 'err');
+  }
+  function loadPlaylist() {
+    var name = el.savedPlaylists.value; if (!name) { toast('Pick a saved playlist first.', 'warn'); return; }
+    var p = lsGetPl()[name]; if (!p) { toast('That playlist is gone.', 'warn'); return; }
+    state.basket = (p.entries || []).slice();
+    if (p.meta) { el.metaTitle.value = p.meta.title || el.metaTitle.value; el.metaAuthor.value = p.meta.author || el.metaAuthor.value; el.metaDescription.value = p.meta.description || ''; }
+    state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; state._coverSig = null;
+    renderAll(); toast('Loaded "' + name + '" (' + state.basket.length + ' maps).', 'ok');
+  }
+  function deletePlaylist() {
+    var name = el.savedPlaylists.value; if (!name) { toast('Pick a playlist to delete.', 'warn'); return; }
+    var o = lsGetPl(); delete o[name]; lsSetPl(o); populatePlaylists(); toast('Deleted "' + name + '".', 'ok');
+  }
+  function importBplistFile(file) {
+    var reader = new FileReader();
+    reader.onerror = function () { toast('Could not read that file.', 'err'); };
+    reader.onload = function () {
+      var pl; try { pl = JSON.parse(reader.result); } catch (e) { toast('That file is not valid JSON / .bplist.', 'err'); return; }
+      if (!pl || !Array.isArray(pl.songs)) { toast('No songs found in that .bplist.', 'err'); return; }
+      var added = 0;
+      pl.songs.forEach(function (sng) {
+        var hash = (sng.hash || sng.songHash || '').toString(); if (!hash) return;
+        var name = sng.songName || sng.name || 'Unknown', mapper = sng.levelAuthorName || sng.mapper || '';
+        var diffs = (Array.isArray(sng.difficulties) && sng.difficulties.length) ? sng.difficulties : [null];
+        diffs.forEach(function (d) {
+          var entry = { leaderboardId: '', hash: hash, songName: name, subName: '', mapper: mapper, author: mapper,
+            bpm: 0, duration: 0, cover: '', stars: 0,
+            difficultyName: d ? BplistExporter.mapDifficultyName(d.name) : '', modeName: d ? (d.characteristic || 'Standard') : 'Standard',
+            nps: 0, notes: 0, techRating: 0, accRating: 0, passRating: 0 };
+          if (addEntry(entry)) added++;
+        });
+      });
+      if (pl.playlistTitle) el.metaTitle.value = pl.playlistTitle;
+      if (pl.playlistAuthor) el.metaAuthor.value = pl.playlistAuthor;
+      if (pl.playlistDescription) el.metaDescription.value = pl.playlistDescription;
+      if (typeof pl.image === 'string' && /^data:image\//.test(pl.image)) setCoverFromDataUrl(pl.image);
+      renderAll();
+      toast(added ? 'Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from "' + (pl.playlistTitle || 'playlist') + '".' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn');
+      if (needsEnrich().length) enrichImported();
+    };
+    reader.readAsText(file);
+  }
+
+  // ---- BeatLeader enrichment (backfill stars / NPS / duration / cover) ------
+  function MAP_VALID(j) { return j && (j.hash || Array.isArray(j.difficulties)); }
+  function needsEnrich() {
+    var seen = {}, list = [];
+    state.basket.forEach(function (e) { if (e.hash && !e.leaderboardId && !e._enriched) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; list.push(e.hash); } } });
+    return list;
+  }
+  function applyMap(hash, map) {
+    var lh = hash.toLowerCase(), diffs = map.difficulties || [];
+    state.basket.forEach(function (e) {
+      if (e.hash.toLowerCase() !== lh) return;
+      e._enriched = true;
+      if (map.duration) e.duration = map.duration;
+      if (map.bpm) e.bpm = map.bpm;
+      if (map.coverImage) e.cover = map.coverImage;
+      if (map.name) e.songName = map.name;
+      if (map.subName) e.subName = map.subName;
+      if (map.mapper) e.mapper = map.mapper;
+      if (e.difficultyName) {
+        var d = diffs.filter(function (x) { return x.difficultyName === e.difficultyName && x.modeName === e.modeName; })[0];
+        if (d) { e.stars = d.stars || 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = d.techRating || 0; e.accRating = d.accRating || 0; e.passRating = d.passRating || 0; }
+      }
+    });
+  }
+  function allBasketHashes() {
+    var seen = {}, list = [];
+    state.basket.forEach(function (e) { if (e.hash) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; list.push(e.hash); } } });
+    return list;
+  }
+  // Shared core: look up each hash on BeatLeader and re-apply its data.
+  function runEnrich(hashes, opts) {
+    opts = opts || {};
+    if (state.enriching) return Promise.resolve(0);
+    var total = hashes.length;
+    if (!total) { toast(opts.emptyMsg || 'Nothing to update.', 'ok'); return Promise.resolve(0); }
+    state.enriching = true; renderControls();
+    setStatus((opts.verb || 'Enriching') + ' ' + total + ' songs from BeatLeader…', 'busy');
+    toast(opts.startMsg || ('Looking up ' + total + ' song' + (total === 1 ? '' : 's') + ' on BeatLeader…'), 'ok');
+    var ok = 0, done = 0;
+    function one(hash) {
+      return relayFetch(API_BASE + '/map/hash/' + encodeURIComponent(hash), MAP_VALID)
+        .then(function (m) { applyMap(hash, m); ok++; }, function () {})
+        .then(function () { done++; if (done % 3 === 0) renderAll(); });
+    }
+    function finish() {
+      state.enriching = false; renderAll();
+      setStatus((opts.doneVerb || 'Enriched') + ' ' + ok + '/' + total + ' songs', 'on');
+      toast(opts.doneMsg ? opts.doneMsg(ok, total) : ('Enriched ' + ok + ' of ' + total + ' song' + (total === 1 ? '' : 's') + (ok < total ? ' — the rest may be unranked or missing from BeatLeader.' : '.')), ok ? 'ok' : 'warn');
+      return ok;
+    }
+    return one(hashes[0]).then(function () {
+      var idx = 1, CONC = Math.min(4, Math.max(1, hashes.length - 1));
+      function worker() { if (idx >= hashes.length) return Promise.resolve(); var h = hashes[idx++]; return one(h).then(worker); }
+      var ws = []; for (var w = 0; w < CONC; w++) ws.push(worker());
+      return Promise.all(ws);
+    }).then(finish, function () { state.enriching = false; renderAll(); return ok; });
+  }
+  function enrichImported() { return runEnrich(needsEnrich(), { emptyMsg: 'Nothing to enrich — every song already has BeatLeader data.' }); }
+  function refreshStars() {
+    if (!state.basket.length) { toast('Your playlist is empty.', 'warn'); return Promise.resolve(0); }
+    var hashes = allBasketHashes();
+    return runEnrich(hashes, {
+      verb: 'Refreshing', doneVerb: 'Refreshed',
+      startMsg: 'Refreshing ratings for ' + hashes.length + ' song' + (hashes.length === 1 ? '' : 's') + '…',
+      doneMsg: function (ok, total) { return 'Refreshed ' + ok + ' of ' + total + ' song' + (total === 1 ? '' : 's') + ' from BeatLeader.'; }
+    });
+  }
+
+  // ---- map preview (BeatSaver hash → ArcViewer embed + audio) --------------
+  var bsCache = {};
+  function resolveBeatSaver(hash) {
+    var h = hash.toLowerCase();
+    if (bsCache[h]) return Promise.resolve(bsCache[h]);
+    return fetchTimeout('https://api.beatsaver.com/maps/hash/' + encodeURIComponent(hash), 8000)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (m) { var v = (m.versions && m.versions[0]) || {}; var res = { id: m.id, previewURL: v.previewURL || '', name: m.name || '' }; bsCache[h] = res; return res; })
+      .catch(function (e) { return { error: e.message }; });
+  }
+  function openPreview(entry) {
+    el.previewModal.classList.add('show'); el.previewModal.setAttribute('aria-hidden', 'false');
+    el.previewTitle.textContent = entry.songName + (entry.mapper ? ' — ' + entry.mapper : '');
+    // your score line (from synced BeatLeader history)
+    if (state.player) {
+      var ps = scoreFor(entry);
+      if (ps) {
+        el.previewScore.className = 'preview-score';
+        el.previewScore.innerHTML = 'Your best: <b>' + (ps.a * 100).toFixed(2) + '%</b>' +
+          (ps.fc ? ' · <span class="fc">FC</span>' : ' · ' + ps.m + ' miss' + (ps.fa ? ' (FC would be ' + (ps.fa * 100).toFixed(2) + '%)' : '')) +
+          (ps.rk ? ' · rank #' + ps.rk : '') + (ps.t ? ' · ' + fmtDate(ps.t) : '') +
+          (ps.rp ? ' · <a href="https://replay.beatleader.xyz/?link=' + encodeURIComponent(ps.rp) + '" target="_blank" rel="noopener">watch replay ↗</a>' : '');
+      } else {
+        el.previewScore.className = 'preview-score unplayed';
+        el.previewScore.textContent = "You haven't played this map yet.";
+      }
+      el.previewScore.hidden = false;
+    } else { el.previewScore.hidden = true; }
+    el.previewStatus.textContent = 'Finding this map on BeatSaver…';
+    el.previewFrame.src = 'about:blank';
+    el.previewAudio.hidden = true; el.previewAudio.removeAttribute('src');
+    el.previewBeatSaver.style.display = 'none'; el.previewViewer.style.display = 'none';
+    if (!entry.hash) { el.previewStatus.textContent = 'No map hash — can’t preview this entry.'; return; }
+    resolveBeatSaver(entry.hash).then(function (res) {
+      if (!el.previewModal.classList.contains('show')) return; // user closed it
+      if (res.error || !res.id) { el.previewStatus.textContent = 'Couldn’t find this map on BeatSaver' + (res.error ? ' (' + res.error + ')' : '') + '.'; return; }
+      el.previewStatus.textContent = '';
+      el.previewFrame.src = 'https://allpoland.github.io/ArcViewer/?id=' + encodeURIComponent(res.id);
+      if (res.previewURL) { el.previewAudio.src = res.previewURL; el.previewAudio.hidden = false; }
+      el.previewBeatSaver.href = 'https://beatsaver.com/maps/' + res.id; el.previewBeatSaver.style.display = '';
+      el.previewViewer.href = 'https://allpoland.github.io/ArcViewer/?id=' + res.id; el.previewViewer.style.display = '';
+    });
+  }
+  function closePreview() {
+    el.previewModal.classList.remove('show'); el.previewModal.setAttribute('aria-hidden', 'true');
+    el.previewFrame.src = 'about:blank';
+    try { el.previewAudio.pause(); } catch (e) {}
+    el.previewAudio.removeAttribute('src');
+  }
+
+  // ---- BeatLeader profile + your scores ------------------------------------
+  function parsePlayerId(input) {
+    input = (input || '').trim(); if (!input) return '';
+    var m = input.match(/beatleader\.(?:xyz|com|net)\/u\/([^\/?#]+)/i);
+    if (m) return m[1];
+    return input.replace(/^.*\//, '').replace(/[?#].*$/, '');
+  }
+  function setProfileState(t) { el.profileState.textContent = t || ''; }
+  function savePlayerCache() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ player: state.player, scores: state.scores })); } catch (e) {} }
+  function loadPlayerCache() { try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; } } catch (e) {} }
+  function renderProfile() {
+    if (!state.player) { el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(''); return; }
+    el.profileConnect.hidden = true; el.profileCard.hidden = false;
+    if (state.player.avatar) { el.pcAvatar.src = state.player.avatar; el.pcAvatar.style.display = ''; } else { el.pcAvatar.style.display = 'none'; }
+    el.pcName.textContent = state.player.name;
+    var n = Object.keys(state.scores).length;
+    el.pcStats.textContent = '#' + (state.player.rank || '—') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
+    setProfileState(state.player.name);
+  }
+  function connectPlayer() {
+    var id = parsePlayerId(el.playerInput.value);
+    if (!id) { toast('Paste your BeatLeader profile URL or ID.', 'warn'); return; }
+    setProfileState('Connecting…'); el.connectBtn.disabled = true;
+    relayFetch(API_BASE + '/player/' + encodeURIComponent(id), function (j) { return j && (j.id || j.name); })
+      .then(function (p) {
+        state.player = { id: p.id || id, name: p.name || 'Player', avatar: p.avatar || '',
+          pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
+          total: (p.scoreStats && p.scoreStats.totalPlayCount) || 0, ranked: (p.scoreStats && p.scoreStats.rankedPlayCount) || 0, syncedMaxTime: 0 };
+        state.scores = {}; renderProfile(); savePlayerCache();
+        toast('Connected as ' + state.player.name + '. Syncing your scores…', 'ok');
+        return syncScores(false);
+      })
+      .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader profile — check the URL or ID.", 'err'); })
+      .then(function () { el.connectBtn.disabled = false; });
+  }
+  function disconnectPlayer() {
+    state.player = null; state.scores = {};
+    try { localStorage.removeItem(PLAYER_KEY); } catch (e) {}
+    el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
+  }
+  function syncScores(incremental) {
+    if (!state.player || state.syncing) return Promise.resolve();
+    state.syncing = true; el.syncBtn.disabled = true;
+    el.syncProgress.hidden = false; el.syncBar.style.width = '4%'; el.syncText.textContent = 'Starting…';
+    var id = state.player.id, page = 1, minTime = incremental ? (state.player.syncedMaxTime || 0) : 0;
+    var got = 0, newMax = state.player.syncedMaxTime || 0, stop = false, total = 0;
+    function step() {
+      return relayFetch(API_BASE + '/player/' + encodeURIComponent(id) + '/scores?page=' + page + '&count=100&sortBy=date&order=desc',
+        function (j) { return j && Array.isArray(j.data); })
+        .then(function (d) {
+          total = (d.metadata && d.metadata.total) || 0;
+          var items = d.data || [];
+          for (var i = 0; i < items.length; i++) {
+            var sc = items[i], t = sc.timepost || sc.timeset || 0;
+            if (incremental && t <= minTime) { stop = true; break; }
+            var song = (sc.leaderboard && sc.leaderboard.song) || {}, df = (sc.leaderboard && sc.leaderboard.difficulty) || {};
+            var hash = (song.hash || '').toLowerCase(); if (!hash) continue;
+            state.scores[hash + '|' + (df.difficultyName || '') + '|' + (df.modeName || 'Standard')] = {
+              a: sc.accuracy || 0, fc: !!sc.fullCombo, m: sc.missedNotes || 0, b: sc.badCuts || 0,
+              s: sc.modifiedScore || 0, pp: sc.pp || 0, rk: sc.rank || 0, t: t, fa: sc.fcAccuracy || 0,
+              lb: sc.leaderboardId || '', rp: sc.replay || ''
+            };
+            if (t > newMax) newMax = t; got++;
+          }
+          el.syncText.textContent = 'Synced ' + got + (!incremental && total ? ' of ' + total : '') + ' scores…';
+          el.syncBar.style.width = (!incremental && total ? Math.max(4, Math.min(100, Math.round(got / total * 100))) : 60) + '%';
+          if (items.length === 100 && !stop) { page++; return delay(150).then(step); }
+        });
+    }
+    return step().then(function () {
+      state.player.syncedMaxTime = newMax; el.syncBar.style.width = '100%';
+      savePlayerCache(); renderProfile(); applyClientFilters();
+      toast(incremental ? (got ? 'Refreshed — ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + Object.keys(state.scores).length + ' scores.', 'ok');
+    }).catch(function (e) {
+      toast('Score sync failed' + (e && e.message ? ' (' + e.message + ')' : '') + '. Try again, or use the local relay for big syncs.', 'err');
+    }).then(function () {
+      state.syncing = false; el.syncBtn.disabled = false;
+      setTimeout(function () { el.syncProgress.hidden = true; el.syncBar.style.width = '0%'; }, 800);
+    });
+  }
+  function applyQuickList(q) {
+    if (q === 'unplayed') { el.playStatus.value = 'unplayed'; el.accMax.value = ''; }
+    else if (q === 'nearfc') { el.playStatus.value = 'nearfc'; el.accMax.value = ''; }
+    else if (q === 'sub90') { el.playStatus.value = 'played'; el.accMax.value = '90'; }
+    else { el.playStatus.value = 'any'; el.accMax.value = ''; }
+    applyClientFilters();
+  }
+
+  // ---- reset ----------------------------------------------------------------
+  function resetFilters() {
+    el.starMinNum.value = '0'; el.starMaxNum.value = '15'; el.fMapper.value = ''; el.fSearch.value = '';
+    ['fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
+    el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '300';
+    document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
+    el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
+    if (el.playStatus) el.playStatus.value = 'any'; if (el.accMax) el.accMax.value = '';
+    refreshStarUI(); applyClientFilters(); toast('Filters reset (your playlist is kept).', 'ok');
+  }
+
+  // ---- tooltips -------------------------------------------------------------
+  function initTooltips() {
+    document.body.addEventListener('mouseover', function (e) {
+      var t = e.target.closest('.info'); if (!t || !t.dataset.tip) return;
+      var box = el.tipbox; box.textContent = t.dataset.tip; box.style.display = 'block';
+      var r = t.getBoundingClientRect();
+      var top = r.bottom + 8, left = Math.min(r.left, window.innerWidth - box.offsetWidth - 14);
+      if (top + box.offsetHeight > window.innerHeight - 8) top = r.top - box.offsetHeight - 8;
+      box.style.top = Math.max(8, top) + 'px'; box.style.left = Math.max(8, left) + 'px';
+    });
+    document.body.addEventListener('mouseout', function (e) { if (e.target.closest('.info')) el.tipbox.style.display = 'none'; });
+  }
+
+  // ---- wiring ---------------------------------------------------------------
+  function init() {
+    [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.addEventListener('click', runFetch); });
+    [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.addEventListener('click', doDownload); });
+    el.resetBtn.addEventListener('click', resetFilters);
+
+    // Rapid free-text/number filters run through a short debounce so a burst of
+    // keystrokes triggers one filter+render pass instead of one per character.
+    var debouncedFilter = debounce(applyClientFilters, 160);
+    ['fMapper','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax']
+      .forEach(function (k) { el[k].addEventListener('input', debouncedFilter); el[k].addEventListener('change', applyClientFilters); });
+    // Dropdowns are single discrete changes — no debounce needed.
+    ['fSort','fOrder'].forEach(function (k) { el[k].addEventListener('change', applyClientFilters); });
+    document.querySelectorAll('#modeChips input').forEach(function (c) { c.addEventListener('change', applyClientFilters); });
+    el.diffEnable.addEventListener('change', function () { el.diffChips.classList.toggle('off', !el.diffEnable.checked); applyClientFilters(); });
+    document.querySelectorAll('#diffChips input').forEach(function (c) { c.addEventListener('change', applyClientFilters); });
+    el.previewClose.addEventListener('click', closePreview);
+    el.previewClose2.addEventListener('click', closePreview);
+    el.previewModal.addEventListener('click', function (e) { if (e.target === el.previewModal) closePreview(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && el.previewModal.classList.contains('show')) closePreview(); });
+    el.fType.addEventListener('change', function () { applyClientFilters(); if (state.raw.length) toast('Ranked status changed — re-fetch to pull the new set.', 'warn'); });
+    // Enter in any filter field triggers a fetch (a mapper search shouldn't need a mouse).
+    ['fMapper','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {
+      el[k].addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runFetch(); } });
+    });
+    el.collapseSongs.addEventListener('change', renderAll);
+    el.connMode.addEventListener('change', function () { state.pinnedRelay = null; });
+    el.customProxy.addEventListener('change', function () { state.pinnedRelay = null; });
+
+    // basket controls
+    el.addAllBtn.addEventListener('click', addAll);
+    el.addTopBtn.addEventListener('click', addTop);
+    el.addRandomBtn.addEventListener('click', addRandom);
+    el.shuffleBtn.addEventListener('click', shuffleBasket);
+    el.sortPlaylistBtn.addEventListener('click', sortBasketByStar);
+    el.clearBasketBtn.addEventListener('click', clearBasket);
+    el.enrichBtn.addEventListener('click', enrichImported);
+    el.refreshStarsBtn.addEventListener('click', refreshStars);
+
+    // row delegation
+    el.resultList.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-act]'); if (!btn) return;
+      var row = e.target.closest('.song-row'); if (!row) return;
+      if (btn.dataset.act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) renderAll(); }
+      else if (btn.dataset.act === 'preview') { var pe = findFiltered(row.dataset.key); if (pe) openPreview(pe); }
+    });
+    el.basketList.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-act]'); if (!btn) return;
+      var row = e.target.closest('.song-row'); if (!row) return;
+      var key = row.dataset.key, act = btn.dataset.act;
+      if (act === 'remove') removeBasket(key);
+      else if (act === 'up') moveBasket(key, -1);
+      else if (act === 'down') moveBasket(key, 1);
+      else if (act === 'preview') { var bi = basketIndex(key); if (bi >= 0) openPreview(state.basket[bi]); }
+    });
+
+    // relay quick actions (multi-file build only; guarded so the single-file
+    // build — which omits these buttons — doesn't throw on a null element).
+    if (el.useLocalRelayBtn) el.useLocalRelayBtn.addEventListener('click', function () {
+      el.customProxy.value = 'http://localhost:8787/?url='; el.connMode.value = 'relay'; if (el.relayAdv) el.relayAdv.open = true; state.pinnedRelay = null;
+      setStatus('Local relay set', 'on'); toast('Local relay set to localhost:8787 — start relay.js or relay.py, then Fetch.', 'ok');
+    });
+    if (el.clearRelayBtn) el.clearRelayBtn.addEventListener('click', function () {
+      el.customProxy.value = ''; el.connMode.value = 'auto'; state.pinnedRelay = null; setStatus('Connection: Auto', 'on'); toast('Cleared — back to Auto (relay pool).', 'ok');
+    });
+
+    // presets
+    el.presetSave.addEventListener('click', savePreset);
+    el.presetLoad.addEventListener('click', loadPreset);
+    el.presetDelete.addEventListener('click', deletePreset);
+    el.presetName.addEventListener('keydown', function (e) { if (e.key === 'Enter') savePreset(); });
+
+    // playlist library
+    el.savePlaylistBtn.addEventListener('click', savePlaylist);
+    el.loadPlaylistBtn.addEventListener('click', loadPlaylist);
+    el.deletePlaylistBtn.addEventListener('click', deletePlaylist);
+    el.playlistName.addEventListener('keydown', function (e) { if (e.key === 'Enter') savePlaylist(); });
+    el.importBplist.addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; if (f) importBplistFile(f); e.target.value = ''; });
+
+    // BeatLeader profile
+    el.connectBtn.addEventListener('click', connectPlayer);
+    el.playerInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') connectPlayer(); });
+    el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); });
+    el.disconnectBtn.addEventListener('click', disconnectPlayer);
+    el.playStatus.addEventListener('change', applyClientFilters);
+    el.accMax.addEventListener('input', applyClientFilters);
+    document.querySelectorAll('#quickLists [data-quick]').forEach(function (btn) { btn.addEventListener('click', function () { applyQuickList(this.dataset.quick); }); });
+
+    // star
+    el.starMin.addEventListener('input', function () { setStar('min', parseFloat(el.starMin.value)); });
+    el.starMax.addEventListener('input', function () { setStar('max', parseFloat(el.starMax.value)); });
+    el.starMinNum.addEventListener('input', function () { setStar('min', num(el.starMinNum, 0)); });
+    el.starMaxNum.addEventListener('input', function () { setStar('max', num(el.starMaxNum, 15)); });
+
+    // cover
+    buildCoverPickers();
+    el.coverText.addEventListener('input', updateCover);
+    el.metaTitle.addEventListener('input', function () { if (!state.usingCustom) updateCover(); });
+    el.regenCoverBtn.addEventListener('click', function () { state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; updateCover(true); renderExport(); });
+    el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } });
+    el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
+
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); setStatus('Ready', 'on');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+
+</script>
+</body>
+</html>

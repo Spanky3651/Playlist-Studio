@@ -1,0 +1,8 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local scratch / cleanup
+_to_delete/
+*.bplist
