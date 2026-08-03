@@ -21,6 +21,7 @@ Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlis
 - **NPS, duration and BPM** bounds
 - **PP range** — keep only ranked maps worth a target PP at your accuracy and speed (see below)
 - **Rating-focus sort** — Stars, Tech, Acc, Pass, NPS, Duration, BPM, or **PP at your target accuracy**
+- **Adjustable scan depth** — pull anywhere from 300 up to 20,000 maps per fetch (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max). Bigger scans dig deeper for matches — handy for wide star ranges or "unplayed" hunts — at the cost of a longer fetch
 - Live client-side filtering: tweak a value and the match count updates instantly, no re-fetch
 - Press **Enter** in any filter to fetch; the Fetch button flags when your filters have drifted from your last pull
 
@@ -35,7 +36,8 @@ Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlis
 ### Your scores & history (connect a BeatLeader profile)
 Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play history — public data, no login — so you can see and build around what you've actually played:
 - **Score badges on every map** — your accuracy with a green **FC** / blue **passed** / dashed **NEW** marker and your rank
-- **Filter by your history** — not played, played, full-combo'd, played-but-not-FC, **near-miss FC**, or "only my accuracy below X%"
+- **"Your plays" filter right above the results** — one-tap chips for **All / Unplayed / Played / FC'd / Not FC / Near-FC**, so "hide everything I've already played" is a single click where you're actually looking. (Not connected yet? The bar shows a one-tap link to connect.)
+- **Filter by your history** — the same set is also in the profile panel, plus "only my accuracy below X%"
 - **One-tap smart lists** — Unplayed, Near-miss FC, Sub-90%
 - **Sort by you** — my accuracy, my rank, date I played, or improvement potential
 - **Your best in the preview** — accuracy, misses (and the would-be FC accuracy), rank, date, and a link to watch the replay

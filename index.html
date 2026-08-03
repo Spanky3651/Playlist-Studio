@@ -447,6 +447,25 @@ select{cursor:pointer;appearance:none;
 .addtop input{width:56px;flex:none;padding:7px 8px;font-family:var(--mono);font-size:13px;text-align:center;border-top-left-radius:0;border-bottom-left-radius:0;border-left:none;}
 .mini-switch{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--mono);margin-left:auto;user-select:none;}
 .mini-switch input{width:15px;height:15px;accent-color:var(--blue);}
+/* Play-history filter bar (lives at the results, where people look) */
+.play-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:#0b1119;}
+.play-bar-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2);flex:none;}
+.play-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.play-chip{font-family:var(--mono);font-size:12px;color:var(--muted);background:#0c1220;border:1px solid var(--border-2);border-radius:7px;padding:5px 11px;cursor:pointer;transition:.13s;}
+.play-chip:hover{border-color:var(--blue);color:#fff;}
+.play-chip.active{background:rgba(47,140,255,.18);border-color:var(--blue);color:#fff;box-shadow:0 0 9px rgba(47,140,255,.22);}
+.play-bar-hint{font-size:12.5px;color:var(--muted);line-height:1.4;}
+.linklike{background:none;border:none;color:var(--blue);cursor:pointer;font:inherit;padding:0;text-decoration:underline;text-underline-offset:2px;}
+.linklike:hover{color:#fff;}
+.play-bar.connected .play-bar-hint{display:none;}
+.play-bar:not(.connected) .play-chips{display:none;}
+/* Maps-to-scan quick picks */
+.scan-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.scan-chips button{font-family:var(--mono);font-size:12px;color:var(--muted);background:#0c1220;border:1px solid var(--border-2);border-radius:6px;padding:5px 10px;cursor:pointer;transition:.13s;}
+.scan-chips button:hover{border-color:var(--blue);color:#fff;}
+.scan-chips button.active{background:rgba(47,140,255,.16);border-color:var(--blue);color:#fff;}
+.scan-hint{margin:8px 0 0;font-size:11.5px;color:var(--muted-2);line-height:1.45;min-height:1px;}
+.scan-hint.warn{color:var(--amber);}
 
 /* ---------- Rows (results + basket) ---------- */
 .list-body{padding:10px 12px;}
@@ -777,9 +796,18 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
               <option value="desc" selected>High → Low</option>
               <option value="asc">Low → High</option>
             </select></div>
-          <div class="field"><label class="field-label">Max maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough but more API pages (slower). 300 is a good default; raise it for wide star ranges.">i</span></label>
-            <input type="number" id="fMaxScan" min="20" max="5000" step="20" value="300" /></div>
+          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough (finds more matches, especially after filtering by your plays) but takes longer — each 100 maps is another API page. 300 is a fast default; go bigger for wide searches or 'unplayed' hunts.">i</span></label>
+            <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="300" /></div>
         </div>
+        <div class="scan-chips" id="scanChips">
+          <button type="button" data-scan="300">300</button>
+          <button type="button" data-scan="1000">1k</button>
+          <button type="button" data-scan="2500">2.5k</button>
+          <button type="button" data-scan="5000">5k</button>
+          <button type="button" data-scan="10000">10k</button>
+          <button type="button" data-scan="20000">Max</button>
+        </div>
+        <p class="scan-hint" id="scanHint"></p>
 
         <div class="divider"></div>
         <div class="field"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
@@ -852,6 +880,18 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
         </div>
         <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
         <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>Collapse dupes</span></label>
+      </div>
+      <div class="play-bar" id="playFilterBar">
+        <span class="play-bar-lbl">Your plays</span>
+        <div class="play-chips" id="playChips">
+          <button type="button" class="play-chip active" data-ps="any">All</button>
+          <button type="button" class="play-chip" data-ps="unplayed" title="Only maps you haven't played yet">Unplayed</button>
+          <button type="button" class="play-chip" data-ps="played" title="Only maps you've played">Played</button>
+          <button type="button" class="play-chip" data-ps="fc" title="Only maps you've full-combo'd">FC'd</button>
+          <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
+          <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
+        </div>
+        <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
       </div>
       <div class="panel-body list-body">
         <div class="song-list" id="resultList">
@@ -1625,7 +1665,7 @@ window.PP = (function () {
    Connection: BeatLeader sends no CORS headers, so direct
    browser fetch() fails. We try direct first (Auto), then race
    a pool of relays (first valid wins, pinned for the scan),
-   with per-request timeouts. A custom/local relay is supported.
+   with per-request timeouts. A custom relay URL is supported.
    ============================================================ */
 (function () {
   'use strict';
@@ -1670,6 +1710,7 @@ window.PP = (function () {
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
+   'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint',
    'toast','tipbox'
   ].forEach(function (id) { el[id] = $(id); });
 
@@ -1696,7 +1737,7 @@ window.PP = (function () {
     var mapperTerms = el.fMapper.value.split(',').map(function (m) { return m.trim().toLowerCase(); }).filter(Boolean);
     return {
       type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value,
-      maxScan: clamp(num(el.fMaxScan, 300), 20, 5000),
+      maxScan: clamp(num(el.fMaxScan, 300), 20, 20000),
       starMin: clamp(num(el.starMinNum, 0), 0, 15), starMax: clamp(num(el.starMaxNum, 15), 0, 15),
       mapperTerms: mapperTerms, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
       diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
@@ -1884,6 +1925,7 @@ window.PP = (function () {
     }
     state.filtered = out;
     if (el.ppFilterState) el.ppFilterState.textContent = ppFilterSummary();
+    renderPlayBar();
     renderAll();
     updateStale();
   }
@@ -2014,8 +2056,19 @@ window.PP = (function () {
     var rows = displayResults(), list = el.resultList;
     el.resultCount.textContent = rows.length ? rows.length + (collapseOn() && rows.length !== state.filtered.length ? ' songs' : '') : '';
     if (!rows.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-ic">◇</div>' +
-        (state.raw.length ? '<p><b>No matches.</b></p><p>Loosen your filters or raise "Max maps to scan".</p>' : '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>') + '</div>';
+      var msg;
+      if (!state.raw.length) {
+        msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>';
+      } else {
+        var why = [];
+        if (state.player && el.playStatus.value !== 'any') why.push('your <b>“' + playStatusLabel(el.playStatus.value) + '”</b> play filter');
+        if (num(el.ppMin, null) != null || num(el.ppMax, null) != null) why.push('your <b>PP range</b>');
+        var tail = why.length
+          ? 'Nothing in this batch matches ' + why.join(' and ') + '. Try raising <b>Maps to scan</b>' + (why.length === 1 && state.player && el.playStatus.value !== 'any' ? ' (an “unplayed” hunt often needs a bigger scan)' : '') + ', or loosen that filter.'
+          : 'Loosen your filters or raise <b>Maps to scan</b> to pull more.';
+        msg = '<p><b>No matches.</b></p><p>' + tail + '</p>';
+      }
+      list.innerHTML = '<div class="empty"><div class="empty-ic">◇</div>' + msg + '</div>';
       return;
     }
     var MAX = 400, frag = '';
@@ -2503,13 +2556,38 @@ window.PP = (function () {
   function savePlayerCache() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ player: state.player, scores: state.scores })); } catch (e) {} }
   function loadPlayerCache() { try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; } } catch (e) {} }
   function renderProfile() {
-    if (!state.player) { el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(''); return; }
+    if (!state.player) { el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(''); renderPlayBar(); return; }
     el.profileConnect.hidden = true; el.profileCard.hidden = false;
     if (state.player.avatar) { el.pcAvatar.src = state.player.avatar; el.pcAvatar.style.display = ''; } else { el.pcAvatar.style.display = 'none'; }
     el.pcName.textContent = state.player.name;
     var n = Object.keys(state.scores).length;
     el.pcStats.textContent = '#' + (state.player.rank || '—') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
     setProfileState(state.player.name);
+    renderPlayBar();
+  }
+  // The play-history filter surfaced at the results (connected -> chips, else a
+  // prompt to connect). Keeps the chip in sync with the profile-panel dropdown.
+  function updateScanHint() {
+    var v = clamp(num(el.fMaxScan, 300), 20, 20000);
+    Array.prototype.forEach.call(el.scanChips.querySelectorAll('button'), function (b) { b.classList.toggle('active', parseInt(b.dataset.scan, 10) === v); });
+    var pages = Math.ceil(v / PAGE_SIZE), big = v > 3000;
+    el.scanHint.textContent = '≈ ' + pages + ' API page' + (pages === 1 ? '' : 's') + (big ? ' · big scans take a while and lean on the public relays' : ' · fast');
+    el.scanHint.classList.toggle('warn', big);
+  }
+  function playStatusLabel(v) {
+    return { any: 'Any', unplayed: 'Unplayed', played: 'Played', fc: "Full-combo'd", nofc: 'Played, not FC', nearfc: 'Near-miss FC' }[v] || v;
+  }
+  function focusProfileConnect() {
+    if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el.playerInput) { try { el.playerInput.focus({ preventScroll: true }); } catch (e) { el.playerInput.focus(); } }
+  }
+  function renderPlayBar() {
+    var connected = !!state.player;
+    el.playFilterBar.classList.toggle('connected', connected);
+    var ps = el.playStatus ? el.playStatus.value : 'any';
+    Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip'), function (b) {
+      b.classList.toggle('active', b.dataset.ps === ps);
+    });
   }
   function connectPlayer() {
     var id = parsePlayerId(el.playerInput.value);
@@ -2521,7 +2599,7 @@ window.PP = (function () {
           pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
           total: (p.scoreStats && p.scoreStats.totalPlayCount) || 0, ranked: (p.scoreStats && p.scoreStats.rankedPlayCount) || 0, syncedMaxTime: 0 };
         state.scores = {}; renderProfile(); savePlayerCache();
-        toast('Connected as ' + state.player.name + '. Syncing your scores…', 'ok');
+        toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok');
         return syncScores(false);
       })
       .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader profile — check the URL or ID.", 'err'); })
@@ -2564,9 +2642,10 @@ window.PP = (function () {
     return step().then(function () {
       state.player.syncedMaxTime = newMax; el.syncBar.style.width = '100%';
       savePlayerCache(); renderProfile(); applyClientFilters();
-      toast(incremental ? (got ? 'Refreshed — ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + Object.keys(state.scores).length + ' scores.', 'ok');
+      var tot = Object.keys(state.scores).length;
+      toast(incremental ? (got ? 'Refreshed — ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
     }).catch(function (e) {
-      toast('Score sync failed' + (e && e.message ? ' (' + e.message + ')' : '') + '. Try again, or use the local relay for big syncs.', 'err');
+      toast('Score sync failed' + (e && e.message ? ' (' + e.message + ')' : '') + '. Give it a moment and hit ⟳ Sync again.', 'err');
     }).then(function () {
       state.syncing = false; el.syncBtn.disabled = false;
       setTimeout(function () { el.syncProgress.hidden = true; el.syncBar.style.width = '0%'; }, 800);
@@ -2692,6 +2771,17 @@ window.PP = (function () {
     el.playStatus.addEventListener('change', applyClientFilters);
     el.accMax.addEventListener('input', applyClientFilters);
     document.querySelectorAll('#quickLists [data-quick]').forEach(function (btn) { btn.addEventListener('click', function () { applyQuickList(this.dataset.quick); }); });
+    // Results-side play-history chips (mirror the profile dropdown)
+    el.playChips.addEventListener('click', function (e) {
+      var b = e.target.closest('.play-chip'); if (!b) return;
+      if (!state.player) { focusProfileConnect(); return; }
+      el.playStatus.value = b.dataset.ps; if (b.dataset.ps !== 'played') el.accMax.value = '';
+      applyClientFilters();
+    });
+    el.playConnectJump.addEventListener('click', focusProfileConnect);
+    // Maps-to-scan quick picks + live hint
+    el.scanChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-scan]'); if (b) { el.fMaxScan.value = b.dataset.scan; updateScanHint(); if (state.raw.length) updateStale(); } });
+    el.fMaxScan.addEventListener('input', updateScanHint);
 
     // star
     el.starMin.addEventListener('input', function () { setStar('min', parseFloat(el.starMin.value)); });
@@ -2707,7 +2797,7 @@ window.PP = (function () {
     el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } });
     el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
 
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); setStatus('Ready', 'on');
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
   }
 
   document.addEventListener('DOMContentLoaded', init);
