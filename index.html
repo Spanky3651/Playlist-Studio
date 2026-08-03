@@ -114,7 +114,7 @@ button.cyan:hover{box-shadow:0 0 16px rgba(255,45,85,.4);border-color:var(--red)
 button.ghost{background:transparent;}
 button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
 button.big{padding:13px 20px;font-size:15px;}
-.big-fetch{width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:2px;}
+.big-fetch{width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:2px;position:sticky;bottom:10px;z-index:6;box-shadow:0 8px 26px rgba(0,0,0,.6);}
 
 /* ---------- Map preview modal ---------- */
 .modal-back{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);padding:20px;}
@@ -570,12 +570,12 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
-    <button class="ghost" id="resetBtn" title="Reset all filters to defaults">
+    <button class="ghost" id="resetBtn" title="Reset filters — your playlist is kept">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset</button>
-    <button class="primary" id="fetchBtn">
+    <button class="primary" id="fetchBtn" title="Fetch maps from BeatLeader">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch</button>
-    <button class="cyan" id="downloadBtn" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>.bplist</button>
+    <button class="cyan" id="downloadBtn" disabled title="Download your playlist as a .bplist">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export .bplist</button>
   </div>
 </header>
 
@@ -729,7 +729,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
     <!-- Game Mode -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><h2>Game Mode</h2></div>
-      <div class="panel-sub">Which characteristics to include. Select exactly one to also narrow the API query; leave several on to filter client-side.</div>
+      <div class="panel-sub">Which game modes to include. Select exactly one to also narrow the API query; leave several on to filter client-side.</div>
       <div class="panel-body">
         <div class="chips" id="modeChips">
           <label class="chip"><input type="checkbox" value="Standard" checked /><span>Standard</span></label>
@@ -833,7 +833,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       <div class="panel-body">
         <div class="preset-row">
           <input type="text" id="presetName" placeholder="Name this preset" />
-          <button class="ghost sm" id="presetSave">Save</button>
+          <button class="ghost sm" id="presetSave">Save filters</button>
         </div>
         <div class="preset-row">
           <select id="presetSelect"><option value="">— saved presets —</option></select>
@@ -910,8 +910,8 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       <div class="list-actions">
         <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
         <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending — good for warmup → hard">↑ Sort by ★</button>
-        <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported songs from BeatLeader">↻ Enrich</button>
-        <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader — catches rating recalcs">★ Refresh</button>
+        <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported songs from BeatLeader">↻ Fill data</button>
+        <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader — catches rating recalcs">★ Re-check</button>
         <button class="ghost sm danger" id="clearBasketBtn" disabled>Clear</button>
       </div>
       <div class="panel-body list-body">
@@ -932,7 +932,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
       <div class="panel-body">
         <div class="preset-row">
           <input type="text" id="playlistName" placeholder="Save current playlist as…" />
-          <button class="ghost sm" id="savePlaylistBtn">Save</button>
+          <button class="ghost sm" id="savePlaylistBtn">Save playlist</button>
         </div>
         <div class="preset-row">
           <select id="savedPlaylists"><option value="">— saved playlists —</option></select>
@@ -1686,7 +1686,7 @@ window.PP = (function () {
     { id: 'corsproxy.io',   build: function (a) { return 'https://corsproxy.io/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse }
   ];
 
-  var state = { raw: [], filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -1857,8 +1857,8 @@ window.PP = (function () {
       });
     }
     step().then(function () {
-        state.raw = collected; state.lastSig = serverSig(f); el.barFill.style.width = '100%';
-        if (!collected.length) { setStatus('No maps returned', 'err'); toast('BeatLeader returned no maps for this query.', 'warn'); }
+        state.raw = collected; state.fetched = true; state.lastSig = serverSig(f); el.barFill.style.width = '100%';
+        if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched — try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
         else { setStatus('Loaded ' + collected.length + ' maps' + (state.pinnedRelay ? ' · ' + state.pinnedRelay.id : ''), 'on'); toast('Loaded ' + collected.length + ' maps — now add the ones you want.', 'ok'); }
         applyClientFilters();
       }).catch(function (err) {
@@ -2058,7 +2058,13 @@ window.PP = (function () {
     if (!rows.length) {
       var msg;
       if (!state.raw.length) {
-        msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>';
+        if (!state.fetched) {
+          msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>';
+        } else if (el.fType.value === 'ranked') {
+          msg = '<p><b>No ranked maps matched.</b></p><p>Most community maps aren\'t ranked. Switch <b>Ranked status</b> to <b>All</b> to search the full catalog, or loosen your other filters.</p><p><button type="button" class="ghost sm" id="emptySwitchAll">Search all maps instead</button></p>';
+        } else {
+          msg = '<p><b>BeatLeader returned no maps.</b></p><p>Nothing matched this query. Try a different mapper or keyword, loosen your filters, or raise <b>Maps to scan</b>.</p>';
+        }
       } else {
         var why = [];
         if (state.player && el.playStatus.value !== 'any') why.push('your <b>“' + playStatusLabel(el.playStatus.value) + '”</b> play filter');
@@ -2069,6 +2075,8 @@ window.PP = (function () {
         msg = '<p><b>No matches.</b></p><p>' + tail + '</p>';
       }
       list.innerHTML = '<div class="empty"><div class="empty-ic">◇</div>' + msg + '</div>';
+      var _sw = document.getElementById('emptySwitchAll');
+      if (_sw) _sw.addEventListener('click', function () { el.fType.value = 'all'; runFetch(); });
       return;
     }
     var MAX = 400, frag = '';
@@ -2220,7 +2228,9 @@ window.PP = (function () {
     var f = getFilters(), uniq = uniqueHashes(state.basket);
     var autoDesc = uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' +
       (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★') + '. Built with Playlist Studio (BeatLeader).';
-    var meta = { title: el.metaTitle.value.trim() || 'Playlist Studio Mix', author: el.metaAuthor.value.trim() || 'Playlist Studio', description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '' };
+    var rawTitle = el.metaTitle.value.trim();
+    var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
+    var meta = { title: (!rawTitle || rawTitle === 'Playlist Studio Mix') ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || 'Playlist Studio', description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '' };
     try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist.', 'ok'); }
     catch (err) { toast(err.message, 'err'); }
   }
