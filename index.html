@@ -796,8 +796,8 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
               <option value="desc" selected>High → Low</option>
               <option value="asc">Low → High</option>
             </select></div>
-          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough (finds more matches, especially after filtering by your plays) but takes longer — each 100 maps is another API page. 300 is a fast default; go bigger for wide searches or 'unplayed' hunts.">i</span></label>
-            <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="300" /></div>
+          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough (finds more matches, especially after filtering by your plays) but takes longer — each 100 maps is another API page. 2,500 is the default; drop to 300 for a quick pull or go bigger for wide searches and 'unplayed' hunts.">i</span></label>
+            <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="2500" /></div>
         </div>
         <div class="scan-chips" id="scanChips">
           <button type="button" data-scan="300">300</button>
@@ -1737,7 +1737,7 @@ window.PP = (function () {
     var mapperTerms = el.fMapper.value.split(',').map(function (m) { return m.trim().toLowerCase(); }).filter(Boolean);
     return {
       type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value,
-      maxScan: clamp(num(el.fMaxScan, 300), 20, 20000),
+      maxScan: clamp(num(el.fMaxScan, 2500), 20, 20000),
       starMin: clamp(num(el.starMinNum, 0), 0, 15), starMax: clamp(num(el.starMaxNum, 15), 0, 15),
       mapperTerms: mapperTerms, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
       diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
@@ -2253,7 +2253,7 @@ window.PP = (function () {
   }
   function applyPreset(p) {
     el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc';
-    el.fMaxScan.value = p.maxScan || '300'; el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
+    el.fMaxScan.value = p.maxScan || '2500'; el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
     el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
     el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fDurMin.value = p.durMin || '';
     el.fDurMax.value = p.durMax || ''; el.fBpmMin.value = p.bpmMin || ''; el.fBpmMax.value = p.bpmMax || '';
@@ -2568,10 +2568,11 @@ window.PP = (function () {
   // The play-history filter surfaced at the results (connected -> chips, else a
   // prompt to connect). Keeps the chip in sync with the profile-panel dropdown.
   function updateScanHint() {
-    var v = clamp(num(el.fMaxScan, 300), 20, 20000);
+    var v = clamp(num(el.fMaxScan, 2500), 20, 20000);
     Array.prototype.forEach.call(el.scanChips.querySelectorAll('button'), function (b) { b.classList.toggle('active', parseInt(b.dataset.scan, 10) === v); });
-    var pages = Math.ceil(v / PAGE_SIZE), big = v > 3000;
-    el.scanHint.textContent = '≈ ' + pages + ' API page' + (pages === 1 ? '' : 's') + (big ? ' · big scans take a while and lean on the public relays' : ' · fast');
+    var pages = Math.ceil(v / PAGE_SIZE), big = v > 5000;
+    var speed = v <= 500 ? ' · quick' : (v <= 5000 ? ' · a few seconds' : ' · big scan — slower, leans on the public relays');
+    el.scanHint.textContent = '≈ ' + pages + ' API page' + (pages === 1 ? '' : 's') + speed;
     el.scanHint.classList.toggle('warn', big);
   }
   function playStatusLabel(v) {
@@ -2663,7 +2664,7 @@ window.PP = (function () {
   function resetFilters() {
     el.starMinNum.value = '0'; el.starMaxNum.value = '15'; el.fMapper.value = ''; el.fSearch.value = '';
     ['fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
-    el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '300';
+    el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500';
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
     if (el.playStatus) el.playStatus.value = 'any'; if (el.accMax) el.accMax.value = '';

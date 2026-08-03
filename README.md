@@ -21,7 +21,7 @@ Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlis
 - **NPS, duration and BPM** bounds
 - **PP range** — keep only ranked maps worth a target PP at your accuracy and speed (see below)
 - **Rating-focus sort** — Stars, Tech, Acc, Pass, NPS, Duration, BPM, or **PP at your target accuracy**
-- **Adjustable scan depth** — pull anywhere from 300 up to 20,000 maps per fetch (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max). Bigger scans dig deeper for matches — handy for wide star ranges or "unplayed" hunts — at the cost of a longer fetch
+- **Adjustable scan depth** — pull anywhere from 300 up to 20,000 maps per fetch (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max), **default 2.5k**. Bigger scans dig deeper for matches — handy for wide star ranges or "unplayed" hunts — at the cost of a longer fetch; drop to 300 for a quick pull
 - Live client-side filtering: tweak a value and the match count updates instantly, no re-fetch
 - Press **Enter** in any filter to fetch; the Fetch button flags when your filters have drifted from your last pull
 
