@@ -640,6 +640,15 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
               <option value="nofc">Played, not FC</option>
               <option value="nearfc">Near-miss FC</option>
             </select></div>
+          <div class="field"><label class="field-label">Last played <span class="info" data-tip="Filter by how recently you played each map, using your synced scores. 'Within' keeps maps you've played inside that window; 'Over a year ago' finds ones you haven't touched in a while — handy for rebuilding a set to revisit. Only affects maps you've played.">i</span></label>
+            <select id="playRecency">
+              <option value="any" selected>Any time</option>
+              <option value="1m">Within 1 month</option>
+              <option value="3m">Within 3 months</option>
+              <option value="6m">Within 6 months</option>
+              <option value="1y">Within 1 year</option>
+              <option value="o1y">Over a year ago</option>
+            </select></div>
           <div class="field"><label class="field-label">Only my acc below <small class="muted">(%, played maps)</small></label>
             <input type="number" id="accMax" min="0" max="100" step="0.5" placeholder="e.g. 90" /></div>
           <label class="field-label" style="margin-top:2px">Quick lists</label>
@@ -1872,7 +1881,7 @@ window.PP = (function () {
   ['metaTitle','metaAuthor','metaDescription',
    'fType','fSort','fOrder','fMaxScan','connMode','customProxy','relayAdv',
    'presetName','presetSave','presetSelect','presetLoad','presetDelete','presetPanel',
-   'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','accMax','previewScore',
+   'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','playRecency','accMax','previewScore',
    'starMin','starMax','starMinNum','starMaxNum','starBandFill','starRangeLabel',
    'fMapper','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax','diffEnable','diffChips',
    'fetchBtn','fetchBtn2','resetBtn','downloadBtn','downloadBtn2',
@@ -1918,7 +1927,7 @@ window.PP = (function () {
       starMin: clamp(num(el.starMinNum, 0), 0, 15), starMax: clamp(num(el.starMaxNum, 15), 0, 15),
       mapperTerms: mapperTerms, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
       diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
-      playStatus: el.playStatus.value, accMax: num(el.accMax, null),
+      playStatus: el.playStatus.value, recency: el.playRecency.value, accMax: num(el.accMax, null),
       npsMin: num(el.fNpsMin, null), npsMax: num(el.fNpsMax, null),
       durMin: num(el.fDurMin, null), durMax: num(el.fDurMax, null),
       bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null),
@@ -2051,11 +2060,13 @@ window.PP = (function () {
   // ---- client filtering -----------------------------------------------------
   function applyClientFilters() {
     var f = getFilters();
+    var nowSec = Date.now() / 1000;
+    var recencyDays = { '1m': 31, '3m': 92, '6m': 183, '1y': 366 };
     var out = state.raw.filter(function (s) {
       if (s.stars > 0 && (s.stars < f.starMin || s.stars > f.starMax)) return false;
       if (f.modes.length && f.modes.indexOf(s.modeName) === -1) return false;
       if (f.diffEnabled && f.diffs.length && f.diffs.indexOf(s.difficultyName) === -1) return false;
-      if (state.player && (f.playStatus !== 'any' || f.accMax != null)) {
+      if (state.player && (f.playStatus !== 'any' || f.accMax != null || f.recency !== 'any')) {
         var sc = scoreFor(s), played = !!sc;
         if (f.playStatus === 'unplayed' && played) return false;
         if (f.playStatus === 'played' && !played) return false;
@@ -2063,6 +2074,12 @@ window.PP = (function () {
         if (f.playStatus === 'nofc' && (!played || sc.fc)) return false;
         if (f.playStatus === 'nearfc' && (!played || sc.fc || !(sc.m <= 3 && (sc.fa || 0) >= 0.90))) return false;
         if (f.accMax != null) { if (!played) return false; if (sc.a * 100 >= f.accMax) return false; }
+        if (f.recency !== 'any') {
+          if (!played || !sc.t) return false;
+          var ageDays = (nowSec - sc.t) / 86400;
+          if (f.recency === 'o1y') { if (ageDays <= 365) return false; }
+          else if (ageDays > recencyDays[f.recency]) return false;
+        }
       }
       if (f.npsMin != null && s.nps < f.npsMin) return false;
       if (f.npsMax != null && s.nps > f.npsMax) return false;
@@ -2245,6 +2262,7 @@ window.PP = (function () {
       } else {
         var why = [];
         if (state.player && el.playStatus.value !== 'any') why.push('your <b>“' + playStatusLabel(el.playStatus.value) + '”</b> play filter');
+        if (state.player && el.playRecency.value !== 'any') why.push('your <b>last-played</b> filter');
         if (num(el.ppMin, null) != null || num(el.ppMax, null) != null) why.push('your <b>PP range</b>');
         var tail = why.length
           ? 'Nothing in this batch matches ' + why.join(' and ') + '. Try raising <b>Maps to scan</b>' + (why.length === 1 && state.player && el.playStatus.value !== 'any' ? ' (an “unplayed” hunt often needs a bigger scan)' : '') + ', or loosen that filter.'
@@ -2856,7 +2874,7 @@ window.PP = (function () {
     el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500';
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
-    if (el.playStatus) el.playStatus.value = 'any'; if (el.accMax) el.accMax.value = '';
+    if (el.playStatus) el.playStatus.value = 'any'; if (el.playRecency) el.playRecency.value = 'any'; if (el.accMax) el.accMax.value = '';
     el.ppMin.value = ''; el.ppMax.value = '';
     refreshStarUI(); applyClientFilters(); if (silent !== true) toast('Filters reset (your playlist is kept).', 'ok');
   }
@@ -2965,6 +2983,7 @@ window.PP = (function () {
     el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); });
     el.disconnectBtn.addEventListener('click', disconnectPlayer);
     el.playStatus.addEventListener('change', applyClientFilters);
+    el.playRecency.addEventListener('change', applyClientFilters);
     el.accMax.addEventListener('input', applyClientFilters);
     document.querySelectorAll('#quickLists [data-quick]').forEach(function (btn) { btn.addEventListener('click', function () { applyQuickList(this.dataset.quick); }); });
     // Results-side play-history chips (mirror the profile dropdown)
