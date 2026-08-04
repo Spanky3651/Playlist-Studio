@@ -185,6 +185,15 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .cover-opts select{width:auto;padding:7px 9px;}
 .cover-opts #regenCoverBtn{margin-left:auto;}
 #playRecency:disabled{opacity:.45;cursor:not-allowed;}
+.icon-lib{margin-top:10px;}
+.icon-lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:9px;margin-top:6px;}
+.icon-lib-item{position:relative;}
+.icon-lib-thumb{width:100%;aspect-ratio:1;border:1px solid var(--border-2);border-radius:8px;overflow:hidden;padding:0;cursor:pointer;background:#000;display:block;}
+.icon-lib-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.icon-lib-thumb:hover{border-color:var(--blue);box-shadow:var(--blue-glow);}
+.icon-lib-del{position:absolute;top:-7px;right:-7px;width:19px;height:19px;border-radius:50%;border:1px solid var(--border-2);background:#1a2030;color:#fff;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.icon-lib-del:hover{background:var(--danger);border-color:var(--danger);}
+.icon-lib-empty{font-size:12.5px;margin:4px 0 0;color:var(--muted-2);}
 .panel-sub code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:13px;}
 .panel-body{padding:15px 16px;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
@@ -998,13 +1007,24 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
               <input type="text" id="coverSubtitle" placeholder="(auto: ★ · songs)" /></div>
           </div>
           <div class="field custom-file" id="customFileField" hidden><label class="field-label">Custom image file</label>
-            <input type="file" id="customImageInput" accept="image/*" /></div>
+            <input type="file" id="customImageInput" accept="image/*" />
+            <div class="icon-lib"><label class="field-label">Your saved icons <small class="muted">(click to reuse)</small></label>
+              <div class="icon-lib-grid" id="iconLibraryGrid"></div></div></div>
           <div class="cover-opts">
             <label class="field-label">Text <span class="info" data-tip="Where the title/subtitle sit on the cover. Off hides them for a clean art-only cover.">i</span></label>
             <select id="coverTextPos">
               <option value="bottom" selected>Bottom</option>
               <option value="center">Center</option>
               <option value="off">Off</option>
+            </select>
+            <label class="field-label">Color</label>
+            <select id="coverTextColor">
+              <option value="#ffffff" selected>White</option>
+              <option value="#000000">Black</option>
+              <option value="#ffd54a">Gold</option>
+              <option value="#22e0a1">Green</option>
+              <option value="#2f8cff">Blue</option>
+              <option value="#ff2d55">Red</option>
             </select>
             <button class="ghost" id="regenCoverBtn" title="Redraw this style with a fresh random pattern">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Shuffle art</button>
@@ -1542,15 +1562,22 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 
   // ---- text overlay ---------------------------------------------------------
   function fontStack() { return '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'; }
-  function drawTextBlock(ctx, w, h, title, subtitle, pos) {
-    pos = pos || 'bottom';
+  function isDarkColor(hex) {
+    var h = (hex || '#ffffff').replace('#', '');
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+    return (0.299*r + 0.587*g + 0.114*b) < 140;
+  }
+  function drawTextBlock(ctx, w, h, title, subtitle, pos, color) {
+    pos = pos || 'bottom'; color = color || '#ffffff';
+    var dark = isDarkColor(color), sc = dark ? '255,255,255' : '0,0,0';
     if (pos === 'center') {
       var gc = ctx.createRadialGradient(w/2, h/2, w*0.08, w/2, h/2, w*0.62);
-      gc.addColorStop(0, 'rgba(0,0,0,0.72)'); gc.addColorStop(1, 'rgba(0,0,0,0)');
+      gc.addColorStop(0, 'rgba(' + sc + ',0.72)'); gc.addColorStop(1, 'rgba(' + sc + ',0)');
       ctx.fillStyle = gc; ctx.fillRect(0, 0, w, h);
     } else {
       var g = ctx.createLinearGradient(0, h*0.55, 0, h);
-      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.82)');
+      g.addColorStop(0, 'rgba(' + sc + ',0)'); g.addColorStop(1, 'rgba(' + sc + ',0.82)');
       ctx.fillStyle = g; ctx.fillRect(0, h*0.55, w, h*0.45);
     }
     ctx.textAlign = 'center';
@@ -1558,9 +1585,9 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
     ctx.font = '800 ' + fontSize + 'px ' + fontStack();
     while (ctx.measureText(t).width > w*0.88 && fontSize > 18) { fontSize -= 2; ctx.font = '800 ' + fontSize + 'px ' + fontStack(); }
     var ty = pos === 'center' ? h*0.5 : h*0.86;
-    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12; ctx.fillStyle = '#ffffff';
+    ctx.save(); ctx.shadowColor = dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12; ctx.fillStyle = color;
     ctx.fillText(t, w/2, ty); ctx.restore();
-    if (subtitle) { ctx.font = '600 ' + (w*0.045) + 'px ' + fontStack(); ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.fillText(subtitle, w/2, pos === 'center' ? ty + fontSize*0.82 : h*0.94); }
+    if (subtitle) { ctx.font = '600 ' + (w*0.045) + 'px ' + fontStack(); ctx.fillStyle = dark ? 'rgba(0,0,0,0.82)' : 'rgba(255,255,255,0.82)'; ctx.fillText(subtitle, w/2, pos === 'center' ? ty + fontSize*0.82 : h*0.94); }
   }
 
   // ---- public API -----------------------------------------------------------
@@ -1580,13 +1607,21 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
       ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
       ctx.save(); ctx.strokeStyle = hexA(c.b, 0.5); ctx.lineWidth = Math.max(2, w*0.008);
       ctx.shadowColor = c.b; ctx.shadowBlur = w*0.028; ctx.strokeRect(w*0.012, w*0.012, w-w*0.024, h-w*0.024); ctx.restore();
-      if (!opts.noText && opts.textPos !== 'off') drawTextBlock(ctx, w, h, opts.title, opts.subtitle, opts.textPos);
+      if (!opts.noText && opts.textPos !== 'off') drawTextBlock(ctx, w, h, opts.title, opts.subtitle, opts.textPos, opts.textColor);
       return canvas;
     },
 
     toDataURL: function (canvas) {
       try { return canvas.toDataURL('image/png'); }
       catch (e) { console.error('Cover export failed:', e); return ''; }
+    },
+    // Paint the title/subtitle overlay onto a canvas that already has artwork
+    // (used to write text over a custom uploaded image). textPos 'off' = no-op.
+    drawTextOverlay: function (canvas, opts) {
+      opts = opts || {};
+      if (opts.textPos === 'off') return canvas;
+      drawTextBlock(canvas.getContext('2d'), canvas.width, canvas.height, opts.title, opts.subtitle, opts.textPos, opts.textColor);
+      return canvas;
     },
 
     loadCustomImage: function (canvas, file) {
@@ -1864,6 +1899,7 @@ window.PP = (function () {
   var PLIST_KEY = 'playlistStudio.playlists.v1';
   var SESSION_KEY = 'playlistStudio.session.v1';
   var PLAYER_KEY = 'playlistStudio.player.v1';
+  var ICON_KEY = 'playlistStudio.icons.v1';
 
   var RELAYS = [
     { id: 'proxy.cors.sh',  build: function (a) { return 'https://proxy.cors.sh/' + a; }, unwrap: JSON.parse },
@@ -1873,7 +1909,7 @@ window.PP = (function () {
     { id: 'corsproxy.io',   build: function (a) { return 'https://corsproxy.io/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse }
   ];
 
-  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -1890,8 +1926,8 @@ window.PP = (function () {
    'matchCount','basketCount','basketTime','basketUnique','counterMeta',
    'resultCount','playlistCount','resultList','basketList',
    'addAllBtn','addTopBtn','addTopN','addRandomBtn','clearResultsBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
-   'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','regenCoverBtn',
-   'useCustomImage','customFileField','customImageInput',
+   'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','coverTextColor','regenCoverBtn',
+   'useCustomImage','customFileField','customImageInput','iconLibraryGrid',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
@@ -2365,16 +2401,16 @@ window.PP = (function () {
     return base + (n ? '  ·  ' + n + ' songs' : '');
   }
   function updateCover(force) {
-    if (state.usingCustom) return;
     var title = el.coverText.value.trim() || el.metaTitle.value.trim() || 'Playlist Studio';
     var subtitle = el.coverSubtitle.value.trim() || coverSubtitle();
-    var pos = state.coverTextPos;
+    var pos = state.coverTextPos, color = state.coverTextColor;
+    if (state.usingCustom) { renderCustomCover(title, subtitle, pos, color); return; }
     // Skip the expensive canvas redraw + toDataURL when nothing that affects the
     // cover has changed (e.g. typing in a search filter). Same pixels either way.
-    var sig = title + ' ' + subtitle + ' ' + state.coverStyle + ' ' + state.coverAccent + ' ' + pos + ' ' + state.coverSeed;
+    var sig = title + ' ' + subtitle + ' ' + state.coverStyle + ' ' + state.coverAccent + ' ' + pos + ' ' + state.coverSeed + ' ' + color;
     if (!force && sig === state._coverSig && state.coverDataUrl) return;
     state._coverSig = sig;
-    IconGenerator.generate(el.coverCanvas, { style: state.coverStyle, accent: state.coverAccent, title: title, subtitle: subtitle, textPos: pos, seed: title + '|' + state.coverStyle + '|' + state.coverSeed });
+    IconGenerator.generate(el.coverCanvas, { style: state.coverStyle, accent: state.coverAccent, title: title, subtitle: subtitle, textPos: pos, textColor: color, seed: title + '|' + state.coverStyle + '|' + state.coverSeed });
     state.coverDataUrl = IconGenerator.toDataURL(el.coverCanvas);
   }
   // Build the clickable style thumbnails + accent swatches.
@@ -2405,12 +2441,79 @@ window.PP = (function () {
       el.coverAccentRow.appendChild(sw);
     });
   }
-  function handleCustomImage(file) {
-    IconGenerator.loadCustomImage(el.coverCanvas, file)
-      .then(function (d) { state.coverDataUrl = d; state.usingCustom = true; renderExport(); toast('Custom cover loaded.', 'ok'); })
-      .catch(function (err) { toast(err.message, 'err'); });
+  // Composite the stored custom image + the title/subtitle overlay onto the
+  // cover canvas. Keeps the raw image (state.customBaseUrl) so the text can be
+  // re-drawn whenever the title, subtitle, or text position changes.
+  function renderCustomCover(title, subtitle, pos, color) {
+    if (!state.customImgEl) return;
+    var cv = el.coverCanvas, ctx = cv.getContext('2d'), w = cv.width, h = cv.height, img = state.customImgEl;
+    ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+    var scl = Math.max(w/img.width, h/img.height), dw = img.width*scl, dh = img.height*scl;
+    ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
+    if (pos !== 'off') IconGenerator.drawTextOverlay(cv, { title: title, subtitle: subtitle, textPos: pos, textColor: color });
+    state.coverDataUrl = cv.toDataURL('image/png');
   }
-  // Paint a data-URL cover (used when importing a .bplist that carries an image).
+  // Load a custom image (upload or restored from a saved playlist) as an
+  // editable base — text can then be written over it like the procedural covers.
+  function loadCustomImageEl(dataUrl) {
+    state.usingCustom = true; el.useCustomImage.checked = true; el.customFileField.hidden = false;
+    var img = new Image();
+    img.onload = function () { state.customImgEl = img; state.customBaseUrl = dataUrl; updateCover(true); renderExport(); };
+    img.onerror = function () { toast('That image could not be decoded.', 'err'); };
+    img.src = dataUrl;
+  }
+  // Shrink any uploaded image to a 512px cover-fit JPEG — matches the cover
+  // resolution and keeps saved icons small enough for browser storage.
+  function normalizeIcon(src, cb) {
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas'); c.width = 512; c.height = 512;
+      var ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 512, 512);
+      var s = Math.max(512/img.width, 512/img.height), dw = img.width*s, dh = img.height*s;
+      ctx.drawImage(img, (512-dw)/2, (512-dh)/2, dw, dh);
+      cb(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = function () { toast('That image could not be decoded.', 'err'); };
+    img.src = src;
+  }
+  // ---- saved-icon library (reuse uploaded images across playlists) ----------
+  function lsGetIcons() { try { var a = JSON.parse(localStorage.getItem(ICON_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function lsSetIcons(a) { try { localStorage.setItem(ICON_KEY, JSON.stringify(a)); return true; } catch (e) { return false; } }
+  function saveUploadedIcon(url) {
+    var a = lsGetIcons(); if (a.indexOf(url) !== -1) return;
+    a.unshift(url); if (a.length > 24) a = a.slice(0, 24);
+    if (!lsSetIcons(a)) toast('Icon applied, but your saved-icon shelf is full — remove a few to keep new ones.', 'warn');
+  }
+  function deleteIcon(url) { lsSetIcons(lsGetIcons().filter(function (u) { return u !== url; })); renderIconLibrary(); }
+  function renderIconLibrary() {
+    if (!el.iconLibraryGrid) return;
+    var a = lsGetIcons();
+    if (!a.length) { el.iconLibraryGrid.innerHTML = '<p class="icon-lib-empty">Icons you upload are saved here so you can reuse them on other playlists.</p>'; return; }
+    el.iconLibraryGrid.innerHTML = '';
+    a.forEach(function (url) {
+      var wrap = document.createElement('div'); wrap.className = 'icon-lib-item';
+      var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'icon-lib-thumb'; btn.title = 'Use this icon';
+      var im = document.createElement('img'); im.src = url; im.alt = ''; btn.appendChild(im);
+      btn.addEventListener('click', function () { loadCustomImageEl(url); toast('Icon applied.', 'ok'); });
+      var del = document.createElement('button'); del.type = 'button'; del.className = 'icon-lib-del'; del.title = 'Remove from your saved icons'; del.textContent = '×';
+      del.addEventListener('click', function (ev) { ev.stopPropagation(); deleteIcon(url); });
+      wrap.appendChild(btn); wrap.appendChild(del); el.iconLibraryGrid.appendChild(wrap);
+    });
+  }
+  function handleCustomImage(file) {
+    if (!file || !/^image\//.test(file.type)) { toast('Please choose a valid image file.', 'err'); return; }
+    var reader = new FileReader();
+    reader.onerror = function () { toast('Could not read the image file.', 'err'); };
+    reader.onload = function () {
+      normalizeIcon(reader.result, function (url) {
+        loadCustomImageEl(url); saveUploadedIcon(url); renderIconLibrary();
+        toast('Custom cover loaded.', 'ok');
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+  // Paint a finished data-URL cover as-is (used when importing a .bplist whose
+  // image already has text baked in — no overlay so it isn't doubled).
   function setCoverFromDataUrl(dataUrl) {
     var img = new Image();
     img.onload = function () {
@@ -2421,6 +2524,7 @@ window.PP = (function () {
     };
     img.src = dataUrl;
     state.coverDataUrl = dataUrl; state.usingCustom = true;
+    state.customImgEl = null; state.customBaseUrl = '';
     el.useCustomImage.checked = true; el.customFileField.hidden = false;
   }
 
@@ -2517,7 +2621,10 @@ window.PP = (function () {
     var name = el.playlistName.value.trim(); if (!name) { toast('Name the playlist first.', 'warn'); return; }
     if (!state.basket.length) { toast('Add some songs before saving.', 'warn'); return; }
     var o = lsGetPl();
-    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value }, entries: state.basket };
+    var cover = { usingCustom: state.usingCustom, style: state.coverStyle, accent: state.coverAccent,
+      seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
+    if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
+    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value }, entries: state.basket, cover: cover };
     if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
     else toast('Could not save — browser storage is full or unavailable.', 'err');
   }
@@ -2526,7 +2633,21 @@ window.PP = (function () {
     var p = lsGetPl()[name]; if (!p) { toast('That playlist is gone.', 'warn'); return; }
     state.basket = (p.entries || []).slice();
     if (p.meta) { el.metaTitle.value = p.meta.title || el.metaTitle.value; el.metaAuthor.value = p.meta.author || el.metaAuthor.value; el.metaDescription.value = p.meta.description || ''; }
-    state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; state._coverSig = null;
+    state._coverSig = null;
+    var cv = p.cover;
+    if (cv) {
+      el.coverText.value = cv.text || ''; el.coverSubtitle.value = cv.subtitle || '';
+      state.coverStyle = cv.style || state.coverStyle; state.coverAccent = cv.accent || state.coverAccent;
+      state.coverSeed = cv.seed || 0; state.coverTextPos = cv.textPos || 'bottom'; el.coverTextPos.value = state.coverTextPos;
+      state.coverTextColor = cv.textColor || '#ffffff'; el.coverTextColor.value = state.coverTextColor;
+      buildCoverPickers();
+      if (cv.usingCustom && cv.dataUrl) {
+        if (cv.customEditable) loadCustomImageEl(cv.dataUrl);
+        else setCoverFromDataUrl(cv.dataUrl);
+      } else { state.usingCustom = false; state.customImgEl = null; state.customBaseUrl = ''; el.useCustomImage.checked = false; el.customFileField.hidden = true; }
+    } else {
+      state.usingCustom = false; state.customImgEl = null; state.customBaseUrl = ''; el.useCustomImage.checked = false; el.customFileField.hidden = true;
+    }
     renderAll(); toast('Loaded "' + name + '" (' + state.basket.length + ' maps).', 'ok');
   }
   function deletePlaylist() {
@@ -3017,12 +3138,14 @@ window.PP = (function () {
 
     // cover
     buildCoverPickers();
+    renderIconLibrary();
     el.coverText.addEventListener('input', updateCover);
     el.coverSubtitle.addEventListener('input', updateCover);
+    el.coverTextColor.addEventListener('change', function () { state.coverTextColor = el.coverTextColor.value; updateCover(true); });
     el.coverTextPos.addEventListener('change', function () { state.coverTextPos = el.coverTextPos.value; updateCover(true); });
-    el.metaTitle.addEventListener('input', function () { if (!state.usingCustom) updateCover(); });
+    el.metaTitle.addEventListener('input', function () { updateCover(); });
     el.regenCoverBtn.addEventListener('click', function () { state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; state.coverSeed = (state.coverSeed || 0) + 1; updateCover(true); renderExport(); });
-    el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } });
+    el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (el.useCustomImage.checked) renderIconLibrary(); if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } else if (state.customImgEl) { state.usingCustom = true; updateCover(true); renderExport(); } });
     el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
 
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
