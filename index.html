@@ -879,6 +879,7 @@ a.credit .c3{font-family:var(--mono);font-size:9.5px;color:var(--red);}
           <input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" />
         </div>
         <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
+        <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear</button>
         <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>Collapse dupes</span></label>
       </div>
       <div class="play-bar" id="playFilterBar">
@@ -1702,7 +1703,7 @@ window.PP = (function () {
    'fetchProgress','barFill','fetchProgressText','statusPill','statusText','brandCount',
    'matchCount','basketCount','basketTime','basketUnique','counterMeta',
    'resultCount','playlistCount','resultList','basketList',
-   'addAllBtn','addTopBtn','addTopN','addRandomBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
+   'addAllBtn','addTopBtn','addTopN','addRandomBtn','clearResultsBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
    'coverCanvas','coverStyleGrid','coverAccentRow','coverText','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
@@ -2128,6 +2129,7 @@ window.PP = (function () {
   function renderControls() {
     var hasResults = state.filtered.length > 0, hasBasket = state.basket.length > 0;
     el.addAllBtn.disabled = !hasResults; el.addTopBtn.disabled = !hasResults; el.addRandomBtn.disabled = !hasResults;
+    el.clearResultsBtn.disabled = state.raw.length === 0;
     el.shuffleBtn.disabled = el.sortPlaylistBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
     el.enrichBtn.disabled = state.enriching || needsEnrich().length === 0;
     el.refreshStarsBtn.disabled = state.enriching || !hasBasket;
@@ -2671,7 +2673,7 @@ window.PP = (function () {
   }
 
   // ---- reset ----------------------------------------------------------------
-  function resetFilters() {
+  function resetFilters(silent) {
     el.starMinNum.value = '0'; el.starMaxNum.value = '15'; el.fMapper.value = ''; el.fSearch.value = '';
     ['fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
     el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500';
@@ -2679,7 +2681,12 @@ window.PP = (function () {
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
     if (el.playStatus) el.playStatus.value = 'any'; if (el.accMax) el.accMax.value = '';
     el.ppMin.value = ''; el.ppMax.value = '';
-    refreshStarUI(); applyClientFilters(); toast('Filters reset (your playlist is kept).', 'ok');
+    refreshStarUI(); applyClientFilters(); if (silent !== true) toast('Filters reset (your playlist is kept).', 'ok');
+  }
+  function clearSearch() {
+    state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
+    resetFilters(true);
+    toast('Search cleared — results and filters reset.', 'ok');
   }
 
   // ---- tooltips -------------------------------------------------------------
@@ -2741,6 +2748,7 @@ window.PP = (function () {
     el.shuffleBtn.addEventListener('click', shuffleBasket);
     el.sortPlaylistBtn.addEventListener('click', sortBasketByStar);
     el.clearBasketBtn.addEventListener('click', clearBasket);
+    el.clearResultsBtn.addEventListener('click', clearSearch);
     el.enrichBtn.addEventListener('click', enrichImported);
     el.refreshStarsBtn.addEventListener('click', refreshStars);
 
