@@ -568,9 +568,107 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 .toast.ok{border-color:var(--green);box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 14px rgba(34,224,161,.4);}
 .toast.ok::before{content:"✓";color:var(--green);}
 
+/* ============================================================
+   MOBILE ENHANCEMENTS (≤720px). Everything above is unchanged;
+   these rules only take effect on small screens — desktop is
+   never affected. Bottom tab bar switches Filters / Results /
+   Playlist so you don't scroll one endless column.
+   ============================================================ */
+.m-tabbar{display:none;}
+@media(max-width:720px){
+  body{padding-bottom:66px;}
+  /* 16px inputs stop iOS from zooming the page on focus */
+  input,select,textarea{font-size:16px !important;}
+
+  .layout{padding:12px 12px 20px;gap:12px;}
+  .col-left{gap:12px;}
+  .col-right{gap:12px;}
+
+  /* compact topbar */
+  .topbar{padding:10px 12px;gap:10px;}
+  .brand .logo{width:34px;height:34px;}
+  .brand h1{font-size:17px;}
+  .brand .sub{display:none;}
+  .topbar-actions{gap:7px;}
+  #fetchBtn{display:none;} /* redundant on mobile: big Fetch + auto-jump to Results */
+
+  /* ---- tabbed views ---- */
+  body.m-view-filters .col-right{display:none;}
+  body.m-view-results .col-left,
+  body.m-view-playlist .col-left{display:none;}
+  body.m-view-results .col-right>.playlist-panel{display:none;}
+  body.m-view-results .col-right>.panel:not(.summary-panel):not(.list-panel){display:none;}
+  body.m-view-playlist .col-right>.list-panel:not(.playlist-panel){display:none;}
+
+  /* Fetch floats just above the tab bar while filtering */
+  .big-fetch{position:sticky;bottom:74px;}
+
+  /* fixed bottom tab bar */
+  .m-tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:200;
+    background:linear-gradient(180deg,rgba(6,9,14,.96),rgba(4,6,10,.99));
+    border-top:1px solid var(--border);backdrop-filter:blur(10px);
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
+    box-shadow:0 -6px 24px rgba(0,0,0,.55);
+  }
+  .m-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:transparent;border:1px solid transparent;border-radius:10px;
+    color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.3px;padding:6px 4px;min-height:50px;
+  }
+  .m-tab svg{width:20px;height:20px;}
+  .m-tab.active{color:#fff;background:#0e1420;border-color:var(--border-2);box-shadow:var(--blue-glow);}
+  .m-tab.active svg{color:var(--blue);}
+  .m-badge{display:inline-block;min-width:17px;padding:0 5px;border-radius:9px;background:var(--blue);color:#04070d;font-size:11px;font-weight:800;line-height:17px;vertical-align:middle;}
+  .m-tab[data-view="playlist"] .m-badge{background:var(--red);color:#fff;}
+  .m-tab .m-badge:empty{display:none;}
+
+  /* bigger, thumb-friendly touch targets */
+  .list-actions{gap:8px;padding:10px 12px;}
+  .list-actions button{min-height:40px;}
+  .row-btn{min-width:38px;min-height:36px;}
+  .reorder{min-width:34px;min-height:30px;}
+  .quick-lists button,.play-chip,.chip,.scan-chips button,.pcard-actions button{min-height:36px;}
+  .topbar-actions button{min-height:40px;}
+
+  /* full-screen modals */
+  .modal-back{padding:0;}
+  .modal{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0;}
+}
+
+/* ============================================================
+   BEAT-SABER ANIMATIONS — gentle, GPU-light, no flashing/strobe.
+   Everything is gated behind body.anim, which is OFF under the OS
+   "reduce motion" setting or the topbar toggle. When off, the page
+   looks exactly as it did before.
+   ============================================================ */
+#fxCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.5;display:none;}
+body.anim #fxCanvas{display:block;}
+#fxSlash{position:fixed;top:0;left:-45%;width:45%;height:100%;z-index:250;pointer-events:none;opacity:0;transform:skewX(-16deg);
+  background:linear-gradient(100deg,transparent,rgba(255,45,85,0) 42%,rgba(255,255,255,.9) 50%,rgba(47,140,255,0) 58%,transparent);}
+body.anim #fxSlash.go{animation:fx-slash .55s ease-out;}
+@keyframes fx-slash{0%{left:-45%;opacity:0}12%{opacity:.95}100%{left:135%;opacity:0}}
+@keyframes fx-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+body.anim .fx-rise{animation:fx-rise .5s cubic-bezier(.2,.7,.3,1) both;}
+@keyframes fx-pop{0%{transform:scale(1)}35%{transform:scale(1.26)}100%{transform:scale(1)}}
+body.anim .fx-pop{animation:fx-pop .34s ease;}
+@keyframes fx-ring{0%{box-shadow:0 0 0 0 rgba(34,224,161,.5)}100%{box-shadow:0 0 0 15px rgba(34,224,161,0)}}
+body.anim .fx-ring{animation:fx-ring .5s ease-out;}
+@keyframes fx-sheen{0%{background-position:-160% 0}100%{background-position:260% 0}}
+body.anim .big-fetch{overflow:hidden;}
+body.anim .big-fetch::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.13) 50%,transparent 58%);background-size:220% 100%;animation:fx-sheen 3.8s ease-in-out infinite;}
+@keyframes fx-underline{0%,100%{opacity:.35}50%{opacity:.85}}
+body.anim .topbar::after{animation:fx-underline 4s ease-in-out infinite;}
+@keyframes fx-logo{0%,100%{filter:drop-shadow(0 0 2px rgba(255,45,85,.45))}50%{filter:drop-shadow(0 0 8px rgba(47,140,255,.7))}}
+body.anim .brand .logo{animation:fx-logo 4.6s ease-in-out infinite;}
+.anim-toggle.off{opacity:.5;}
 </style>
 </head>
 <body>
+
+<canvas id="fxCanvas" aria-hidden="true"></canvas>
+<div id="fxSlash" aria-hidden="true"></div>
 
 <!-- ============ TOPBAR ============ -->
 <header class="topbar">
@@ -584,6 +682,8 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
+    <button class="ghost anim-toggle" id="animToggle" title="Toggle animations" aria-label="Toggle animations">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3"/></svg></button>
     <button class="ghost" id="resetBtn" title="Reset filters — your playlist is kept">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset</button>
     <button class="primary" id="fetchBtn" title="Fetch maps from BeatLeader">
@@ -1125,6 +1225,22 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 
 <div class="toast" id="toast"></div>
 <div id="tipbox"></div>
+
+<!-- ============ MOBILE TAB BAR (hidden on desktop) ============ -->
+<nav class="m-tabbar" id="mTabbar" aria-label="Sections">
+  <button type="button" class="m-tab active" data-view="filters">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+    <span>Filters</span>
+  </button>
+  <button type="button" class="m-tab" data-view="results">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Results <span class="m-badge" id="mResultsBadge"></span></span>
+  </button>
+  <button type="button" class="m-tab" data-view="playlist">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <span>Playlist <span class="m-badge" id="mPlaylistBadge"></span></span>
+  </button>
+</nav>
 
 <script>
 /* ============================================================
@@ -1928,6 +2044,7 @@ window.PP = (function () {
    'addAllBtn','addTopBtn','addTopN','addRandomBtn','clearResultsBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
    'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','coverTextColor','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput','iconLibraryGrid',
+   'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','animToggle',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
@@ -2063,6 +2180,7 @@ window.PP = (function () {
   }
   function runFetch() {
     if (state.fetching) return;
+    fxSlashGo();
     var f = getFilters(); state.fetching = true; state.pinnedRelay = null;
     [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = true; });
     el.fetchProgress.hidden = false; el.fetchProgressText.textContent = 'Connecting…'; el.barFill.style.width = '8%';
@@ -2084,6 +2202,7 @@ window.PP = (function () {
         if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched — try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
         else { setStatus('Loaded ' + collected.length + ' maps' + (state.pinnedRelay ? ' · ' + state.pinnedRelay.id : ''), 'on'); toast('Loaded ' + collected.length + ' maps — now add the ones you want.', 'ok'); }
         applyClientFilters();
+        if (collected.length && isMobileView()) setMobileView('results');
       }).catch(function (err) {
         console.error(err); setStatus('Fetch failed', 'err'); var msg = err.message || 'Fetch failed.';
         el.counterMeta.textContent = msg; toast(msg, 'err');
@@ -2347,11 +2466,15 @@ window.PP = (function () {
   }
   function renderSummary() {
     var matched = state.filtered.length, entries = state.basket.length, uniq = uniqueHashes(state.basket);
-    el.matchCount.textContent = matched;
-    el.basketCount.textContent = entries;
+    var grew = entries > (state._prevBasket || 0); state._prevBasket = entries;
+    countTo(el.matchCount, matched);
+    countTo(el.basketCount, entries);
     el.basketUnique.textContent = uniq;
     el.basketTime.textContent = fmtDur(basketRuntime());
     el.brandCount.textContent = uniq + ' in playlist';
+    if (el.mResultsBadge) el.mResultsBadge.textContent = state.filtered.length || '';
+    if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
+    if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
     if (!state.raw.length) el.counterMeta.textContent = 'Set filters and fetch to begin.';
     else if (!entries) el.counterMeta.textContent = matched + ' maps matched. Add the ones you want to build your playlist.';
     else {
@@ -3028,6 +3151,67 @@ window.PP = (function () {
     document.body.addEventListener('mouseout', function (e) { if (e.target.closest('.info')) el.tipbox.style.display = 'none'; });
   }
 
+  // ---- Beat Saber animations (ambient canvas + UI flourishes) ---------------
+  var FX = { raf: null, cubes: [], streaks: [], W: 0, H: 0, dpr: 1, running: false };
+  function fxRand(a, b) { return a + (b - a) * Math.random(); }
+  function fxResize() { var cv = el.fxCanvas; if (!cv) return; FX.dpr = Math.min(2, window.devicePixelRatio || 1); FX.W = cv.width = Math.floor(window.innerWidth * FX.dpr); FX.H = cv.height = Math.floor(window.innerHeight * FX.dpr); }
+  function fxMkStreak() { return { x: fxRand(0, FX.W), y: fxRand(FX.H*0.15, FX.H), len: fxRand(120,300)*FX.dpr, a: 0, va: fxRand(0.002,0.006), vy: fxRand(-0.6,-1.5)*FX.dpr, col: Math.random()<0.5 ? '#ff2d55' : '#2f8cff' }; }
+  function fxSeed() {
+    var n = window.innerWidth <= 720 ? 7 : 14, i;
+    FX.cubes = [];
+    for (i = 0; i < n; i++) FX.cubes.push({ x: fxRand(0,FX.W), y: fxRand(0,FX.H), s: fxRand(18,44)*FX.dpr, rot: fxRand(0,Math.PI), vr: fxRand(-0.003,0.003), vy: fxRand(-0.28,-0.06)*FX.dpr, col: Math.random()<0.5 ? '#ff2d55' : '#2f8cff', a: fxRand(0.05,0.15) });
+    FX.streaks = []; for (i = 0; i < Math.max(2, Math.floor(n/4)); i++) FX.streaks.push(fxMkStreak());
+  }
+  function fxDraw() {
+    var ctx = el.fxCanvas.getContext('2d'), i, c, s, r, hh;
+    ctx.clearRect(0, 0, FX.W, FX.H);
+    for (i = 0; i < FX.streaks.length; i++) {
+      s = FX.streaks[i];
+      ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(0.45, s.a)); ctx.strokeStyle = s.col; ctx.lineWidth = 2*FX.dpr; ctx.lineCap = 'round'; ctx.shadowColor = s.col; ctx.shadowBlur = 16*FX.dpr;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + s.len*0.5, s.y - s.len); ctx.stroke(); ctx.restore();
+      s.y += s.vy; s.a += s.va; if (s.a > 0.45) s.va = -Math.abs(s.va);
+      if (s.a <= 0) { FX.streaks[i] = fxMkStreak(); FX.streaks[i].y = FX.H + fxRand(20,140)*FX.dpr; }
+    }
+    for (i = 0; i < FX.cubes.length; i++) {
+      c = FX.cubes[i];
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot);
+      ctx.globalAlpha = c.a; ctx.strokeStyle = c.col; ctx.lineWidth = 2*FX.dpr; ctx.shadowColor = c.col; ctx.shadowBlur = 12*FX.dpr;
+      r = c.s*0.22; hh = c.s/2;
+      ctx.beginPath(); ctx.moveTo(-hh+r, -hh);
+      ctx.arcTo(hh,-hh,hh,hh,r); ctx.arcTo(hh,hh,-hh,hh,r); ctx.arcTo(-hh,hh,-hh,-hh,r); ctx.arcTo(-hh,-hh,hh,-hh,r); ctx.closePath(); ctx.stroke();
+      ctx.restore();
+      c.y += c.vy; c.rot += c.vr; if (c.y < -c.s) { c.y = FX.H + c.s; c.x = fxRand(0, FX.W); }
+    }
+    FX.raf = requestAnimationFrame(fxDraw);
+  }
+  function fxStart() { if (FX.running || !el.fxCanvas) return; FX.running = true; fxResize(); fxSeed(); FX.raf = requestAnimationFrame(fxDraw); }
+  function fxStop() { FX.running = false; if (FX.raf) cancelAnimationFrame(FX.raf); FX.raf = null; if (el.fxCanvas) { var ctx = el.fxCanvas.getContext('2d'); if (ctx) ctx.clearRect(0, 0, FX.W, FX.H); } }
+  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); if (el.animToggle) el.animToggle.classList.toggle('off', !state.anim); if (state.anim) fxStart(); else fxStop(); }
+  function fxStagger() {
+    var items = document.querySelectorAll('.col-left > .panel, .col-left > .intro, .col-left > .big-fetch, .col-right > .panel');
+    for (var i = 0; i < items.length; i++) { items[i].style.animationDelay = (Math.min(i, 10) * 0.045) + 's'; items[i].classList.add('fx-rise'); }
+  }
+  function fxInit() {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var stored = null; try { stored = localStorage.getItem('playlistStudio.anim.v1'); } catch (e) {}
+    state.anim = stored == null ? !reduce : (stored === '1');
+    if (el.animToggle) el.animToggle.addEventListener('click', function () { state.anim = !state.anim; try { localStorage.setItem('playlistStudio.anim.v1', state.anim ? '1' : '0'); } catch (e) {} applyAnim(); toast(state.anim ? 'Animations on.' : 'Animations off.', 'ok'); });
+    window.addEventListener('resize', function () { if (FX.running) fxResize(); });
+    applyAnim();
+    if (state.anim) fxStagger();
+  }
+  function fxPop(elm) { if (!elm || !state.anim) return; elm.classList.remove('fx-pop'); void elm.offsetWidth; elm.classList.add('fx-pop'); }
+  function fxRing(elm) { if (!elm || !state.anim) return; elm.classList.remove('fx-ring'); void elm.offsetWidth; elm.classList.add('fx-ring'); }
+  function fxSlashGo() { if (!state.anim || !el.fxSlash) return; el.fxSlash.classList.remove('go'); void el.fxSlash.offsetWidth; el.fxSlash.classList.add('go'); }
+  function countTo(elm, to) {
+    if (!elm) return;
+    var from = parseInt(elm.textContent, 10); if (isNaN(from)) from = 0;
+    if (!state.anim || from === to) { elm.textContent = to; return; }
+    var dur = Math.min(650, 140 + Math.abs(to - from) * 30), start = null;
+    function tick(ts) { if (start === null) start = ts; var p = Math.min(1, (ts - start) / dur); elm.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
+  }
+
   // ---- wiring ---------------------------------------------------------------
   function init() {
     [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.addEventListener('click', runFetch); });
@@ -3148,7 +3332,24 @@ window.PP = (function () {
     el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (el.useCustomImage.checked) renderIconLibrary(); if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } else if (state.customImgEl) { state.usingCustom = true; updateCover(true); renderExport(); } });
     el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
 
+    // mobile tab bar
+    if (el.mTabbar) {
+      Array.prototype.forEach.call(el.mTabbar.querySelectorAll('.m-tab'), function (t) {
+        t.addEventListener('click', function () { setMobileView(t.dataset.view); });
+      });
+    }
+    document.body.classList.add('m-view-filters');
+    fxInit();
+
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
+  }
+
+  function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
+  function setMobileView(v) {
+    document.body.classList.remove('m-view-filters', 'm-view-results', 'm-view-playlist');
+    document.body.classList.add('m-view-' + v);
+    if (el.mTabbar) { Array.prototype.forEach.call(el.mTabbar.querySelectorAll('.m-tab'), function (t) { t.classList.toggle('active', t.dataset.view === v); }); }
+    window.scrollTo(0, 0);
   }
 
   document.addEventListener('DOMContentLoaded', init);
