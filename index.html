@@ -2390,12 +2390,12 @@ window.PP = (function () {
   function clearBasket() { if (!state.basket.length) return; state.basket = []; toast('Playlist cleared.', 'ok'); renderAll(); }
   function shuffleBasket() {
     for (var i = state.basket.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; }
-    toast('Shuffled.', 'ok'); renderAll();
+    toast('Shuffled.', 'ok'); renderBasketArea();
   }
-  function sortBasketByStar() { state.basket.sort(function (a, b) { return (a.stars || 0) - (b.stars || 0); }); toast('Sorted by ★ (warmup → hard).', 'ok'); renderAll(); }
+  function sortBasketByStar() { state.basket.sort(function (a, b) { return (a.stars || 0) - (b.stars || 0); }); toast('Sorted by ★ (warmup → hard).', 'ok'); renderBasketArea(); }
   function moveBasket(key, dir) {
     var i = basketIndex(key); if (i < 0) return; var j = i + dir; if (j < 0 || j >= state.basket.length) return;
-    var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; renderAll();
+    var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; renderBasketArea();
   }
   function removeBasket(key) { var i = basketIndex(key); if (i < 0) return; state.basket.splice(i, 1); renderAll(); }
 
@@ -2564,6 +2564,9 @@ window.PP = (function () {
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
   }
   function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); saveSession(); }
+  // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
+  // is unchanged, so the (expensive) Search Results list doesn't need re-rendering.
+  function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); saveSession(); }
 
   // ---- cover ----------------------------------------------------------------
   function coverSubtitle() {
@@ -2849,7 +2852,11 @@ window.PP = (function () {
       if (pl.playlistTitle) el.metaTitle.value = pl.playlistTitle;
       if (pl.playlistAuthor) el.metaAuthor.value = pl.playlistAuthor;
       if (pl.playlistDescription) el.metaDescription.value = pl.playlistDescription;
-      if (typeof pl.image === 'string' && /^data:image\//.test(pl.image)) setCoverFromDataUrl(pl.image);
+      if (typeof pl.image === 'string' && pl.image.trim()) {
+        var img = pl.image.trim();
+        if (/^data:image\//i.test(img)) setCoverFromDataUrl(img);
+        else if (/^[A-Za-z0-9+/=\s]+$/.test(img) && img.replace(/\s+/g, '').length > 100) setCoverFromDataUrl('data:image/png;base64,' + img.replace(/\s+/g, '')); // raw base64 cover (common in community .bplists)
+      }
       renderAll();
       toast(added ? 'Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from "' + (pl.playlistTitle || 'playlist') + '".' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn');
       if (needsEnrich().length) enrichImported();
