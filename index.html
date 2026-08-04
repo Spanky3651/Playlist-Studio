@@ -178,6 +178,11 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .panel-head .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue);flex:none;}
 .panel-head h2{font-size:14px;margin:0;letter-spacing:1.2px;text-transform:uppercase;font-family:var(--mono);color:#cdd8e6;font-weight:600;flex:1;}
 .panel-head .count{font-family:var(--mono);font-size:12.5px;color:var(--muted);}
+.panel-caret{width:18px;height:18px;color:var(--muted-2);flex:none;transition:transform .22s ease;}
+.col-left .panel > .panel-head{cursor:pointer;user-select:none;}
+.col-left .panel > .panel-head:hover .panel-caret{color:var(--blue);}
+.panel.collapsed .panel-caret{transform:rotate(-90deg);}
+.panel.collapsed > .panel-sub,.panel.collapsed > .panel-body{display:none;}
 .panel-sub{padding:10px 16px;border-bottom:1px solid var(--border);background:#0a0e15;color:var(--muted);font-size:13.5px;line-height:1.55;}
 .panel-sub b{color:#cdd8e6;font-weight:600;}
 .cover-opts{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
@@ -662,6 +667,13 @@ body.anim .big-fetch::after{content:"";position:absolute;inset:0;border-radius:i
 body.anim .topbar::after{animation:fx-underline 4s ease-in-out infinite;}
 @keyframes fx-logo{0%,100%{filter:drop-shadow(0 0 2px rgba(255,45,85,.45))}50%{filter:drop-shadow(0 0 8px rgba(47,140,255,.7))}}
 body.anim .brand .logo{animation:fx-logo 4.6s ease-in-out infinite;}
+/* logo intro on load: cross the sabers once, then settle open and stay */
+@keyframes logo-red{0%{transform:rotate(-26deg);opacity:0}12%{opacity:1}40%{transform:rotate(28deg)}64%{transform:rotate(-34deg)}100%{transform:rotate(-26deg);opacity:1}}
+@keyframes logo-blue{0%{transform:rotate(26deg);opacity:0}12%{opacity:1}40%{transform:rotate(-28deg)}64%{transform:rotate(34deg)}100%{transform:rotate(26deg);opacity:1}}
+@keyframes logo-flash{0%,33%{opacity:0}43%{opacity:.85}58%,100%{opacity:0}}
+body.anim .brand .logo .blade.red{animation:logo-red 1.2s cubic-bezier(.5,.05,.2,1) .15s both;}
+body.anim .brand .logo .blade.blue{animation:logo-blue 1.2s cubic-bezier(.5,.05,.2,1) .15s both;}
+body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;width:11px;height:11px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);opacity:0;pointer-events:none;animation:logo-flash 1.35s ease both;}
 .anim-toggle.off{opacity:.5;}
 </style>
 </head>
@@ -3212,6 +3224,30 @@ window.PP = (function () {
     requestAnimationFrame(tick);
   }
 
+  // ---- collapsible left-column panels ---------------------------------------
+  function initCollapsibles() {
+    var KEY = 'playlistStudio.collapsed.v1', store = {};
+    try { store = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+    var heads = document.querySelectorAll('.col-left .panel > .panel-head');
+    Array.prototype.forEach.call(heads, function (head) {
+      var panel = head.parentNode, h2 = head.querySelector('h2');
+      var key = panel.id || (h2 ? h2.textContent.trim() : '');
+      if (!key) return;
+      var caret = document.createElement('span');
+      caret.className = 'panel-caret';
+      caret.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+      head.appendChild(caret);
+      if (store[key]) panel.classList.add('collapsed');
+      head.setAttribute('role', 'button');
+      head.setAttribute('aria-label', 'Collapse or expand ' + (h2 ? h2.textContent.trim() : 'panel'));
+      head.addEventListener('click', function (e) {
+        if (e.target.closest('input,select,button,label,a,.switch,.info')) return;
+        store[key] = panel.classList.toggle('collapsed');
+        try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (err) {}
+      });
+    });
+  }
+
   // ---- wiring ---------------------------------------------------------------
   function init() {
     [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.addEventListener('click', runFetch); });
@@ -3340,6 +3376,7 @@ window.PP = (function () {
     }
     document.body.classList.add('m-view-filters');
     fxInit();
+    initCollapsibles();
 
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
   }
