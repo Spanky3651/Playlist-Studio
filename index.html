@@ -1363,19 +1363,171 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
     }
   }
 
+  // ---- Beat Saber themed styles ---------------------------------------------
+  // A single note block with a cut-direction arrow (dir = clockwise radians from
+  // up; pass null for a dot / any-direction note).
+  function drawNoteCube(ctx, x, y, s, col, dir) {
+    ctx.save();
+    var r = s*0.16;
+    var g = ctx.createLinearGradient(x-s/2, y-s/2, x+s/2, y+s/2);
+    g.addColorStop(0, col); g.addColorStop(1, hexA(col, 0.68));
+    ctx.shadowColor = col; ctx.shadowBlur = s*0.30;
+    ctx.fillStyle = g; roundRect(ctx, x-s/2, y-s/2, s, s, r); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = Math.max(1, s*0.03); ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+    roundRect(ctx, x-s/2+s*0.06, y-s/2+s*0.06, s-s*0.12, s-s*0.12, r*0.7); ctx.stroke();
+    ctx.translate(x, y);
+    if (dir == null) {
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath(); ctx.arc(0, 0, s*0.12, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.rotate(dir);
+      ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = s*0.05;
+      var a = s*0.22;
+      ctx.beginPath();
+      ctx.moveTo(0, -a*1.1); ctx.lineTo(a, a*0.2); ctx.lineTo(a*0.42, a*0.2);
+      ctx.lineTo(a*0.42, a*1.0); ctx.lineTo(-a*0.42, a*1.0); ctx.lineTo(-a*0.42, a*0.2);
+      ctx.lineTo(-a, a*0.2); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawNotes(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.42, h*0.42, w*0.7, c.a, 0.22);
+    radialGlow(ctx, w*0.60, h*0.46, w*0.7, c.b, 0.22);
+    var s = w*0.30, cy = h*0.44, gap = w*0.055;
+    drawNoteCube(ctx, w*0.5 - s*0.5 - gap*0.5, cy - h*0.02, s, c.a, Math.PI*1.25);
+    drawNoteCube(ctx, w*0.5 + s*0.5 + gap*0.5, cy + h*0.02, s, c.b, Math.PI*0.75);
+  }
+  function drawSlash(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.45, w*0.72, c.b, 0.24);
+    ctx.save();
+    var grad = ctx.createLinearGradient(w*0.12, h*0.72, w*0.9, h*0.20);
+    grad.addColorStop(0, hexA(c.a, 0)); grad.addColorStop(0.5, hexA(c.a, 0.85)); grad.addColorStop(1, hexA(c.a, 0));
+    ctx.strokeStyle = grad; ctx.lineWidth = w*0.10; ctx.lineCap = 'round';
+    ctx.shadowColor = c.a; ctx.shadowBlur = 30;
+    ctx.beginPath(); ctx.moveTo(w*0.12, h*0.72); ctx.quadraticCurveTo(w*0.5, h*0.28, w*0.9, h*0.20); ctx.stroke();
+    ctx.strokeStyle = hexA('#ffffff', 0.9); ctx.lineWidth = w*0.02; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.moveTo(w*0.12, h*0.72); ctx.quadraticCurveTo(w*0.5, h*0.28, w*0.9, h*0.20); ctx.stroke();
+    ctx.restore();
+    var hx = w*0.30, hy = h*0.74, tx = w*0.66, ty = h*0.32;
+    glowLine(ctx, hx, hy, tx, ty, c.b, w*0.045, 34);
+    glowLine(ctx, hx, hy, tx, ty, '#ffffff', w*0.012, 12);
+    ctx.save(); ctx.strokeStyle = '#c9d3e2'; ctx.lineWidth = w*0.05; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx-(tx-hx)*0.16, hy-(ty-hy)*0.16); ctx.stroke(); ctx.restore();
+    for (var i = 0; i < 12; i++) {
+      var ang = rnd()*Math.PI*2, d = w*(0.04+rnd()*0.13);
+      var sx = w*0.54+Math.cos(ang)*d, sy = h*0.42+Math.sin(ang)*d;
+      ctx.save(); ctx.fillStyle = i%2 ? c.a : '#ffffff'; ctx.shadowColor = c.a; ctx.shadowBlur = 10; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.arc(sx, sy, w*0.008, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawBomb(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.42, w*0.72, c.a, 0.16);
+    function bomb(bx, by, br, col) {
+      ctx.save();
+      ctx.shadowColor = col; ctx.shadowBlur = br*0.9;
+      var g = ctx.createRadialGradient(bx-br*0.3, by-br*0.35, br*0.1, bx, by, br);
+      g.addColorStop(0, '#2b3140'); g.addColorStop(0.7, '#0c0f16'); g.addColorStop(1, '#05070b');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0; ctx.lineWidth = Math.max(2, br*0.06); ctx.strokeStyle = hexA(col, 0.85);
+      ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = hexA(col, 0.85);
+      for (var ring = 1; ring <= 2; ring++) {
+        var rr = br*0.35*ring, cnt = ring*8;
+        for (var k = 0; k < cnt; k++) { var an = k/cnt*Math.PI*2; ctx.beginPath(); ctx.arc(bx+Math.cos(an)*rr, by+Math.sin(an)*rr, br*0.045, 0, Math.PI*2); ctx.fill(); }
+      }
+      ctx.beginPath(); ctx.arc(bx, by, br*0.08, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.beginPath(); ctx.arc(bx-br*0.32, by-br*0.34, br*0.16, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    bomb(w*0.40, h*0.40, w*0.17, c.a);
+    bomb(w*0.63, h*0.50, w*0.115, c.b);
+  }
+  function drawWall(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.9, w, c.b, 0.18);
+    ctx.save(); ctx.lineWidth = Math.max(1, w*0.003);
+    for (var i = 0; i < 8; i++) { var t = i/8, y = h*0.55+(h*0.45)*(t*t); ctx.strokeStyle = hexA(c.b, 0.10+t*0.25); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    ctx.restore();
+    function wall(x0, wd, col) {
+      var topY = h*0.30, botY = h*0.80, shrink = wd*0.30;
+      ctx.save();
+      var g = ctx.createLinearGradient(x0, 0, x0+wd, 0);
+      g.addColorStop(0, hexA(col, 0.10)); g.addColorStop(0.5, hexA(col, 0.32)); g.addColorStop(1, hexA(col, 0.10));
+      ctx.fillStyle = g; ctx.shadowColor = col; ctx.shadowBlur = 24;
+      ctx.beginPath(); ctx.moveTo(x0+shrink, topY); ctx.lineTo(x0+wd-shrink, topY); ctx.lineTo(x0+wd, botY); ctx.lineTo(x0, botY); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = hexA(col, 0.9); ctx.lineWidth = Math.max(2, w*0.008); ctx.stroke();
+      ctx.restore();
+    }
+    wall(w*0.13, w*0.27, c.a);
+    wall(w*0.56, w*0.31, c.b);
+  }
+  function drawHighway(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.9, w, c.b, 0.22);
+    var horizon = h*0.32;
+    ctx.save(); ctx.lineWidth = Math.max(1, w*0.003);
+    for (var i = 0; i < 10; i++) { var t = i/10, y = horizon+(h-horizon)*(t*t); ctx.strokeStyle = hexA(c.b, 0.12+t*0.4); ctx.shadowColor = c.b; ctx.shadowBlur = 6; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    for (var j = -2; j <= 2; j++) { var x = w/2+j*(w/6); ctx.strokeStyle = hexA(c.b, 0.18); ctx.beginPath(); ctx.moveTo(w/2, horizon); ctx.lineTo(x, h); ctx.stroke(); }
+    ctx.restore();
+    var cubes = [[0.34,0.62,0.22,c.a,Math.PI*1.25],[0.64,0.52,0.17,c.b,Math.PI*0.75],[0.46,0.42,0.13,c.a,Math.PI],[0.58,0.40,0.115,c.b,null]];
+    cubes.forEach(function (p) { drawNoteCube(ctx, w*p[0], h*p[1], w*p[2], p[3], p[4]); });
+  }
+
+  function drawSparks(ctx, w, h, c, rnd) {
+    var cx = w*0.5, cy = h*0.42;
+    radialGlow(ctx, cx, cy, w*0.6, c.a, 0.20);
+    radialGlow(ctx, cx, cy, w*0.45, c.b, 0.20);
+    var fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, w*0.22);
+    fg.addColorStop(0, 'rgba(255,255,255,0.95)'); fg.addColorStop(0.4, hexA('#ffffff', 0.35)); fg.addColorStop(1, hexA('#ffffff', 0));
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(cx, cy, w*0.22, 0, Math.PI*2); ctx.fill();
+    var n = 22;
+    for (var i = 0; i < n; i++) {
+      var a = (i/n)*Math.PI*2 + rnd()*0.3;
+      var d0 = w*(0.10+rnd()*0.06), d1 = d0 + w*(0.10+rnd()*0.16);
+      var col = i%2 ? c.a : c.b;
+      var x0 = cx+Math.cos(a)*d0, y0 = cy+Math.sin(a)*d0;
+      var x1 = cx+Math.cos(a)*d1, y1 = cy+Math.sin(a)*d1;
+      var wdt = w*(0.010+rnd()*0.012), px = Math.cos(a+Math.PI/2), py = Math.sin(a+Math.PI/2);
+      ctx.save(); ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 14; ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x0+px*wdt, y0+py*wdt); ctx.lineTo(x0-px*wdt, y0-py*wdt); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawTrails(ctx, w, h, c, rnd) {
+    radialGlow(ctx, w*0.5, h*0.45, w*0.7, c.a, 0.16);
+    radialGlow(ctx, w*0.5, h*0.45, w*0.7, c.b, 0.16);
+    function ribbon(col, flip) {
+      ctx.save(); ctx.lineCap = 'round';
+      var x0 = flip ? w*0.82 : w*0.18, x3 = flip ? w*0.18 : w*0.82;
+      for (var pass = 0; pass < 3; pass++) {
+        ctx.lineWidth = w*(0.075 - pass*0.024);
+        ctx.strokeStyle = pass === 2 ? '#ffffff' : col;
+        ctx.globalAlpha = pass === 2 ? 0.9 : 0.5;
+        ctx.shadowColor = col; ctx.shadowBlur = pass === 2 ? 12 : 30;
+        ctx.beginPath(); ctx.moveTo(x0, h*0.20);
+        ctx.bezierCurveTo(w*0.5, h*0.04, w*(flip?0.18:0.82), h*0.52, w*0.5, h*0.60);
+        ctx.bezierCurveTo(w*(flip?0.82:0.18), h*0.68, w*0.5, h*0.96, x3, h*0.80);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    ribbon(c.b, false); ribbon(c.a, true);
+  }
+
   var STYLES = {
     pulse: drawPulse, grid: drawGrid, blades: drawBlades, waveform: drawWaveform,
     rings: drawRings, burst: drawBurst, hex: drawHex, equalizer: drawEqualizer,
     circuit: drawCircuit, starfield: drawStarfield, triangles: drawTriangles, vortex: drawVortex,
     spectrum: drawSpectrum, glitch: drawGlitch, diamond: drawDiamond, orbit: drawOrbit,
-    aurora: drawAurora, bolt: drawBolt
+    aurora: drawAurora, bolt: drawBolt,
+    notes: drawNotes, slash: drawSlash, bomb: drawBomb, wall: drawWall, highway: drawHighway,
+    sparks: drawSparks, trails: drawTrails
   };
   var STYLE_META = [
-    ['pulse','Neon Pulse'],['blades','Crossed Blades'],['grid','Cyber Grid'],['waveform','Waveform'],
-    ['equalizer','Equalizer'],['spectrum','Spectrum'],['rings','Ripple Rings'],['burst','Starburst'],
-    ['hex','Hex Grid'],['circuit','Circuit'],['triangles','Low-Poly'],['vortex','Vortex'],
-    ['orbit','Orbit'],['diamond','Prism'],['starfield','Starfield'],['aurora','Aurora'],
-    ['glitch','Glitch'],['bolt','Bolt']
+    ['pulse','Neon Pulse'],['blades','Crossed Blades'],['notes','Note Cubes'],['slash','Saber Slash'],
+    ['bomb','Bombs'],['wall','Obstacles'],['highway','Note Highway'],['sparks','Cut Spark'],['trails','Saber Trails'],
+    ['grid','Cyber Grid'],['waveform','Waveform'],['equalizer','Equalizer'],['spectrum','Spectrum'],
+    ['rings','Ripple Rings'],['burst','Starburst'],['hex','Hex Grid'],['circuit','Circuit'],
+    ['triangles','Low-Poly'],['vortex','Vortex'],['orbit','Orbit'],['diamond','Prism'],
+    ['starfield','Starfield'],['aurora','Aurora'],['glitch','Glitch'],['bolt','Bolt']
   ];
 
   // ---- text overlay ---------------------------------------------------------
