@@ -184,6 +184,7 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .cover-opts label{margin:0;}
 .cover-opts select{width:auto;padding:7px 9px;}
 .cover-opts #regenCoverBtn{margin-left:auto;}
+#playRecency:disabled{opacity:.45;cursor:not-allowed;}
 .panel-sub code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:13px;}
 .panel-body{padding:15px 16px;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
@@ -2058,7 +2059,16 @@ window.PP = (function () {
   }
 
   // ---- client filtering -----------------------------------------------------
+  // "Last played" is meaningless for unplayed maps — disable + neutralize it
+  // whenever the play-status filter is set to "Not played yet".
+  function syncRecencyControl() {
+    if (!el.playRecency) return;
+    var unplayed = el.playStatus.value === 'unplayed';
+    if (unplayed) el.playRecency.value = 'any';
+    el.playRecency.disabled = unplayed;
+  }
   function applyClientFilters() {
+    syncRecencyControl();
     var f = getFilters();
     var nowSec = Date.now() / 1000;
     var recencyDays = { '1m': 31, '3m': 92, '6m': 183, '1y': 366 };
@@ -2984,6 +2994,7 @@ window.PP = (function () {
     el.disconnectBtn.addEventListener('click', disconnectPlayer);
     el.playStatus.addEventListener('change', applyClientFilters);
     el.playRecency.addEventListener('change', applyClientFilters);
+    syncRecencyControl();
     el.accMax.addEventListener('input', applyClientFilters);
     document.querySelectorAll('#quickLists [data-quick]').forEach(function (btn) { btn.addEventListener('click', function () { applyQuickList(this.dataset.quick); }); });
     // Results-side play-history chips (mirror the profile dropdown)
