@@ -180,6 +180,10 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .panel-head .count{font-family:var(--mono);font-size:12.5px;color:var(--muted);}
 .panel-sub{padding:10px 16px;border-bottom:1px solid var(--border);background:#0a0e15;color:var(--muted);font-size:13.5px;line-height:1.55;}
 .panel-sub b{color:#cdd8e6;font-weight:600;}
+.cover-opts{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.cover-opts label{margin:0;}
+.cover-opts select{width:auto;padding:7px 9px;}
+.cover-opts #regenCoverBtn{margin-left:auto;}
 .panel-sub code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:13px;}
 .panel-body{padding:15px 16px;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
@@ -977,12 +981,24 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
             <div class="thumb-grid" id="coverStyleGrid"></div></div>
           <div class="field"><label class="field-label">Accent</label>
             <div class="swatch-row" id="coverAccentRow"></div></div>
-          <div class="field"><label class="field-label">Overlay text</label>
-            <input type="text" id="coverText" placeholder="(defaults to playlist title)" /></div>
+          <div class="grid-2">
+            <div class="field"><label class="field-label">Title text</label>
+              <input type="text" id="coverText" placeholder="(playlist title)" /></div>
+            <div class="field"><label class="field-label">Subtitle</label>
+              <input type="text" id="coverSubtitle" placeholder="(auto: ★ · songs)" /></div>
+          </div>
           <div class="field custom-file" id="customFileField" hidden><label class="field-label">Custom image file</label>
             <input type="file" id="customImageInput" accept="image/*" /></div>
-          <button class="ghost" id="regenCoverBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Regenerate cover</button>
+          <div class="cover-opts">
+            <label class="field-label">Text <span class="info" data-tip="Where the title/subtitle sit on the cover. Off hides them for a clean art-only cover.">i</span></label>
+            <select id="coverTextPos">
+              <option value="bottom" selected>Bottom</option>
+              <option value="center">Center</option>
+              <option value="off">Off</option>
+            </select>
+            <button class="ghost" id="regenCoverBtn" title="Redraw this style with a fresh random pattern">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Shuffle art</button>
+          </div>
         </div>
       </div>
     </section>
@@ -1364,17 +1380,25 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 
   // ---- text overlay ---------------------------------------------------------
   function fontStack() { return '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'; }
-  function drawTextBlock(ctx, w, h, title, subtitle) {
-    var g = ctx.createLinearGradient(0, h*0.55, 0, h);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.82)');
-    ctx.fillStyle = g; ctx.fillRect(0, h*0.55, w, h*0.45);
+  function drawTextBlock(ctx, w, h, title, subtitle, pos) {
+    pos = pos || 'bottom';
+    if (pos === 'center') {
+      var gc = ctx.createRadialGradient(w/2, h/2, w*0.08, w/2, h/2, w*0.62);
+      gc.addColorStop(0, 'rgba(0,0,0,0.72)'); gc.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = gc; ctx.fillRect(0, 0, w, h);
+    } else {
+      var g = ctx.createLinearGradient(0, h*0.55, 0, h);
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.82)');
+      ctx.fillStyle = g; ctx.fillRect(0, h*0.55, w, h*0.45);
+    }
     ctx.textAlign = 'center';
     var t = (title || 'Playlist').toUpperCase(), fontSize = w*0.11;
     ctx.font = '800 ' + fontSize + 'px ' + fontStack();
     while (ctx.measureText(t).width > w*0.88 && fontSize > 18) { fontSize -= 2; ctx.font = '800 ' + fontSize + 'px ' + fontStack(); }
+    var ty = pos === 'center' ? h*0.5 : h*0.86;
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12; ctx.fillStyle = '#ffffff';
-    ctx.fillText(t, w/2, h*0.86); ctx.restore();
-    if (subtitle) { ctx.font = '600 ' + (w*0.045) + 'px ' + fontStack(); ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.fillText(subtitle, w/2, h*0.94); }
+    ctx.fillText(t, w/2, ty); ctx.restore();
+    if (subtitle) { ctx.font = '600 ' + (w*0.045) + 'px ' + fontStack(); ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.fillText(subtitle, w/2, pos === 'center' ? ty + fontSize*0.82 : h*0.94); }
   }
 
   // ---- public API -----------------------------------------------------------
@@ -1394,7 +1418,7 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
       ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
       ctx.save(); ctx.strokeStyle = hexA(c.b, 0.5); ctx.lineWidth = Math.max(2, w*0.008);
       ctx.shadowColor = c.b; ctx.shadowBlur = w*0.028; ctx.strokeRect(w*0.012, w*0.012, w-w*0.024, h-w*0.024); ctx.restore();
-      if (!opts.noText) drawTextBlock(ctx, w, h, opts.title, opts.subtitle);
+      if (!opts.noText && opts.textPos !== 'off') drawTextBlock(ctx, w, h, opts.title, opts.subtitle, opts.textPos);
       return canvas;
     },
 
@@ -1687,7 +1711,7 @@ window.PP = (function () {
     { id: 'corsproxy.io',   build: function (a) { return 'https://corsproxy.io/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse }
   ];
 
-  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -1704,7 +1728,7 @@ window.PP = (function () {
    'matchCount','basketCount','basketTime','basketUnique','counterMeta',
    'resultCount','playlistCount','resultList','basketList',
    'addAllBtn','addTopBtn','addTopN','addRandomBtn','clearResultsBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
-   'coverCanvas','coverStyleGrid','coverAccentRow','coverText','regenCoverBtn',
+   'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
@@ -2163,13 +2187,14 @@ window.PP = (function () {
   function updateCover(force) {
     if (state.usingCustom) return;
     var title = el.coverText.value.trim() || el.metaTitle.value.trim() || 'Playlist Studio';
-    var subtitle = coverSubtitle();
+    var subtitle = el.coverSubtitle.value.trim() || coverSubtitle();
+    var pos = state.coverTextPos;
     // Skip the expensive canvas redraw + toDataURL when nothing that affects the
     // cover has changed (e.g. typing in a search filter). Same pixels either way.
-    var sig = title + ' ' + subtitle + ' ' + state.coverStyle + ' ' + state.coverAccent;
+    var sig = title + ' ' + subtitle + ' ' + state.coverStyle + ' ' + state.coverAccent + ' ' + pos + ' ' + state.coverSeed;
     if (!force && sig === state._coverSig && state.coverDataUrl) return;
     state._coverSig = sig;
-    IconGenerator.generate(el.coverCanvas, { style: state.coverStyle, accent: state.coverAccent, title: title, subtitle: subtitle, seed: title + '|' + state.coverStyle });
+    IconGenerator.generate(el.coverCanvas, { style: state.coverStyle, accent: state.coverAccent, title: title, subtitle: subtitle, textPos: pos, seed: title + '|' + state.coverStyle + '|' + state.coverSeed });
     state.coverDataUrl = IconGenerator.toDataURL(el.coverCanvas);
   }
   // Build the clickable style thumbnails + accent swatches.
@@ -2811,8 +2836,10 @@ window.PP = (function () {
     // cover
     buildCoverPickers();
     el.coverText.addEventListener('input', updateCover);
+    el.coverSubtitle.addEventListener('input', updateCover);
+    el.coverTextPos.addEventListener('change', function () { state.coverTextPos = el.coverTextPos.value; updateCover(true); });
     el.metaTitle.addEventListener('input', function () { if (!state.usingCustom) updateCover(); });
-    el.regenCoverBtn.addEventListener('click', function () { state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; updateCover(true); renderExport(); });
+    el.regenCoverBtn.addEventListener('click', function () { state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; state.coverSeed = (state.coverSeed || 0) + 1; updateCover(true); renderExport(); });
     el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } });
     el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
 
