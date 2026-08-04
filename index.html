@@ -675,12 +675,33 @@ body.anim .brand .logo .blade.red{animation:logo-red 1.2s cubic-bezier(.5,.05,.2
 body.anim .brand .logo .blade.blue{animation:logo-blue 1.2s cubic-bezier(.5,.05,.2,1) .15s both;}
 body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;width:11px;height:11px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);opacity:0;pointer-events:none;animation:logo-flash 1.35s ease both;}
 .anim-toggle.off{opacity:.5;}
+
+/* ---- fetch loading (functional feedback; shown regardless of the toggle) ---- */
+#topLoadBar{position:fixed;left:0;right:0;top:0;height:3px;z-index:60;overflow:hidden;display:none;}
+#topLoadBar.on{display:block;}
+#topLoadFill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--blue));box-shadow:0 0 10px var(--blue);transition:width .3s ease;}
+#topLoadBar.on::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);background-size:38% 100%;background-repeat:no-repeat;animation:tl-shimmer 1.1s linear infinite;}
+@keyframes tl-shimmer{0%{background-position:-40% 0}100%{background-position:140% 0}}
+@keyframes tl-spin{to{transform:rotate(360deg)}}
+.is-fetching svg{animation:tl-spin .8s linear infinite;transform-origin:center;}
+.fetch-loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:48px 20px;text-align:center;}
+.fx-eq{display:flex;align-items:flex-end;gap:6px;height:46px;}
+.fx-eq span{width:9px;height:16px;border-radius:4px;background:var(--blue);box-shadow:0 0 12px var(--blue);animation:fx-eq .9s ease-in-out infinite;}
+.fx-eq span:nth-child(odd){background:var(--red);box-shadow:0 0 12px var(--red);}
+.fx-eq span:nth-child(2){animation-delay:.12s}.fx-eq span:nth-child(3){animation-delay:.24s}.fx-eq span:nth-child(4){animation-delay:.36s}.fx-eq span:nth-child(5){animation-delay:.48s}
+@keyframes fx-eq{0%,100%{height:14px}50%{height:46px}}
+.fl-title{font-size:16px;font-weight:700;color:#e9edf5;margin:0;letter-spacing:.4px;}
+.fl-count{font-family:var(--mono);font-size:22px;color:var(--blue);margin:0;font-weight:800;}
+.fl-bar{width:min(360px,80%);height:9px;border-radius:6px;background:#0c1622;overflow:hidden;border:1px solid var(--border);}
+.fl-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--blue));box-shadow:0 0 10px var(--blue);border-radius:6px;transition:width .3s ease;}
+.fl-hint{font-size:12.5px;color:var(--muted-2);margin:0;max-width:320px;}
 </style>
 </head>
 <body>
 
 <canvas id="fxCanvas" aria-hidden="true"></canvas>
 <div id="fxSlash" aria-hidden="true"></div>
+<div id="topLoadBar" aria-hidden="true"><div id="topLoadFill"></div></div>
 
 <!-- ============ TOPBAR ============ -->
 <header class="topbar">
@@ -2056,7 +2077,7 @@ window.PP = (function () {
    'addAllBtn','addTopBtn','addTopN','addRandomBtn','clearResultsBtn','collapseSongs','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
    'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','coverTextColor','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput','iconLibraryGrid',
-   'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','animToggle',
+   'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','animToggle','topLoadBar','topLoadFill',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
@@ -2190,12 +2211,25 @@ window.PP = (function () {
       mods: modsFrom(diff.modifiersRating)
     };
   }
+  function fetchLoaderHTML() {
+    return '<div class="fetch-loader">' +
+      '<div class="fx-eq"><span></span><span></span><span></span><span></span><span></span></div>' +
+      '<p class="fl-title">Scanning BeatLeader…</p>' +
+      '<p class="fl-count" id="flCount">Connecting…</p>' +
+      '<div class="fl-bar"><div class="fl-bar-fill" id="flBar"></div></div>' +
+      '<p class="fl-hint">Big scans page through the leaderboard 100 maps at a time — hang tight, this can take a bit.</p>' +
+      '</div>';
+  }
   function runFetch() {
     if (state.fetching) return;
     fxSlashGo();
     var f = getFilters(); state.fetching = true; state.pinnedRelay = null;
-    [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = true; });
+    [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = true; b.classList.add('is-fetching'); });
     el.fetchProgress.hidden = false; el.fetchProgressText.textContent = 'Connecting…'; el.barFill.style.width = '8%';
+    el.topLoadBar.classList.add('on'); el.topLoadFill.style.width = '8%';
+    el.resultList.innerHTML = fetchLoaderHTML();
+    el.counterMeta.textContent = 'Scanning BeatLeader…';
+    if (isMobileView()) setMobileView('results');
     var collected = [], page = 1;
     function step() {
       return fetchApi(buildUrl(page, f)).then(function (data) {
@@ -2205,6 +2239,9 @@ window.PP = (function () {
         var pct = cap ? Math.max(8, Math.min(100, Math.round((collected.length / cap) * 100))) : 100;
         el.barFill.style.width = pct + '%';
         el.fetchProgressText.textContent = 'Scanned ' + collected.length + (total ? ' of ' + Math.min(cap, total) : '') + ' maps' + (state.pinnedRelay ? ' · relay ' + state.pinnedRelay.id : '') + '…';
+        el.topLoadFill.style.width = pct + '%';
+        var fc = document.getElementById('flCount'); if (fc) fc.textContent = collected.length.toLocaleString() + (total ? ' of ' + Math.min(cap, total).toLocaleString() : '') + ' maps' + (state.pinnedRelay ? ' · via relay' : '');
+        var fb = document.getElementById('flBar'); if (fb) fb.style.width = pct + '%';
         var more = items.length === PAGE_SIZE;
         if (collected.length < f.maxScan && more) { page++; return delay(state.pinnedRelay ? RELAY_DELAY_MS : PAGE_DELAY_MS).then(step); }
       });
@@ -2217,10 +2254,11 @@ window.PP = (function () {
         if (collected.length && isMobileView()) setMobileView('results');
       }).catch(function (err) {
         console.error(err); setStatus('Fetch failed', 'err'); var msg = err.message || 'Fetch failed.';
-        el.counterMeta.textContent = msg; toast(msg, 'err');
+        el.counterMeta.textContent = msg; renderResults(); toast(msg, 'err');
         if (/relays failed/i.test(msg)) toast('All public relays are busy right now — wait a moment and hit Fetch again.', 'warn');
       }).then(function () {
-        state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; });
+        state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; b.classList.remove('is-fetching'); });
+        el.topLoadBar.classList.remove('on'); el.topLoadFill.style.width = '0%';
         setTimeout(function () { el.fetchProgress.hidden = true; el.barFill.style.width = '0%'; }, 800);
       });
   }
