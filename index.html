@@ -1205,7 +1205,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated">Last updated 08/05/2026</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T11:53:11Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3444,6 +3444,28 @@ window.PP = (function () {
   document.addEventListener('DOMContentLoaded', init);
 })();
 
+</script>
+<script>
+/* Footer "last updated" — render as a live relative time (X minutes/hours/days ago). */
+(function () {
+  var elu = document.getElementById('footUpdated');
+  if (!elu) return;
+  var then = new Date(elu.getAttribute('data-updated')).getTime();
+  if (isNaN(then)) return;
+  function rel() {
+    var s = Math.floor(Math.max(0, Date.now() - then) / 1000);
+    if (s < 45) return 'just now';
+    var u = [[60, 'minute'], [60, 'hour'], [24, 'day'], [7, 'week'], [4.35, 'month'], [12, 'year']];
+    var v = s / 60, i = 0, unit = 'minute';
+    for (; i < u.length; i++) { unit = u[i][1]; if (i + 1 >= u.length || v < u[i + 1][0]) break; v = v / u[i + 1][0]; }
+    var n = Math.floor(v); if (n < 1) n = 1;
+    return n + ' ' + unit + (n === 1 ? '' : 's') + ' ago';
+  }
+  function tick() { elu.textContent = 'Last updated ' + rel(); }
+  try { elu.title = new Date(then).toLocaleString(); } catch (e) {}
+  tick();
+  setInterval(tick, 60000);
+})();
 </script>
 </body>
 </html>
