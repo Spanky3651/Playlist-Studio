@@ -9,7 +9,9 @@ Filter the ranked (and unranked) catalog by star rating, mapper, NPS and more, c
 
 ## Overview
 
-Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlists. Instead of dumping every map that matches your filters, it works like a shopping cart: search, add the good ones to **Your Playlist**, reorder and cover it, then export. It runs entirely in your browser as one HTML file — no install or build step, and no account.
+Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlists. Instead of dumping every map that matches your filters, it works like a shopping cart: search, add the good ones to **Your Playlist**, reorder and cover it, then export. Already know exactly which maps you want? Paste their **BSR codes** into **Quick Add** and skip searching entirely. It runs entirely in your browser as one HTML file — no install or build step, and no account.
+
+> Scores and PP come from **BeatLeader** — ScoreSaber profiles aren't supported. Map lookups for Quick Add use **BeatSaver**.
 
 ## Features
 
@@ -20,17 +22,21 @@ Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlis
 - **Optional difficulty filter** (Easy → Expert+) — off by default so every difficulty comes through until you want to narrow it
 - **NPS, duration and BPM** bounds
 - **PP range** — keep only ranked maps worth a target PP at your accuracy and speed (see below)
-- **Rating-focus sort** — Stars, Tech, Acc, Pass, NPS, Duration, BPM, or **PP at your target accuracy**
-- **Adjustable scan depth** — pull anywhere from 300 up to 20,000 maps per fetch (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max), **default 2.5k**. Bigger scans dig deeper for matches — handy for wide star ranges or "unplayed" hunts — at the cost of a longer fetch; drop to 300 for a quick pull
-- Live client-side filtering: tweak a value and the match count updates instantly, no re-fetch
-- Press **Enter** in any filter to fetch; the Fetch button flags when your filters have drifted from your last pull
+- **Sort by** — Stars, Tech, Acc, Pass, NPS, Duration, BPM, or **PP at your target accuracy** (in the **Search Scope & Sort** panel)
+- **Adjustable scan depth** — pull anywhere from 300 up to 20,000 maps per search (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max), **default 2.5k**. Bigger scans dig deeper for matches — handy for wide star ranges or "unplayed" hunts — at the cost of a longer search; drop to 300 for a quick pull
+- Live client-side filtering: tweak a value and the match count updates instantly, no re-search
+- Press **Enter** in any filter to search; the Search button flags when your filters have drifted from your last pull
 - **Collapsible filter panels** — collapse the boxes you don't use to keep the sidebar tidy; your layout is remembered between visits
+
+### Quick Add — by BSR code, link, or hash
+Already know the maps you want? Skip searching. Paste one or more **BSR codes**, **BeatSaver links** (`beatsaver.com/maps/…`), or 40-character **map hashes** — separated by spaces or commas — and Quick Add looks each up on BeatSaver and drops it straight into **Your Playlist**. Purpose-built for **tournament pools** and shared code lists, where maps arrive as a list of `!bsr` codes rather than something you'd hunt for by filter.
 
 ### Build a playlist
 - Two-panel builder: **Search Results → Your Playlist** (the playlist is what gets exported)
 - Add one at a time, **Add all**, **Add top N**, or **⚄ Random**
-- **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard), **Clear**
-- **Clear** the results too — one button empties the results and resets your filters to defaults (your playlist is kept)
+- **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard)
+- **Clear playlist** empties the list and resets its name, cover and sync to a fresh start — with a one-tap **Undo clear** if you didn't mean it
+- **Clear results** — a separate button that empties the results and resets your filters to defaults (your playlist is kept)
 - **Collapse duplicate songs** to keep one entry per song
 - Build a single playlist from several different searches
 - Live totals: song count, runtime, star range + average, and average NPS
@@ -59,7 +65,7 @@ Work out exactly what a score is worth before you grind it.
 - **Full calculator per map** — open any map and dial in an exact accuracy (type it or tap 90 / 95 / 97 / 99 / 100). You get the raw PP plus the **pass / acc / tech** breakdown so you can see where the points come from.
 - **Speed modifiers** — toggle **SS** (Slower), **FS** (Faster) or **SF** (Super Fast). BeatLeader re-rates a map at each speed, so the calculator swaps in that speed's pass/acc/tech ratings: FS/SF push the rating (and the PP) up, SS pulls it down. Modifiers a map isn't rated for are greyed out.
 - **Accuracy reference row** — a quick 90 → 100% PP ladder for the selected speed, so you can eyeball how much each extra tenth of a percent is worth.
-- **Sort by PP** — set the *Rating focus* to **PP @ target acc** to rank the whole result set by earning potential.
+- **Sort by PP** — set **Sort by** to **PP @ target acc** to rank the whole result set by earning potential.
 
 ### Filter by PP
 
@@ -113,15 +119,15 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 > The URL must point at the **raw file** (not a web page) and stay constant. If you move or rename the hosted file later, existing copies stop syncing — keep the same path and just overwrite the file to push an update.
 
 ### Made for mobile too
-- A fixed bottom **tab bar** — **Filters / Results / Playlist** with live count badges — switches between the three views so you're not scrolling one endless column. A fetch jumps you straight to **Results**, the **Fetch** button floats within easy reach while you filter, touch targets are enlarged, and map previews go full-screen.
+- A fixed bottom **tab bar** — **Filters / Results / Playlist** with live count badges — switches between the three views so you're not scrolling one endless column. A search jumps you straight to **Results**, the **Search** button floats within easy reach while you filter, touch targets are enlarged, and map previews go full-screen.
 - The desktop two-column layout is untouched; the mobile treatment only kicks in on small screens.
 
 ### Beat Saber flair
-- Subtle ambient neon — note cubes and saber-light drift behind the app, the logo crosses its sabers on load, a saber **slash** sweeps across on every fetch, and adding a map gives a satisfying count-up and pop. The Fetch button and logo carry a slow idle glow.
+- Subtle ambient neon — note cubes and saber-light drift behind the app, the logo crosses its sabers on load, a saber **slash** sweeps across on every search, and adding a map gives a satisfying count-up and pop. The Search button and logo carry a slow idle glow.
 - Everything is smooth with **no flashing or strobing**, there's a **one-tap toggle** in the top bar to turn it all off, and it automatically stays off if your device has *reduce motion* enabled.
 
 ### Clear feedback while it works
-- Long scans are impossible to miss: the Search Results panel shows a Beat Saber equalizer with a **live "N of M maps" counter** and a progress bar, a slim neon bar sweeps across the top of the page, and the Fetch icon spins until the pull completes.
+- Long scans are impossible to miss: the Search Results panel shows a Beat Saber equalizer with a **live "N of M maps" counter** and a progress bar, a slim neon bar sweeps across the top of the page, and the Search icon spins until the pull completes.
 
 ## Getting started
 
@@ -133,7 +139,7 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 
 BeatLeader's API doesn't send cross-origin CORS headers, so a browser can't call it directly from a file or a third-party site — it fails with *"Failed to fetch."* Playlist Studio gets around this by routing read-only public requests through a **pool of public CORS relays**, racing them and using the first that responds. Dead or slow relays are dropped automatically, and there's nothing to configure.
 
-If you run your own CORS relay and would rather use it, point the app at it under **Data Source → Advanced: custom relay**. (Map previews use BeatSaver and ArcViewer directly — both are CORS-friendly, so they need no relay.)
+If you run your own CORS relay and would rather use it, point the app at it under **Search Scope & Sort → Advanced: custom relay**. (Map previews use BeatSaver and ArcViewer directly — both are CORS-friendly, so they need no relay.)
 
 ## Installing a playlist in Beat Saber
 

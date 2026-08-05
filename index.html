@@ -466,6 +466,8 @@ select{cursor:pointer;appearance:none;
 
 /* ---------- List action bars ---------- */
 .list-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:#0a0e15;}
+/* buttons are display:inline-flex, which overrides the [hidden] attribute — restore it */
+button[hidden],.filebtn[hidden]{display:none !important;}
 .addtop{display:flex;align-items:center;gap:0;}
 .addtop .sm{border-top-right-radius:0;border-bottom-right-radius:0;}
 .addtop input{width:56px;flex:none;padding:7px 8px;font-family:var(--mono);font-size:14px;text-align:center;border-top-left-radius:0;border-bottom-left-radius:0;border-left:none;}
@@ -738,12 +740,12 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
-    <button class="ghost anim-toggle" id="animToggle" title="Toggle animations" aria-label="Toggle animations">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3"/></svg></button>
-    <button class="ghost" id="resetBtn" title="Reset filters — your playlist is kept">
+    <button class="ghost anim-toggle" id="animToggle" title="Turn background animations / effects on or off" aria-label="Toggle animations / effects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 14l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7L19 14z"/></svg></button>
+    <button class="ghost" id="resetBtn" title="Reset search filters — your playlist is kept">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset</button>
-    <button class="primary" id="fetchBtn" title="Fetch maps from BeatLeader">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch</button>
+    <button class="primary" id="fetchBtn" title="Search BeatLeader for maps that match your filters">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</button>
     <button class="cyan" id="downloadBtn" disabled title="Download your playlist as a .bplist">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export .bplist</button>
   </div>
@@ -757,9 +759,9 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     <details class="intro" id="introPanel">
       <summary class="intro-summary"><span>How it works</span><svg class="intro-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
       <div class="intro-body">
-        <p>Filter BeatLeader &rarr; <b>Fetch</b> &rarr; add the maps you want to <b>Your Playlist</b> &rarr; export a <code>.bplist</code>. You're not stuck with everything that matches — cherry-pick, mix results from several searches, reorder, then export just your picks.</p>
+        <p>Filter BeatLeader &rarr; <b>Search</b> &rarr; add the maps you want to <b>Your Playlist</b> &rarr; export a <code>.bplist</code>. You're not stuck with everything that matches — cherry-pick, mix results from several searches, reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>.</p>
         <div class="flow">
-          <div class="step"><span class="num">1</span> Filter &amp; Fetch</div>
+          <div class="step"><span class="num">1</span> Filter &amp; Search</div>
           <span class="arrow">→</span>
           <div class="step"><span class="num">2</span> Add picks</div>
           <span class="arrow">→</span>
@@ -767,14 +769,14 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
           <span class="arrow">→</span>
           <div class="step"><span class="num">4</span> Export</div>
         </div>
-        <div class="callout amber"><span class="ci">◈</span><span><b>First time?</b> BeatLeader blocks direct browser requests, so Playlist Studio routes them through a pool of public relays automatically. If a fetch ever fails, the relays may be busy — just try again in a moment.</span></div>
+        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> map search runs on <b>BeatLeader</b> (scores and PP are BeatLeader's — ScoreSaber isn't supported). If a search ever fails, just hit Search again — it connects automatically.</span></div>
       </div>
     </details>
 
     <!-- Your Profile (BeatLeader) -->
     <section class="panel" id="profilePanel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h2>Your Profile</h2><span class="count" id="profileState"></span></div>
-      <div class="panel-sub">Connect your BeatLeader profile to see your score on every map and filter by what you've played. Public data only — no login.</div>
+      <div class="panel-sub">Connect your <b>BeatLeader</b> profile to see your score on every map and filter by what you've played. Public data only — no login. <b>BeatLeader only</b> — ScoreSaber profiles aren't supported.</div>
       <div class="panel-body">
         <div id="profileConnect">
           <div class="preset-row">
@@ -829,7 +831,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     </section>
 
     <!-- PP Filter -->
-    <section class="panel" id="ppPanel">
+    <section class="panel" id="ppPanel" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
       <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
       <div class="panel-body">
@@ -941,8 +943,8 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
 
     <!-- Data Source -->
     <section class="panel">
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Data Source</h2></div>
-      <div class="panel-sub">Which slice of BeatLeader to scan and how to prioritize it. <b>Rating focus</b> only re-orders results — it never changes which maps match.</div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Search Scope &amp; Sort</h2></div>
+      <div class="panel-sub">Which slice of BeatLeader to search and how to order it. <b>Sort by</b> only re-orders results — it never changes which maps match.</div>
       <div class="panel-body">
         <div class="grid-2">
           <div class="field"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
@@ -953,7 +955,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
               <option value="qualified">Qualified</option>
               <option value="all">All</option>
             </select></div>
-          <div class="field"><label class="field-label">Rating focus <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
+          <div class="field"><label class="field-label">Sort by <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
             <select id="fSort">
               <option value="stars" selected>Stars</option>
               <option value="techRating">Tech</option>
@@ -1023,11 +1025,11 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     </section>
 
     <button class="primary big-fetch" id="fetchBtn2">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch from BeatLeader</button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search BeatLeader</button>
     <div class="stale-hint" id="staleHint" hidden>⟳ Filters changed since your last fetch — re-fetch to pull the new set.</div>
     <div class="fetch-progress" id="fetchProgress" hidden>
       <div class="bar"><div class="bar-fill" id="barFill"></div></div>
-      <span id="fetchProgressText">Fetching…</span>
+      <span id="fetchProgressText">Searching…</span>
     </div>
   </div>
 
@@ -1045,7 +1047,20 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
         <div class="sum-num" id="basketCount">0</div>
         <div class="sum-lbl">in your playlist<br><b id="basketTime">0:00</b> · <span id="basketUnique">0</span> songs</div>
       </div>
-      <div class="sum-meta" id="counterMeta">Set filters and fetch to begin.</div>
+      <div class="sum-meta" id="counterMeta">Set filters and search to begin.</div>
+    </section>
+
+    <!-- Quick Add (by BSR / link / hash) -->
+    <section class="panel" id="panelQuickAdd" data-collapsible>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><h2>Quick Add</h2></div>
+      <div class="panel-sub">Already know the maps? Paste one or more <b>BSR codes</b>, <b>BeatSaver links</b>, or map <b>hashes</b> to drop them straight into <b>Your Playlist</b> — no searching. Perfect for tournament pools and shared code lists. Looks up maps on BeatSaver.</div>
+      <div class="panel-body">
+        <div class="preset-row">
+          <input type="text" id="quickAddInput" placeholder="e.g.  2c9e, 1a3f  or  beatsaver.com/maps/2c9e" />
+          <button class="ghost sm" id="quickAddBtn">+ Add</button>
+        </div>
+        <p class="muted hint-line" id="quickAddHint">Separate multiple with spaces or commas. Accepts BSR codes, <code>beatsaver.com/maps/…</code> links, and 40-character hashes.</p>
+      </div>
     </section>
 
     <!-- Results -->
@@ -1058,7 +1073,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
           <input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" />
         </div>
         <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
-        <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear</button>
+        <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear results</button>
         <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>Collapse dupes</span></label>
       </div>
       <div class="play-bar" id="playFilterBar">
@@ -1078,7 +1093,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
           <div class="empty">
             <div class="empty-ic">◇</div>
             <p><b>No results yet.</b></p>
-            <p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>
+            <p>Set your filters and hit <b>Search</b> — or paste BSR codes into <b>Quick Add</b> below.</p>
           </div>
         </div>
       </div>
@@ -1092,7 +1107,8 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
         <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending — good for warmup → hard">↑ Sort by ★</button>
         <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported songs from BeatLeader">↻ Fill data</button>
         <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader — catches rating recalcs">★ Re-check</button>
-        <button class="ghost sm danger" id="clearBasketBtn" disabled>Clear</button>
+        <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
+        <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
       </div>
       <div class="panel-body list-body">
         <div class="song-list basket" id="basketList">
@@ -1122,7 +1138,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
         <div class="preset-row import-row">
           <label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label>
           <input type="file" id="importBplist" accept=".bplist,application/json" hidden />
-          <span class="muted import-hint">Adds its songs to your playlist</span>
+          <span class="muted import-hint">Merges its songs into your current playlist</span>
         </div>
       </div>
     </section>
@@ -1261,6 +1277,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .bplist</button>
           <span class="export-hint" id="exportHint">Your playlist is empty.</span>
         </div>
+        <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <b>PlaylistManager</b> mod.</p>
       </div>
     </section>
   </div>
@@ -1282,7 +1299,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T15:18:53Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T19:02:53Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2171,6 +2188,7 @@ window.PP = (function () {
    'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','animToggle','topLoadBar','topLoadFill',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
+   'quickAddInput','quickAddBtn','quickAddHint','undoClearBtn',
    'syncEnable','syncBody','syncUrl','syncHint',
    'refineQuick','refineCrit','refineAccWrap','refineAcc','refineStarWrap','refineStarMin','refineStarMax','refinePreview','refineRemoveBtn','refineKeepBtn','refineConnectHint','refineUndoWrap','refineUndoBtn',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
@@ -2458,7 +2476,7 @@ window.PP = (function () {
   }
   function addEntry(e) {
     if (inBasket(e)) return false;
-    state.basket.push(e); return true;
+    state.basket.push(e); state.clearUndo = null; return true;   // adding maps voids a pending "undo clear"
   }
   function findFiltered(key) { for (var i = 0; i < state.filtered.length; i++) if (keyOf(state.filtered[i]) === key) return state.filtered[i]; return null; }
   function basketIndex(key) { for (var i = 0; i < state.basket.length; i++) if (keyOf(state.basket[i]) === key) return i; return -1; }
@@ -2479,6 +2497,59 @@ window.PP = (function () {
     pool.slice(0, n).forEach(addEntry);
     var added = state.basket.length - before;
     toast(added ? 'Added ' + added + ' random map' + (added === 1 ? '' : 's') + '.' : 'Those are already in your playlist.', added ? 'ok' : 'warn'); renderAll();
+  }
+
+  // ---- quick add: BSR code / BeatSaver link / hash --------------------------
+  // Parse a free-text blob into unique {type:'id'|'hash', val} lookups.
+  function parseQuickAddTokens(text) {
+    var out = [], seen = {};
+    (text || '').split(/[\s,;]+/).forEach(function (tok) {
+      tok = tok.trim(); if (!tok) return;
+      var type, val, m = tok.match(/beatsaver\.com\/maps\/([0-9a-fA-F]+)/i);
+      if (m) { type = 'id'; val = m[1].toLowerCase(); }
+      else if (/^[0-9a-fA-F]{40}$/.test(tok)) { type = 'hash'; val = tok.toLowerCase(); }
+      else { var t = tok.replace(/^!/, '').replace(/^bsr$/i, ''); if (/^[0-9a-fA-F]{1,8}$/.test(t)) { type = 'id'; val = t.toLowerCase(); } }
+      if (!type) return;
+      var k = type + ':' + val; if (seen[k]) return; seen[k] = 1; out.push({ type: type, val: val });
+    });
+    return out;
+  }
+  // BeatSaver map object → a playlist entry (no specific difficulty = all diffs; ↻ Fill data can add BL stars).
+  function bsMapToEntry(map) {
+    var vs = map.versions || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0] || {};
+    var meta = map.metadata || {};
+    return { leaderboardId: '', hash: (v.hash || '').toLowerCase(),
+      songName: meta.songName || map.name || 'Unknown', subName: meta.songSubName || '',
+      mapper: meta.levelAuthorName || '', author: meta.levelAuthorName || '',
+      bpm: meta.bpm || 0, duration: meta.duration || 0, cover: v.coverURL || '', stars: 0,
+      difficultyName: '', modeName: 'Standard', nps: 0, notes: 0, techRating: 0, accRating: 0, passRating: 0, key: map.id };
+  }
+  function fetchBsMap(tok) {
+    var url = 'https://api.beatsaver.com/maps/' + (tok.type === 'hash' ? 'hash/' : 'id/') + tok.val;
+    return fetch(url).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
+  function quickAdd() {
+    var toks = parseQuickAddTokens(el.quickAddInput.value);
+    if (!toks.length) { toast('Enter a BSR code, BeatSaver link, or 40-char hash.', 'warn'); return; }
+    if (toks.length > 100) toks = toks.slice(0, 100);
+    el.quickAddBtn.disabled = true; var lbl = el.quickAddBtn.textContent; el.quickAddBtn.textContent = 'Adding…';
+    Promise.all(toks.map(fetchBsMap)).then(function (maps) {
+      var added = 0, dupes = 0, failed = 0;
+      maps.forEach(function (map) {
+        if (!map || !(map.versions && map.versions.length)) { failed++; return; }
+        var entry = bsMapToEntry(map);
+        if (!entry.hash) { failed++; return; }
+        if (addEntry(entry)) added++; else dupes++;
+      });
+      if (added) { el.quickAddInput.value = ''; renderAll(); }
+      var parts = [];
+      if (added) parts.push('added ' + added);
+      if (dupes) parts.push(dupes + ' already in playlist');
+      if (failed) parts.push(failed + ' not found');
+      toast('Quick Add — ' + (parts.join(' · ') || 'nothing to add') + '.', added ? 'ok' : (failed ? 'err' : 'warn'));
+    }).catch(function () {
+      toast('BeatSaver lookup failed — check the codes and try again.', 'err');
+    }).then(function () { el.quickAddBtn.disabled = false; el.quickAddBtn.textContent = lbl; });
   }
   // Reset everything that IDENTIFIES a playlist back to defaults, so nothing leaks
   // between one list and the next. Author is intentionally NOT reset — it's your
@@ -2505,15 +2576,51 @@ window.PP = (function () {
     state.refineUndo = null; if (el.refineUndoWrap) el.refineUndoWrap.hidden = true;
   }
 
+  // Capture the full playlist state (maps + all identity fields) so Clear is undoable.
+  function snapshotPlaylist() {
+    return {
+      basket: state.basket.slice(),
+      title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value,
+      coverText: el.coverText.value, coverSubtitle: el.coverSubtitle.value,
+      coverStyle: state.coverStyle, coverAccent: state.coverAccent, coverSeed: state.coverSeed,
+      coverTextPos: state.coverTextPos, coverTextColor: state.coverTextColor,
+      usingCustom: state.usingCustom, customImgEl: state.customImgEl, customBaseUrl: state.customBaseUrl, coverDataUrl: state.coverDataUrl,
+      useCustom: el.useCustomImage.checked, customFieldHidden: el.customFileField.hidden,
+      syncEnabled: el.syncEnable.checked, syncUrl: el.syncUrl.value,
+      playlistName: el.playlistName.value, savedSel: el.savedPlaylists.value
+    };
+  }
+  function restorePlaylist(s) {
+    state.basket = s.basket.slice();
+    el.metaTitle.value = s.title; el.metaAuthor.value = s.author; el.metaDescription.value = s.description;
+    el.coverText.value = s.coverText; el.coverSubtitle.value = s.coverSubtitle;
+    state.coverStyle = s.coverStyle; state.coverAccent = s.coverAccent; state.coverSeed = s.coverSeed;
+    state.coverTextPos = s.coverTextPos; el.coverTextPos.value = s.coverTextPos;
+    state.coverTextColor = s.coverTextColor; el.coverTextColor.value = s.coverTextColor;
+    state.usingCustom = s.usingCustom; state.customImgEl = s.customImgEl; state.customBaseUrl = s.customBaseUrl;
+    state.coverDataUrl = s.coverDataUrl; state._coverSig = null;
+    el.useCustomImage.checked = s.useCustom; el.customFileField.hidden = s.customFieldHidden;
+    buildCoverPickers();
+    el.syncEnable.checked = s.syncEnabled; el.syncUrl.value = s.syncUrl; updateSyncUI();
+    el.playlistName.value = s.playlistName; el.savedPlaylists.value = s.savedSel;
+  }
+
   function clearBasket() {
     if (!state.basket.length) return;
+    state.clearUndo = snapshotPlaylist();   // snapshot everything so Clear is reversible
     state.basket = [];
     resetPlaylistIdentity();
     // Also clear the Library "save as" box and dropdown selection — a fresh slate.
     if (el.playlistName) el.playlistName.value = '';
     if (el.savedPlaylists) el.savedPlaylists.value = '';
     renderAll();
-    toast('Cleared — started a fresh playlist.', 'ok');
+    toast('Cleared — started a fresh playlist. Undo clear is in the toolbar.', 'ok');
+  }
+  function undoClear() {
+    if (!state.clearUndo) return;
+    restorePlaylist(state.clearUndo); state.clearUndo = null;
+    renderAll();
+    toast('Playlist restored.', 'ok');
   }
   function shuffleBasket() {
     for (var i = state.basket.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; }
@@ -2595,7 +2702,7 @@ window.PP = (function () {
       var msg;
       if (!state.raw.length) {
         if (!state.fetched) {
-          msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Fetch from BeatLeader</b>.</p>';
+          msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Search</b> — or paste BSR codes into <b>Quick Add</b>.</p>';
         } else if (el.fType.value === 'ranked') {
           msg = '<p><b>No ranked maps matched.</b></p><p>Most community maps aren\'t ranked. Switch <b>Ranked status</b> to <b>All</b> to search the full catalog, or loosen your other filters.</p><p><button type="button" class="ghost sm" id="emptySwitchAll">Search all maps instead</button></p>';
         } else {
@@ -2652,7 +2759,7 @@ window.PP = (function () {
     if (el.mResultsBadge) el.mResultsBadge.textContent = state.filtered.length || '';
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
-    if (!state.raw.length) el.counterMeta.textContent = 'Set filters and fetch to begin.';
+    if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
     else if (!entries) el.counterMeta.textContent = matched + ' maps matched. Add the ones you want to build your playlist.';
     else {
       var st = playlistStats();
@@ -2671,8 +2778,11 @@ window.PP = (function () {
     el.addAllBtn.disabled = !hasResults; el.addTopBtn.disabled = !hasResults; el.addRandomBtn.disabled = !hasResults;
     el.clearResultsBtn.disabled = state.raw.length === 0;
     el.shuffleBtn.disabled = el.sortPlaylistBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
-    el.enrichBtn.disabled = state.enriching || needsEnrich().length === 0;
-    el.refreshStarsBtn.disabled = state.enriching || !hasBasket;
+    // Fill data / Re-check only make sense once there ARE maps (and something to fill) — hide otherwise.
+    var canFill = needsEnrich().length > 0;
+    el.enrichBtn.hidden = !canFill; el.enrichBtn.disabled = state.enriching || !canFill;
+    el.refreshStarsBtn.hidden = !hasBasket; el.refreshStarsBtn.disabled = state.enriching || !hasBasket;
+    if (el.undoClearBtn) el.undoClearBtn.hidden = !state.clearUndo;
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.disabled = !hasBasket; });
   }
   function renderExport() {
@@ -3603,6 +3713,11 @@ window.PP = (function () {
       else if (act === 'down') moveBasket(key, 1);
       else if (act === 'preview') { var bi = basketIndex(key); if (bi >= 0) openPreview(state.basket[bi]); }
     });
+
+    // quick add + undo clear
+    el.quickAddBtn.addEventListener('click', quickAdd);
+    el.quickAddInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); quickAdd(); } });
+    el.undoClearBtn.addEventListener('click', undoClear);
 
     // presets
     el.presetSave.addEventListener('click', savePreset);
