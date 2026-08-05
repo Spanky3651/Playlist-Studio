@@ -89,6 +89,19 @@ The math mirrors BeatLeader's server exactly: `passPP = 15.2·e^(passRating^(1/2
 - **Import `.bplist`** — open an existing playlist to edit it; covers stored as either a data URI *or* raw base64 both load, for broad compatibility with community playlists
 - **BeatLeader enrichment** — `↻ Fill data` fills in stars / NPS / duration / cover for imported songs by hash; `★ Re-check` re-checks every song in the playlist to catch rating recalcs
 
+### Refine an imported (or built) playlist
+Import a big list, then prune it down in place — no spreadsheet, no re-adding maps one by one. The **Refine Playlist** panel runs bulk actions on whatever's in **Your Playlist**, using the same play-history definitions as the search filters.
+
+- **Quick actions** — one tap each: **Remove played**, **Remove FC'd**, **Keep unplayed**, **Keep near-FC**. "Import my playlist, drop everything I've already played, re-export" is a single click.
+- **Any criterion, two directions** — pick a criterion and either **Remove matching** or **Keep only matching**:
+  - *Play history* — played / unplayed / FC'd / played-but-not-FC / near-miss FC / my accuracy ≥ or < a threshold / not played in over a year.
+  - *Difficulty* — star rating inside a min–max range (trim a mixed list down to one band).
+- **Live preview** before you commit — "Matches 12 of 80 — Remove leaves 68, Keep leaves 12" — so you always see the result first.
+- **One-tap Undo** restores the playlist exactly as it was if a prune wasn't what you wanted.
+- Play-history tools need your BeatLeader profile connected (the panel says so and disables them until it is); the star-range tool works on any map with a rating — run `↻ Fill data` first if imported maps show no stars.
+
+Typical uses: refresh a grind list by dropping everything you've now FC'd, thin a huge import down to just unplayed maps, keep only your sub-90% plays to practice, prune stale maps you haven't touched in a year, or cut a 10★ playlist down to the 7–8★ band.
+
 ### In-game sync (optional)
 Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button — no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** — it lives in its own **In-Game Sync** panel and does nothing unless you turn it on.
 

@@ -575,6 +575,16 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 .sync-hosthint.bad{color:#e6a9b2;}
 .sync-hosthint code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:12px;}
 
+/* ---------- Refine Playlist ---------- */
+.refine-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.refine-quick[hidden]{display:none;}
+#refineStarWrap[hidden]{display:none;}
+.refine-actions{display:flex;gap:8px;margin-top:2px;}
+.refine-actions .ghost{flex:1;}
+.refine-note{font-size:13px;color:var(--muted);line-height:1.5;margin:10px 0 8px;}
+.refine-note b{color:var(--text);}
+.refine-note.hot b{color:var(--red);}
+
 /* ---------- Toast ---------- */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(140%);background:#0a1420;border:1px solid var(--blue);color:var(--text);font-size:14.5px;font-weight:600;padding:12px 20px;border-radius:10px;z-index:200;transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 30px rgba(0,0,0,.6),var(--blue-glow);display:flex;align-items:center;gap:10px;max-width:min(90vw,460px);}
 .toast.show{transform:translateX(-50%) translateY(0);}
@@ -1117,6 +1127,52 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       </div>
     </section>
 
+    <!-- Refine Playlist -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
+      <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty — handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
+      <div class="panel-body">
+        <div class="refine-quick" id="refineQuick">
+          <button class="ghost sm" data-refine="remove" data-crit="played" type="button">Remove played</button>
+          <button class="ghost sm" data-refine="remove" data-crit="fc" type="button">Remove FC'd</button>
+          <button class="ghost sm" data-refine="keep" data-crit="unplayed" type="button">Keep unplayed</button>
+          <button class="ghost sm" data-refine="keep" data-crit="nearfc" type="button">Keep near-FC</button>
+        </div>
+        <div class="field"><label class="field-label">Criteria <span class="info" data-tip="Pick a set of maps in your playlist, then Remove them or Keep only them. Near-miss FC = played, no full-combo, ≤3 misses and a would-be FC accuracy ≥90%. Star tools use each map's BeatLeader rating — run ↻ Fill data first if imported maps show no stars.">i</span></label>
+          <select id="refineCrit">
+            <optgroup label="My play history">
+              <option value="played">Maps I've played</option>
+              <option value="unplayed">Maps I haven't played</option>
+              <option value="fc">Maps I've FC'd</option>
+              <option value="nofc">Played, not FC'd</option>
+              <option value="nearfc">Near-miss FC</option>
+              <option value="accAbove">My accuracy ≥ …%</option>
+              <option value="accBelow">My accuracy &lt; …%</option>
+              <option value="stale">Not played in over a year</option>
+            </optgroup>
+            <optgroup label="Difficulty">
+              <option value="starRange">Star rating in range</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field" id="refineAccWrap" hidden><label class="field-label">Accuracy %</label>
+          <input type="number" id="refineAcc" min="0" max="100" step="0.5" value="95" /></div>
+        <div class="row" id="refineStarWrap" hidden>
+          <div class="field"><label class="field-label">Min ★</label><input type="number" id="refineStarMin" min="0" max="15" step="0.1" value="0" /></div>
+          <div class="field"><label class="field-label">Max ★</label><input type="number" id="refineStarMax" min="0" max="15" step="0.1" value="15" /></div>
+        </div>
+        <p class="refine-note" id="refinePreview">Your playlist is empty.</p>
+        <div class="refine-actions">
+          <button class="ghost sm danger" id="refineRemoveBtn" type="button" disabled>Remove matching</button>
+          <button class="ghost sm" id="refineKeepBtn" type="button" disabled>Keep only matching</button>
+        </div>
+        <p class="refine-note" id="refineConnectHint" hidden>Connect your BeatLeader profile (in <b>Your scores</b>) to use the play-history tools.</p>
+        <div id="refineUndoWrap" hidden style="margin-top:8px;">
+          <button class="ghost sm" id="refineUndoBtn" type="button">↩ Undo last change</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Playlist Info -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Playlist Info</h2></div>
@@ -1226,7 +1282,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T12:29:08Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T14:26:32Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2112,6 +2168,7 @@ window.PP = (function () {
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'syncEnable','syncBody','syncUrl','syncHint',
+   'refineQuick','refineCrit','refineAccWrap','refineAcc','refineStarWrap','refineStarMin','refineStarMax','refinePreview','refineRemoveBtn','refineKeepBtn','refineConnectHint','refineUndoWrap','refineUndoBtn',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
@@ -2595,7 +2652,7 @@ window.PP = (function () {
     }
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
   }
-  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); saveSession(); }
+  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); saveSession(); }
   // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
   // is unchanged, so the (expensive) Search Results list doesn't need re-rendering.
   function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); saveSession(); }
@@ -2757,6 +2814,89 @@ window.PP = (function () {
   function bindSyncUI() {
     el.syncEnable.addEventListener('change', function () { updateSyncUI(); toast(el.syncEnable.checked ? 'In-game Sync on — paste your host URL.' : 'In-game Sync off.', 'ok'); });
     el.syncUrl.addEventListener('input', updateSyncUI);
+  }
+
+  // ---- refine playlist (prune the basket) -----------------------------------
+  // Score-based criteria need a connected profile; starRange works off map ratings.
+  var SCORE_CRITS = { played:1, unplayed:1, fc:1, nofc:1, nearfc:1, accAbove:1, accBelow:1, stale:1 };
+  // Does this basket entry belong to the target set? Mirrors the results play-status filter exactly.
+  function refineMatches(e, crit, accVal, starMin, starMax) {
+    if (crit === 'starRange') { var st = +e.stars || 0; return st > 0 && st >= starMin && st <= starMax; }
+    var sc = scoreFor(e), played = !!sc;
+    switch (crit) {
+      case 'played':   return played;
+      case 'unplayed': return !played;
+      case 'fc':       return played && !!sc.fc;
+      case 'nofc':     return played && !sc.fc;
+      case 'nearfc':   return played && !sc.fc && sc.m <= 3 && (sc.fa || 0) >= 0.90;
+      case 'accAbove': return played && sc.a * 100 >= accVal;
+      case 'accBelow': return played && sc.a * 100 < accVal;
+      case 'stale':    return played && !!sc.t && ((Math.floor(Date.now() / 1000) - sc.t) / 86400) > 365;
+    }
+    return false;
+  }
+  function refineOpts() {
+    return { crit: el.refineCrit.value, acc: num(el.refineAcc, 95),
+             smin: num(el.refineStarMin, 0), smax: num(el.refineStarMax, 15) };
+  }
+  function refineCount(o) {
+    var n = 0; state.basket.forEach(function (e) { if (refineMatches(e, o.crit, o.acc, o.smin, o.smax)) n++; }); return n;
+  }
+  function updateRefineUI() {
+    if (!el.refineCrit) return;
+    var o = refineOpts(), crit = o.crit, scoreBased = !!SCORE_CRITS[crit];
+    el.refineAccWrap.hidden = !(crit === 'accAbove' || crit === 'accBelow');
+    el.refineStarWrap.hidden = crit !== 'starRange';
+    var total = state.basket.length, needProfile = scoreBased && !state.player;
+    el.refineConnectHint.hidden = !needProfile;
+    if (!total) { el.refinePreview.className = 'refine-note'; el.refinePreview.textContent = 'Your playlist is empty.'; }
+    else if (needProfile) { el.refinePreview.className = 'refine-note'; el.refinePreview.innerHTML = '<b>' + total + '</b> map' + (total === 1 ? '' : 's') + ' in your playlist.'; }
+    else {
+      var m = refineCount(o);
+      el.refinePreview.className = 'refine-note' + (m ? ' hot' : '');
+      el.refinePreview.innerHTML = 'Matches <b>' + m + '</b> of <b>' + total + '</b> — Remove leaves ' + (total - m) + ', Keep leaves ' + m + '.';
+    }
+    var disable = !total || needProfile;
+    el.refineRemoveBtn.disabled = disable;
+    el.refineKeepBtn.disabled = disable;
+    // Quick chips are all score-based → dim them without a profile.
+    Array.prototype.forEach.call(el.refineQuick.querySelectorAll('button'), function (b) { b.disabled = !state.player || !total; });
+  }
+  function doRefine(mode, crit) {
+    if (crit) el.refineCrit.value = crit;
+    var o = refineOpts();
+    if (SCORE_CRITS[o.crit] && !state.player) { toast('Connect your BeatLeader profile first (Your scores).', 'warn'); updateRefineUI(); return; }
+    if (!state.basket.length) return;
+    var before = state.basket.slice();
+    var kept = state.basket.filter(function (e) {
+      var hit = refineMatches(e, o.crit, o.acc, o.smin, o.smax);
+      return mode === 'keep' ? hit : !hit;
+    });
+    var removed = before.length - kept.length;
+    if (!removed) { toast('No maps matched — nothing removed.', 'warn'); return; }
+    state.refineUndo = before;
+    state.basket = kept;
+    el.refineUndoWrap.hidden = false;
+    renderAll();
+    toast('Removed ' + removed + ' map' + (removed === 1 ? '' : 's') + ' · ' + kept.length + ' left. Undo below.', 'ok');
+  }
+  function undoRefine() {
+    if (!state.refineUndo) return;
+    state.basket = state.refineUndo; state.refineUndo = null;
+    el.refineUndoWrap.hidden = true;
+    renderAll();
+    toast('Change undone.', 'ok');
+  }
+  function bindRefineUI() {
+    el.refineCrit.addEventListener('change', updateRefineUI);
+    ['refineAcc','refineStarMin','refineStarMax'].forEach(function (id) { el[id].addEventListener('input', updateRefineUI); });
+    el.refineRemoveBtn.addEventListener('click', function () { doRefine('remove'); });
+    el.refineKeepBtn.addEventListener('click', function () { doRefine('keep'); });
+    el.refineUndoBtn.addEventListener('click', undoRefine);
+    el.refineQuick.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button[data-refine]'); if (!b || b.disabled) return;
+      doRefine(b.dataset.refine, b.dataset.crit);
+    });
   }
 
   // ---- export ---------------------------------------------------------------
@@ -3482,7 +3622,7 @@ window.PP = (function () {
     fxInit();
     initCollapsibles();
 
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
