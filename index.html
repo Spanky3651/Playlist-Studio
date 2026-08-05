@@ -568,6 +568,13 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 .info:hover{opacity:1;box-shadow:0 0 8px rgba(47,140,255,.4);background:rgba(47,140,255,.12);}
 #tipbox{position:fixed;display:none;z-index:400;max-width:300px;background:#0b141f;border:1px solid var(--blue);border-radius:9px;padding:10px 13px;font-size:13.5px;line-height:1.55;color:#d7e6f5;box-shadow:0 6px 24px rgba(0,0,0,.75),0 0 16px rgba(47,140,255,.18);pointer-events:none;font-family:var(--sans);}
 
+/* ---------- In-Game Sync ---------- */
+#syncBody[hidden]{display:none;}
+.sync-hosthint{font-size:13px;color:var(--muted);line-height:1.55;margin:8px 0 0;}
+.sync-hosthint.ok{color:#8fe6c4;}
+.sync-hosthint.bad{color:#e6a9b2;}
+.sync-hosthint code{font-family:var(--mono);color:var(--blue);background:#0c1622;padding:1px 5px;border-radius:4px;font-size:12px;}
+
 /* ---------- Toast ---------- */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(140%);background:#0a1420;border:1px solid var(--blue);color:var(--text);font-size:14.5px;font-weight:600;padding:12px 20px;border-radius:10px;z-index:200;transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 30px rgba(0,0,0,.6),var(--blue-glow);display:flex;align-items:center;gap:10px;max-width:min(90vw,460px);}
 .toast.show{transform:translateX(-50%) translateY(0);}
@@ -1172,6 +1179,20 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       </div>
     </section>
 
+    <!-- In-Game Sync -->
+    <section class="panel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h2>In-Game Sync</h2>
+        <label class="switch head-switch"><input type="checkbox" id="syncEnable" /><span class="track"></span><span class="switch-lbl">Enable</span></label>
+      </div>
+      <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist from wherever <i>you</i> host it. Nothing is uploaded here — Studio just writes the address you paste.</div>
+      <div class="panel-body" id="syncBody" hidden>
+        <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once — the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
+          <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
+          <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant — if you move or rename it later, existing copies stop syncing.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Export -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
@@ -1205,7 +1226,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T11:53:11Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T12:29:08Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -1876,13 +1897,15 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       });
 
       var songObjects = order.map(function (k) { return byHash[k]; });
+      var customData = { generator: 'Playlist Studio', source: 'api.beatleader.xyz', songCount: songObjects.length };
+      if (meta.syncURL) customData.syncURL = meta.syncURL;
       return {
         playlistTitle: meta.title || 'Playlist Studio Mix',
         playlistAuthor: meta.author || 'Playlist Studio',
         playlistDescription: meta.description || '',
         image: meta.image || '',
         songs: songObjects,
-        customData: { generator: 'Playlist Studio', source: 'api.beatleader.xyz', songCount: songObjects.length }
+        customData: customData
       };
     },
 
@@ -2056,6 +2079,7 @@ window.PP = (function () {
   var SESSION_KEY = 'playlistStudio.session.v1';
   var PLAYER_KEY = 'playlistStudio.player.v1';
   var ICON_KEY = 'playlistStudio.icons.v1';
+  var SYNC_KEY = 'playlistStudio.sync.v1';
 
   var RELAYS = [
     { id: 'proxy.cors.sh',  build: function (a) { return 'https://proxy.cors.sh/' + a; }, unwrap: JSON.parse },
@@ -2087,6 +2111,7 @@ window.PP = (function () {
    'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','animToggle','topLoadBar','topLoadFill',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
+   'syncEnable','syncBody','syncUrl','syncHint',
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
@@ -2711,6 +2736,29 @@ window.PP = (function () {
     el.useCustomImage.checked = true; el.customFileField.hidden = false;
   }
 
+  // ---- in-game sync (syncURL) ----------------------------------------------
+  function isHttpUrl(u) { return /^https?:\/\/\S+$/i.test(u); }
+  function buildSyncUrl() { var u = el.syncUrl.value.trim(); return isHttpUrl(u) ? u : ''; }
+  function getSyncUrl() { return el.syncEnable.checked ? buildSyncUrl() : ''; }
+  function updateSyncUI() {
+    var on = el.syncEnable.checked, raw = el.syncUrl.value.trim(), hint = el.syncHint;
+    el.syncBody.hidden = !on;
+    if (!on || !raw) { hint.className = 'sync-hosthint'; hint.innerHTML = 'Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant — if you move or rename it later, existing copies stop syncing.'; }
+    else if (isHttpUrl(raw)) { hint.className = 'sync-hosthint ok'; hint.innerHTML = 'Ready — this URL is written into <code>customData.syncURL</code> on export.'; }
+    else { hint.className = 'sync-hosthint bad'; hint.textContent = "That doesn't look like a full http(s) URL."; }
+    saveSyncCfg();
+  }
+  function saveSyncCfg() { try { localStorage.setItem(SYNC_KEY, JSON.stringify({ enabled: !!el.syncEnable.checked, url: el.syncUrl.value.trim() })); } catch (e) {} }
+  function loadSyncCfg() {
+    var c; try { c = JSON.parse(localStorage.getItem(SYNC_KEY) || 'null'); } catch (e) { c = null; }
+    if (c) { el.syncEnable.checked = !!c.enabled; el.syncUrl.value = c.url || ''; }
+    updateSyncUI();
+  }
+  function bindSyncUI() {
+    el.syncEnable.addEventListener('change', function () { updateSyncUI(); toast(el.syncEnable.checked ? 'In-game Sync on — paste your host URL.' : 'In-game Sync off.', 'ok'); });
+    el.syncUrl.addEventListener('input', updateSyncUI);
+  }
+
   // ---- export ---------------------------------------------------------------
   function doDownload() {
     if (!state.basket.length) return;
@@ -2724,8 +2772,10 @@ window.PP = (function () {
       (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★') + '. Built with Playlist Studio (BeatLeader).';
     var rawTitle = el.metaTitle.value.trim();
     var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
-    var meta = { title: (!rawTitle || rawTitle === 'Playlist Studio Mix') ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || 'Playlist Studio', description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '' };
-    try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist.', 'ok'); }
+    var syncURL = getSyncUrl();
+    var meta = { title: (!rawTitle || rawTitle === 'Playlist Studio Mix') ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || 'Playlist Studio', description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '', syncURL: syncURL };
+    if (el.syncEnable.checked && !syncURL) toast('Sync is on but the host URL is incomplete — exporting without a syncURL.', 'warn');
+    try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (syncURL ? ' (with sync URL).' : '.'), 'ok'); }
     catch (err) { toast(err.message, 'err'); }
   }
 
@@ -2859,6 +2909,8 @@ window.PP = (function () {
       if (pl.playlistTitle) el.metaTitle.value = pl.playlistTitle;
       if (pl.playlistAuthor) el.metaAuthor.value = pl.playlistAuthor;
       if (pl.playlistDescription) el.metaDescription.value = pl.playlistDescription;
+      var importedSync = pl.customData && typeof pl.customData.syncURL === 'string' ? pl.customData.syncURL.trim() : '';
+      if (importedSync) { el.syncEnable.checked = true; el.syncUrl.value = importedSync; updateSyncUI(); }
       if (typeof pl.image === 'string' && pl.image.trim()) {
         var img = pl.image.trim();
         if (/^data:image\//i.test(img)) setCoverFromDataUrl(img);
@@ -3430,7 +3482,7 @@ window.PP = (function () {
     fxInit();
     initCollapsibles();
 
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }

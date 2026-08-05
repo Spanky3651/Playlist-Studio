@@ -89,6 +89,16 @@ The math mirrors BeatLeader's server exactly: `passPP = 15.2·e^(passRating^(1/2
 - **Import `.bplist`** — open an existing playlist to edit it; covers stored as either a data URI *or* raw base64 both load, for broad compatibility with community playlists
 - **BeatLeader enrichment** — `↻ Fill data` fills in stars / NPS / duration / cover for imported songs by hash; `★ Re-check` re-checks every song in the playlist to catch rating recalcs
 
+### In-game sync (optional)
+Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button — no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** — it lives in its own **In-Game Sync** panel and does nothing unless you turn it on.
+
+- **You host the file, not Playlist Studio.** Nothing is uploaded here — the app only writes the address you paste, so your playlist stays entirely on your own hosting. (Great for keeping the tool shared without your playlists riding along.)
+- **One box** — turn the panel on and paste the URL your `.bplist` will live at (e.g. `https://mysite.com/playlists/mix.bplist`). Whatever you type goes straight into `customData.syncURL`; a live hint confirms it's a valid link.
+- **Round-trips on import** — open a `.bplist` that already has a `syncURL` and the box fills itself back in.
+- Your URL is remembered in your browser, so re-publishing is just: edit → export → re-upload to the same spot.
+
+> The URL must point at the **raw file** (not a web page) and stay constant. If you move or rename the hosted file later, existing copies stop syncing — keep the same path and just overwrite the file to push an update.
+
 ### Made for mobile too
 - A fixed bottom **tab bar** — **Filters / Results / Playlist** with live count badges — switches between the three views so you're not scrolling one endless column. A fetch jumps you straight to **Results**, the **Fetch** button floats within easy reach while you filter, touch targets are enlarged, and map previews go full-screen.
 - The desktop two-column layout is untouched; the mobile treatment only kicks in on small screens.
@@ -117,6 +127,15 @@ If you run your own CORS relay and would rather use it, point the app at it unde
 1. Export the `.bplist` from Playlist Studio.
 2. Drop it into your Beat Saber `Playlists` folder — on PC that's usually `…\Steam\steamapps\common\Beat Saber\Playlists\`.
 3. In-game, refresh your song list. The [PlaylistManager](https://github.com/rithik-b/PlaylistManager) mod loads the playlist; any maps you don't have download automatically if you use playlist syncing / BeatSaver downloading.
+
+### Keeping a playlist in sync
+
+Want the playlist to update itself in-game whenever you change it? Turn on the **In-Game Sync** panel before exporting (see *In-game sync* above):
+
+1. Pick where you'll host the file and let the helper build the `syncURL`, then export.
+2. Upload the exported `.bplist` to that address.
+3. Import it into the game once (steps above). PlaylistManager now shows a **Sync** button on that playlist.
+4. To push a change later: edit it in Playlist Studio, re-export, and overwrite the file at the **same** address. Hit **Sync** in-game to pull it — the playlist (songs, title, cover) updates in place.
 
 ## Privacy
 
