@@ -184,8 +184,8 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .panel-head h2{font-size:14px;margin:0;letter-spacing:1.2px;text-transform:uppercase;font-family:var(--mono);color:#cdd8e6;font-weight:600;flex:1;}
 .panel-head .count{font-family:var(--mono);font-size:12.5px;color:var(--muted);}
 .panel-caret{width:18px;height:18px;color:var(--muted-2);flex:none;transition:transform .22s ease;}
-.col-left .panel > .panel-head{cursor:pointer;user-select:none;}
-.col-left .panel > .panel-head:hover .panel-caret{color:var(--blue);}
+.col-left .panel > .panel-head,.panel[data-collapsible] > .panel-head{cursor:pointer;user-select:none;}
+.col-left .panel > .panel-head:hover .panel-caret,.panel[data-collapsible] > .panel-head:hover .panel-caret{color:var(--blue);}
 .panel.collapsed .panel-caret{transform:rotate(-90deg);}
 .panel.collapsed > .panel-sub,.panel.collapsed > .panel-body{display:none;}
 .panel-sub{padding:10px 16px;border-bottom:1px solid var(--border);background:#0a0e15;color:var(--muted);font-size:13.5px;line-height:1.55;}
@@ -1128,7 +1128,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     </section>
 
     <!-- Refine Playlist -->
-    <section class="panel">
+    <section class="panel" id="panelRefine" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
       <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty — handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
       <div class="panel-body">
@@ -1282,7 +1282,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T14:26:32Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T14:34:56Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3472,7 +3472,7 @@ window.PP = (function () {
   function initCollapsibles() {
     var KEY = 'playlistStudio.collapsed.v1', store = {};
     try { store = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
-    var heads = document.querySelectorAll('.col-left .panel > .panel-head');
+    var heads = document.querySelectorAll('.col-left .panel > .panel-head, .panel[data-collapsible] > .panel-head');
     Array.prototype.forEach.call(heads, function (head) {
       var panel = head.parentNode, h2 = head.querySelector('h2');
       var key = panel.id || (h2 ? h2.textContent.trim() : '');
@@ -3481,7 +3481,8 @@ window.PP = (function () {
       caret.className = 'panel-caret';
       caret.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
       head.appendChild(caret);
-      if (store[key]) panel.classList.add('collapsed');
+      var collapsed = Object.prototype.hasOwnProperty.call(store, key) ? store[key] : panel.hasAttribute('data-collapsed');
+      if (collapsed) panel.classList.add('collapsed');
       head.setAttribute('role', 'button');
       head.setAttribute('aria-label', 'Collapse or expand ' + (h2 ? h2.textContent.trim() : 'panel'));
       head.addEventListener('click', function (e) {
