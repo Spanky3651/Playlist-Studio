@@ -1282,7 +1282,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T14:34:56Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T15:18:53Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2145,6 +2145,10 @@ window.PP = (function () {
     { id: 'corsproxy.io',   build: function (a) { return 'https://corsproxy.io/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse }
   ];
 
+  // Per-playlist DEFAULTS. Title resets to this; author is treated as YOUR identity and kept across playlists.
+  var DEFAULT_TITLE = 'Playlist Studio Mix';
+  var DEFAULT_AUTHOR = 'Playlist Studio';
+  var DEFAULT_COVER_STYLE = 'pulse', DEFAULT_COVER_ACCENT = 'rb';
   var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
@@ -2476,7 +2480,41 @@ window.PP = (function () {
     var added = state.basket.length - before;
     toast(added ? 'Added ' + added + ' random map' + (added === 1 ? '' : 's') + '.' : 'Those are already in your playlist.', added ? 'ok' : 'warn'); renderAll();
   }
-  function clearBasket() { if (!state.basket.length) return; state.basket = []; toast('Playlist cleared.', 'ok'); renderAll(); }
+  // Reset everything that IDENTIFIES a playlist back to defaults, so nothing leaks
+  // between one list and the next. Author is intentionally NOT reset — it's your
+  // identity, the same across every playlist you make. The basket itself is handled
+  // by the caller. Safe to call before elements are wired (guards each group).
+  function resetPlaylistIdentity() {
+    // Metadata written into the .bplist
+    if (el.metaTitle) el.metaTitle.value = DEFAULT_TITLE;
+    if (el.metaDescription) el.metaDescription.value = '';
+    // Cover → back to the default generated art
+    if (el.coverText) el.coverText.value = '';
+    if (el.coverSubtitle) el.coverSubtitle.value = '';
+    state.coverStyle = DEFAULT_COVER_STYLE; state.coverAccent = DEFAULT_COVER_ACCENT; state.coverSeed = 0;
+    state.coverTextPos = 'bottom'; if (el.coverTextPos) el.coverTextPos.value = 'bottom';
+    state.coverTextColor = '#ffffff'; if (el.coverTextColor) el.coverTextColor.value = '#ffffff';
+    state.usingCustom = false; state.customImgEl = null; state.customBaseUrl = '';
+    state.coverDataUrl = ''; state._coverSig = null;
+    if (el.useCustomImage) el.useCustomImage.checked = false;
+    if (el.customFileField) el.customFileField.hidden = true;
+    if (el.coverStyleGrid) buildCoverPickers();
+    // In-Game Sync → off + empty (updateSyncUI also clears the persisted sync config)
+    if (el.syncEnable) { el.syncEnable.checked = false; el.syncUrl.value = ''; updateSyncUI(); }
+    // The Refine undo snapshot belonged to the OLD list — drop it
+    state.refineUndo = null; if (el.refineUndoWrap) el.refineUndoWrap.hidden = true;
+  }
+
+  function clearBasket() {
+    if (!state.basket.length) return;
+    state.basket = [];
+    resetPlaylistIdentity();
+    // Also clear the Library "save as" box and dropdown selection — a fresh slate.
+    if (el.playlistName) el.playlistName.value = '';
+    if (el.savedPlaylists) el.savedPlaylists.value = '';
+    renderAll();
+    toast('Cleared — started a fresh playlist.', 'ok');
+  }
   function shuffleBasket() {
     for (var i = state.basket.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; }
     toast('Shuffled.', 'ok'); renderBasketArea();
@@ -2913,7 +2951,7 @@ window.PP = (function () {
     var rawTitle = el.metaTitle.value.trim();
     var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
     var syncURL = getSyncUrl();
-    var meta = { title: (!rawTitle || rawTitle === 'Playlist Studio Mix') ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || 'Playlist Studio', description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '', syncURL: syncURL };
+    var meta = { title: (!rawTitle || rawTitle === DEFAULT_TITLE) ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '', syncURL: syncURL };
     if (el.syncEnable.checked && !syncURL) toast('Sync is on but the host URL is incomplete — exporting without a syncURL.', 'warn');
     try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (syncURL ? ' (with sync URL).' : '.'), 'ok'); }
     catch (err) { toast(err.message, 'err'); }
@@ -3004,8 +3042,9 @@ window.PP = (function () {
   function loadPlaylist() {
     var name = el.savedPlaylists.value; if (!name) { toast('Pick a saved playlist first.', 'warn'); return; }
     var p = lsGetPl()[name]; if (!p) { toast('That playlist is gone.', 'warn'); return; }
+    resetPlaylistIdentity();               // clean slate first so nothing leaks from the previous list
     state.basket = (p.entries || []).slice();
-    if (p.meta) { el.metaTitle.value = p.meta.title || el.metaTitle.value; el.metaAuthor.value = p.meta.author || el.metaAuthor.value; el.metaDescription.value = p.meta.description || ''; }
+    if (p.meta) { el.metaTitle.value = p.meta.title || DEFAULT_TITLE; if (p.meta.author) el.metaAuthor.value = p.meta.author; el.metaDescription.value = p.meta.description || ''; }
     state._coverSig = null;
     var cv = p.cover;
     if (cv) {
@@ -3033,6 +3072,11 @@ window.PP = (function () {
     reader.onload = function () {
       var pl; try { pl = JSON.parse(reader.result); } catch (e) { toast('That file is not valid JSON / .bplist.', 'err'); return; }
       if (!pl || !Array.isArray(pl.songs)) { toast('No songs found in that .bplist.', 'err'); return; }
+      // A fresh import (empty playlist) should adopt the file's identity wholesale — reset first
+      // so any field the file omits falls back to default instead of inheriting the last list.
+      // Importing INTO an existing playlist is a merge, so we leave the current metadata alone.
+      var wasEmpty = !state.basket.length;
+      if (wasEmpty) resetPlaylistIdentity();
       var added = 0;
       pl.songs.forEach(function (sng) {
         var hash = (sng.hash || sng.songHash || '').toString(); if (!hash) return;
