@@ -21,24 +21,24 @@
   --panel-3:#10141d;
   --border:#1a2030;
   --border-2:#28303f;
-  --border-glow:#2f8cff33;
+  --border-glow:#1e6bff55;
 
   --text:#e9edf5;
   --muted:#8792a6;
   --muted-2:#5a6273;
 
-  --blue:#2f8cff;      /* primary saber */
-  --blue-dim:#1b4c8a;
-  --red:#ff2d55;       /* secondary saber */
-  --red-dim:#8a2036;
+  --blue:#1e6bff;      /* primary saber (Deep Arena) */
+  --blue-dim:#103a8a;
+  --red:#ff1e3c;       /* secondary saber (Deep Arena) */
+  --red-dim:#8a1020;
   --amber:#ffc23d;     /* stars */
   --green:#22e0a1;     /* success */
   --magenta:#d94bff;
   --danger:#ff4d6d;
   --warn:#ffb400;
 
-  --blue-glow:0 0 14px rgba(47,140,255,.45);
-  --red-glow:0 0 14px rgba(255,45,85,.45);
+  --blue-glow:0 0 20px rgba(30,107,255,.60);
+  --red-glow:0 0 20px rgba(255,30,60,.60);
 
   --mono:"SF Mono",ui-monospace,"JetBrains Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -51,8 +51,9 @@ html,body{margin:0;padding:0;}
 body{
   background:var(--bg);
   background-image:
-    radial-gradient(circle at 12% -8%, #2f8cff14, transparent 45%),
-    radial-gradient(circle at 92% 0%, #ff2d5510, transparent 42%);
+    radial-gradient(1100px 720px at 0% -5%, rgba(255,30,60,.10), transparent 55%),
+    radial-gradient(1100px 720px at 100% -5%, rgba(30,107,255,.11), transparent 55%);
+  background-attachment:fixed;
   color:var(--text);
   font-family:var(--sans);
   font-size:16px;line-height:1.6;
@@ -87,9 +88,13 @@ a:hover{text-decoration:underline;}
   background:radial-gradient(circle at 30% 25%,#12151d,#000);
   border:1px solid var(--border-2);overflow:hidden;flex:none;
 }
-.brand .logo .blade{position:absolute;bottom:7px;width:5px;height:26px;border-radius:3px;}
-.brand .logo .blade.red{left:12px;background:linear-gradient(180deg,#fff,var(--red));box-shadow:var(--red-glow);transform:rotate(-26deg);transform-origin:bottom;}
-.brand .logo .blade.blue{right:12px;background:linear-gradient(180deg,#fff,var(--blue));box-shadow:var(--blue-glow);transform:rotate(26deg);transform-origin:bottom;}
+.brand .logo .blade{position:absolute;bottom:6px;width:5px;height:27px;border-radius:3px;transform-origin:bottom;}
+.brand .logo .blade::before{content:"";position:absolute;left:50%;top:2px;transform:translateX(-50%);width:1.6px;height:calc(100% - 6px);border-radius:2px;background:linear-gradient(180deg,#fff,rgba(255,255,255,.85));box-shadow:0 0 5px #fff,0 0 2px #fff;}
+.brand .logo .blade::after{content:"";position:absolute;left:50%;top:-3px;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#fff 22%,transparent 72%);}
+.brand .logo .blade.red{left:12px;background:linear-gradient(180deg,#ff9fb0,var(--red) 45%);box-shadow:0 0 9px var(--red),0 0 18px rgba(255,30,60,.55);transform:rotate(-26deg);}
+.brand .logo .blade.red::after{box-shadow:0 0 9px var(--red),0 0 4px #fff;}
+.brand .logo .blade.blue{right:12px;background:linear-gradient(180deg,#a9cbff,var(--blue) 45%);box-shadow:0 0 9px var(--blue),0 0 18px rgba(30,107,255,.55);transform:rotate(26deg);}
+.brand .logo .blade.blue::after{box-shadow:0 0 9px var(--blue),0 0 4px #fff;}
 .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.4px;}
 .brand h1 span{color:var(--blue);text-shadow:var(--blue-glow);}
 .brand .sub{font-family:var(--mono);font-size:12px;color:var(--muted-2);letter-spacing:1.4px;text-transform:uppercase;margin-top:2px;}
@@ -1200,7 +1205,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated">Last updated 08/04/2026</div>
+  <div class="foot-updated">Last updated 08/05/2026</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
