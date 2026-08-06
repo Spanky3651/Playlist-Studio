@@ -24,7 +24,7 @@ A segmented **source switch** sits at the top of the filter column:
 Switching sources swaps in the relevant filters (the BeatLeader-only Star Rating / PP / Ranked-status panels give way to the **Tags** panel and BeatSaver sort) and clears the current results, but keeps your playlist. Your choice is remembered between visits. NPS, BPM, mapper, game mode, difficulty, Quick Add, covers, and export all work identically in both modes.
 
 ### Browse by tag (BeatSaver)
-In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's own tags — this is where **poodle / tech / midspeed** style lists come from (poodles live under the **Tech** tag). The full official tag set is here: 7 **style** tags (Tech, Speed, Dance Style, Balanced, Challenge, Accuracy, Fitness) and the complete **genre** list, plus a custom-tag box for anything else.
+In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's own tags — this is where **poodle / tech / midspeed** style lists come from. BeatSaver has a dedicated **Poodle** tag (BeatLeader doesn't offer tag filtering at all), so a poodle list is one click. The full official tag set is here: 8 **style** tags (Tech, Poodle, Dance Style, Speed, Balanced, Challenge, Accuracy, Fitness) and the complete **genre** list, plus a custom-tag box for anything else.
 
 - Each chip is **tri-state**: click once to **require** a tag, again to **exclude** it, again to clear.
 - Sort by **Relevance, Rating, Curated, or Latest**, with an optional **curated-only** toggle.
