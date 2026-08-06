@@ -994,12 +994,12 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
               <option value="qualified">Qualified</option>
               <option value="all">All</option>
             </select></div>
-          <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Rating = up/down vote score. Curated = hand-picked by curators. Latest = newest uploads. Relevance = best match for your tags/search.">i</span></label>
+          <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Latest = newest uploads (best for browsing a tag). Rating = up/down vote score. Curated = hand-picked by curators. Relevance = best text match — only use it with a mapper/keyword search, it returns junk on its own.">i</span></label>
             <select id="bsSort">
-              <option value="Relevance" selected>Relevance</option>
+              <option value="Latest" selected>Latest</option>
               <option value="Rating">Rating</option>
               <option value="Curated">Curated</option>
-              <option value="Latest">Latest</option>
+              <option value="Relevance">Relevance</option>
             </select></div>
           <label class="switch bs-only" style="align-self:end;padding-bottom:10px;"><input type="checkbox" id="bsCurated" /><span class="track"></span><span class="switch-lbl">Curated only</span></label>
           <div class="field bl-only"><label class="field-label">Sort by <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
@@ -1347,7 +1347,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-06T21:28:01Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-06T21:53:39Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2509,8 +2509,12 @@ window.PP = (function () {
   }
   function buildBeatSaverUrl(page, f) {
     var p = new URLSearchParams();
-    p.set('sortOrder', el.bsSort.value || 'Relevance');
-    p.set('automapper', 'false');
+    var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
+    // 'Relevance' only makes sense with a text query — with none it returns a junk default set (AI maps).
+    var sort = el.bsSort.value || 'Latest';
+    if (sort === 'Relevance' && !q) sort = 'Latest';
+    p.set('sortOrder', sort);
+    // Do NOT send automapper=false: on BeatSaver that INCLUDES AI (Beat Sage) maps. The default already excludes them.
     var ts = tagState(), tag = buildTagParam(ts); if (tag) p.set('tags', tag);
     if (el.bsCurated.checked) p.set('curated', 'true');
     if (f.npsMin != null) p.set('minNps', f.npsMin);
@@ -2519,15 +2523,19 @@ window.PP = (function () {
     if (f.bpmMax != null) p.set('maxBpm', f.bpmMax);
     if (f.durMin != null) p.set('minDuration', f.durMin);
     if (f.durMax != null) p.set('maxDuration', f.durMax);
-    var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : ''); if (q) p.set('q', q);
+    if (q) p.set('q', q);
     return BS_API + '/search/text/' + page + '?' + p.toString();
   }
-  // A BeatSaver map → one entry per published difficulty (mirrors the per-leaderboard BeatLeader rows).
+  var DIFF_RANK = { ExpertPlus: 5, Expert: 4, Hard: 3, Normal: 2, Easy: 1 };
+  // A BeatSaver map → one entry per published difficulty, HARDEST FIRST (so the high-NPS diff leads each map).
   function bsSearchMapToEntries(map) {
     var vs = map.versions || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0] || {};
     var meta = map.metadata || {}, hash = (v.hash || '').toLowerCase();
     if (!hash) return [];
-    return (v.diffs || []).map(function (d) {
+    var diffs = (v.diffs || []).slice().sort(function (a, b) {
+      return (DIFF_RANK[BplistExporter.mapDifficultyName(b.difficulty)] || 0) - (DIFF_RANK[BplistExporter.mapDifficultyName(a.difficulty)] || 0);
+    });
+    return diffs.map(function (d) {
       return { leaderboardId: '', hash: hash,
         songName: meta.songName || map.name || 'Unknown', subName: meta.songSubName || '',
         mapper: meta.levelAuthorName || '', author: meta.songAuthorName || meta.levelAuthorName || '',
