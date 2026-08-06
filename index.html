@@ -1347,7 +1347,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-06T21:53:39Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-06T22:01:40Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2554,26 +2554,34 @@ window.PP = (function () {
     el.resultList.innerHTML = fetchLoaderHTML().replace('Scanning BeatLeader…', 'Searching BeatSaver…');
     el.counterMeta.textContent = 'Searching BeatSaver…';
     if (isMobileView()) setMobileView('results');
-    var collected = [], mapsSeen = 0, page = 0, PAGE = 20, capMaps = f.maxScan;
+    var collected = [], mapsSeen = 0, page = 0, capMaps = f.maxScan, total = null, totalPages = null, rateLimited = false;
     function step() {
       return fetch(buildBeatSaverUrl(page, f)).then(function (r) {
-        if (r.status === 429) throw new Error('BeatSaver rate-limited — wait a moment and search again.');
+        if (r.status === 429) { rateLimited = true; return null; }   // stop paging, keep what we have
         if (!r.ok) throw new Error('BeatSaver returned HTTP ' + r.status); return r.json();
       }).then(function (data) {
-        var docs = (data && data.docs) || [];
+        if (!data) return;
+        var docs = (data && data.docs) || [], info = (data && data.info) || {};
+        if (total == null && typeof info.total === 'number') total = info.total;
+        if (totalPages == null && typeof info.pages === 'number') totalPages = info.pages;
         docs.forEach(function (m) { mapsSeen++; bsSearchMapToEntries(m).forEach(function (e) { collected.push(e); }); });
-        var pct = Math.max(8, Math.min(100, Math.round((mapsSeen / capMaps) * 100)));
+        var target = Math.min(capMaps, total != null ? total : capMaps);
+        var pct = target ? Math.max(8, Math.min(100, Math.round((mapsSeen / target) * 100))) : 100;
         el.barFill.style.width = pct + '%'; el.topLoadFill.style.width = pct + '%';
-        el.fetchProgressText.textContent = 'Scanned ' + mapsSeen + ' maps…';
-        var fc = document.getElementById('flCount'); if (fc) fc.textContent = mapsSeen.toLocaleString() + ' maps';
+        var label = mapsSeen.toLocaleString() + (total != null ? ' of ' + Math.min(capMaps, total).toLocaleString() : '') + ' maps';
+        el.fetchProgressText.textContent = 'Scanned ' + label + '…';
+        var fc = document.getElementById('flCount'); if (fc) fc.textContent = label;
         var fb = document.getElementById('flBar'); if (fb) fb.style.width = pct + '%';
-        if (docs.length === PAGE && mapsSeen < capMaps) { page++; return delay(150).then(step); }
+        // Keep paging until the API's last page (info.pages) — never rely on a fixed page size.
+        var morePages = totalPages != null ? (page + 1 < totalPages) : (docs.length > 0);
+        if (docs.length && morePages && mapsSeen < capMaps) { page++; return delay(120).then(step); }
       });
     }
     step().then(function () {
       state.raw = collected; state.fetched = true; state.lastSig = 'bs'; el.barFill.style.width = '100%';
       if (!collected.length) { setStatus('No maps found', 'err'); toast('No BeatSaver maps matched those tags — loosen the tags or clear a filter.', 'warn'); }
-      else { setStatus('Loaded ' + collected.length + ' diffs', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver — add the ones you want.', 'ok'); }
+      else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited — search again to pull the rest.', 'warn'); }
+      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver — add the ones you want.', 'ok'); }
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
     }).catch(function (err) {
