@@ -587,6 +587,24 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 .refine-note b{color:var(--text);}
 .refine-note.hot b{color:var(--red);}
 
+/* ---------- Source split (BeatLeader / BeatSaver) ---------- */
+body.src-beatleader .bs-only{display:none !important;}
+body.src-beatsaver .bl-only{display:none !important;}
+.source-switch{display:flex;gap:4px;background:var(--panel-2);border:1px solid var(--border-2);border-radius:11px;padding:4px;margin-bottom:12px;}
+.source-switch button{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:9px 8px;border-radius:8px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.source-switch button:hover{color:var(--text);}
+.source-switch button.active{background:var(--blue);color:#fff;box-shadow:0 0 14px rgba(47,140,255,.35);}
+.source-switch button svg{width:15px;height:15px;}
+.source-cap{font-size:12.5px;color:var(--muted-2);margin:-6px 0 12px;line-height:1.5;text-align:center;}
+.tag-legend{font-size:12px;color:var(--muted-2);margin:2px 0 8px;font-family:var(--mono);}
+.tag-legend b{color:var(--blue);} .tag-legend i{color:var(--red);font-style:normal;}
+.tag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;}
+.tag-grid .tag-h{width:100%;font-size:11.5px;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;color:var(--muted-2);margin:8px 0 2px;}
+.tag-chip{background:var(--panel-2);border:1px solid var(--border-2);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;transition:.13s;user-select:none;}
+.tag-chip:hover{color:var(--text);border-color:var(--blue-dim);}
+.tag-chip[data-state="1"]{background:rgba(47,140,255,.16);border-color:var(--blue);color:#cfe4ff;}
+.tag-chip[data-state="2"]{background:rgba(255,30,60,.14);border-color:var(--red);color:#ffc3cc;text-decoration:line-through;}
+
 /* ---------- Toast ---------- */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(140%);background:#0a1420;border:1px solid var(--blue);color:var(--text);font-size:14.5px;font-weight:600;padding:12px 20px;border-radius:10px;z-index:200;transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 30px rgba(0,0,0,.6),var(--blue-glow);display:flex;align-items:center;gap:10px;max-width:min(90vw,460px);}
 .toast.show{transform:translateX(-50%) translateY(0);}
@@ -722,7 +740,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
 .fl-hint{font-size:12.5px;color:var(--muted-2);margin:0;max-width:320px;}
 </style>
 </head>
-<body>
+<body class="src-beatleader">
 
 <canvas id="fxCanvas" aria-hidden="true"></canvas>
 <div id="fxSlash" aria-hidden="true"></div>
@@ -734,7 +752,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     <div class="logo"><span class="blade red"></span><span class="blade blue"></span></div>
     <div class="brand-txt">
       <h1>Playlist <span>Studio</span></h1>
-      <div class="sub">BEATLEADER SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
+      <div class="sub"><span id="srcLabel">BEATLEADER</span> SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
     </div>
   </div>
   <div class="spacer"></div>
@@ -754,6 +772,15 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
 <div class="layout">
   <!-- ============ LEFT: FILTERS ============ -->
   <div class="col-left">
+
+    <!-- Source switch -->
+    <div class="source-switch" id="sourceSwitch" role="tablist" aria-label="Map source">
+      <button type="button" data-source="beatleader" class="active" role="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg>BeatLeader</button>
+      <button type="button" data-source="beatsaver" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>BeatSaver</button>
+    </div>
+    <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> — tech, speed, genres — incl. unranked.</span></p>
 
     <!-- Intro -->
     <details class="intro" id="introPanel">
@@ -831,7 +858,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     </section>
 
     <!-- PP Filter -->
-    <section class="panel" id="ppPanel" data-collapsible data-collapsed>
+    <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
       <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
       <div class="panel-body">
@@ -850,8 +877,20 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       </div>
     </section>
 
-    <!-- Star Rating -->
-    <section class="panel">
+    <!-- Tags (BeatSaver) -->
+    <section class="panel bs-only">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><h2>Tags</h2></div>
+      <div class="panel-sub">Filter the BeatSaver catalog by tag — this is where <b>poodle / tech / midspeed</b> style lists come from. Click once to <b>require</b> a tag, again to <b>exclude</b> it. (Poodles live under <b>Tech</b>.)</div>
+      <div class="panel-body">
+        <p class="tag-legend">click cycles: <b>include</b> → <i>exclude</i> → off</p>
+        <div class="tag-grid" id="tagChips"><!-- built from BS_TAGS in JS --></div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Custom tag(s) <span class="info" data-tip="Any BeatSaver tag slug not shown above, comma-separated (e.g. classical, funk). Treated as required (include) tags.">i</span></label>
+          <input type="text" id="tagCustom" placeholder="e.g. classical, funk" /></div>
+      </div>
+    </section>
+
+    <!-- Star Rating (BeatLeader) -->
+    <section class="panel bl-only">
       <div class="panel-head"><span class="ph-ic star"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h2>Star Rating</h2><span class="count" id="starRangeLabel">0.0★ – 15.0★</span></div>
       <div class="panel-sub">The BeatLeader difficulty window for rated maps. Unranked maps have no stars, so this filter <b>skips</b> them rather than dropping them — set <b>Ranked status → Unranked</b> to build from those.</div>
       <div class="panel-body">
@@ -944,10 +983,10 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     <!-- Data Source -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Search Scope &amp; Sort</h2></div>
-      <div class="panel-sub">Which slice of BeatLeader to search and how to order it. <b>Sort by</b> only re-orders results — it never changes which maps match.</div>
+      <div class="panel-sub"><span class="bl-only">Which slice of BeatLeader to search and how to order it.</span><span class="bs-only">How to order the BeatSaver catalog.</span> <b>Sort by</b> only re-orders results — it never changes which maps match.</div>
       <div class="panel-body">
         <div class="grid-2">
-          <div class="field"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
+          <div class="field bl-only"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
             <select id="fType">
               <option value="ranked" selected>Ranked</option>
               <option value="unranked">Unranked</option>
@@ -955,7 +994,15 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
               <option value="qualified">Qualified</option>
               <option value="all">All</option>
             </select></div>
-          <div class="field"><label class="field-label">Sort by <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
+          <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Rating = up/down vote score. Curated = hand-picked by curators. Latest = newest uploads. Relevance = best match for your tags/search.">i</span></label>
+            <select id="bsSort">
+              <option value="Relevance" selected>Relevance</option>
+              <option value="Rating">Rating</option>
+              <option value="Curated">Curated</option>
+              <option value="Latest">Latest</option>
+            </select></div>
+          <label class="switch bs-only" style="align-self:end;padding-bottom:10px;"><input type="checkbox" id="bsCurated" /><span class="track"></span><span class="switch-lbl">Curated only</span></label>
+          <div class="field bl-only"><label class="field-label">Sort by <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
             <select id="fSort">
               <option value="stars" selected>Stars</option>
               <option value="techRating">Tech</option>
@@ -972,12 +1019,12 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
             </select></div>
         </div>
         <div class="grid-2">
-          <div class="field"><label class="field-label">Order</label>
+          <div class="field bl-only"><label class="field-label">Order</label>
             <select id="fOrder">
               <option value="desc" selected>High → Low</option>
               <option value="asc">Low → High</option>
             </select></div>
-          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull from BeatLeader before filtering in your browser. Higher = more thorough (finds more matches, especially after filtering by your plays) but takes longer — each 100 maps is another API page. 2,500 is the default; drop to 300 for a quick pull or go bigger for wide searches and 'unplayed' hunts.">i</span></label>
+          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull before filtering in your browser. Higher = more thorough but slower — BeatLeader pages 100 at a time, BeatSaver 20. 2,500 is the default; drop to 300 for a quick pull.">i</span></label>
             <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="2500" /></div>
         </div>
         <div class="scan-chips" id="scanChips">
@@ -990,14 +1037,15 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
         </div>
         <p class="scan-hint" id="scanHint"></p>
 
-        <div class="divider"></div>
-        <div class="field"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
+        <div class="divider bl-only"></div>
+        <div class="field bl-only"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
           <select id="connMode">
             <option value="auto" selected>Auto — direct, then relay race</option>
             <option value="relay">Relay — race the proxy pool</option>
             <option value="direct">Direct only</option>
           </select></div>
-        <details class="adv" id="relayAdv">
+        <p class="scan-hint bs-only" style="margin-top:2px;">BeatSaver allows direct browser access, so no relay is needed here.</p>
+        <details class="adv bl-only" id="relayAdv">
           <summary>Advanced: custom relay</summary>
           <div class="adv-body">
             <p>Leave blank to use the built-in pool of public relays (this handles BeatLeader’s CORS block automatically). If you run your own CORS relay, paste its prefix here — end it with <code>=</code> to append the map URL encoded, or include <code>{url}</code> where the encoded URL should go.</p>
@@ -1299,7 +1347,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-05T19:02:53Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-06T14:58:38Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2153,6 +2201,8 @@ window.PP = (function () {
   var PLAYER_KEY = 'playlistStudio.player.v1';
   var ICON_KEY = 'playlistStudio.icons.v1';
   var SYNC_KEY = 'playlistStudio.sync.v1';
+  var SRC_KEY = 'playlistStudio.source.v1';
+  var BS_API = 'https://api.beatsaver.com';
 
   var RELAYS = [
     { id: 'proxy.cors.sh',  build: function (a) { return 'https://proxy.cors.sh/' + a; }, unwrap: JSON.parse },
@@ -2166,7 +2216,7 @@ window.PP = (function () {
   var DEFAULT_TITLE = 'Playlist Studio Mix';
   var DEFAULT_AUTHOR = 'Playlist Studio';
   var DEFAULT_COVER_STYLE = 'pulse', DEFAULT_COVER_ACCENT = 'rb';
-  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '' };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -2174,6 +2224,7 @@ window.PP = (function () {
   var el = {};
   ['metaTitle','metaAuthor','metaDescription',
    'fType','fSort','fOrder','fMaxScan','connMode','customProxy','relayAdv',
+   'sourceSwitch','srcLabel','bsSort','bsCurated','tagChips','tagCustom',
    'presetName','presetSave','presetSelect','presetLoad','presetDelete','presetPanel',
    'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','playRecency','accMax','previewScore',
    'starMin','starMax','starMinNum','starMaxNum','starBandFill','starRangeLabel',
@@ -2332,6 +2383,7 @@ window.PP = (function () {
       '</div>';
   }
   function runFetch() {
+    if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
     fxSlashGo();
     var f = getFilters(); state.fetching = true; state.pinnedRelay = null;
@@ -2374,6 +2426,158 @@ window.PP = (function () {
       });
   }
 
+  // ---- source split (BeatLeader / BeatSaver) --------------------------------
+  function applySourceUI() {
+    var bs = state.source === 'beatsaver';
+    document.body.classList.toggle('src-beatsaver', bs);
+    document.body.classList.toggle('src-beatleader', !bs);
+    Array.prototype.forEach.call(el.sourceSwitch.querySelectorAll('button'), function (b) {
+      b.classList.toggle('active', b.dataset.source === state.source);
+    });
+    if (el.srcLabel) el.srcLabel.textContent = bs ? 'BEATSAVER' : 'BEATLEADER';
+    if (el.fetchBtn2) el.fetchBtn2.lastChild.textContent = bs ? 'Search BeatSaver' : 'Search BeatLeader';
+    try { localStorage.setItem(SRC_KEY, state.source); } catch (e) {}
+  }
+  function setSource(src) {
+    if (src === state.source) return;
+    state.source = src;
+    // results belong to the OTHER source — clear them (keep the playlist/basket)
+    state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
+    applySourceUI(); renderAll();
+    toast(src === 'beatsaver' ? 'Switched to BeatSaver — pick tags and Search.' : 'Switched to BeatLeader — set filters and Search.', 'ok');
+  }
+  // Full BeatSaver tag set (slug = human name lowercased, non-alphanumeric runs → hyphen).
+  var BS_TAGS = [
+    // Style
+    { t: 'style', s: 'tech', l: 'Tech' }, { t: 'style', s: 'dance-style', l: 'Dance Style' },
+    { t: 'style', s: 'speed', l: 'Speed' }, { t: 'style', s: 'balanced', l: 'Balanced' },
+    { t: 'style', s: 'challenge', l: 'Challenge' }, { t: 'style', s: 'accuracy', l: 'Accuracy' },
+    { t: 'style', s: 'fitness', l: 'Fitness' },
+    // Genre
+    { t: 'genre', s: 'alternative', l: 'Alternative' }, { t: 'genre', s: 'ambient', l: 'Ambient' },
+    { t: 'genre', s: 'anime', l: 'Anime' }, { t: 'genre', s: 'classical-orchestral', l: 'Classical & Orchestral' },
+    { t: 'genre', s: 'comedy-meme', l: 'Comedy & Meme' }, { t: 'genre', s: 'dance', l: 'Dance' },
+    { t: 'genre', s: 'drum-and-bass', l: 'Drum and Bass' }, { t: 'genre', s: 'dubstep', l: 'Dubstep' },
+    { t: 'genre', s: 'electronic', l: 'Electronic' }, { t: 'genre', s: 'folk-acoustic', l: 'Folk & Acoustic' },
+    { t: 'genre', s: 'funk-disco', l: 'Funk & Disco' }, { t: 'genre', s: 'hardcore', l: 'Hardcore' },
+    { t: 'genre', s: 'hip-hop-rap', l: 'Hip Hop & Rap' }, { t: 'genre', s: 'holiday', l: 'Holiday' },
+    { t: 'genre', s: 'house', l: 'House' }, { t: 'genre', s: 'indie', l: 'Indie' },
+    { t: 'genre', s: 'instrumental', l: 'Instrumental' }, { t: 'genre', s: 'jazz', l: 'Jazz' },
+    { t: 'genre', s: 'j-pop', l: 'J-Pop' }, { t: 'genre', s: 'j-rock', l: 'J-Rock' },
+    { t: 'genre', s: 'k-pop', l: 'K-Pop' }, { t: 'genre', s: 'kids-family', l: 'Kids & Family' },
+    { t: 'genre', s: 'metal', l: 'Metal' }, { t: 'genre', s: 'nightcore', l: 'Nightcore' },
+    { t: 'genre', s: 'pop', l: 'Pop' }, { t: 'genre', s: 'punk', l: 'Punk' },
+    { t: 'genre', s: 'r-b', l: 'R&B' }, { t: 'genre', s: 'rock', l: 'Rock' },
+    { t: 'genre', s: 'soul', l: 'Soul' }, { t: 'genre', s: 'speedcore', l: 'Speedcore' },
+    { t: 'genre', s: 'swing', l: 'Swing' }, { t: 'genre', s: 'tv-film', l: 'TV & Film' },
+    { t: 'genre', s: 'techno', l: 'Techno' }, { t: 'genre', s: 'trance', l: 'Trance' },
+    { t: 'genre', s: 'video-game-soundtrack', l: 'Video Game' }, { t: 'genre', s: 'vocaloid', l: 'Vocaloid' }
+  ];
+  function buildTagChips() {
+    var html = '', last = '';
+    BS_TAGS.forEach(function (t) {
+      if (t.t !== last) { html += '<div class="tag-h">' + (t.t === 'style' ? 'Style' : 'Genre') + '</div>'; last = t.t; }
+      html += '<button type="button" class="tag-chip" data-tag="' + t.s + '" data-state="0">' + esc(t.l) + '</button>';
+    });
+    el.tagChips.innerHTML = html;
+  }
+  function bindSourceUI() {
+    buildTagChips();
+    el.sourceSwitch.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-source]'); if (b) setSource(b.dataset.source);
+    });
+    el.tagChips.addEventListener('click', function (e) {
+      var c = e.target.closest('.tag-chip'); if (!c) return;
+      c.dataset.state = String((parseInt(c.dataset.state, 10) + 1) % 3);   // off → include → exclude → off
+    });
+  }
+  function tagState() {
+    var inc = [], exc = [];
+    Array.prototype.forEach.call(el.tagChips.querySelectorAll('.tag-chip'), function (c) {
+      if (c.dataset.state === '1') inc.push(c.dataset.tag);
+      else if (c.dataset.state === '2') exc.push(c.dataset.tag);
+    });
+    el.tagCustom.value.split(',').forEach(function (t) { t = t.trim().toLowerCase(); if (t) inc.push(t); });
+    return { inc: inc, exc: exc };
+  }
+  // BeatSaver tag query: includes OR'd in one group, each exclude prefixed with ! and AND'd.
+  function buildTagParam(ts) {
+    var parts = [];
+    if (ts.inc.length) parts.push(ts.inc.join('|'));
+    ts.exc.forEach(function (t) { parts.push('!' + t); });
+    return parts.join(',');
+  }
+  function buildBeatSaverUrl(page, f) {
+    var p = new URLSearchParams();
+    p.set('sortOrder', el.bsSort.value || 'Relevance');
+    p.set('automapper', 'false');
+    var ts = tagState(), tag = buildTagParam(ts); if (tag) p.set('tags', tag);
+    if (el.bsCurated.checked) p.set('curated', 'true');
+    if (f.npsMin != null) p.set('minNps', f.npsMin);
+    if (f.npsMax != null) p.set('maxNps', f.npsMax);
+    if (f.bpmMin != null) p.set('minBpm', f.bpmMin);
+    if (f.bpmMax != null) p.set('maxBpm', f.bpmMax);
+    if (f.durMin != null) p.set('minDuration', f.durMin);
+    if (f.durMax != null) p.set('maxDuration', f.durMax);
+    var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : ''); if (q) p.set('q', q);
+    return BS_API + '/search/text/' + page + '?' + p.toString();
+  }
+  // A BeatSaver map → one entry per published difficulty (mirrors the per-leaderboard BeatLeader rows).
+  function bsSearchMapToEntries(map) {
+    var vs = map.versions || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0] || {};
+    var meta = map.metadata || {}, hash = (v.hash || '').toLowerCase();
+    if (!hash) return [];
+    return (v.diffs || []).map(function (d) {
+      return { leaderboardId: '', hash: hash,
+        songName: meta.songName || map.name || 'Unknown', subName: meta.songSubName || '',
+        mapper: meta.levelAuthorName || '', author: meta.songAuthorName || meta.levelAuthorName || '',
+        bpm: meta.bpm || 0, duration: meta.duration || 0, cover: v.coverURL || '',
+        stars: d.stars || 0, difficultyName: BplistExporter.mapDifficultyName(d.difficulty), modeName: d.characteristic || 'Standard',
+        nps: d.nps || 0, notes: d.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
+    });
+  }
+  function runFetchBeatSaver() {
+    if (state.fetching) return;
+    fxSlashGo();
+    var f = getFilters(); state.fetching = true;
+    [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = true; b.classList.add('is-fetching'); });
+    el.fetchProgress.hidden = false; el.fetchProgressText.textContent = 'Searching BeatSaver…'; el.barFill.style.width = '8%';
+    el.topLoadBar.classList.add('on'); el.topLoadFill.style.width = '8%';
+    el.resultList.innerHTML = fetchLoaderHTML().replace('Scanning BeatLeader…', 'Searching BeatSaver…');
+    el.counterMeta.textContent = 'Searching BeatSaver…';
+    if (isMobileView()) setMobileView('results');
+    var collected = [], mapsSeen = 0, page = 0, PAGE = 20, capMaps = f.maxScan;
+    function step() {
+      return fetch(buildBeatSaverUrl(page, f)).then(function (r) {
+        if (r.status === 429) throw new Error('BeatSaver rate-limited — wait a moment and search again.');
+        if (!r.ok) throw new Error('BeatSaver returned HTTP ' + r.status); return r.json();
+      }).then(function (data) {
+        var docs = (data && data.docs) || [];
+        docs.forEach(function (m) { mapsSeen++; bsSearchMapToEntries(m).forEach(function (e) { collected.push(e); }); });
+        var pct = Math.max(8, Math.min(100, Math.round((mapsSeen / capMaps) * 100)));
+        el.barFill.style.width = pct + '%'; el.topLoadFill.style.width = pct + '%';
+        el.fetchProgressText.textContent = 'Scanned ' + mapsSeen + ' maps…';
+        var fc = document.getElementById('flCount'); if (fc) fc.textContent = mapsSeen.toLocaleString() + ' maps';
+        var fb = document.getElementById('flBar'); if (fb) fb.style.width = pct + '%';
+        if (docs.length === PAGE && mapsSeen < capMaps) { page++; return delay(150).then(step); }
+      });
+    }
+    step().then(function () {
+      state.raw = collected; state.fetched = true; state.lastSig = 'bs'; el.barFill.style.width = '100%';
+      if (!collected.length) { setStatus('No maps found', 'err'); toast('No BeatSaver maps matched those tags — loosen the tags or clear a filter.', 'warn'); }
+      else { setStatus('Loaded ' + collected.length + ' diffs', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver — add the ones you want.', 'ok'); }
+      applyClientFilters();
+      if (collected.length && isMobileView()) setMobileView('results');
+    }).catch(function (err) {
+      console.error(err); setStatus('Search failed', 'err'); var msg = err.message || 'BeatSaver search failed.';
+      el.counterMeta.textContent = msg; renderResults(); toast(msg, 'err');
+    }).then(function () {
+      state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; b.classList.remove('is-fetching'); });
+      el.topLoadBar.classList.remove('on'); el.topLoadFill.style.width = '0%';
+      setTimeout(function () { el.fetchProgress.hidden = true; el.barFill.style.width = '0%'; }, 800);
+    });
+  }
+
   // ---- client filtering -----------------------------------------------------
   // "Last played" is meaningless for unplayed maps — disable + neutralize it
   // whenever the play-status filter is set to "Not played yet".
@@ -2413,7 +2617,7 @@ window.PP = (function () {
       if (f.durMax != null && s.duration > f.durMax) return false;
       if (f.bpmMin != null && s.bpm < f.bpmMin) return false;
       if (f.bpmMax != null && s.bpm > f.bpmMax) return false;
-      if (f.ppMin != null || f.ppMax != null) {
+      if (state.source === 'beatleader' && (f.ppMin != null || f.ppMax != null)) {
         var spp = PP.ppFor(s, state.ppAcc, state.ppMod);
         if (spp == null) return false;                      // unranked / no rating for this speed
         if (f.ppMin != null && spp < f.ppMin) return false;
@@ -2425,7 +2629,9 @@ window.PP = (function () {
     });
     var key = f.sort;
     var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
-    if (key === 'pp') {
+    if (state.source === 'beatsaver') {
+      // BeatSaver returns results already ordered by the chosen sortOrder — keep that order.
+    } else if (key === 'pp') {
       // Sort by raw PP at the target accuracy (no modifier); unranked maps sink.
       out.sort(function (a, b) {
         var va = PP.ppFor(a, state.ppAcc, state.ppMod), vb = PP.ppFor(b, state.ppAcc, state.ppMod);
@@ -2456,7 +2662,7 @@ window.PP = (function () {
     return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
   }
   function updateStale() {
-    var stale = state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
+    var stale = state.source === 'beatleader' && state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
     el.staleHint.hidden = !stale;
     el.fetchBtn.classList.toggle('stale', stale);
     el.fetchBtn2.classList.toggle('stale', stale);
@@ -3782,6 +3988,8 @@ window.PP = (function () {
     fxInit();
     initCollapsibles();
 
+    try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
+    bindSourceUI(); applySourceUI();
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
   }
 

@@ -1,7 +1,7 @@
 # 🎵 Playlist Studio
 
-**A Beat Saber playlist builder powered by [BeatLeader](https://beatleader.xyz).**
-Filter the ranked (and unranked) catalog by star rating, mapper, NPS and more, curate the maps you actually want, preview them in-app, see your own scores on every map, and export a ready-to-play `.bplist` — all from a single self-contained HTML file.
+**A Beat Saber playlist builder that searches [BeatLeader](https://beatleader.xyz) and [BeatSaver](https://beatsaver.com).**
+Filter the ranked catalog by star rating, mapper, NPS and more — or flip to the BeatSaver catalog and build by **tags** (tech, speed, genres) including unranked maps. Curate the maps you actually want, preview them in-app, see your own scores on every map, and export a ready-to-play `.bplist` — all from a single self-contained HTML file.
 
 ![Playlist Studio interface](screenshot.png)
 
@@ -9,11 +9,27 @@ Filter the ranked (and unranked) catalog by star rating, mapper, NPS and more, c
 
 ## Overview
 
-Playlist Studio turns BeatLeader's live map data into curated Beat Saber playlists. Instead of dumping every map that matches your filters, it works like a shopping cart: search, add the good ones to **Your Playlist**, reorder and cover it, then export. Already know exactly which maps you want? Paste their **BSR codes** into **Quick Add** and skip searching entirely. It runs entirely in your browser as one HTML file — no install or build step, and no account.
+Playlist Studio turns live map data into curated Beat Saber playlists. Instead of dumping every map that matches your filters, it works like a shopping cart: search, add the good ones to **Your Playlist**, reorder and cover it, then export. A **source switch** at the top of the filters chooses where you're searching — **BeatLeader** (the ranked catalog, with stars, PP and your scores) or **BeatSaver** (the whole catalog, browsable by **tags**, including unranked maps). Already know exactly which maps you want? Paste their **BSR codes** into **Quick Add** and skip searching entirely. It runs entirely in your browser as one HTML file — no install or build step, and no account.
 
-> Scores and PP come from **BeatLeader** — ScoreSaber profiles aren't supported. Map lookups for Quick Add use **BeatSaver**.
+> Scores and PP come from **BeatLeader** — ScoreSaber profiles aren't supported. Tag browsing and Quick Add map lookups use **BeatSaver** (which is CORS-friendly, so those need no relay). Your BeatLeader score badges still show on BeatSaver-sourced maps you've played, since they match by hash.
 
 ## Features
+
+### Two catalogs: BeatLeader & BeatSaver
+A segmented **source switch** sits at the top of the filter column:
+
+- **BeatLeader** — the ranked/scored catalog. Star ratings, PP, ranked status, and everything tied to your connected profile. Best for building ranked grind sets.
+- **BeatSaver** — the entire map catalog, browsable by **tags**. Best for unranked lists, style packs, and anything not on a leaderboard.
+
+Switching sources swaps in the relevant filters (the BeatLeader-only Star Rating / PP / Ranked-status panels give way to the **Tags** panel and BeatSaver sort) and clears the current results, but keeps your playlist. Your choice is remembered between visits. NPS, BPM, mapper, game mode, difficulty, Quick Add, covers, and export all work identically in both modes.
+
+### Browse by tag (BeatSaver)
+In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's own tags — this is where **poodle / tech / midspeed** style lists come from (poodles live under the **Tech** tag). The full official tag set is here: 7 **style** tags (Tech, Speed, Dance Style, Balanced, Challenge, Accuracy, Fitness) and the complete **genre** list, plus a custom-tag box for anything else.
+
+- Each chip is **tri-state**: click once to **require** a tag, again to **exclude** it, again to clear.
+- Sort by **Relevance, Rating, Curated, or Latest**, with an optional **curated-only** toggle.
+- Combine tags with the shared **NPS / BPM / duration / mapper** filters to dial in exactly the pack you want (e.g. Tech, unranked, 7+ NPS, sorted by Rating).
+- Unranked maps have no stars or PP, so those show as **UR** and the star/PP filters simply don't apply here.
 
 ### Search & filter (BeatLeader)
 - **Star-rating** range and **ranked status** (ranked / unranked / nominated / qualified / all)
@@ -141,6 +157,8 @@ BeatLeader's API doesn't send cross-origin CORS headers, so a browser can't call
 
 If you run your own CORS relay and would rather use it, point the app at it under **Search Scope & Sort → Advanced: custom relay**. (Map previews use BeatSaver and ArcViewer directly — both are CORS-friendly, so they need no relay.)
 
+**BeatSaver mode needs no relay at all.** BeatSaver *does* send CORS headers, so tag searches (and Quick Add lookups) call it directly from your browser — which is why the whole relay/connection section disappears when you switch to the BeatSaver source.
+
 ## Installing a playlist in Beat Saber
 
 1. Export the `.bplist` from Playlist Studio.
@@ -166,7 +184,7 @@ Want the playlist to update itself in-game whenever you change it? Turn on the *
 
 Vanilla HTML, CSS and JavaScript — no framework and no build tooling. The single `index.html` inlines the stylesheet, the canvas cover generator, the `.bplist` exporter, and the application logic.
 
-- Map data — [BeatLeader](https://api.beatleader.xyz)
+- Map data — [BeatLeader](https://api.beatleader.xyz) (ranked catalog, scores, PP) and [BeatSaver](https://beatsaver.com) (full catalog, tags)
 - Map previews — [BeatSaver](https://beatsaver.com) + [ArcViewer](https://github.com/allpoland/ArcViewer)
 - Export format — [PlaylistManager](https://github.com/rithik-b/PlaylistManager)
 
