@@ -527,6 +527,12 @@ button[hidden],.filebtn[hidden]{display:none !important;}
 .reorder:hover{border-color:var(--blue);color:#fff;}
 .reorder:disabled{opacity:.25;}
 .reorder-col{display:flex;flex-direction:column;gap:2px;}
+/* drag-to-reorder (Your Playlist) */
+.song-row.bk{cursor:grab;}
+.song-row.bk.dragging{opacity:.4;}
+.song-row.bk.drag-over{box-shadow:inset 0 3px 0 0 var(--blue);}
+.bk-grip{color:var(--muted-2);font-size:15px;line-height:1;cursor:grab;user-select:none;flex:none;padding:0 2px 0 0;letter-spacing:-2px;}
+.bk-grip:hover{color:var(--blue);}
 
 /* ---------- Button SVG icons ---------- */
 button svg{width:15px;height:15px;flex:none;}
@@ -786,17 +792,17 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     <details class="intro" id="introPanel">
       <summary class="intro-summary"><span>How it works</span><svg class="intro-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
       <div class="intro-body">
-        <p>Filter BeatLeader &rarr; <b>Search</b> &rarr; add the maps you want to <b>Your Playlist</b> &rarr; export a <code>.bplist</code>. You're not stuck with everything that matches — cherry-pick, mix results from several searches, reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>.</p>
+        <p>Pick a search source, filter, <b>Search</b>, add the maps you want to <b>Your Playlist</b>, then export a <code>.bplist</code>. Two sources: <b>BeatLeader</b> for scores, PP and your play history, or <b>BeatSaver</b> to browse by tags and genres. You're not stuck with everything that matches — cherry-pick, mix results from several searches, drag rows to reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>.</p>
         <div class="flow">
           <div class="step"><span class="num">1</span> Filter &amp; Search</div>
           <span class="arrow">→</span>
           <div class="step"><span class="num">2</span> Add picks</div>
           <span class="arrow">→</span>
-          <div class="step"><span class="num">3</span> Reorder &amp; cover</div>
+          <div class="step"><span class="num">3</span> Drag to reorder &amp; cover</div>
           <span class="arrow">→</span>
           <div class="step"><span class="num">4</span> Export</div>
         </div>
-        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> map search runs on <b>BeatLeader</b> (scores and PP are BeatLeader's — ScoreSaber isn't supported). If a search ever fails, just hit Search again — it connects automatically.</span></div>
+        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b> (ScoreSaber isn't supported). On the BeatLeader source, if a search ever fails just hit Search again — it connects automatically. BeatSaver search connects directly.</span></div>
       </div>
     </details>
 
@@ -1347,7 +1353,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-06T22:01:40Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-07T12:53:37Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2527,22 +2533,24 @@ window.PP = (function () {
     return BS_API + '/search/text/' + page + '?' + p.toString();
   }
   var DIFF_RANK = { ExpertPlus: 5, Expert: 4, Hard: 3, Normal: 2, Easy: 1 };
-  // A BeatSaver map → one entry per published difficulty, HARDEST FIRST (so the high-NPS diff leads each map).
-  function bsSearchMapToEntries(map) {
+  // A BeatSaver map → ONE entry per MAP (all difficulties travel into the export), matching the
+  // BeatSaver website's one-row-per-map view. The hardest diff supplies the headline NPS/mode, and
+  // stars = the map's best rating. difficultyName='' means "all difficulties" on export.
+  function bsSearchMapToEntry(map) {
     var vs = map.versions || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0] || {};
     var meta = map.metadata || {}, hash = (v.hash || '').toLowerCase();
-    if (!hash) return [];
+    if (!hash) return null;
     var diffs = (v.diffs || []).slice().sort(function (a, b) {
       return (DIFF_RANK[BplistExporter.mapDifficultyName(b.difficulty)] || 0) - (DIFF_RANK[BplistExporter.mapDifficultyName(a.difficulty)] || 0);
     });
-    return diffs.map(function (d) {
-      return { leaderboardId: '', hash: hash,
-        songName: meta.songName || map.name || 'Unknown', subName: meta.songSubName || '',
-        mapper: meta.levelAuthorName || '', author: meta.songAuthorName || meta.levelAuthorName || '',
-        bpm: meta.bpm || 0, duration: meta.duration || 0, cover: v.coverURL || '',
-        stars: d.stars || 0, difficultyName: BplistExporter.mapDifficultyName(d.difficulty), modeName: d.characteristic || 'Standard',
-        nps: d.nps || 0, notes: d.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
-    });
+    var hardest = diffs[0] || {};
+    return { leaderboardId: '', hash: hash,
+      songName: meta.songName || map.name || 'Unknown', subName: meta.songSubName || '',
+      mapper: meta.levelAuthorName || '', author: meta.songAuthorName || meta.levelAuthorName || '',
+      bpm: meta.bpm || 0, duration: meta.duration || 0, cover: v.coverURL || '',
+      stars: diffs.reduce(function (m, d) { return Math.max(m, d.stars || 0); }, 0),
+      difficultyName: '', modeName: hardest.characteristic || 'Standard', diffCount: diffs.length,
+      nps: hardest.nps || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
   }
   function runFetchBeatSaver() {
     if (state.fetching) return;
@@ -2564,7 +2572,7 @@ window.PP = (function () {
         var docs = (data && data.docs) || [], info = (data && data.info) || {};
         if (total == null && typeof info.total === 'number') total = info.total;
         if (totalPages == null && typeof info.pages === 'number') totalPages = info.pages;
-        docs.forEach(function (m) { mapsSeen++; bsSearchMapToEntries(m).forEach(function (e) { collected.push(e); }); });
+        docs.forEach(function (m) { mapsSeen++; var e = bsSearchMapToEntry(m); if (e) collected.push(e); });
         var target = Math.min(capMaps, total != null ? total : capMaps);
         var pct = target ? Math.max(8, Math.min(100, Math.round((mapsSeen / target) * 100))) : 100;
         el.barFill.style.width = pct + '%'; el.topLoadFill.style.width = pct + '%';
@@ -2853,6 +2861,15 @@ window.PP = (function () {
     var i = basketIndex(key); if (i < 0) return; var j = i + dir; if (j < 0 || j >= state.basket.length) return;
     var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; renderBasketArea();
   }
+  // Drag-to-reorder: move `fromKey`'s entry to sit just before `toKey`'s entry.
+  function reorderBasket(fromKey, toKey) {
+    if (!fromKey || fromKey === toKey) return;
+    var from = basketIndex(fromKey); if (from < 0) return;
+    var item = state.basket.splice(from, 1)[0];
+    var to = basketIndex(toKey); if (to < 0) to = state.basket.length;   // dropped past the list → append
+    state.basket.splice(to, 0, item);
+    renderBasketArea();
+  }
   function removeBasket(key) { var i = basketIndex(key); if (i < 0) return; state.basket.splice(i, 1); renderAll(); }
 
   function uniqueHashes(list) { var m = {}; list.forEach(function (s) { if (s.hash) m[s.hash.toLowerCase()] = true; }); return Object.keys(m).length; }
@@ -2893,7 +2910,7 @@ window.PP = (function () {
   function badges(e) {
     var b = [];
     b.push(e.stars > 0 ? '<span class="rb rb-star">' + e.stars.toFixed(2) + '★</span>' : '<span class="rb rb-ur">UR</span>');
-    b.push('<span class="rb rb-diff">' + esc(e.difficultyName ? (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) : 'All diffs') + '</span>');
+    b.push('<span class="rb rb-diff">' + esc(e.difficultyName ? (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) : (e.diffCount ? e.diffCount + (e.diffCount === 1 ? ' diff' : ' diffs') : 'All diffs')) + '</span>');
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
     if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
     if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
@@ -2962,7 +2979,7 @@ window.PP = (function () {
     if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above — or hit <b>+ Add all</b>.</p></div>'; return; }
     var last = n - 1, frag = '';
     state.basket.forEach(function (e, i) {
-      frag += '<div class="song-row bk" data-key="' + esc(keyOf(e)) + '"><span class="bk-idx">' + (i + 1) + '</span>' + coverImg(e) + infoBlock(e) +
+      frag += '<div class="song-row bk" draggable="true" data-key="' + esc(keyOf(e)) + '"><span class="bk-grip" title="Drag to reorder" aria-hidden="true">⠿</span><span class="bk-idx">' + (i + 1) + '</span>' + coverImg(e) + infoBlock(e) +
         '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) + '<div class="reorder-col">' +
           '<button class="reorder" data-act="up" ' + (i === 0 ? 'disabled' : '') + ' title="Move up">▲</button>' +
           '<button class="reorder" data-act="down" ' + (i === last ? 'disabled' : '') + ' title="Move down">▼</button></div>' +
@@ -3934,6 +3951,32 @@ window.PP = (function () {
       else if (act === 'up') moveBasket(key, -1);
       else if (act === 'down') moveBasket(key, 1);
       else if (act === 'preview') { var bi = basketIndex(key); if (bi >= 0) openPreview(state.basket[bi]); }
+    });
+    el.basketList.addEventListener('dragstart', function (e) {
+      var row = e.target.closest('.song-row.bk'); if (!row) return;
+      state.dragKey = row.dataset.key;
+      row.classList.add('dragging');
+      if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', row.dataset.key); } catch (x) {} }
+    });
+    el.basketList.addEventListener('dragover', function (e) {
+      var row = e.target.closest('.song-row.bk'); if (!row) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      var rows = el.basketList.querySelectorAll('.song-row.bk');
+      for (var i = 0; i < rows.length; i++) rows[i].classList.remove('drag-over');
+      if (row.dataset.key !== state.dragKey) row.classList.add('drag-over');
+    });
+    el.basketList.addEventListener('drop', function (e) {
+      var row = e.target.closest('.song-row.bk'); if (!row) return;
+      e.preventDefault();
+      var fromKey = state.dragKey || (e.dataTransfer ? e.dataTransfer.getData('text/plain') : '');
+      reorderBasket(fromKey, row.dataset.key);
+      state.dragKey = null;
+    });
+    el.basketList.addEventListener('dragend', function () {
+      state.dragKey = null;
+      var rows = el.basketList.querySelectorAll('.song-row.bk');
+      for (var i = 0; i < rows.length; i++) { rows[i].classList.remove('dragging'); rows[i].classList.remove('drag-over'); }
     });
 
     // quick add + undo clear

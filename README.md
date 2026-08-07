@@ -24,10 +24,11 @@ A segmented **source switch** sits at the top of the filter column:
 Switching sources swaps in the relevant filters (the BeatLeader-only Star Rating / PP / Ranked-status panels give way to the **Tags** panel and BeatSaver sort) and clears the current results, but keeps your playlist. Your choice is remembered between visits. NPS, BPM, mapper, game mode, difficulty, Quick Add, covers, and export all work identically in both modes.
 
 ### Browse by tag (BeatSaver)
-In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's own tags — this is where **poodle / tech / midspeed** style lists come from. BeatSaver has a dedicated **Poodle** tag (BeatLeader doesn't offer tag filtering at all), so a poodle list is one click. The full official tag set is here: 8 **style** tags (Tech, Poodle, Dance Style, Speed, Balanced, Challenge, Accuracy, Fitness) and the complete **genre** list, plus a custom-tag box for anything else.
+In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's own tags — this is where **poodle / tech / midspeed** style lists come from. The full official tag set is here: **8 style tags** (Tech, Speed, Dance Style, Balanced, Challenge, Accuracy, Fitness, and **Poodle** — poodle is its own BeatSaver tag) and the complete **genre list** (36 genres), plus a custom-tag box for anything else.
 
 - Each chip is **tri-state**: click once to **require** a tag, again to **exclude** it, again to clear.
-- Sort by **Relevance, Rating, Curated, or Latest**, with an optional **curated-only** toggle.
+- Sort by **Latest, Rating, Curated, or Relevance**, with an optional **curated-only** toggle. Latest is the default; Relevance only works with a mapper/keyword search (on its own it returns a junk default set, so it falls back to Latest).
+- **One row per map** — each result is a single map showing its hardest difficulty and a diff-count badge (e.g. "3 diffs"), not one row per difficulty. Exported playlists include all difficulties of every map you add.
 - Combine tags with the shared **NPS / BPM / duration / mapper** filters to dial in exactly the pack you want (e.g. Tech, unranked, 7+ NPS, sorted by Rating).
 - Unranked maps have no stars or PP, so those show as **UR** and the star/PP filters simply don't apply here.
 
@@ -50,7 +51,7 @@ Already know the maps you want? Skip searching. Paste one or more **BSR codes**,
 ### Build a playlist
 - Two-panel builder: **Search Results → Your Playlist** (the playlist is what gets exported)
 - Add one at a time, **Add all**, **Add top N**, or **⚄ Random**
-- **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard)
+- **Reorder** by dragging a row (grab the ⠿ handle) or with the ▲▼ buttons; remove, **Shuffle**, **Sort by ★** (warmup → hard)
 - **Clear playlist** empties the list and resets its name, cover and sync to a fresh start — with a one-tap **Undo clear** if you didn't mean it
 - **Clear results** — a separate button that empties the results and resets your filters to defaults (your playlist is kept)
 - **Collapse duplicate songs** to keep one entry per song
