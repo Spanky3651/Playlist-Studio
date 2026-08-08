@@ -1353,7 +1353,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-07T17:27:22Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-08T16:41:57Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2263,7 +2263,37 @@ window.PP = (function () {
   function checkedValues(id) { return Array.prototype.slice.call(document.querySelectorAll('#' + id + ' input:checked')).map(function (c) { return c.value; }); }
   function fmtDur(s) { s = Math.round(s || 0); var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60; var mm = (h && m<10?'0':'')+m; return (h?h+':':'')+mm+':'+(ss<10?'0':'')+ss; }
   function keyOf(e) { return e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName; }
-  function scoreFor(e) { return e && e.hash ? (state.scores[e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName] || null) : null; }
+  // Map-level score index: aggregates a player's scores by song hash across ALL difficulties.
+  // Needed because diff-agnostic entries (BeatSaver one-per-map) have no difficultyName, so an
+  // exact hash|diff|mode lookup never matches — which made "Not played yet" return maps the
+  // player had actually cleared on every difficulty. Rebuilt lazily; invalidated on score changes.
+  function buildScoreHashIndex() {
+    var idx = {}, s = state.scores || {};
+    for (var k in s) {
+      if (!s.hasOwnProperty(k)) continue;
+      var h = k.slice(0, k.indexOf('|')), v = s[k];
+      var e = idx[h];
+      if (!e) { e = idx[h] = { played: true, fc: false, near: false, best: v, latestT: v.t || 0 }; }
+      if (v.fc) e.fc = true;
+      if (!v.fc && v.m <= 3 && (v.fa || 0) >= 0.90) e.near = true;
+      if ((v.a || 0) > (e.best.a || 0)) e.best = v;
+      if ((v.t || 0) > e.latestT) e.latestT = v.t || 0;
+    }
+    return idx;
+  }
+  function scoreHashIdx() { if (!state._scoreHashIdx) state._scoreHashIdx = buildScoreHashIndex(); return state._scoreHashIdx; }
+  // Unified play info for an entry. Diff-specific entries (BeatLeader) match the exact score;
+  // diff-agnostic entries (BeatSaver one-per-map) aggregate across every difficulty of the map.
+  function playInfo(e) {
+    if (!e || !e.hash) return null;
+    if (e.difficultyName) {
+      var sc = state.scores[e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName];
+      return sc ? { played: true, fc: !!sc.fc, near: (!sc.fc && sc.m <= 3 && (sc.fa || 0) >= 0.90), acc: sc.a || 0, t: sc.t || 0, sc: sc } : null;
+    }
+    var mi = scoreHashIdx()[e.hash.toLowerCase()];
+    return mi ? { played: true, fc: mi.fc, near: mi.near, acc: (mi.best.a || 0), t: mi.latestT || 0, sc: mi.best } : null;
+  }
+  function scoreFor(e) { var pi = playInfo(e); return pi ? pi.sc : null; }
   function myVal(sc, key) { if (!sc) return null; if (key === 'myAcc') return sc.a; if (key === 'myRank') return sc.rk; if (key === 'myDate') return sc.t; return (sc.fa || 0) - sc.a; }
   function fmtDate(t) { if (!t) return ''; var d = new Date(t * 1000); return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear(); }
   function setStatus(text, kind) { el.statusText.textContent = text; el.statusPill.className = 'status-pill' + (kind ? ' ' + kind : ''); }
@@ -2621,16 +2651,16 @@ window.PP = (function () {
       if (f.modes.length && f.modes.indexOf(s.modeName) === -1) return false;
       if (f.diffEnabled && f.diffs.length && f.diffs.indexOf(s.difficultyName) === -1) return false;
       if (state.player && (f.playStatus !== 'any' || f.accMax != null || f.recency !== 'any')) {
-        var sc = scoreFor(s), played = !!sc;
+        var pi = playInfo(s), played = !!pi;
         if (f.playStatus === 'unplayed' && played) return false;
         if (f.playStatus === 'played' && !played) return false;
-        if (f.playStatus === 'fc' && !(sc && sc.fc)) return false;
-        if (f.playStatus === 'nofc' && (!played || sc.fc)) return false;
-        if (f.playStatus === 'nearfc' && (!played || sc.fc || !(sc.m <= 3 && (sc.fa || 0) >= 0.90))) return false;
-        if (f.accMax != null) { if (!played) return false; if (sc.a * 100 >= f.accMax) return false; }
+        if (f.playStatus === 'fc' && !(pi && pi.fc)) return false;
+        if (f.playStatus === 'nofc' && (!played || pi.fc)) return false;
+        if (f.playStatus === 'nearfc' && (!played || !pi.near)) return false;
+        if (f.accMax != null) { if (!played) return false; if (pi.acc * 100 >= f.accMax) return false; }
         if (f.recency !== 'any') {
-          if (!played || !sc.t) return false;
-          var ageDays = (nowSec - sc.t) / 86400;
+          if (!played || !pi.t) return false;
+          var ageDays = (nowSec - pi.t) / 86400;
           if (f.recency === 'o1y') { if (ageDays <= 365) return false; }
           else if (ageDays > recencyDays[f.recency]) return false;
         }
@@ -3209,16 +3239,16 @@ window.PP = (function () {
   // Does this basket entry belong to the target set? Mirrors the results play-status filter exactly.
   function refineMatches(e, crit, accVal, starMin, starMax) {
     if (crit === 'starRange') { var st = +e.stars || 0; return st > 0 && st >= starMin && st <= starMax; }
-    var sc = scoreFor(e), played = !!sc;
+    var pi = playInfo(e), played = !!pi;
     switch (crit) {
       case 'played':   return played;
       case 'unplayed': return !played;
-      case 'fc':       return played && !!sc.fc;
-      case 'nofc':     return played && !sc.fc;
-      case 'nearfc':   return played && !sc.fc && sc.m <= 3 && (sc.fa || 0) >= 0.90;
-      case 'accAbove': return played && sc.a * 100 >= accVal;
-      case 'accBelow': return played && sc.a * 100 < accVal;
-      case 'stale':    return played && !!sc.t && ((Math.floor(Date.now() / 1000) - sc.t) / 86400) > 365;
+      case 'fc':       return played && pi.fc;
+      case 'nofc':     return played && !pi.fc;
+      case 'nearfc':   return played && pi.near;
+      case 'accAbove': return played && pi.acc * 100 >= accVal;
+      case 'accBelow': return played && pi.acc * 100 < accVal;
+      case 'stale':    return played && !!pi.t && ((Math.floor(Date.now() / 1000) - pi.t) / 86400) > 365;
     }
     return false;
   }
@@ -3664,7 +3694,7 @@ window.PP = (function () {
   }
   function setProfileState(t) { el.profileState.textContent = t || ''; }
   function savePlayerCache() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ player: state.player, scores: state.scores })); } catch (e) {} }
-  function loadPlayerCache() { try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; } } catch (e) {} }
+  function loadPlayerCache() { try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; state._scoreHashIdx = null; } } catch (e) {} }
   function renderProfile() {
     if (!state.player) { el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(''); renderPlayBar(); return; }
     el.profileConnect.hidden = true; el.profileCard.hidden = false;
@@ -3709,7 +3739,7 @@ window.PP = (function () {
         state.player = { id: p.id || id, name: p.name || 'Player', avatar: p.avatar || '',
           pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
           total: (p.scoreStats && p.scoreStats.totalPlayCount) || 0, ranked: (p.scoreStats && p.scoreStats.rankedPlayCount) || 0, syncedMaxTime: 0 };
-        state.scores = {}; renderProfile(); savePlayerCache();
+        state.scores = {}; state._scoreHashIdx = null; renderProfile(); savePlayerCache();
         toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok');
         return syncScores(false);
       })
@@ -3717,7 +3747,7 @@ window.PP = (function () {
       .then(function () { el.connectBtn.disabled = false; });
   }
   function disconnectPlayer() {
-    state.player = null; state.scores = {};
+    state.player = null; state.scores = {}; state._scoreHashIdx = null;
     try { localStorage.removeItem(PLAYER_KEY); } catch (e) {}
     el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
   }
@@ -3752,7 +3782,7 @@ window.PP = (function () {
     }
     return step().then(function () {
       state.player.syncedMaxTime = newMax; el.syncBar.style.width = '100%';
-      savePlayerCache(); renderProfile(); applyClientFilters();
+      state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters();
       var tot = Object.keys(state.scores).length;
       toast(incremental ? (got ? 'Refreshed — ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
     }).catch(function (e) {
