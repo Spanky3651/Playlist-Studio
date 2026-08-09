@@ -947,7 +947,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
       <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work — type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
       <div class="panel-body">
-        <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated. Matches the mapper or artist name, case-insensitive. Example: Bloodcloak, Joetastic">i</span></label>
+        <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Matches the mapper name. On BeatSaver, auto-generated lighting credits like 'Auto Lighter by …' are ignored so they don't flood the results. Example: Bloodcloak, Joetastic">i</span></label>
           <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
         <div class="field"><label class="field-label">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
           <input type="text" id="fSearch" placeholder="e.g. camellia — or a BSR code / link" /></div>
@@ -1355,7 +1355,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T18:17:50Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T19:09:54Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2674,6 +2674,11 @@ window.PP = (function () {
   }
 
   // ---- client filtering -----------------------------------------------------
+  // Strip auto-generated lighting credits ("Auto Lighter by Jonas", "AutoLighter", "auto light by X")
+  // from a mapper string so a mapper search doesn't surface every map that merely used that tool.
+  function stripAutoCredits(name) {
+    return String(name || '').replace(/auto[\s_-]*light(?:er|ing)?(?:\s+by\b[^,&\/|]*)?/gi, ' ');
+  }
   // "Last played" is meaningless for unplayed maps — disable + neutralize it
   // whenever the play-status filter is set to "Not played yet".
   function syncRecencyControl() {
@@ -2718,13 +2723,21 @@ window.PP = (function () {
         if (f.ppMin != null && spp < f.ppMin) return false;
         if (f.ppMax != null && spp > f.ppMax) return false;
       }
-      // Text (mapper/keyword) filtering: only client-side for BeatLeader, where we scan a broad set
-      // and narrow locally. On BeatSaver the query IS the server search (q) — re-filtering here would
-      // drop legitimate server matches whose romanized/alt title isn't in the stored fields (this is
-      // why non-Latin song-name searches returned nothing).
-      if (state.source !== 'beatsaver') {
-        if (f.mapperTerms.length) { var hay = (s.mapper + ' ' + s.author).toLowerCase(); if (!f.mapperTerms.some(function (t) { return hay.indexOf(t) !== -1; })) return false; }
-        if (f.search) { var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase(); if (blob.indexOf(f.search.toLowerCase()) === -1) return false; }
+      // Song/keyword filter: BeatLeader only. On BeatSaver the query IS the server search (q), and
+      // re-filtering here would drop legitimate matches whose romanized/alt title isn't stored (this
+      // is why non-Latin song-name searches returned nothing).
+      if (state.source !== 'beatsaver' && f.search) {
+        var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase();
+        if (blob.indexOf(f.search.toLowerCase()) === -1) return false;
+      }
+      // Mapper filter: applies on BOTH sources. On BeatSaver the server `q` also matches song name,
+      // artist and description, so narrow to maps whose MAPPER actually contains the term — and strip
+      // auto-generated lighting credits ("Auto Lighter by X") so they don't flood a mapper search.
+      if (f.mapperTerms.length) {
+        var mapperHay = state.source === 'beatsaver'
+          ? stripAutoCredits(s.mapper).toLowerCase()
+          : (s.mapper + ' ' + s.author).toLowerCase();
+        if (!f.mapperTerms.some(function (t) { return mapperHay.indexOf(t) !== -1; })) return false;
       }
       return true;
     });
