@@ -944,12 +944,12 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     <!-- Search -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
-      <div class="panel-sub">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</div>
+      <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work — type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated. Matches the mapper or artist name, case-insensitive. Example: Bloodcloak, Joetastic">i</span></label>
           <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
-        <div class="field"><label class="field-label">Song / keyword</label>
-          <input type="text" id="fSearch" placeholder="e.g. camellia" /></div>
+        <div class="field"><label class="field-label">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
+          <input type="text" id="fSearch" placeholder="e.g. camellia — or a BSR code / link" /></div>
       </div>
     </section>
 
@@ -1354,7 +1354,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T12:05:16Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T13:59:49Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2547,9 +2547,12 @@ window.PP = (function () {
   function buildBeatSaverUrl(page, f) {
     var p = new URLSearchParams();
     var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
-    // 'Relevance' only makes sense with a text query — with none it returns a junk default set (AI maps).
+    // A text query needs Relevance to actually match by song name (Latest just returns the newest
+    // uploads and buries or drops name matches — non-Latin titles especially). No query → Relevance
+    // returns a junk default set, so fall back to Latest there.
     var sort = el.bsSort.value || 'Latest';
-    if (sort === 'Relevance' && !q) sort = 'Latest';
+    if (q) { if (sort === 'Latest') sort = 'Relevance'; }
+    else if (sort === 'Relevance') sort = 'Latest';
     p.set('sortOrder', sort);
     // Do NOT send automapper=false: on BeatSaver that INCLUDES AI (Beat Sage) maps. The default already excludes them.
     var ts = tagState(), tag = buildTagParam(ts); if (tag) p.set('tags', tag);
@@ -2589,6 +2592,20 @@ window.PP = (function () {
       modes: modes, diffSet: Object.keys(diffSet), diffCount: diffs.length,
       nps: hardest.nps || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
   }
+  // The keyword box can hold a direct map reference: a BSR code, a beatsaver.com/maps link, or a
+  // 40-char hash. Link / hash / !-prefixed / bsr-prefixed forms are unambiguous (explicit); a bare
+  // hex token is treated as a code only as a FALLBACK when the normal text search finds nothing
+  // (so a hex-looking word like "cafe" still searches songs first).
+  function detectBsrRef(q) {
+    q = (q || '').trim(); if (!q) return null;
+    var lm = q.match(/beatsaver\.com\/maps\/([0-9a-fA-F]+)/i);
+    if (lm) return { type: 'id', val: lm[1].toLowerCase(), explicit: true };
+    if (/^[0-9a-fA-F]{40}$/.test(q)) return { type: 'hash', val: q.toLowerCase(), explicit: true };
+    var pm = q.match(/^(?:!|bsr[:\s]?)\s*([0-9a-fA-F]{1,8})$/i);
+    if (pm) return { type: 'id', val: pm[1].toLowerCase(), explicit: true };
+    if (/^[0-9a-fA-F]{1,8}$/.test(q)) return { type: 'id', val: q.toLowerCase(), explicit: false };
+    return null;
+  }
   function runFetchBeatSaver() {
     if (state.fetching) return;
     fxSlashGo();
@@ -2599,7 +2616,7 @@ window.PP = (function () {
     el.resultList.innerHTML = fetchLoaderHTML().replace('Scanning BeatLeader…', 'Searching BeatSaver…');
     el.counterMeta.textContent = 'Searching BeatSaver…';
     if (isMobileView()) setMobileView('results');
-    var collected = [], mapsSeen = 0, page = 0, capMaps = f.maxScan, total = null, totalPages = null, rateLimited = false;
+    var collected = [], mapsSeen = 0, page = 0, capMaps = f.maxScan, total = null, totalPages = null, rateLimited = false, bsrMode = false;
     function step() {
       return fetch(buildBeatSaverUrl(page, f)).then(function (r) {
         if (r.status === 429) { rateLimited = true; return null; }   // stop paging, keep what we have
@@ -2622,11 +2639,22 @@ window.PP = (function () {
         if (docs.length && morePages && mapsSeen < capMaps) { page++; return delay(120).then(step); }
       });
     }
-    step().then(function () {
+    function lookup(tok) {
+      bsrMode = true; el.fetchProgressText.textContent = 'Looking up map…';
+      return fetchBsMap(tok).then(function (map) {
+        if (map && map.versions && map.versions.length) { var e = bsSearchMapToEntry(map); if (e) { collected.push(e); mapsSeen = collected.length; } }
+      });
+    }
+    var ref = detectBsrRef(f.search);
+    var run = (ref && ref.explicit)
+      ? lookup(ref)                                                   // explicit link/hash/!code → resolve that one map
+      : step().then(function () { if (!collected.length && ref) return lookup(ref); }); // bare code → text search, fall back to code lookup
+    run.then(function () {
       state.raw = collected; state.fetched = true; state.lastSig = 'bs'; el.barFill.style.width = '100%';
       if (rateLimited && !collected.length) { setStatus('Rate-limited', 'err'); toast('BeatSaver rate-limited the search before any maps came back — wait a moment and Search again.', 'warn'); }
-      else if (!collected.length) { setStatus('No maps found', 'err'); toast('No BeatSaver maps matched those tags — loosen the tags or clear a filter.', 'warn'); }
+      else if (!collected.length) { setStatus('No maps found', 'err'); toast(bsrMode ? 'No BeatSaver map matched that code or link — double-check it.' : 'No BeatSaver maps matched — loosen the tags, clear a filter, or try a different search.', 'warn'); }
       else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited — search again to pull the rest.', 'warn'); }
+      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast('Found “' + collected[0].songName + '” — add it below.', 'ok'); }
       else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver — add the ones you want.', 'ok'); }
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
@@ -2685,8 +2713,14 @@ window.PP = (function () {
         if (f.ppMin != null && spp < f.ppMin) return false;
         if (f.ppMax != null && spp > f.ppMax) return false;
       }
-      if (f.mapperTerms.length) { var hay = (s.mapper + ' ' + s.author).toLowerCase(); if (!f.mapperTerms.some(function (t) { return hay.indexOf(t) !== -1; })) return false; }
-      if (f.search) { var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase(); if (blob.indexOf(f.search.toLowerCase()) === -1) return false; }
+      // Text (mapper/keyword) filtering: only client-side for BeatLeader, where we scan a broad set
+      // and narrow locally. On BeatSaver the query IS the server search (q) — re-filtering here would
+      // drop legitimate server matches whose romanized/alt title isn't in the stored fields (this is
+      // why non-Latin song-name searches returned nothing).
+      if (state.source !== 'beatsaver') {
+        if (f.mapperTerms.length) { var hay = (s.mapper + ' ' + s.author).toLowerCase(); if (!f.mapperTerms.some(function (t) { return hay.indexOf(t) !== -1; })) return false; }
+        if (f.search) { var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase(); if (blob.indexOf(f.search.toLowerCase()) === -1) return false; }
+      }
       return true;
     });
     var key = f.sort;
