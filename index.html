@@ -1354,7 +1354,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T11:39:16Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T12:05:16Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3428,7 +3428,8 @@ window.PP = (function () {
     var cover = { usingCustom: state.usingCustom, style: state.coverStyle, accent: state.coverAccent,
       seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
     if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
-    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value }, entries: state.basket, cover: cover };
+    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value }, entries: state.basket, cover: cover,
+      sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value } };
     if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
     else toast('Could not save — browser storage is full or unavailable.', 'err');
   }
@@ -3453,6 +3454,10 @@ window.PP = (function () {
     } else {
       state.usingCustom = false; state.customImgEl = null; state.customBaseUrl = ''; el.useCustomImage.checked = false; el.customFileField.hidden = true;
     }
+    // Restore the saved sync config (resetPlaylistIdentity cleared it above). Older saves have no
+    // sync field — leave sync off in that case.
+    if (p.sync && p.sync.enabled && p.sync.url) { el.syncEnable.checked = true; el.syncUrl.value = p.sync.url; }
+    updateSyncUI();
     renderAll(); toast('Loaded "' + name + '" (' + state.basket.length + ' maps).', 'ok');
   }
   function deletePlaylist() {
@@ -3662,6 +3667,10 @@ window.PP = (function () {
   }
 
   function openPreview(entry) {
+    // Per-open token: a slow BeatSaver lookup for a PREVIOUS map must not overwrite the modal
+    // after the user has closed it and opened a different map.
+    var gen = (state.previewGen = (state.previewGen || 0) + 1);
+    if (!el.previewModal.classList.contains('show')) state._previewReturnFocus = document.activeElement;
     el.previewModal.classList.add('show'); el.previewModal.setAttribute('aria-hidden', 'false');
     el.previewTitle.textContent = entry.songName + (entry.mapper ? ' — ' + entry.mapper : '');
     // your score line (from synced BeatLeader history)
@@ -3682,11 +3691,13 @@ window.PP = (function () {
     setupPpCalc(entry);
     el.previewStatus.textContent = 'Finding this map on BeatSaver…';
     el.previewFrame.src = 'about:blank';
+    try { el.previewAudio.pause(); } catch (e) {}
     el.previewAudio.hidden = true; el.previewAudio.removeAttribute('src');
     el.previewBeatSaver.style.display = 'none'; el.previewViewer.style.display = 'none';
+    try { el.previewClose.focus(); } catch (e) {}
     if (!entry.hash) { el.previewStatus.textContent = 'No map hash — can’t preview this entry.'; return; }
     resolveBeatSaver(entry.hash).then(function (res) {
-      if (!el.previewModal.classList.contains('show')) return; // user closed it
+      if (state.previewGen !== gen || !el.previewModal.classList.contains('show')) return; // closed or a different map opened
       if (res.error || !res.id) { el.previewStatus.textContent = 'Couldn’t find this map on BeatSaver' + (res.error ? ' (' + res.error + ')' : '') + '.'; return; }
       el.previewStatus.textContent = '';
       el.previewFrame.src = 'https://allpoland.github.io/ArcViewer/?id=' + encodeURIComponent(res.id);
@@ -3696,11 +3707,14 @@ window.PP = (function () {
     });
   }
   function closePreview() {
+    state.previewGen = (state.previewGen || 0) + 1;   // invalidate any in-flight BeatSaver lookup
     el.previewModal.classList.remove('show'); el.previewModal.setAttribute('aria-hidden', 'true');
     el.previewFrame.src = 'about:blank';
     try { el.previewAudio.pause(); } catch (e) {}
     el.previewAudio.removeAttribute('src');
     state.ppEntry = null;
+    try { if (state._previewReturnFocus && state._previewReturnFocus.focus) state._previewReturnFocus.focus(); } catch (e) {}
+    state._previewReturnFocus = null;
   }
 
   // ---- BeatLeader profile + your scores ------------------------------------
@@ -4073,8 +4087,13 @@ window.PP = (function () {
     // star
     el.starMin.addEventListener('input', function () { setStar('min', parseFloat(el.starMin.value)); });
     el.starMax.addEventListener('input', function () { setStar('max', parseFloat(el.starMax.value)); });
-    el.starMinNum.addEventListener('input', function () { setStar('min', num(el.starMinNum, 0)); });
-    el.starMaxNum.addEventListener('input', function () { setStar('max', num(el.starMaxNum, 15)); });
+    // Number fields: update the sliders/filter live WITHOUT reformatting the text the user is
+    // typing (rewriting .value to toFixed(1) on every keystroke made 2-digit/decimal entry impossible).
+    // Normalize + clamp only on change (blur/Enter).
+    el.starMinNum.addEventListener('input', function () { refreshStarUI(); applyClientFilters(); });
+    el.starMaxNum.addEventListener('input', function () { refreshStarUI(); applyClientFilters(); });
+    el.starMinNum.addEventListener('change', function () { setStar('min', num(el.starMinNum, 0)); });
+    el.starMaxNum.addEventListener('change', function () { setStar('max', num(el.starMaxNum, 15)); });
 
     // cover
     buildCoverPickers();
