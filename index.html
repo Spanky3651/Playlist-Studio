@@ -829,6 +829,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
           </div>
           <div class="pcard-actions">
             <button class="ghost sm" id="syncBtn">⟳ Sync scores</button>
+            <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want — no search or import needed.">★ Build from my plays</button>
             <button class="ghost sm danger" id="disconnectBtn">Disconnect</button>
           </div>
           <div class="sync-progress" id="syncProgress" hidden><div class="bar"><div class="bar-fill" id="syncBar"></div></div><span id="syncText"></span></div>
@@ -1354,7 +1355,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       <a href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a>
     </div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T13:59:49Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-09T18:17:50Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2206,6 +2207,7 @@ window.PP = (function () {
   var PLIST_KEY = 'playlistStudio.playlists.v1';
   var SESSION_KEY = 'playlistStudio.session.v1';
   var PLAYER_KEY = 'playlistStudio.player.v1';
+  var PLAYS_KEY = 'playlistStudio.plays.v1';
   var ICON_KEY = 'playlistStudio.icons.v1';
   var SYNC_KEY = 'playlistStudio.sync.v1';
   var SRC_KEY = 'playlistStudio.source.v1';
@@ -2223,7 +2225,7 @@ window.PP = (function () {
   var DEFAULT_TITLE = 'Playlist Studio Mix';
   var DEFAULT_AUTHOR = 'Playlist Studio';
   var DEFAULT_COVER_STYLE = 'pulse', DEFAULT_COVER_ACCENT = 'rb';
-  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader' };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, playIndex: {}, viewMode: 'search', syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader' };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -2233,7 +2235,7 @@ window.PP = (function () {
    'fType','fSort','fOrder','fMaxScan','connMode','customProxy','relayAdv',
    'sourceSwitch','srcLabel','bsSort','bsCurated','tagChips','tagCustom',
    'presetName','presetSave','presetSelect','presetLoad','presetDelete','presetPanel',
-   'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','playRecency','accMax','previewScore',
+   'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','buildPlaysBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','playRecency','accMax','previewScore',
    'starMin','starMax','starMinNum','starMaxNum','starBandFill','starRangeLabel',
    'fMapper','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax','diffEnable','diffChips',
    'fetchBtn','fetchBtn2','resetBtn','downloadBtn','downloadBtn2',
@@ -2420,6 +2422,7 @@ window.PP = (function () {
       '</div>';
   }
   function runFetch() {
+    state.viewMode = 'search';
     if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
     fxSlashGo();
@@ -2478,6 +2481,7 @@ window.PP = (function () {
   function setSource(src) {
     if (src === state.source) return;
     state.source = src;
+    state.viewMode = 'search';
     // results belong to the OTHER source — clear them (keep the playlist/basket)
     state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
     applySourceUI(); renderAll(); updateStale();
@@ -2607,6 +2611,7 @@ window.PP = (function () {
     return null;
   }
   function runFetchBeatSaver() {
+    state.viewMode = 'search';
     if (state.fetching) return;
     fxSlashGo();
     var f = getFilters(); state.fetching = true;
@@ -2758,6 +2763,7 @@ window.PP = (function () {
     return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
   }
   function updateStale() {
+    if (state.viewMode === 'plays') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
     var stale = state.source === 'beatleader' && state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
     el.staleHint.hidden = !stale;
     el.fetchBtn.classList.toggle('stale', stale);
@@ -3077,7 +3083,9 @@ window.PP = (function () {
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
     if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
-    else if (!entries) el.counterMeta.textContent = matched + ' maps matched. Add the ones you want to build your playlist.';
+    else if (!entries) el.counterMeta.textContent = state.viewMode === 'plays'
+      ? matched + ' of your played maps shown. Narrow with “Your play status” (e.g. Played, not FC), then add the ones you want.'
+      : matched + ' maps matched. Add the ones you want to build your playlist.';
     else {
       var st = playlistStats();
       var line = uniq + ' unique song' + (uniq === 1 ? '' : 's') + ' · ' + entries + ' map' + (entries === 1 ? '' : 's') + ' · ' + fmtDur(basketRuntime()) + ' runtime';
@@ -3759,8 +3767,16 @@ window.PP = (function () {
     return input.replace(/^.*\//, '').replace(/[?#].*$/, '');
   }
   function setProfileState(t) { el.profileState.textContent = t || ''; }
-  function savePlayerCache() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ player: state.player, scores: state.scores })); } catch (e) {} }
-  function loadPlayerCache() { try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; state._scoreHashIdx = null; } } catch (e) {} }
+  function savePlayerCache() {
+    try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ player: state.player, scores: state.scores })); } catch (e) {}
+    // Play details (song names/covers for "Build from my plays") in a SEPARATE key so a large index
+    // can't blow the quota for the core scores save.
+    try { localStorage.setItem(PLAYS_KEY, JSON.stringify(state.playIndex || {})); } catch (e) {}
+  }
+  function loadPlayerCache() {
+    try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; state._scoreHashIdx = null; } } catch (e) {}
+    try { state.playIndex = JSON.parse(localStorage.getItem(PLAYS_KEY) || '{}') || {}; } catch (e) { state.playIndex = {}; }
+  }
   function renderProfile() {
     if (!state.player) { el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(''); renderPlayBar(); return; }
     el.profileConnect.hidden = true; el.profileCard.hidden = false;
@@ -3813,13 +3829,15 @@ window.PP = (function () {
       .then(function () { el.connectBtn.disabled = false; });
   }
   function disconnectPlayer() {
-    state.player = null; state.scores = {}; state._scoreHashIdx = null;
-    try { localStorage.removeItem(PLAYER_KEY); } catch (e) {}
+    state.player = null; state.scores = {}; state._scoreHashIdx = null; state.playIndex = {};
+    if (state.viewMode === 'plays') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
+    try { localStorage.removeItem(PLAYER_KEY); localStorage.removeItem(PLAYS_KEY); } catch (e) {}
     el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
   }
   function syncScores(incremental) {
     if (!state.player || state.syncing) return Promise.resolve();
     state.syncing = true; el.syncBtn.disabled = true;
+    state.playIndex = incremental ? (state.playIndex || {}) : {};   // full sync rebuilds the play list
     el.syncProgress.hidden = false; el.syncBar.style.width = '4%'; el.syncText.textContent = 'Starting…';
     var id = state.player.id, page = 1, minTime = incremental ? (state.player.syncedMaxTime || 0) : 0;
     var got = 0, newMax = state.player.syncedMaxTime || 0, stop = false, total = 0;
@@ -3832,13 +3850,18 @@ window.PP = (function () {
           for (var i = 0; i < items.length; i++) {
             var sc = items[i], t = sc.timepost || sc.timeset || 0;
             if (incremental && t <= minTime) { stop = true; break; }
-            var song = (sc.leaderboard && sc.leaderboard.song) || {}, df = (sc.leaderboard && sc.leaderboard.difficulty) || {};
-            var hash = (song.hash || '').toLowerCase(); if (!hash) continue;
-            state.scores[hash + '|' + (df.difficultyName || '') + '|' + (df.modeName || 'Standard')] = {
+            if (!sc.leaderboard || !sc.leaderboard.song || !sc.leaderboard.song.hash) continue;
+            // Build the full map entry from the score's leaderboard so "Build from my plays" can list
+            // every played map without a search/import. Key scores + play index the same way scoreFor
+            // looks them up (lowercased hash | difficulty | mode).
+            var pe = normalize(sc.leaderboard);
+            var key = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
+            state.scores[key] = {
               a: sc.accuracy || 0, fc: !!sc.fullCombo, m: sc.missedNotes || 0, b: sc.badCuts || 0,
               s: sc.modifiedScore || 0, pp: sc.pp || 0, rk: sc.rank || 0, t: t, fa: sc.fcAccuracy || 0,
               lb: sc.leaderboardId || '', rp: sc.replay || ''
             };
+            state.playIndex[key] = pe;
             if (t > newMax) newMax = t; got++;
           }
           el.syncText.textContent = 'Synced ' + got + (!incremental && total ? ' of ' + total : '') + ' scores…';
@@ -3851,7 +3874,9 @@ window.PP = (function () {
       state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters();
       var tot = Object.keys(state.scores).length;
       toast(incremental ? (got ? 'Refreshed — ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
+      if (state._buildAfterSync) { state._buildAfterSync = false; buildFromPlays(); }
     }).catch(function (e) {
+      state._buildAfterSync = false;
       // A partial sync still wrote some scores into state.scores — drop the stale map-level
       // index and re-render so those new scores are reflected even though paging failed.
       state._scoreHashIdx = null; savePlayerCache(); applyClientFilters();
@@ -3860,6 +3885,36 @@ window.PP = (function () {
       state.syncing = false; el.syncBtn.disabled = false;
       setTimeout(function () { el.syncProgress.hidden = true; el.syncBar.style.width = '0%'; }, 800);
     });
+  }
+  // Turn the player's synced BeatLeader scores into a browsable, filterable results list — so a
+  // playlist can be built straight from "maps I've played" (e.g. everything not full-comboed) with
+  // no search or import first. Reuses the normal results UI, play-status/acc/recency/star filters,
+  // and cherry-pick flow.
+  function buildFromPlays() {
+    if (!state.player) {
+      toast('Connect your BeatLeader profile first, then hit ⟳ Sync scores.', 'warn');
+      if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    var list = [], k;
+    for (k in state.playIndex) if (state.playIndex.hasOwnProperty(k)) list.push(state.playIndex[k]);
+    if (!list.length) {
+      if (Object.keys(state.scores).length) {
+        // Scores are synced but from before play-details were captured — do one full re-sync, then build.
+        toast('Grabbing the song details for your plays — one-time re-sync…', 'ok');
+        state._buildAfterSync = true; syncScores(false); return;
+      }
+      toast('Sync your scores first (hit ⟳ Sync scores), then Build from my plays.', 'warn'); return;
+    }
+    // Plays are BeatLeader data — show the BeatLeader filter layout (star rating, play status; not tags)
+    // no matter which search source was last active.
+    if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
+    state.viewMode = 'plays';
+    state.raw = list; state.fetched = true; state.lastSig = 'plays';
+    applyClientFilters();
+    setStatus('Loaded ' + list.length + ' of your plays', 'on');
+    toast('Loaded your ' + list.length + ' played maps. Set “Your play status” to “Played, not FC” (or use Near-miss FC / accuracy) to narrow, then add the ones you want.', 'ok');
+    if (isMobileView()) setMobileView('results');
   }
   function applyQuickList(q) {
     if (q === 'unplayed') { el.playStatus.value = 'unplayed'; el.accMax.value = ''; }
@@ -4100,6 +4155,7 @@ window.PP = (function () {
     el.connectBtn.addEventListener('click', connectPlayer);
     el.playerInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') connectPlayer(); });
     el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); });
+    el.buildPlaysBtn.addEventListener('click', buildFromPlays);
     el.disconnectBtn.addEventListener('click', disconnectPlayer);
     el.playStatus.addEventListener('change', applyClientFilters);
     el.playRecency.addEventListener('change', applyClientFilters);
