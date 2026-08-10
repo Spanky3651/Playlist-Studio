@@ -28,6 +28,8 @@ In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's o
 
 - Each chip is **tri-state**: click once to **require** a tag, again to **exclude** it, again to clear.
 - Sort by **Relevance, Rating, Curated, or Latest**, with an optional **curated-only** toggle.
+- **Hide auto-lighting maps** — a one-click toggle to drop maps whose lighting was auto-generated (credited as *"Auto Lighter by …"* / *"Autolighter"*). The note maps are real; only the lighting is auto-made, so flip it on when those are cluttering your results.
+- Searching a **mapper** name matches the mapper only (not song/artist/description) and ignores those same auto-lighting credits, so you get that mapper's actual maps.
 - Combine tags with the shared **NPS / BPM / duration / mapper** filters to dial in exactly the pack you want (e.g. Tech, unranked, 7+ NPS, sorted by Rating).
 - Unranked maps have no stars or PP, so those show as **UR** and the star/PP filters simply don't apply here.
 
