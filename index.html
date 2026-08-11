@@ -829,6 +829,19 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
           </div>
           <p class="muted hint-line">Open your BeatLeader profile and paste the link (e.g. <code>beatleader.xyz/u/…</code>) or just your ID.</p>
         </div>
+        <div class="topplays bl-only">
+          <div class="divider"></div>
+          <label class="field-label">Top plays from a profile <span class="info" data-tip="Loads a BeatLeader profile's highest-PP (top) plays into the results so you can drop them straight into a playlist — great for grinding your best scores. Leave the box blank to use your connected profile.">i</span></label>
+          <div class="preset-row" style="margin-top:6px;">
+            <input type="text" id="topPlayerInput" placeholder="BeatLeader profile URL or ID (blank = connected)" />
+          </div>
+          <div class="scan-chips" id="topChips" style="margin-top:8px;">
+            <button type="button" data-top="25">Top 25</button>
+            <button type="button" data-top="50">Top 50</button>
+            <button type="button" data-top="100">Top 100</button>
+          </div>
+          <p class="muted hint-line">Pulls their best ranked scores into the results, then hit <b>Add all</b> to build the playlist.</p>
+        </div>
         <div id="profileCard" hidden>
           <div class="pcard">
             <img id="pcAvatar" class="pc-avatar" alt="" />
@@ -1385,7 +1398,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-11T21:35:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-11T22:15:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2284,7 +2297,7 @@ window.PP = (function () {
    'previewModal','previewTitle','previewStatus','previewFrame','previewAudio','previewBeatSaver','previewViewer','previewClose','previewClose2',
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
-   'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint',
+   'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint','topPlayerInput','topChips',
    'toast','tipbox'
   ].forEach(function (id) { el[id] = $(id); });
 
@@ -4036,6 +4049,42 @@ window.PP = (function () {
     toast('Loaded your ' + list.length + ' played maps. Set “Your play status” to “Played, not FC” (or use Near-miss FC / accuracy) to narrow, then add the ones you want.', 'ok');
     if (isMobileView()) setMobileView('results');
   }
+
+  // Load a specified BeatLeader profile's highest-PP ("top") plays into the results, so a playlist
+  // can be built straight from them (e.g. to grind your best scores). Ranked/PP scores only.
+  function buildTopPlays(n) {
+    var raw = (el.topPlayerInput && el.topPlayerInput.value) || '';
+    var id = parsePlayerId(raw) || (state.player && state.player.id) || '';
+    if (!id) { toast('Paste a BeatLeader profile URL or ID (or connect one) to grab its top plays.', 'warn'); if (el.topPlayerInput) el.topPlayerInput.focus(); return; }
+    if (state.fetching || state.syncing) { toast('Hang on — a fetch is already running.', 'warn'); return; }
+    n = n || 50;
+    state.fetching = true;
+    if (el.topChips) Array.prototype.forEach.call(el.topChips.querySelectorAll('button'), function (b) { b.disabled = true; });
+    setStatus('Loading top ' + n + ' plays…', 'busy');
+    relayFetch(API_BASE + '/player/' + encodeURIComponent(id) + '/scores?page=1&count=' + n + '&sortBy=pp&order=desc',
+      function (j) { return j && Array.isArray(j.data); })
+      .then(function (d) {
+        var items = (d && d.data) || [], list = [], seen = {}, i;
+        for (i = 0; i < items.length; i++) {
+          var sc = items[i];
+          if (!sc.leaderboard || !sc.leaderboard.song || !sc.leaderboard.song.hash) continue;
+          var pe = normalize(sc.leaderboard);
+          var key = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
+          if (seen[key]) continue; seen[key] = 1;
+          list.push(pe);
+        }
+        if (!list.length) { setStatus('No top plays found', 'warn'); toast('That profile has no ranked plays to pull — top plays come from ranked (PP) scores.', 'warn'); return; }
+        if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
+        state.viewMode = 'plays';
+        state.raw = list; state.fetched = true; state.lastSig = 'top:' + id + ':' + n;
+        applyClientFilters();
+        setStatus('Loaded top ' + list.length + ' plays', 'on');
+        toast('Loaded the top ' + list.length + ' plays. Hit "Add all" in the results to drop them into your playlist.', 'ok'); track('top-plays');
+        if (isMobileView()) setMobileView('results');
+      })
+      .catch(function (e) { setStatus('Load failed', 'err'); toast("Couldn't load top plays" + (e && e.message ? ' (' + e.message + ')' : '') + '. Check the profile URL/ID or try again.', 'err'); })
+      .then(function () { state.fetching = false; if (el.topChips) Array.prototype.forEach.call(el.topChips.querySelectorAll('button'), function (b) { b.disabled = false; }); });
+  }
   function applyQuickList(q) {
     if (q === 'unplayed') { el.playStatus.value = 'unplayed'; el.accMax.value = ''; }
     else if (q === 'nearfc') { el.playStatus.value = 'nearfc'; el.accMax.value = ''; }
@@ -4325,6 +4374,8 @@ window.PP = (function () {
     el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); });
     el.buildPlaysBtn.addEventListener('click', buildFromPlays);
     el.disconnectBtn.addEventListener('click', disconnectPlayer);
+    el.topChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-top]'); if (b) buildTopPlays(parseInt(b.dataset.top, 10)); });
+    el.topPlayerInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); buildTopPlays(50); } });
     el.playStatus.addEventListener('change', applyClientFilters);
     el.playRecency.addEventListener('change', applyClientFilters);
     syncRecencyControl();
