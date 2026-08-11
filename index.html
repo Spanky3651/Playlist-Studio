@@ -161,6 +161,11 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
   max-width:1640px;margin:0 auto;
 }
 @media(max-width:1080px){.layout{grid-template-columns:1fr;}.col-left{position:static !important;max-height:none !important;overflow:visible !important;}}
+/* Master-clear (Ctrl+Shift+X) FX: snap-shake the layout + a saber-colored energy flash */
+@keyframes fx-clearshake{0%{transform:translate(0,0) rotate(0)}10%{transform:translate(-10px,4px) rotate(-1.1deg)}22%{transform:translate(9px,-4px) rotate(1deg)}34%{transform:translate(-8px,3px) rotate(-.8deg)}46%{transform:translate(7px,-3px) rotate(.65deg)}58%{transform:translate(-5px,2px) rotate(-.45deg)}70%{transform:translate(4px,-1px) rotate(.3deg)}82%{transform:translate(-2px,1px) rotate(-.15deg)}100%{transform:translate(0,0) rotate(0)}}
+.fx-clear{animation:fx-clearshake .55s cubic-bezier(.36,.07,.19,.97) both;will-change:transform;}
+.clear-flash{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;mix-blend-mode:screen;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.95),rgba(47,140,255,.30) 26%,rgba(255,45,85,.22) 52%,rgba(255,45,85,0) 72%);animation:fx-clearflash .5s ease-out forwards;}
+@keyframes fx-clearflash{0%{opacity:0;transform:scale(.55)}16%{opacity:.95}100%{opacity:0;transform:scale(1.3)}}
 .col-left{
   position:sticky;top:80px;align-self:start;
   display:flex;flex-direction:column;gap:16px;
@@ -557,7 +562,7 @@ button.sm{padding:7px 11px;font-size:13.5px;}
   max-width:1640px;margin:0 auto;padding:14px 22px 40px;
 }
 .foot-left{font-size:13px;color:var(--muted-2);font-family:var(--mono);letter-spacing:.3px;flex:1;min-width:220px;line-height:1.6;}
-.foot-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.foot-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-left:auto;justify-content:flex-end;}
 a.credit{display:inline-flex;align-items:center;gap:12px;padding:8px 18px 8px 8px;border:1px solid var(--border-2);border-radius:12px;background:linear-gradient(180deg,#0e131c,#080c12);text-decoration:none;transition:.16s;}
 a.credit:hover{border-color:var(--blue);box-shadow:0 0 20px rgba(47,140,255,.22);transform:translateY(-2px);}
 a.credit img{width:42px;height:42px;border-radius:10px;border:1px solid #ffffff1f;box-shadow:0 0 12px rgba(47,140,255,.28);display:block;}
@@ -1380,7 +1385,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-11T21:05:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-11T21:35:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -4076,7 +4081,23 @@ window.PP = (function () {
     // Every filter input (also re-runs applyClientFilters + star UI).
     resetFilters(true);
     renderAll();
+    clearFx();
     toast('Everything cleared — fresh start.' + (hadUndo ? ' Playlist undo is in the toolbar.' : ''), 'ok');
+  }
+
+  // Cool one-shot feedback for the secret clear: snap-shake + a saber-colored flash.
+  function clearFx() {
+    try {
+      var lay = document.querySelector('.layout');
+      if (lay) {
+        lay.classList.remove('fx-clear'); void lay.offsetWidth; lay.classList.add('fx-clear');
+        lay.addEventListener('animationend', function h() { lay.classList.remove('fx-clear'); lay.removeEventListener('animationend', h); });
+      }
+      var fl = document.createElement('div');
+      fl.className = 'clear-flash';
+      fl.addEventListener('animationend', function () { if (fl.parentNode) fl.parentNode.removeChild(fl); });
+      document.body.appendChild(fl);
+    } catch (e) {}
   }
 
   // ---- tooltips -------------------------------------------------------------
