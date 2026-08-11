@@ -28,6 +28,9 @@ In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's o
 
 - Each chip is **tri-state**: click once to **require** a tag, again to **exclude** it, again to clear.
 - Sort by **Relevance, Rating, Curated, or Latest**, with an optional **curated-only** toggle.
+- **Hide auto-lighting maps** — a one-click toggle to drop maps whose lighting was auto-generated (credited as *"Auto Lighter by …"* / *"Autolighter"*). The note maps are real; only the lighting is auto-made, so flip it on when those clutter your results.
+- **Min rating and Uploaded-within filters** — set a rating floor (BeatSaver's weighted up/down score, in %) to skip poorly-rated maps, and limit to maps uploaded in the past week / month / 3 / 6 months / year to surface fresh stuff.
+- Searching a **mapper** name matches the mapper only (not song/artist/description) and ignores auto-lighting credits, so you get that mapper's actual maps. There's also an **Exclude mapper(s)** box to hide any map whose mapper or artist matches.
 - Combine tags with the shared **NPS / BPM / duration / mapper** filters to dial in exactly the pack you want (e.g. Tech, unranked, 7+ NPS, sorted by Rating).
 - Unranked maps have no stars or PP, so those show as **UR** and the star/PP filters simply don't apply here.
 
@@ -55,6 +58,8 @@ Already know the maps you want? Skip searching. Paste one or more **BSR codes**,
 - **Clear results** — a separate button that empties the results and resets your filters to defaults (your playlist is kept)
 - **Collapse duplicate songs** to keep one entry per song
 - **Hide added** — a toggle above the results that hides maps already in Your Playlist, so you only see what you haven't picked yet (great for working through a big search without re-seeing your choices). Maps drop out the moment you add them and come back if you remove them.
+- **Hide from file** — load another `.bplist` and hide its songs from the results too, so you can build a "new stuff only" set that skips everything in a playlist you already have.
+- **Fill to N min** — top up Your Playlist with maps from the current results until it reaches a target length (handy for a set of a specific duration). Respects your Hide added / Hide from file choices.
 - Build a single playlist from several different searches
 - Live totals: song count, runtime, star range + average, and average NPS
 
