@@ -575,6 +575,7 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 .foot-count[hidden]{display:none;}
 .foot-count .fc-n{color:#cfe0ff;font-weight:700;text-shadow:0 0 8px rgba(30,107,255,.45);margin:0 3px;}
 .foot-count .fc-dot{color:var(--red);margin-right:5px;}
+.foot-count .fc-img{height:15px;vertical-align:middle;filter:invert(1) brightness(1.5);opacity:.9;}
 
 /* ---------- Info tooltips ---------- */
 .info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--blue);color:var(--blue);font-size:11px;font-family:var(--mono);font-style:normal;font-weight:700;cursor:help;vertical-align:middle;user-select:none;flex:none;opacity:.75;transition:.15s;}
@@ -1379,7 +1380,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
     </a>
     <div class="foot-count" id="footCount" hidden></div>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-08-11T20:15:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-08-11T20:45:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -4392,24 +4393,43 @@ window.PP = (function () {
   setInterval(tick, 60000);
 })();
 
-/* Footer live usage counter — pulls the public total from GoatCounter's visitor-count
-   endpoint (needs "Allow visitor counter" enabled in GoatCounter Settings). Shows unique
-   visitors = how many people have used the tool. Silently stays hidden if it can't load. */
+/* Footer live usage counter — total visits from GoatCounter's public counter endpoint
+   (needs "Allow adding visitor counts on your website" enabled in GoatCounter Site settings).
+   Tries the themed JSON first; if the browser blocks it cross-origin, falls back to GoatCounter's
+   own <img> SVG counter (not subject to CORS). Silently stays hidden if neither can load. */
 (function () {
   var box = document.getElementById('footCount');
-  if (!box || !window.fetch) return;
-  fetch('https://playliststudio.goatcounter.com/counter/TOTAL.json', { cache: 'no-store' })
+  if (!box) return;
+  var BASE = 'https://playliststudio.goatcounter.com/counter/TOTAL';
+
+  function showText(n) {
+    box.title = String(n) + ' total visits to Playlist Studio';
+    box.innerHTML = '<span class="fc-dot">&#9670;</span>' +
+      '<span class="fc-n">' + String(n) + '</span> visits';
+    box.hidden = false;
+  }
+  function showImg() {
+    var img = new Image();
+    img.className = 'fc-img';
+    img.alt = 'total visits';
+    img.title = 'Total visits to Playlist Studio';
+    img.onload = function () {
+      box.innerHTML = '<span class="fc-dot">&#9670;</span>';
+      box.appendChild(img);
+      box.hidden = false;
+    };
+    img.onerror = function () {};   // endpoint off/unreachable -> stay hidden
+    img.src = BASE + '.svg?no_branding=1';
+  }
+
+  if (!window.fetch) { showImg(); return; }
+  fetch(BASE + '.json', { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) {
-      if (!d) return;
-      var n = d.count || d.count_unique;
-      if (!n) return;
-      box.title = String(n) + ' total visits to Playlist Studio';
-      box.innerHTML = '<span class="fc-dot">&#9670;</span>' +
-        '<span class="fc-n">' + String(n) + '</span> visits';
-      box.hidden = false;
+      var n = d && (d.count || d.count_unique);
+      if (n) showText(n); else showImg();
     })
-    .catch(function () {});
+    .catch(function () { showImg(); });
 })();
 </script>
 <!-- ============================================================================
