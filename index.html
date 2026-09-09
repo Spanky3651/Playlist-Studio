@@ -1409,7 +1409,7 @@ body.anim .brand .logo::after{content:"";position:absolute;left:50%;top:40%;widt
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-09-09T13:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-09-09T18:30:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2267,16 +2267,17 @@ window.PP = (function () {
   var SRC_KEY = 'playlistStudio.source.v1';
   var BS_API = 'https://api.beatsaver.com';
 
-  // Public CORS relays, raced first-valid-wins. The free-proxy landscape churns constantly:
-  // corsproxy.io now demands an API key (401), proxy.cors.sh is gated, and most others died or
-  // sit behind Cloudflare bot checks. allorigins is the reliable survivor (raw = passthrough,
-  // get = JSON-wrapped fallback); codetabs is kept as a second source in case it recovers.
-  // For a fast, self-owned default, host the Cloudflare Worker in relay-worker.js and add it here
-  // (or paste its URL into Advanced → custom relay). Last verified 2026-09-09.
+  // CORS relays, raced first-valid-wins (fastest is pinned for the rest of the scan).
+  // PRIMARY = MSploit's own Cloudflare Worker (source in relay-worker.js): fast (~0.6s for a full
+  // 100-map page), CORS-clean, host-allowlisted to BeatLeader/BeatSaver. It wins the race every
+  // time, so it's the de-facto default. The public free proxies below are only fallbacks if the
+  // Worker is ever unreachable — the free-proxy landscape has largely collapsed (corsproxy.io now
+  // wants an API key, proxy.cors.sh is gated, allorigins is slow and chokes on full pages, codetabs
+  // is intermittent), which is exactly why the self-hosted Worker exists. Last verified 2026-09-09.
   var RELAYS = [
-    { id: 'allorigins',     build: function (a) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(a); }, unwrap: JSON.parse },
-    { id: 'allorigins-get', build: function (a) { return 'https://api.allorigins.win/get?url=' + encodeURIComponent(a); }, unwrap: function (t) { return JSON.parse(JSON.parse(t).contents); } },
-    { id: 'codetabs',       build: function (a) { return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(a); }, unwrap: JSON.parse }
+    { id: 'worker',     build: function (a) { return 'https://playlist-replay.msploit.workers.dev/?url=' + encodeURIComponent(a); }, unwrap: JSON.parse },
+    { id: 'allorigins', build: function (a) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(a); }, unwrap: JSON.parse },
+    { id: 'codetabs',   build: function (a) { return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(a); }, unwrap: JSON.parse }
   ];
 
   // Per-playlist DEFAULTS. Title resets to this; author is treated as YOUR identity and kept across playlists.
