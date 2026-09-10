@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Playlist Studio // Beat Saber Playlist Generator</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22gr%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ff3b55%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23e01330%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22gb%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234f93ff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%231657e6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22%2305070c%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%2218%22%20width%3D%2222%22%20height%3D%226%22%20rx%3D%223%22%20fill%3D%22url%28%23gr%29%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%2229%22%20width%3D%2230%22%20height%3D%226%22%20rx%3D%223%22%20fill%3D%22%23d3dcec%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%2240%22%20width%3D%2226%22%20height%3D%226%22%20rx%3D%223%22%20fill%3D%22url%28%23gb%29%22%2F%3E%3Cpath%20d%3D%22M41%2015.5%20L52%2021%20L41%2026.5%20Z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3CclipPath%20id%3D%22cc%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%2F%3E%3C%2FclipPath%3E%3Cg%20clip-path%3D%22url%28%23cc%29%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23ff2740%22%2F%3E%3Cpath%20d%3D%22M0%2C64%20L64%2C0%20L64%2C64%20Z%22%20fill%3D%22%232f7bff%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M25%2021%20L46%2032%20L25%2043%20Z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#05070c" />
   <meta name="description" content="Build and export Beat Saber playlists from BeatLeader and BeatSaver. Filter by stars, PP, mapper, NPS and tags, see your own scores on every map, and export a ready-to-play .bplist. Runs entirely in your browser, no install or account." />
@@ -104,7 +104,6 @@ a:hover{text-decoration:underline;}
   border:1px solid var(--border-2);overflow:hidden;flex:none;
 }
 .brand .logo .logo-svg{position:absolute;inset:0;width:100%;height:100%;}
-.brand .logo .bar{transform-box:fill-box;transform-origin:0% 50%;}
 .brand .logo .ptri{transform-box:fill-box;transform-origin:50% 50%;}
 .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.4px;}
 .brand h1 span{color:var(--blue);text-shadow:var(--blue-glow);}
@@ -741,13 +740,13 @@ body.anim .big-fetch::after{content:"";position:absolute;inset:0;border-radius:i
 body.anim .topbar::after{animation:fx-underline 4s ease-in-out infinite;}
 @keyframes fx-logo{0%,100%{filter:drop-shadow(0 0 2px rgba(255,45,85,.45))}50%{filter:drop-shadow(0 0 8px rgba(47,140,255,.7))}}
 body.anim .brand .logo{animation:fx-logo 4.6s ease-in-out infinite;}
-/* logo intro on load: playlist bars sweep in left-to-right, then the play cue pops */
-@keyframes bar-in{0%{transform:scaleX(0);opacity:0}60%{opacity:1}100%{transform:scaleX(1);opacity:1}}
-@keyframes tri-pop{0%,40%{transform:scale(0);opacity:0}72%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}
-body.anim .brand .logo .b1{animation:bar-in .5s cubic-bezier(.4,.5,.2,1) .10s both;}
-body.anim .brand .logo .b2{animation:bar-in .5s cubic-bezier(.4,.5,.2,1) .22s both;}
-body.anim .brand .logo .b3{animation:bar-in .5s cubic-bezier(.4,.5,.2,1) .34s both;}
-body.anim .brand .logo .ptri{animation:tri-pop .6s cubic-bezier(.5,.05,.2,1) .5s both;}
+/* logo intro on load: the split slices in (blue half reveals the diagonal cut), then the play cue pops */
+@keyframes lg-fade{from{opacity:0}to{opacity:1}}
+@keyframes half-blue{0%{opacity:0;transform:translate(11px,11px)}100%{opacity:1;transform:translate(0,0)}}
+@keyframes tri-pop{0%,42%{transform:scale(0);opacity:0}74%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+body.anim .brand .logo .hr{animation:lg-fade .4s ease .08s both;}
+body.anim .brand .logo .hb{animation:half-blue .55s cubic-bezier(.4,.5,.2,1) .16s both;}
+body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5s both;}
 .anim-toggle.off{opacity:.5;}
 
 /* ---- fetch loading (functional feedback; shown regardless of the toggle) ---- */
@@ -780,7 +779,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .6s cubic-bezier(.5,.05,.2,1) .5s
 <!-- ============ TOPBAR ============ -->
 <header class="topbar">
   <div class="brand">
-    <div class="logo"><svg class="logo-svg" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3b55"/><stop offset="1" stop-color="#e01330"/></linearGradient><linearGradient id="lgb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f93ff"/><stop offset="1" stop-color="#1657e6"/></linearGradient></defs><rect class="bar b1" x="15" y="18" width="22" height="6" rx="3" fill="url(#lgr)"/><rect class="bar b2" x="15" y="29" width="30" height="6" rx="3" fill="#d3dcec"/><rect class="bar b3" x="15" y="40" width="26" height="6" rx="3" fill="url(#lgb)"/><path class="ptri" d="M41 15.5 L52 21 L41 26.5 Z" fill="#fff"/></svg></div>
+    <div class="logo"><svg class="logo-svg" viewBox="0 0 64 64" aria-hidden="true"><rect class="half hr" width="64" height="64" fill="#ff2740"/><path class="half hb" d="M0,64 L64,0 L64,64 Z" fill="#2f7bff"/><path class="ptri" d="M25 21 L46 32 L25 43 Z" fill="#fff"/></svg></div>
     <div class="brand-txt">
       <h1>Playlist <span>Studio</span></h1>
       <div class="sub"><span id="srcLabel">BEATLEADER</span> SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
@@ -1408,7 +1407,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .6s cubic-bezier(.5,.05,.2,1) .5s
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-09-10T14:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-09-10T15:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
