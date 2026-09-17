@@ -837,10 +837,10 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
       <div class="panel-body">
         <div id="profileConnect">
           <div class="preset-row">
-            <input type="text" id="playerInput" placeholder="BeatLeader profile URL or ID" />
+            <input type="text" id="playerInput" placeholder="BeatLeader username, ID, or profile URL" />
             <button class="ghost sm" id="connectBtn">Connect</button>
           </div>
-          <p class="muted hint-line">Open your BeatLeader profile and paste the link (e.g. <code>beatleader.xyz/u/…</code>) or just your ID.</p>
+          <p class="muted hint-line">Type your BeatLeader <b>username</b> (e.g. <code>MSploit</code>), your ID, or paste your profile link (<code>beatleader.xyz/u/…</code>).</p>
         </div>
 <div id="profileCard" hidden>
           <div class="pcard">
@@ -1407,7 +1407,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-09-10T15:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-09-17T14:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3963,11 +3963,28 @@ window.PP = (function () {
       b.classList.toggle('active', b.dataset.ps === ps);
     });
   }
+  // Resolve whatever the user typed into a full BeatLeader player object. /player/{token} already
+  // handles a SteamID, the short player id, and the exact alias; if that 404s (a display name or a
+  // partial/fuzzy name), fall back to the /players?search= name search and take the top match.
+  function validPlayer(j) { return j && (j.id || j.name); }
+  function resolvePlayerToken(token) {
+    return relayFetch(API_BASE + '/player/' + encodeURIComponent(token), validPlayer)
+      .catch(function () {
+        return relayFetch(API_BASE + '/players?search=' + encodeURIComponent(token) + '&count=1',
+          function (j) { return j && Array.isArray(j.data); })
+          .then(function (d) {
+            var first = d && d.data && d.data[0];
+            if (!first || !first.id) throw new Error('no match');
+            // Re-fetch the full profile by id so stats/avatar are complete.
+            return relayFetch(API_BASE + '/player/' + encodeURIComponent(first.id), validPlayer).catch(function () { return first; });
+          });
+      });
+  }
   function connectPlayer() {
     var id = parsePlayerId(el.playerInput.value);
-    if (!id) { toast('Paste your BeatLeader profile URL or ID.', 'warn'); return; }
+    if (!id) { toast('Paste a BeatLeader profile URL, ID, or username.', 'warn'); return; }
     setProfileState('Connecting…'); el.connectBtn.disabled = true;
-    relayFetch(API_BASE + '/player/' + encodeURIComponent(id), function (j) { return j && (j.id || j.name); })
+    resolvePlayerToken(id)
       .then(function (p) {
         state.player = { id: p.id || id, name: p.name || 'Player', avatar: p.avatar || '',
           pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
@@ -3976,7 +3993,7 @@ window.PP = (function () {
         toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok'); track('connect-profile');
         return syncScores(false);
       })
-      .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader profile — check the URL or ID.", 'err'); })
+      .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader player — check the username, ID, or profile link.", 'err'); })
       .then(function () { el.connectBtn.disabled = false; });
   }
   function disconnectPlayer() {
