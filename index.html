@@ -875,14 +875,22 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
               <option value="nofc">Played, not FC</option>
               <option value="nearfc">Near-miss FC</option>
             </select></div>
-          <div class="field"><label class="field-label">Last played <span class="info" data-tip="Filter by how recently you played each map, using your synced scores. 'Within' keeps maps you've played inside that window; 'Over a year ago' finds ones you haven't touched in a while — handy for rebuilding a set to revisit. Only affects maps you've played.">i</span></label>
+          <div class="field"><label class="field-label">Last played <span class="info" data-tip="Filter by how recently you played each map, using your synced scores. 'Played within' keeps maps you've played inside that window; 'Not played in over' finds ones you haven't touched in a while, handy for rebuilding a set to revisit. Only affects maps you've played.">i</span></label>
             <select id="playRecency">
               <option value="any" selected>Any time</option>
-              <option value="1m">Within 1 month</option>
-              <option value="3m">Within 3 months</option>
-              <option value="6m">Within 6 months</option>
-              <option value="1y">Within 1 year</option>
-              <option value="o1y">Over a year ago</option>
+              <optgroup label="Played within">
+                <option value="1w">Within 1 week</option>
+                <option value="1m">Within 1 month</option>
+                <option value="3m">Within 3 months</option>
+                <option value="6m">Within 6 months</option>
+                <option value="1y">Within 1 year</option>
+              </optgroup>
+              <optgroup label="Not played in over">
+                <option value="o3m">Over 3 months ago</option>
+                <option value="o6m">Over 6 months ago</option>
+                <option value="o1y">Over 1 year ago</option>
+                <option value="o2y">Over 2 years ago</option>
+              </optgroup>
             </select></div>
           <div class="field"><label class="field-label">Only my acc below <small class="muted">(%, played maps)</small></label>
             <input type="number" id="accMax" min="0" max="100" step="0.5" placeholder="e.g. 90" /></div>
@@ -1407,7 +1415,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-09-17T14:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-09-21T13:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2760,7 +2768,8 @@ window.PP = (function () {
     syncRecencyControl();
     var f = getFilters();
     var nowSec = Date.now() / 1000;
-    var recencyDays = { '1m': 31, '3m': 92, '6m': 183, '1y': 366 };
+    var recencyDays = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366 };
+    var overDays = { 'o3m': 90, 'o6m': 180, 'o1y': 365, 'o2y': 730 };
     var hideAuto = state.source === 'beatsaver' && el.bsNoAuto && el.bsNoAuto.checked;
     var ageCutoff = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366 }[f.bsAge];
     var out = state.raw.filter(function (s) {
@@ -2785,7 +2794,7 @@ window.PP = (function () {
         if (f.recency !== 'any') {
           if (!played || !pi.t) return false;
           var ageDays = (nowSec - pi.t) / 86400;
-          if (f.recency === 'o1y') { if (ageDays <= 365) return false; }
+          if (overDays[f.recency] != null) { if (ageDays <= overDays[f.recency]) return false; }
           else if (ageDays > recencyDays[f.recency]) return false;
         }
       }
