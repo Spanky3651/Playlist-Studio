@@ -862,6 +862,8 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
               <button type="button" data-top="25">Top 25</button>
               <button type="button" data-top="50">Top 50</button>
               <button type="button" data-top="100">Top 100</button>
+              <button type="button" data-top="250">Top 250</button>
+              <button type="button" data-top="500">Top 500</button>
             </div>
             <p class="muted hint-line" id="topHint">Loads your highest-PP plays into the results, then hit <b>Add all</b> to build the playlist.</p>
           </div>
@@ -1415,7 +1417,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-09-21T13:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-09-23T12:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -4104,18 +4106,30 @@ window.PP = (function () {
     state.fetching = true;
     if (el.topChips) Array.prototype.forEach.call(el.topChips.querySelectorAll('button'), function (b) { b.disabled = true; });
     setStatus('Loading top ' + n + ' plays…', 'busy');
-    relayFetch(API_BASE + '/player/' + encodeURIComponent(id) + '/scores?page=1&count=' + n + '&sortBy=pp&order=desc',
-      function (j) { return j && Array.isArray(j.data); })
-      .then(function (d) {
-        var items = (d && d.data) || [], list = [], seen = {}, i;
-        for (i = 0; i < items.length; i++) {
-          var sc = items[i];
-          if (!sc.leaderboard || !sc.leaderboard.song || !sc.leaderboard.song.hash) continue;
-          var pe = normalize(sc.leaderboard);
-          var key = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
-          if (seen[key]) continue; seen[key] = 1;
-          list.push(pe);
-        }
+    // BeatLeader caps a scores page at 100, so pull in pages of up to 100 and accumulate until we hit n.
+    var PAGE = Math.min(n, 100);
+    var maxPages = Math.ceil(n / PAGE);
+    var list = [], seen = {};
+    function fetchPage(p) {
+      return relayFetch(API_BASE + '/player/' + encodeURIComponent(id) + '/scores?page=' + p + '&count=' + PAGE + '&sortBy=pp&order=desc',
+        function (j) { return j && Array.isArray(j.data); })
+        .then(function (d) {
+          var items = (d && d.data) || [], i;
+          for (i = 0; i < items.length && list.length < n; i++) {
+            var sc = items[i];
+            if (!sc.leaderboard || !sc.leaderboard.song || !sc.leaderboard.song.hash) continue;
+            var pe = normalize(sc.leaderboard);
+            var key = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
+            if (seen[key]) continue; seen[key] = 1;
+            list.push(pe);
+          }
+          if (n > PAGE) setStatus('Loading top plays… ' + list.length + '/' + n, 'busy');
+          // Keep paging while the profile still has scores to give and we haven't filled the target.
+          if (items.length >= PAGE && list.length < n && p < maxPages) return fetchPage(p + 1);
+        });
+    }
+    fetchPage(1)
+      .then(function () {
         if (!list.length) { setStatus('No top plays found', 'warn'); toast('That profile has no ranked plays to pull — top plays come from ranked (PP) scores.', 'warn'); return; }
         if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
         state.viewMode = 'plays';
