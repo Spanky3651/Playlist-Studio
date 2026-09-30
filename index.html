@@ -619,7 +619,7 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 
 /* ---------- Source split (BeatLeader / BeatSaver) ---------- */
 body.src-beatleader .bs-only{display:none !important;}
-body.src-beatsaver .bl-only{display:none !important;} body.src-recommend .bs-only{display:none !important;} .rec-only{display:none;} body.src-recommend .rec-only{display:block;} .rb-gain{background:#123d24 !important;color:#5be08a !important;border-color:#1c5c37 !important;font-weight:800;} .rb-pred{background:#0e2036 !important;color:#8ec7ff !important;} .rb-stretch{background:#3a2f10 !important;color:#ffcf3a !important;} .rec-fit{margin-top:8px;font-size:12.5px;color:var(--muted,#9aa2ad);} .rec-band-note{font-size:12px;color:var(--muted,#9aa2ad);display:block;padding-top:6px;}
+body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d24 !important;color:#5be08a !important;border-color:#1c5c37 !important;font-weight:800;} .rb-pred{background:#0e2036 !important;color:#8ec7ff !important;} .rb-stretch{background:#3a2f10 !important;color:#ffcf3a !important;} .rec-fit{margin-top:8px;font-size:12.5px;color:var(--muted,#9aa2ad);} .rec-band-note{font-size:12px;color:var(--muted,#9aa2ad);display:block;padding-top:6px;}
 .source-switch{display:flex;gap:4px;background:var(--panel-2);border:1px solid var(--border-2);border-radius:11px;padding:4px;margin-bottom:12px;}
 .source-switch button{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:9px 8px;border-radius:8px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .source-switch button:hover{color:var(--text);}
@@ -809,7 +809,6 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg>BeatLeader</button>
       <button type="button" data-source="beatsaver" role="tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>BeatSaver</button>
-      <button type="button" data-source="recommend" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>Recommend</button>
     </div>
     <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> — tech, speed, genres — incl. unranked.</span></p>
 
@@ -909,7 +908,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
     </section>
 
     <!-- PP Filter -->
-    <section class="panel rec-only" id="recPanel">
+    <section class="panel bl-only" id="recPanel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>PP Optimizer</h2><span class="count" id="recState"></span></div>
       <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
       <div class="panel-body">
@@ -917,6 +916,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
         <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
         <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:block;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
         <div id="recFit" class="rec-fit"></div>
+        <div style="margin-top:12px;"><button type="button" class="primary" id="recRun">Find PP gains</button></div>
       </div>
     </section>
 
@@ -2506,7 +2506,6 @@ window.PP = (function () {
   }
   function runFetch() {
     state.viewMode = 'search';
-    if (state.source === 'recommend') return runFetchRecommend();
     if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
     track('search-beatleader');
@@ -2554,15 +2553,13 @@ window.PP = (function () {
   // ---- source split (BeatLeader / BeatSaver) --------------------------------
   function applySourceUI() {
     var bs = state.source === 'beatsaver';
-    var rec = state.source === 'recommend';
     document.body.classList.toggle('src-beatsaver', bs);
-    document.body.classList.toggle('src-recommend', rec);
-    document.body.classList.toggle('src-beatleader', !bs && !rec);
+    document.body.classList.toggle('src-beatleader', !bs);
     Array.prototype.forEach.call(el.sourceSwitch.querySelectorAll('button'), function (b) {
       b.classList.toggle('active', b.dataset.source === state.source);
     });
-    if (el.srcLabel) el.srcLabel.textContent = rec ? 'RECOMMEND' : (bs ? 'BEATSAVER' : 'BEATLEADER');
-    if (el.fetchBtn2) el.fetchBtn2.lastChild.textContent = rec ? 'Find PP gains' : (bs ? 'Search BeatSaver' : 'Search BeatLeader');
+    if (el.srcLabel) el.srcLabel.textContent = bs ? 'BEATSAVER' : 'BEATLEADER';
+    if (el.fetchBtn2) el.fetchBtn2.lastChild.textContent = bs ? 'Search BeatSaver' : 'Search BeatLeader';
     try { localStorage.setItem(SRC_KEY, state.source); } catch (e) {}
   }
   function setSource(src) {
@@ -2611,6 +2608,7 @@ window.PP = (function () {
   }
   function bindSourceUI() {
     buildTagChips();
+    var _recRun = document.getElementById('recRun'); if (_recRun) _recRun.addEventListener('click', runFetchRecommend);
     el.sourceSwitch.addEventListener('click', function (e) {
       var b = e.target.closest('button[data-source]'); if (b) setSource(b.dataset.source);
     });
@@ -2853,7 +2851,7 @@ window.PP = (function () {
     });
     var key = f.sort;
     var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
-    if (state.source === 'recommend') {
+    if (state.viewMode === 'recommend') {
       out.sort(function (a, b) { var av = (a._rec && a._rec.gain) || 0, bv = (b._rec && b._rec.gain) || 0; return bv - av; });
     } else if (state.source === 'beatsaver') {
       // BeatSaver returns results already ordered by the chosen sortOrder — keep that order.
@@ -4148,7 +4146,7 @@ window.PP = (function () {
       pAcc: function (x) { return Math.max(0.5, Math.min(0.995, intc + slope * x)); } };
   }
   function recWeighted(list) { var tot = 0; for (var i = 0; i < list.length; i++) tot += list[i] * Math.pow(0.965, i); return tot; }
-  function recBtns(disabled) { [el.fetchBtn, el.fetchBtn2].forEach(function (b) { if (b) { b.disabled = disabled; b.classList.toggle('is-fetching', disabled); } }); }
+  function recBtns(disabled) { [el.fetchBtn, el.fetchBtn2, document.getElementById('recRun')].forEach(function (b) { if (b) { b.disabled = disabled; b.classList.toggle('is-fetching', disabled); } }); }
   function runFetchRecommend() {
     state.viewMode = 'search';
     var id = (state.player && state.player.id) || '';
@@ -4207,8 +4205,7 @@ window.PP = (function () {
         recs.sort(function (a, b) { return b._rec.gain - a._rec.gain; });
         recs = recs.slice(0, topN);
         state.fetching = false; recBtns(false);
-        if (state.source !== 'recommend') { state.source = 'recommend'; try { localStorage.setItem(SRC_KEY, 'recommend'); } catch (e) {} applySourceUI(); }
-        state.viewMode = 'search';
+        state.viewMode = 'recommend';
         state.raw = recs; state.fetched = true; state.lastSig = 'rec:' + id + ':' + smin + ':' + smax + ':' + topN;
         applyClientFilters();
         drawRecChart(M, smin, smax);
