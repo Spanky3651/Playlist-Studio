@@ -619,7 +619,7 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 
 /* ---------- Source split (BeatLeader / BeatSaver) ---------- */
 body.src-beatleader .bs-only{display:none !important;}
-body.src-beatsaver .bl-only{display:none !important;}
+body.src-beatsaver .bl-only{display:none !important;} body.src-recommend .bs-only{display:none !important;} .rec-only{display:none;} body.src-recommend .rec-only{display:block;} .rb-gain{background:#123d24 !important;color:#5be08a !important;border-color:#1c5c37 !important;font-weight:800;} .rb-pred{background:#0e2036 !important;color:#8ec7ff !important;} .rb-stretch{background:#3a2f10 !important;color:#ffcf3a !important;} .rec-fit{margin-top:8px;font-size:12.5px;color:var(--muted,#9aa2ad);} .rec-band-note{font-size:12px;color:var(--muted,#9aa2ad);display:block;padding-top:6px;}
 .source-switch{display:flex;gap:4px;background:var(--panel-2);border:1px solid var(--border-2);border-radius:11px;padding:4px;margin-bottom:12px;}
 .source-switch button{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:9px 8px;border-radius:8px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .source-switch button:hover{color:var(--text);}
@@ -809,6 +809,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg>BeatLeader</button>
       <button type="button" data-source="beatsaver" role="tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>BeatSaver</button>
+      <button type="button" data-source="recommend" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>Recommend</button>
     </div>
     <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> — tech, speed, genres — incl. unranked.</span></p>
 
@@ -908,6 +909,17 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
     </section>
 
     <!-- PP Filter -->
+    <section class="panel rec-only" id="recPanel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>PP Optimizer</h2><span class="count" id="recState"></span></div>
+      <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
+        <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
+        <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:block;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
+        <div id="recFit" class="rec-fit"></div>
+      </div>
+    </section>
+
     <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
       <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
@@ -1417,7 +1429,7 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-09-23T12:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-09-30T12:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2494,6 +2506,7 @@ window.PP = (function () {
   }
   function runFetch() {
     state.viewMode = 'search';
+    if (state.source === 'recommend') return runFetchRecommend();
     if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
     track('search-beatleader');
@@ -2541,13 +2554,15 @@ window.PP = (function () {
   // ---- source split (BeatLeader / BeatSaver) --------------------------------
   function applySourceUI() {
     var bs = state.source === 'beatsaver';
+    var rec = state.source === 'recommend';
     document.body.classList.toggle('src-beatsaver', bs);
-    document.body.classList.toggle('src-beatleader', !bs);
+    document.body.classList.toggle('src-recommend', rec);
+    document.body.classList.toggle('src-beatleader', !bs && !rec);
     Array.prototype.forEach.call(el.sourceSwitch.querySelectorAll('button'), function (b) {
       b.classList.toggle('active', b.dataset.source === state.source);
     });
-    if (el.srcLabel) el.srcLabel.textContent = bs ? 'BEATSAVER' : 'BEATLEADER';
-    if (el.fetchBtn2) el.fetchBtn2.lastChild.textContent = bs ? 'Search BeatSaver' : 'Search BeatLeader';
+    if (el.srcLabel) el.srcLabel.textContent = rec ? 'RECOMMEND' : (bs ? 'BEATSAVER' : 'BEATLEADER');
+    if (el.fetchBtn2) el.fetchBtn2.lastChild.textContent = rec ? 'Find PP gains' : (bs ? 'Search BeatSaver' : 'Search BeatLeader');
     try { localStorage.setItem(SRC_KEY, state.source); } catch (e) {}
   }
   function setSource(src) {
@@ -2838,7 +2853,9 @@ window.PP = (function () {
     });
     var key = f.sort;
     var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
-    if (state.source === 'beatsaver') {
+    if (state.source === 'recommend') {
+      out.sort(function (a, b) { var av = (a._rec && a._rec.gain) || 0, bv = (b._rec && b._rec.gain) || 0; return bv - av; });
+    } else if (state.source === 'beatsaver') {
       // BeatSaver returns results already ordered by the chosen sortOrder — keep that order.
     } else if (key === 'pp') {
       // Sort by raw PP at the target accuracy (no modifier); unranked maps sink.
@@ -3164,6 +3181,11 @@ window.PP = (function () {
       } else {
         b.push('<span class="rb rb-new" title="You haven\'t played this yet">NEW</span>');
       }
+    }
+    if (e._rec) {
+      b.push('<span class="rb rb-gain" title="Projected weighted PP this map would add to your profile">+' + e._rec.gain.toFixed(1) + 'pp</span>');
+      b.push('<span class="rb rb-pred" title="Predicted accuracy from your star-vs-acc fit">~' + e._rec.predAcc.toFixed(1) + '%</span>');
+      if (e._rec.conf === 'ext') b.push('<span class="rb rb-stretch" title="Above your highest played star \u2014 prediction is extrapolated">STRETCH</span>');
     }
     return b.join('');
   }
@@ -4098,7 +4120,129 @@ window.PP = (function () {
 
   // Load a specified BeatLeader profile's highest-PP ("top") plays into the results, so a playlist
   // can be built straight from them (e.g. to grind your best scores). Ranked/PP scores only.
-  function buildTopPlays(n) {
+  // ---- PP Optimizer (Recommend source) --------------------------------------
+  // Learn how the player's accuracy falls off with stars, predict accuracy on
+  // unplayed ranked maps, price them with the same PP curve, and rank by the
+  // weighted PP each would add. Reuses normalize(), PP.ppFor(), relayFetch().
+  function recPredictor(scores) {
+    var fit = [], curPP = [], played = {}, top = 0, maxStar = 0;
+    scores.forEach(function (sc) {
+      if (!sc.leaderboard) return;
+      var d = sc.leaderboard.difficulty || {}, song = sc.leaderboard.song || {};
+      if (song.hash) played[(song.hash + '|' + d.difficultyName + '|' + (d.modeName || 'Standard')).toLowerCase()] = 1;
+      if (isFinite(sc.pp) && sc.pp > 0) { curPP.push(sc.pp); if (sc.pp > top) top = sc.pp; }
+      if (sc.modifiers === '' && d.modeName === 'Standard' && isFinite(d.stars) && sc.accuracy > 0) {
+        fit.push([d.stars, sc.accuracy]); if (d.stars > maxStar) maxStar = d.stars;
+      }
+    });
+    curPP.sort(function (a, b) { return b - a; });
+    var n = fit.length, mx = 0, my = 0;
+    fit.forEach(function (pt) { mx += pt[0]; my += pt[1]; });
+    mx = n ? mx / n : 0; my = n ? my / n : 0;
+    var sxx = 0, sxy = 0;
+    fit.forEach(function (pt) { sxx += (pt[0] - mx) * (pt[0] - mx); sxy += (pt[0] - mx) * (pt[1] - my); });
+    var slope = sxx ? sxy / sxx : 0, intc = my - slope * mx;
+    var mae = 0; fit.forEach(function (pt) { mae += Math.abs(pt[1] - (intc + slope * pt[0])); });
+    mae = n ? mae / n * 100 : 0;
+    return { fit: fit, curPP: curPP, played: played, top: top, maxStar: maxStar, n: n, slope: slope, intc: intc, mae: mae,
+      pAcc: function (x) { return Math.max(0.5, Math.min(0.995, intc + slope * x)); } };
+  }
+  function recWeighted(list) { var tot = 0; for (var i = 0; i < list.length; i++) tot += list[i] * Math.pow(0.965, i); return tot; }
+  function recBtns(disabled) { [el.fetchBtn, el.fetchBtn2].forEach(function (b) { if (b) { b.disabled = disabled; b.classList.toggle('is-fetching', disabled); } }); }
+  function runFetchRecommend() {
+    state.viewMode = 'search';
+    var id = (state.player && state.player.id) || '';
+    if (!id) { toast('Connect your BeatLeader profile first, then find PP gains.', 'warn'); if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    if (state.fetching) { toast('Hang on — a fetch is already running.', 'warn'); return; }
+    track('search-recommend');
+    fxSlashGo();
+    var f = getFilters();
+    var topN = clamp(num(document.getElementById('recTopN'), 25), 5, 100);
+    var smin = f.starMin, smax = f.starMax;
+    state.fetching = true; recBtns(true);
+    setStatus('Learning your accuracy curve…', 'busy');
+    var scores = [];
+    function scorePage(p) {
+      return relayFetch(API_BASE + '/player/' + encodeURIComponent(id) + '/scores?page=' + p + '&count=100&sortBy=pp&order=desc',
+        function (j) { return j && Array.isArray(j.data); })
+        .then(function (d) {
+          var items = (d && d.data) || [];
+          scores = scores.concat(items);
+          if (items.length >= 100 && p < 4) return scorePage(p + 1);
+        });
+    }
+    scorePage(1).then(function () {
+      if (!scores.length) { state.fetching = false; recBtns(false); setStatus('No ranked plays found', 'warn'); toast('That profile has no ranked plays to learn from.', 'warn'); return; }
+      var M = recPredictor(scores);
+      if (M.n < 5) { state.fetching = false; recBtns(false); setStatus('Not enough ranked plays', 'warn'); toast('Need a few more no-modifier Standard scores to model your accuracy.', 'warn'); return; }
+      if (smax - smin > 4.5 || (smin <= 0 && smax >= 15)) { smin = Math.max(1, +(M.maxStar - 1.3).toFixed(1)); smax = +(M.maxStar + 0.3).toFixed(1); }
+      var base = recWeighted(M.curPP);
+      setStatus('Scanning ranked maps ' + smin + '–' + smax + '★…', 'busy');
+      var cands = [];
+      function lbPage(p) {
+        return relayFetch(API_BASE + '/leaderboards?page=' + p + '&count=100&type=ranked&sortBy=stars&order=asc&stars_from=' + smin + '&stars_to=' + smax,
+          function (j) { return j && Array.isArray(j.data); })
+          .then(function (d) {
+            var items = (d && d.data) || [];
+            cands = cands.concat(items);
+            if (items.length >= 100 && p < 8) return lbPage(p + 1);
+          });
+      }
+      return lbPage(1).then(function () {
+        var recs = [];
+        cands.forEach(function (item) {
+          var e = normalize(item);
+          if (!e.hash || e.modeName !== 'Standard') return;
+          if (!(e.passRating > 0 || e.accRating > 0)) return;
+          if (M.played[(e.hash + '|' + e.difficultyName + '|' + e.modeName).toLowerCase()]) return;
+          var pa = M.pAcc(e.stars);
+          var proj = PP.ppFor(e, pa * 100, '');
+          if (proj == null) return;
+          var merged = M.curPP.slice(), lo = 0, hi = merged.length;
+          while (lo < hi) { var mm = (lo + hi) >> 1; if (merged[mm] > proj) lo = mm + 1; else hi = mm; }
+          merged.splice(lo, 0, proj);
+          e._rec = { predAcc: pa * 100, projPP: proj, gain: recWeighted(merged) - base, conf: e.stars <= M.maxStar ? 'ok' : 'ext' };
+          recs.push(e);
+        });
+        recs.sort(function (a, b) { return b._rec.gain - a._rec.gain; });
+        recs = recs.slice(0, topN);
+        state.fetching = false; recBtns(false);
+        if (state.source !== 'recommend') { state.source = 'recommend'; try { localStorage.setItem(SRC_KEY, 'recommend'); } catch (e) {} applySourceUI(); }
+        state.viewMode = 'search';
+        state.raw = recs; state.fetched = true; state.lastSig = 'rec:' + id + ':' + smin + ':' + smax + ':' + topN;
+        applyClientFilters();
+        drawRecChart(M, smin, smax);
+        setStatus(recs.length ? 'Found ' + recs.length + ' PP targets' : 'No unplayed maps in band', recs.length ? 'on' : 'warn');
+        if (recs.length) toast('Ranked ' + recs.length + ' maps by projected PP gain. Add the ones you want, then export as usual.', 'ok');
+        else toast('No unplayed ranked maps in that star band — widen the Star Rating range.', 'warn');
+      });
+    }).catch(function (err) {
+      state.fetching = false; recBtns(false);
+      setStatus('Recommend failed', 'warn');
+      toast('Could not build recommendations: ' + ((err && err.message) || err), 'warn');
+    });
+  }
+  function drawRecChart(M, smin, smax) {
+    var cv = document.getElementById('recChart'); if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, pad = 48;
+    ctx.clearRect(0, 0, W, H);
+    var fitEl = document.getElementById('recFit');
+    if (!M.fit.length) { if (fitEl) fitEl.textContent = ''; return; }
+    var xs = M.fit.map(function (p) { return p[0]; }), ys = M.fit.map(function (p) { return p[1] * 100; });
+    var xmin = Math.floor(Math.min.apply(null, xs)) - 0.5, xmax = Math.max(smax, Math.max.apply(null, xs)) + 0.5;
+    var ymin = Math.min.apply(null, ys) - 2, ymax = Math.max.apply(null, ys) + 2;
+    function X(v) { return pad + (v - xmin) / (xmax - xmin) * (W - pad - 14); }
+    function Y(v) { return H - pad - (v - ymin) / (ymax - ymin) * (H - pad - 14); }
+    ctx.strokeStyle = '#17171c'; ctx.fillStyle = '#8a8f99'; ctx.lineWidth = 1; ctx.font = '16px sans-serif';
+    var s; for (s = Math.ceil(xmin); s <= xmax; s++) { var gx = X(s); ctx.beginPath(); ctx.moveTo(gx, H - pad); ctx.lineTo(gx, 12); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(s + '★', gx, H - pad + 22); }
+    var a; for (a = Math.ceil(ymin / 2) * 2; a <= ymax; a += 2) { var gy = Y(a); ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(W - 14, gy); ctx.stroke(); ctx.textAlign = 'right'; ctx.fillText(a + '%', pad - 6, gy + 5); }
+    if (M.maxStar < xmax) { var ex = X(M.maxStar); ctx.fillStyle = 'rgba(255,207,58,0.07)'; ctx.fillRect(ex, 12, X(xmax) - ex, H - pad - 12); ctx.strokeStyle = 'rgba(255,207,58,0.4)'; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(ex, 12); ctx.lineTo(ex, H - pad); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.fillStyle = 'rgba(58,111,240,0.55)';
+    M.fit.forEach(function (p) { ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1] * 100), 3, 0, 7); ctx.fill(); });
+    ctx.strokeStyle = '#ffcf3a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(xmin), Y(M.pAcc(xmin) * 100)); ctx.lineTo(X(xmax), Y(M.pAcc(xmax) * 100)); ctx.stroke();
+    if (fitEl) fitEl.innerHTML = 'Fit: acc ≈ ' + (M.intc * 100).toFixed(1) + '% − ' + (Math.abs(M.slope) * 100).toFixed(2) + '%/★ · ±' + M.mae.toFixed(2) + '% over ' + M.n + ' plays · max played ' + M.maxStar.toFixed(2) + '★. Dots are your scores; line is the prediction; shaded past your max is extrapolated.';
+  }
+    function buildTopPlays(n) {
     var id = (state.player && state.player.id) || '';
     if (!id) { toast('Connect your BeatLeader profile first, then grab your top plays.', 'warn'); if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     if (state.fetching || state.syncing) { toast('Hang on — a fetch is already running.', 'warn'); return; }
