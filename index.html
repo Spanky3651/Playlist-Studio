@@ -908,11 +908,11 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
     </section>
 
     <!-- PP Filter -->
-    <section class="panel bl-only" id="recPanel">
+    <section class="panel bl-only" id="recPanel" data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>PP Optimizer</h2><span class="count" id="recState"></span></div>
       <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
       <div class="panel-body">
-        <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
+        <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="100" min="5" max="100"></div>
         <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
         <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:block;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
         <div id="recFit" class="rec-fit"></div>
@@ -4155,7 +4155,7 @@ window.PP = (function () {
     track('search-recommend');
     fxSlashGo();
     var f = getFilters();
-    var topN = clamp(num(document.getElementById('recTopN'), 25), 5, 100);
+    var topN = clamp(num(document.getElementById('recTopN'), 100), 5, 100);
     var smin = f.starMin, smax = f.starMax;
     state.fetching = true; recBtns(true);
     setStatus('Learning your accuracy curve…', 'busy');
