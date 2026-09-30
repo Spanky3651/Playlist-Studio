@@ -8,3 +8,6 @@ _to_delete/
 _trash_tmp/
 _pull*.html
 *.bplist
+.git-rewrite/
+.fuse_hidden*
+*.orig
