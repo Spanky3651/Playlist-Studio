@@ -1341,7 +1341,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Playlist Info -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Playlist Info</h2></div>
-      <div class="panel-sub">Metadata written into the <code>.bplist</code>. Leave the description blank to auto-fill a summary of your playlist.</div>
+      <div class="panel-sub">Metadata written into the <code>.bplist</code>. The description auto-updates as your playlist changes - type your own to override it, or clear the box to go back to auto.</div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Title</label>
           <input type="text" id="metaTitle" value="Playlist Studio Mix" placeholder="My Grind Set" /></div>
@@ -1350,7 +1350,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
             <input type="text" id="metaAuthor" value="Playlist Studio" placeholder="Your name" /></div>
         </div>
         <div class="field"><label class="field-label">Description</label>
-          <textarea id="metaDescription" rows="2" placeholder="Auto-filled from your playlist if left blank"></textarea></div>
+          <textarea id="metaDescription" rows="2" placeholder="Auto-updates from your playlist - type to override"></textarea></div>
       </div>
     </section>
 
@@ -1450,7 +1450,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-03T11:15:03Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-03T11:41:18Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2325,7 +2325,7 @@ window.PP = (function () {
   var DEFAULT_TITLE = 'Playlist Studio Mix';
   var DEFAULT_AUTHOR = 'Playlist Studio';
   var DEFAULT_COVER_STYLE = 'pulse', DEFAULT_COVER_ACCENT = 'rb';
-  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, playIndex: {}, viewMode: 'search', excludeHashes: null, excludeName: '', syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader' };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, playIndex: {}, viewMode: 'search', excludeHashes: null, excludeName: '', syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader', descAuto: true };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -3065,7 +3065,7 @@ window.PP = (function () {
   function resetPlaylistIdentity() {
     // Metadata written into the .bplist
     if (el.metaTitle) el.metaTitle.value = DEFAULT_TITLE;
-    if (el.metaDescription) el.metaDescription.value = '';
+    if (el.metaDescription) el.metaDescription.value = ''; state.descAuto = true;
     // Cover → back to the default generated art
     if (el.coverText) el.coverText.value = '';
     if (el.coverSubtitle) el.coverSubtitle.value = '';
@@ -3162,7 +3162,7 @@ window.PP = (function () {
   function saveSession() {
     clearTimeout(sessionTimer);
     sessionTimer = setTimeout(function () {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value } })); } catch (e) {}
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto } })); } catch (e) {}
     }, 600);
   }
   function restoreSession() {
@@ -3172,7 +3172,7 @@ window.PP = (function () {
       if (s && s.ppMod) { state.ppMod = s.ppMod; buildGlobalPpMods(); }
       if (s && Array.isArray(s.entries) && s.entries.length) {
         state.basket = s.entries;
-        if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; }
+        if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; state.descAuto = (s.meta.descAuto !== undefined) ? !!s.meta.descAuto : isAutoDesc(s.meta.description || ''); }
         toast('Restored your last playlist (' + state.basket.length + ' maps). Clear to start fresh.', 'ok');
       }
     } catch (e) {}
@@ -3310,7 +3310,18 @@ window.PP = (function () {
     if (el.undoClearBtn) el.undoClearBtn.hidden = !state.clearUndo;
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.disabled = !hasBasket; });
   }
+  function buildAutoDesc() {
+    var f = getFilters(), uniq = uniqueHashes(state.basket);
+    return uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' +
+      (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★') + '. Built with Playlist Studio (BeatLeader).';
+  }
+  function isAutoDesc(text) { return !text || !String(text).trim() || /Built with Playlist Studio/.test(text); }
+  function refreshAutoDesc() {
+    if (!el.metaDescription || !state.descAuto) return;
+    el.metaDescription.value = state.basket.length ? buildAutoDesc() : '';
+  }
   function renderExport() {
+    refreshAutoDesc();
     var entries = state.basket.length, uniq = uniqueHashes(state.basket);
     el.exportHint.textContent = entries ? uniq + ' songs · ' + entries + ' maps · ' + fmtDur(basketRuntime()) : 'Your playlist is empty.';
     var items = [];
@@ -3581,12 +3592,11 @@ window.PP = (function () {
       return { hash: s.hash, songName: s.songName, mapper: s.mapper, difficulties: diffs };
     });
     var f = getFilters(), uniq = uniqueHashes(state.basket);
-    var autoDesc = uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' +
-      (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★') + '. Built with Playlist Studio (BeatLeader).';
+    var autoDesc = buildAutoDesc();
     var rawTitle = el.metaTitle.value.trim();
     var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
     var syncURL = getSyncUrl();
-    var meta = { title: (!rawTitle || rawTitle === DEFAULT_TITLE) ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: el.metaDescription.value.trim() || autoDesc, image: state.coverDataUrl || '', syncURL: syncURL };
+    var meta = { title: (!rawTitle || rawTitle === DEFAULT_TITLE) ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: state.descAuto ? autoDesc : (el.metaDescription.value.trim() || autoDesc), image: state.coverDataUrl || '', syncURL: syncURL };
     if (el.syncEnable.checked && !syncURL) toast('Sync is on but the host URL is incomplete — exporting without a syncURL.', 'warn');
     try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
     catch (err) { toast(err.message, 'err'); }
@@ -3670,7 +3680,7 @@ window.PP = (function () {
     var cover = { usingCustom: state.usingCustom, style: state.coverStyle, accent: state.coverAccent,
       seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
     if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
-    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value }, entries: state.basket, cover: cover,
+    o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
       sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value } };
     if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
     else toast('Could not save — browser storage is full or unavailable.', 'err');
@@ -3680,7 +3690,7 @@ window.PP = (function () {
     var p = lsGetPl()[name]; if (!p) { toast('That playlist is gone.', 'warn'); return; }
     resetPlaylistIdentity();               // clean slate first so nothing leaks from the previous list
     state.basket = (p.entries || []).slice();
-    if (p.meta) { el.metaTitle.value = p.meta.title || DEFAULT_TITLE; if (p.meta.author) el.metaAuthor.value = p.meta.author; el.metaDescription.value = p.meta.description || ''; }
+    if (p.meta) { el.metaTitle.value = p.meta.title || DEFAULT_TITLE; if (p.meta.author) el.metaAuthor.value = p.meta.author; el.metaDescription.value = p.meta.description || ''; state.descAuto = (p.meta.descAuto !== undefined) ? !!p.meta.descAuto : isAutoDesc(p.meta.description || ''); }
     state._coverSig = null;
     var cv = p.cover;
     if (cv) {
@@ -3735,7 +3745,7 @@ window.PP = (function () {
       if (wasEmpty) {
         if (pl.playlistTitle) el.metaTitle.value = pl.playlistTitle;
         if (pl.playlistAuthor) el.metaAuthor.value = pl.playlistAuthor;
-        if (pl.playlistDescription) el.metaDescription.value = pl.playlistDescription;
+        el.metaDescription.value = pl.playlistDescription || ''; state.descAuto = isAutoDesc(pl.playlistDescription || '');
         var importedSync = pl.customData && typeof pl.customData.syncURL === 'string' ? pl.customData.syncURL.trim() : '';
         if (importedSync) { el.syncEnable.checked = true; el.syncUrl.value = importedSync; updateSyncUI(); }
         if (typeof pl.image === 'string' && pl.image.trim()) {
@@ -4631,6 +4641,7 @@ window.PP = (function () {
     el.coverTextColor.addEventListener('change', function () { state.coverTextColor = el.coverTextColor.value; updateCover(true); });
     el.coverTextPos.addEventListener('change', function () { state.coverTextPos = el.coverTextPos.value; updateCover(true); });
     el.metaTitle.addEventListener('input', function () { updateCover(); });
+    el.metaDescription.addEventListener('input', function () { state.descAuto = !el.metaDescription.value.trim(); if (state.descAuto) refreshAutoDesc(); saveSession(); });
     el.regenCoverBtn.addEventListener('click', function () { state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; state.coverSeed = (state.coverSeed || 0) + 1; updateCover(true); renderExport(); });
     el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (el.useCustomImage.checked) renderIconLibrary(); if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } else if (state.customImgEl) { state.usingCustom = true; updateCover(true); renderExport(); } });
     el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
