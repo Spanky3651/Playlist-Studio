@@ -1450,7 +1450,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-02T12:21:04Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-03T10:42:16Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2401,6 +2401,7 @@ window.PP = (function () {
   function fmtDate(t) { if (!t) return ''; var d = new Date(t * 1000); return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear(); }
   // Fire a privacy-friendly custom event to GoatCounter (no-op until analytics is configured).
   function track(name) { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'app/' + name, title: name, event: true }); } catch (e) {} }
+  function trackLookup(p) { try { if (!p) return; var name = String(p.name || 'unknown').slice(0, 60); if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'profile/' + name, title: 'Profile lookup: ' + name + (p.id ? ' (' + p.id + ')' : ''), event: true }); } catch (e) {} }
   function setStatus(text, kind) { el.statusText.textContent = text; el.statusPill.className = 'status-pill' + (kind ? ' ' + kind : ''); }
   var toastTimer;
   function toast(msg, kind) {
@@ -4042,7 +4043,7 @@ window.PP = (function () {
           pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
           total: (p.scoreStats && p.scoreStats.totalPlayCount) || 0, ranked: (p.scoreStats && p.scoreStats.rankedPlayCount) || 0, syncedMaxTime: 0 };
         state.scores = {}; state._scoreHashIdx = null; renderProfile(); savePlayerCache();
-        toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok'); track('connect-profile');
+        toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok'); track('connect-profile'); trackLookup(state.player);
         return syncScores(false);
       })
       .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader player — check the username, ID, or profile link.", 'err'); })
