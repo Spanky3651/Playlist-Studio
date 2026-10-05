@@ -803,6 +803,11 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .feat-bal{display:flex;height:20px;border-radius:6px;overflow:hidden;border:1px solid var(--border-2);font-family:var(--mono);font-size:10px;}
 .feat-bal .fb-tech{background:linear-gradient(90deg,#1e6bff,#2f8cff);color:#fff;display:flex;align-items:center;padding-left:8px;min-width:0;white-space:nowrap;}
 .feat-bal .fb-spd{flex:1;background:linear-gradient(90deg,#ff1e3c,#ff4d6d);color:#fff;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;white-space:nowrap;}
+.feat-chips{display:flex;gap:7px;flex-wrap:wrap;}
+.feat-chip{cursor:pointer;user-select:none;font-family:var(--mono);font-size:12px;padding:7px 12px;border-radius:999px;border:1px solid var(--border-2);color:var(--muted);background:var(--panel-2);}
+.feat-chip:hover{border-color:var(--blue);color:#cfe4ff;}
+.feat-chip.on{border-color:var(--blue);color:#cfe4ff;background:#1e6bff1a;}
+.feat-ramp-note{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;}
 </style>
 <style>.footlinks{align-items:stretch;}.footlinks>a{display:inline-flex;align-items:center;box-sizing:border-box;}</style></head>
 <body class="src-beatleader">
@@ -1362,6 +1367,23 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </div>
     </section>
 
+    <!-- Session Ramp -->
+    <section class="panel" id="rampPanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Session Ramp</h2><span class="ph-new">New</span></div>
+      <div class="panel-sub">Reorder Your Playlist into a smooth difficulty climb, so it plays like a real session instead of a random pile.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Order by</label>
+          <div class="feat-chips" id="rampByChips"><span class="feat-chip on" data-ramp-by="stars">Stars</span><span class="feat-chip" data-ramp-by="nps">NPS</span></div>
+        </div>
+        <div class="field"><label class="field-label">Shape</label>
+          <div class="feat-chips" id="rampDirChips"><span class="feat-chip on" data-ramp-dir="up">Warmup &rarr; Peak</span><span class="feat-chip" data-ramp-dir="down">Peak &rarr; Cooldown</span></div>
+        </div>
+        <div class="feat-lbl">Preview</div>
+        <div id="rampPreview"><p class="feat-empty">Add songs to preview the ramp.</p></div>
+        <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply ramp order</button>
+      </div>
+    </section>
+
     <!-- Playlist Info -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Playlist Info</h2></div>
@@ -1474,7 +1496,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:24:41Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:27:49Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2379,7 +2401,7 @@ window.PP = (function () {
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
    'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint','topChips','topHint',
-   'statsBody',
+   'statsBody','rampPreview','rampByChips','rampDirChips','rampApplyBtn',
    'toast','tipbox'
   ].forEach(function (id) { el[id] = $(id); });
 
@@ -3361,10 +3383,37 @@ window.PP = (function () {
     }
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
   }
-  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); renderStats(); saveSession(); }
+  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); featRefresh(); saveSession(); }
   // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
   // is unchanged, so the (expensive) Search Results list doesn't need re-rendering.
-  function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); renderStats(); saveSession(); }
+  function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); featRefresh(); saveSession(); }
+
+  // ---- Session Ramp --------------------------------------------------------
+  var rampBy = 'stars', rampDir = 'up';
+  function rampMetric(e) { return rampBy === 'nps' ? (e.nps || 0) : (e.stars || 0); }
+  function setChipOn(container, chip) { Array.prototype.forEach.call(container.children, function (ch) { ch.classList.remove('on'); }); chip.classList.add('on'); }
+  function renderRampPreview() {
+    var box = el.rampPreview; if (!box) return;
+    if (el.rampApplyBtn) el.rampApplyBtn.disabled = state.basket.length < 2;
+    var vals = state.basket.map(rampMetric).filter(function (v) { return v > 0; });
+    if (vals.length < 2) { box.innerHTML = '<p class="feat-empty">Add rated songs to preview the ramp.</p>'; return; }
+    vals.sort(function (a, b) { return a - b; }); if (rampDir === 'down') vals.reverse();
+    var W = 260, H = 70, mx = 0; vals.forEach(function (v) { if (v > mx) mx = v; }); if (!mx) mx = 1;
+    var pts = vals.map(function (v, i) { var x = i / (vals.length - 1) * W; var y = H - v / mx * H; return x.toFixed(1) + ' ' + y.toFixed(1); });
+    var d = 'M ' + pts.join(' L ');
+    var fmtv = function (v) { return rampBy === 'nps' ? v.toFixed(1) + ' NPS' : v.toFixed(1) + '\u2605'; };
+    var startW = rampDir === 'up' ? 'warmup' : 'peak', endW = rampDir === 'up' ? 'peak' : 'cooldown';
+    var html = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="feat-chart feat-line" preserveAspectRatio="none"><path d="' + d + ' L ' + W + ' ' + H + ' L 0 ' + H + ' Z" fill="url(#rampg)" opacity="0.16"/><path d="' + d + '" fill="none" stroke="#2f8cff" stroke-width="2.5"/><defs><linearGradient id="rampg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1e6bff"/><stop offset="1" stop-color="#ff1e3c"/></linearGradient></defs></svg>';
+    html += '<div class="feat-ramp-note"><span>' + startW + ' ' + fmtv(vals[0]) + '</span><span>' + endW + ' ' + fmtv(vals[vals.length - 1]) + '</span></div>';
+    box.innerHTML = html;
+  }
+  function applyRamp() {
+    if (state.basket.length < 2) return;
+    state.basket.sort(function (a, b) { var d = rampMetric(a) - rampMetric(b); return rampDir === 'down' ? -d : d; });
+    toast('Ramped by ' + (rampBy === 'nps' ? 'NPS' : 'stars') + ' (' + (rampDir === 'up' ? 'warmup \u2192 peak' : 'peak \u2192 cooldown') + ').', 'ok');
+    renderBasketArea();
+  }
+  function featRefresh() { renderStats(); renderRampPreview(); }
 
   // ---- Playlist Stats -------------------------------------------------------
   function renderStats() {
@@ -4603,6 +4652,9 @@ window.PP = (function () {
     el.fillRuntimeBtn.addEventListener('click', fillToRuntime);
     el.shuffleBtn.addEventListener('click', shuffleBasket);
     el.sortPlaylistBtn.addEventListener('click', sortBasketByStar);
+    if (el.rampByChips) el.rampByChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-by]'); if (!c) return; rampBy = c.getAttribute('data-ramp-by'); setChipOn(el.rampByChips, c); renderRampPreview(); });
+    if (el.rampDirChips) el.rampDirChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-dir]'); if (!c) return; rampDir = c.getAttribute('data-ramp-dir'); setChipOn(el.rampDirChips, c); renderRampPreview(); });
+    if (el.rampApplyBtn) el.rampApplyBtn.addEventListener('click', applyRamp);
     el.clearBasketBtn.addEventListener('click', clearBasket);
     el.clearResultsBtn.addEventListener('click', clearSearch);
     el.enrichBtn.addEventListener('click', enrichImported);
