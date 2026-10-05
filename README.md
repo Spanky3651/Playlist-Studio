@@ -79,6 +79,10 @@ Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play hist
 ### Preview before you commit
 - ▶ on any row opens an in-app preview - the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
 
+### Maps like this
+
+Open any map's preview and hit **Similar** to pull up ranked maps that play like it. Candidates are scored on mapper, star rating, NPS profile and the tech-vs-speed mix, then listed best match first with a match percentage, ready to add. A fast way to turn one map you love into a whole set.
+
 ### PP calculator (ranked maps)
 Work out exactly what a score is worth before you grind it.
 
@@ -102,6 +106,10 @@ The **PP Filter** panel turns all of that into a real filter - "only show me map
 - The PP range, accuracy, and speed all save into **filter presets**, so "6★+ tech that pays ≥300pp at 96% FS" is one click away next time.
 
 The math mirrors BeatLeader's server exactly: `passPP = 15.2·e^(passRating^(1/2.62)) − 30`, `accPP = curve(acc)·accRating·34`, `techPP = e^(1.9·acc)·1.08·techRating`, summed and inflated (`650·x^1.3 / 650^1.3`). It reports **raw (unweighted) PP** - the value of the play itself, before your profile's weighting.
+
+### Rank-Up Planner (ranked grinders)
+
+Tell it a goal - a flat PP gain, or a target total PP - and Playlist Studio works out the fewest ranked maps that get you there. It learns your accuracy curve the same way the PP Optimizer does, projects the weighted PP each map would add, and greedily picks the most efficient set until the goal is met. You get a projected new total PP and an estimated new global rank, the exact maps with their individual PP gains, and a one-tap **Add all** into Your Playlist. Needs your BeatLeader profile connected. The rank figure is an estimate; the PP math mirrors BeatLeader's weighting exactly.
 
 ### Covers & export
 - Auto-generated neon cover art - **25 procedural styles and 13 accent palettes**, picked from a live thumbnail grid - drawn from your title and star range. The styles include a set of **Beat Saber–themed** designs: **Note Cubes**, **Saber Slash**, **Bombs**, **Obstacles**, **Note Highway**, **Cut Spark** and **Saber Trails**, alongside the abstract neon ones (Pulse, Grid, Waveform, Spectrum, Vortex, Aurora, and more).
@@ -131,6 +139,14 @@ Import a big list, then prune it down in place - no spreadsheet, no re-adding ma
 
 Typical uses: refresh a grind list by dropping everything you've now FC'd, thin a huge import down to just unplayed maps, keep only your sub-90% plays to practice, prune stale maps you haven't touched in a year, or cut a 10★ playlist down to the 7–8★ band.
 
+### Playlist stats
+
+A collapsible **Playlist Stats** panel gives you a quick read on the shape of whatever is in Your Playlist: song count, total runtime, average stars, average PP and mapper count, plus a star-rating histogram, an NPS spread curve, and a tech-vs-speed balance bar. All computed in your browser from the maps you have added, with no extra calls.
+
+### Session Ramp
+
+**Session Ramp** reorders Your Playlist into a smooth difficulty climb, so a set plays like a real practice session instead of a random pile. Order by stars or NPS, choose warmup-to-peak or peak-to-cooldown, see a live preview of the curve, and apply it in one tap.
+
 ### In-game sync (optional)
 Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button - no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** - it lives in its own **In-Game Sync** panel and does nothing unless you turn it on.
 
@@ -140,6 +156,10 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 - Your URL is remembered in your browser, so re-publishing is just: edit → export → re-upload to the same spot.
 
 > The URL must point at the **raw file** (not a web page) and stay constant. If you move or rename the hosted file later, existing copies stop syncing - keep the same path and just overwrite the file to push an update.
+
+### Share by link
+
+Pack your whole playlist into a single link with **Share Playlist**. The maps, title and author are encoded straight into the URL, so there is no hosting and no account - anyone who opens the link imports the set instantly. Great for tournament pools and sending a playlist to a friend. Paste a shared link into the import box to load it, and opening a share link loads the maps and then tidies the URL.
 
 ### Made for mobile too
 - A fixed bottom **tab bar** - **Filters / Results / Playlist** with live count badges - switches between the three views so you're not scrolling one endless column. A search jumps you straight to **Results**, the **Search** button floats within easy reach while you filter, touch targets are enlarged, and map previews go full-screen.
