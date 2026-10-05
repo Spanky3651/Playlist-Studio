@@ -1558,7 +1558,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:23:55Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:29:45Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3596,24 +3596,14 @@ window.PP = (function () {
   }
 
   // ---- Rank-Up Planner -----------------------------------------------------
-  var plannerMode = 'add', plannerAcc = 'pred', plannerPicked = [];
+  var plannerMode = 'add', plannerAcc = 'pred';
   function plannerFail(msg) { state.fetching = false; if (el.plannerRunBtn) el.plannerRunBtn.disabled = false; setStatus('Could not plan', 'warn'); if (el.plannerBody) el.plannerBody.innerHTML = '<p class="feat-empty">' + esc(msg) + '</p>'; toast(msg, 'warn'); }
   function plannerNet() { state.fetching = false; if (el.plannerRunBtn) el.plannerRunBtn.disabled = false; setStatus('Lookup failed', 'warn'); toast('Could not reach BeatLeader to build your plan.', 'err'); }
-  function plannerAddAll() {
-    if (!plannerPicked.length) return;
-    var before = state.basket.length;
-    plannerPicked.forEach(function (e) { addEntryStrict(e); });
-    var added = state.basket.length - before;
-    renderAll();
-    if (typeof setMobileView === 'function') setMobileView('playlist');
-    toast(added ? 'Added ' + added + ' map' + (added === 1 ? '' : 's') + ' from your rank-up plan.' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn');
-  }
   function plannerResult(base, curW, picked, neededGain) {
     var realPP = (state.player && state.player.pp) || base;
     var gain = curW - base, newTotal = realPP + gain;
     var curRank = (state.player && state.player.rank) || 0;
     var projRank = curRank > 0 ? Math.max(1, Math.round(curRank * Math.pow(realPP / (newTotal || realPP || 1), 2.1))) : 0;
-    plannerPicked = picked;
     if (!picked.length) { el.plannerBody.innerHTML = '<p class="feat-empty">No unplayed ranked maps found to build a plan. Try a wider Star Rating range.</p>'; setStatus('No plan', 'warn'); return; }
     var reached = gain + 0.0001 >= neededGain;
     var dur = 0; picked.forEach(function (e) { dur += e.duration || 0; });
@@ -3622,8 +3612,7 @@ window.PP = (function () {
     if (projRank) { var spots = curRank - projRank; html += '<div class="big">&rarr; <b>~#' + projRank.toLocaleString() + '</b> global</div><div class="delta">+' + Math.round(gain) + ' pp projected' + (spots > 0 ? ' \u00b7 up ~' + spots.toLocaleString() + ' spots' : '') + '</div>'; }
     else html += '<div class="big">+' + Math.round(gain) + ' <b>pp</b></div><div class="delta">new total ~' + Math.round(newTotal).toLocaleString() + ' pp</div>';
     html += '<div class="note">play all ' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' \u00b7 ' + accNote + ' \u00b7 ~' + fmtDur(dur) + ' of play' + (reached ? '' : ' \u00b7 goal not fully reached, widen your star range or lower the goal') + '</div></div>';
-    html += '<p class="feat-plan-hint">' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' loaded into <b>Results</b> with their PP gains - add the ones you want, preview any of them, or use Add all below.</p>';
-    html += '<div style="margin-top:12px;"><button type="button" class="primary" id="plannerAddBtn" style="width:100%;">\u2605 Add all ' + picked.length + ' to Your Playlist</button></div>';
+    html += '<p class="feat-plan-hint">' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' loaded into <b>Results</b> with their PP gains - add the ones you want, preview any of them, or hit <b>+ Add all</b> there to take the whole plan.</p>';
     el.plannerBody.innerHTML = html;
     setStatus(reached ? 'Plan ready' : 'Partial plan', reached ? 'on' : 'warn');
   }
@@ -4944,7 +4933,6 @@ window.PP = (function () {
     if (el.plannerModeChips) el.plannerModeChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-mode]'); if (!c) return; plannerMode = c.getAttribute('data-pl-mode'); setChipOn(el.plannerModeChips, c); if (el.plannerGoalLabel) el.plannerGoalLabel.textContent = plannerMode === 'add' ? 'PP to gain' : 'Target total PP'; if (el.plannerGoal) el.plannerGoal.placeholder = plannerMode === 'add' ? 'e.g. 500' : 'e.g. 11000'; });
     if (el.plannerAccChips) el.plannerAccChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-acc]'); if (!c) return; plannerAcc = c.getAttribute('data-pl-acc'); setChipOn(el.plannerAccChips, c); });
     if (el.plannerRunBtn) el.plannerRunBtn.addEventListener('click', plannerRun);
-    if (el.plannerBody) el.plannerBody.addEventListener('click', function (e) { if (e.target.closest('#plannerAddBtn')) plannerAddAll(); });
     var _wnClose = document.getElementById('whatsnewClose'); if (_wnClose) _wnClose.addEventListener('click', closeWhatsNew);
     var _wnBack = document.getElementById('whatsnewBack'); if (_wnBack) _wnBack.addEventListener('click', function (e) { if (e.target === _wnBack) closeWhatsNew(); });
     el.clearBasketBtn.addEventListener('click', clearBasket);
