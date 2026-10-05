@@ -822,6 +822,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .feat-srow .nm{font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
 .feat-srow .me{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px;}
 .feat-srow .pp{font-family:var(--mono);font-size:11px;font-weight:800;color:#fff;background:linear-gradient(180deg,#14916b,#0c5f45);padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.feat-plan-hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.5;margin:10px 0 0;}
 .wn-back{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .wn-back.show{opacity:1;pointer-events:auto;}
 .wn-card{width:100%;max-width:450px;background:var(--panel);border:1px solid var(--border-2);border-radius:16px;box-shadow:0 20px 70px -20px rgba(30,107,255,.5),0 0 0 1px #000;overflow:hidden;max-height:88vh;display:flex;flex-direction:column;}
@@ -1441,6 +1442,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <div class="feat-lbl">Preview</div>
         <div id="rampPreview"><p class="feat-empty">Add songs to preview the ramp.</p></div>
         <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply ramp order</button>
+        <button class="ghost sm" id="rampUndoBtn" type="button" hidden style="width:100%;margin-top:8px;">&#8617; Undo ramp</button>
       </div>
     </section>
 
@@ -1556,7 +1558,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:42:42Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:23:55Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2476,7 +2478,7 @@ window.PP = (function () {
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
    'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint','topChips','topHint',
-   'statsBody','rampPreview','rampByChips','rampDirChips','rampApplyBtn',
+   'statsBody','rampPreview','rampByChips','rampDirChips','rampApplyBtn','rampUndoBtn',
    'shareLink','shareCopyBtn','shareInfo','shareImportInput','shareImportBtn','simBtn',
    'plannerPanel','plannerModeChips','plannerGoalLabel','plannerGoal','plannerAccChips','plannerBody','plannerRunBtn',
    'toast','tipbox'
@@ -3467,11 +3469,12 @@ window.PP = (function () {
   function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); featRefresh(); saveSession(); }
 
   // ---- Session Ramp --------------------------------------------------------
-  var rampBy = 'stars', rampDir = 'up';
+  var rampBy = 'stars', rampDir = 'up', rampPrevOrder = null, rampSnapLen = 0;
   function rampMetric(e) { return rampBy === 'nps' ? (e.nps || 0) : (e.stars || 0); }
   function setChipOn(container, chip) { Array.prototype.forEach.call(container.children, function (ch) { ch.classList.remove('on'); }); chip.classList.add('on'); }
   function renderRampPreview() {
     var box = el.rampPreview; if (!box) return;
+    if (rampPrevOrder && state.basket.length !== rampSnapLen) { rampPrevOrder = null; if (el.rampUndoBtn) el.rampUndoBtn.hidden = true; }
     if (el.rampApplyBtn) el.rampApplyBtn.disabled = state.basket.length < 2;
     var vals = state.basket.map(rampMetric).filter(function (v) { return v > 0; });
     if (vals.length < 2) { box.innerHTML = '<p class="feat-empty">Add rated songs to preview the ramp.</p>'; return; }
@@ -3487,8 +3490,17 @@ window.PP = (function () {
   }
   function applyRamp() {
     if (state.basket.length < 2) return;
+    rampPrevOrder = state.basket.slice(); rampSnapLen = state.basket.length;
     state.basket.sort(function (a, b) { var d = rampMetric(a) - rampMetric(b); return rampDir === 'down' ? -d : d; });
     toast('Ramped by ' + (rampBy === 'nps' ? 'NPS' : 'stars') + ' (' + (rampDir === 'up' ? 'warmup \u2192 peak' : 'peak \u2192 cooldown') + ').', 'ok');
+    if (el.rampUndoBtn) el.rampUndoBtn.hidden = false;
+    renderBasketArea();
+  }
+  function undoRamp() {
+    if (!rampPrevOrder) return;
+    state.basket = rampPrevOrder.slice(); rampPrevOrder = null;
+    if (el.rampUndoBtn) el.rampUndoBtn.hidden = true;
+    toast('Reverted to the previous order.', 'ok');
     renderBasketArea();
   }
   // ---- Share by link -------------------------------------------------------
@@ -3609,9 +3621,8 @@ window.PP = (function () {
     var html = '<div class="feat-proj' + (reached ? '' : ' short') + '">';
     if (projRank) { var spots = curRank - projRank; html += '<div class="big">&rarr; <b>~#' + projRank.toLocaleString() + '</b> global</div><div class="delta">+' + Math.round(gain) + ' pp projected' + (spots > 0 ? ' \u00b7 up ~' + spots.toLocaleString() + ' spots' : '') + '</div>'; }
     else html += '<div class="big">+' + Math.round(gain) + ' <b>pp</b></div><div class="delta">new total ~' + Math.round(newTotal).toLocaleString() + ' pp</div>';
-    html += '<div class="note">' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' \u00b7 ' + accNote + ' \u00b7 ~' + fmtDur(dur) + ' of play' + (reached ? '' : ' \u00b7 goal not fully reached, widen your star range or lower the goal') + '</div></div>';
-    picked.slice(0, 6).forEach(function (e) { html += '<div class="feat-srow"><div><div class="nm">' + esc(e.songName) + '</div><div class="me">' + esc(e.mapper || '') + (e.stars ? ' \u00b7 ' + e.stars.toFixed(1) + '\u2605' : '') + '</div></div><span class="pp">+' + Math.round(e._marg) + ' pp</span></div>'; });
-    if (picked.length > 6) html += '<p class="note" style="font-family:var(--mono);font-size:11px;color:var(--muted);margin:8px 0 0;">+ ' + (picked.length - 6) + ' more</p>';
+    html += '<div class="note">play all ' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' \u00b7 ' + accNote + ' \u00b7 ~' + fmtDur(dur) + ' of play' + (reached ? '' : ' \u00b7 goal not fully reached, widen your star range or lower the goal') + '</div></div>';
+    html += '<p class="feat-plan-hint">' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' loaded into <b>Results</b> with their PP gains - add the ones you want, preview any of them, or use Add all below.</p>';
     html += '<div style="margin-top:12px;"><button type="button" class="primary" id="plannerAddBtn" style="width:100%;">\u2605 Add all ' + picked.length + ' to Your Playlist</button></div>';
     el.plannerBody.innerHTML = html;
     setStatus(reached ? 'Plan ready' : 'Partial plan', reached ? 'on' : 'warn');
@@ -3661,11 +3672,15 @@ window.PP = (function () {
           merged.splice(lo, 0, e._proj);
           var nw = recWeighted(merged), marg = nw - curW;
           if (marg <= 0.01) continue;
-          e._marg = marg; working = merged; curW = nw; picked.push(e);
+          e._marg = marg; e._rec = { gain: marg, predAcc: e._pa, projPP: e._proj, conf: (e.stars <= M.maxStar ? 'ok' : 'ext') }; working = merged; curW = nw; picked.push(e);
         }
         state.fetching = false; if (el.plannerRunBtn) el.plannerRunBtn.disabled = false;
         plannerResult(base, curW, picked, neededGain);
-        if (picked.length) toast('Planned ' + picked.length + ' maps toward your goal. Add them, then export as usual.', 'ok');
+        if (picked.length) {
+          state.viewMode = 'recommend'; state.raw = picked; state.fetched = true; state.filtered = picked.slice(); state.lastSig = 'plan:' + id;
+          renderResults(); renderSummary(); renderControls();
+          toast('Planned ' + picked.length + ' maps. They are in Results with their PP gains - add the ones you want, or use Add all.', 'ok');
+        }
       }, plannerNet);
     }, plannerNet);
   }
@@ -4922,6 +4937,7 @@ window.PP = (function () {
     if (el.rampByChips) el.rampByChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-by]'); if (!c) return; rampBy = c.getAttribute('data-ramp-by'); setChipOn(el.rampByChips, c); renderRampPreview(); });
     if (el.rampDirChips) el.rampDirChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-dir]'); if (!c) return; rampDir = c.getAttribute('data-ramp-dir'); setChipOn(el.rampDirChips, c); renderRampPreview(); });
     if (el.rampApplyBtn) el.rampApplyBtn.addEventListener('click', applyRamp);
+    if (el.rampUndoBtn) el.rampUndoBtn.addEventListener('click', undoRamp);
     if (el.shareCopyBtn) el.shareCopyBtn.addEventListener('click', copyShareLink);
     if (el.shareImportBtn) el.shareImportBtn.addEventListener('click', function () { importFromShareStr(el.shareImportInput.value); el.shareImportInput.value = ''; });
     if (el.simBtn) el.simBtn.addEventListener('click', function () { findSimilar(state.ppEntry); });
