@@ -822,6 +822,20 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .feat-srow .nm{font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
 .feat-srow .me{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px;}
 .feat-srow .pp{font-family:var(--mono);font-size:11px;font-weight:800;color:#fff;background:linear-gradient(180deg,#14916b,#0c5f45);padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.wn-back{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.wn-back.show{opacity:1;pointer-events:auto;}
+.wn-card{width:100%;max-width:450px;background:var(--panel);border:1px solid var(--border-2);border-radius:16px;box-shadow:0 20px 70px -20px rgba(30,107,255,.5),0 0 0 1px #000;overflow:hidden;max-height:88vh;display:flex;flex-direction:column;}
+.wn-head{padding:15px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0e131c,#0a0e15);display:flex;align-items:center;gap:10px;}
+.wn-head h3{margin:0;font-family:var(--mono);font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;flex:1;}
+.wn-chip{font-family:var(--mono);font-size:10px;font-weight:700;color:#2f8cff;border:1px solid #2f8cff66;background:#1e6bff1a;padding:2px 8px;border-radius:5px;letter-spacing:1px;}
+.wn-body{padding:4px 18px;overflow:auto;}
+.wn-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #12151d;}
+.wn-item:last-child{border-bottom:0;}
+.wn-ic{width:32px;height:32px;flex:none;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#1e6bff14;border:1px solid #1e6bff33;color:#2f8cff;}
+.wn-ic svg{width:17px;height:17px;}
+.wn-t{font-size:14px;font-weight:800;color:#fff;margin:0 0 2px;}
+.wn-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0;}
+.wn-foot{padding:14px 18px;border-top:1px solid var(--border);}
 </style>
 <style>.footlinks{align-items:stretch;}.footlinks>a{display:inline-flex;align-items:center;box-sizing:border-box;}</style></head>
 <body class="src-beatleader">
@@ -976,7 +990,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
     <!-- Rank-Up Planner -->
     <section class="panel bl-only" id="plannerPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Rank-Up Planner</h2><span class="ph-new">New</span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Rank-Up Planner</h2></div>
       <div class="panel-sub">Set a goal and get the fewest ranked maps that reach it, with a projected new PP and rank. Needs your BeatLeader profile connected. Projections reuse the PP Optimizer's accuracy model.</div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Goal</label>
@@ -1325,7 +1339,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
     <!-- Playlist Stats -->
     <section class="panel" id="statsPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><h2>Playlist Stats</h2><span class="ph-new">New</span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><h2>Playlist Stats</h2></div>
       <div class="panel-sub">A quick read on the shape of your current playlist: star spread, pacing and balance.</div>
       <div class="panel-body">
         <div id="statsBody"><p class="feat-empty">Add songs to see your playlist stats.</p></div>
@@ -1356,7 +1370,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
     <!-- Share by link -->
     <section class="panel" id="sharePanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share Playlist</h2><span class="ph-new">New</span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share Playlist</h2></div>
       <div class="panel-sub">Pack this playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools and sending a set to a friend.</div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Your share link</label>
@@ -1415,7 +1429,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
     <!-- Session Ramp -->
     <section class="panel" id="rampPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Session Ramp</h2><span class="ph-new">New</span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Session Ramp</h2></div>
       <div class="panel-sub">Reorder Your Playlist into a smooth difficulty climb, so it plays like a real session instead of a random pile.</div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Order by</label>
@@ -1542,7 +1556,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:40:29Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:42:42Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -1605,6 +1619,20 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 <div id="tipbox"></div>
 
 <!-- ============ MOBILE TAB BAR (hidden on desktop) ============ -->
+<div class="wn-back" id="whatsnewBack" hidden>
+  <div class="wn-card" role="dialog" aria-modal="true" aria-label="What's new in Playlist Studio">
+    <div class="wn-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><h3>What's New</h3><span class="wn-chip">5 updates</span></div>
+    <div class="wn-body">
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="wn-t">Rank-Up Planner</p><p class="wn-d">Set a PP or rank goal and get the fewest ranked maps to reach it, with a projected new PP and global rank. In the filters, under PP Optimizer.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><div><p class="wn-t">Playlist Stats</p><p class="wn-d">A quick read on your current set: star spread, NPS pacing, tech vs speed balance, average PP and more.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><div><p class="wn-t">Share by link</p><p class="wn-d">Pack a playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><div><p class="wn-t">Maps Like This</p><p class="wn-d">Open any map's preview and hit Similar to pull up ranked maps that match it by mapper, star rating and NPS.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><div><p class="wn-t">Session Ramp</p><p class="wn-d">Reorder Your Playlist into a smooth warmup-to-peak climb by stars or NPS, so a set plays like a real practice session.</p></div></div>
+    </div>
+    <div class="wn-foot"><button type="button" class="primary" id="whatsnewClose" style="width:100%;">Got it</button></div>
+  </div>
+</div>
+
 <nav class="m-tabbar" id="mTabbar" aria-label="Sections">
   <button type="button" class="m-tab active" data-view="filters">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
@@ -3642,6 +3670,16 @@ window.PP = (function () {
     }, plannerNet);
   }
 
+  // ---- What's New (one-time) ------------------------------------------------
+  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v2';
+  function showWhatsNew(force) {
+    try { if (!force && localStorage.getItem(WHATSNEW_KEY)) return; } catch (e) {}
+    var back = document.getElementById('whatsnewBack'); if (!back) return;
+    back.hidden = false; requestAnimationFrame(function () { back.classList.add('show'); });
+    try { localStorage.setItem(WHATSNEW_KEY, '1'); } catch (e) {}
+  }
+  function closeWhatsNew() { var back = document.getElementById('whatsnewBack'); if (back) { back.classList.remove('show'); setTimeout(function () { back.hidden = true; }, 200); } }
+
   function featRefresh() { renderStats(); renderRampPreview(); renderShare(); }
 
   // ---- Playlist Stats -------------------------------------------------------
@@ -4891,6 +4929,8 @@ window.PP = (function () {
     if (el.plannerAccChips) el.plannerAccChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-acc]'); if (!c) return; plannerAcc = c.getAttribute('data-pl-acc'); setChipOn(el.plannerAccChips, c); });
     if (el.plannerRunBtn) el.plannerRunBtn.addEventListener('click', plannerRun);
     if (el.plannerBody) el.plannerBody.addEventListener('click', function (e) { if (e.target.closest('#plannerAddBtn')) plannerAddAll(); });
+    var _wnClose = document.getElementById('whatsnewClose'); if (_wnClose) _wnClose.addEventListener('click', closeWhatsNew);
+    var _wnBack = document.getElementById('whatsnewBack'); if (_wnBack) _wnBack.addEventListener('click', function (e) { if (e.target === _wnBack) closeWhatsNew(); });
     el.clearBasketBtn.addEventListener('click', clearBasket);
     el.clearResultsBtn.addEventListener('click', clearSearch);
     el.enrichBtn.addEventListener('click', enrichImported);
@@ -5017,7 +5057,7 @@ window.PP = (function () {
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI();
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on');
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); showWhatsNew();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
