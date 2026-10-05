@@ -789,6 +789,21 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
   .appfoot .foot-right>.foot-updated{order:4;}
 }
 </style>
+<style id="feat-css">
+.ph-new{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1px;color:#2f8cff;border:1px solid #2f8cff66;background:#1e6bff1a;padding:1px 6px;border-radius:5px;text-transform:uppercase;margin-left:8px;}
+.feat-empty{font-family:var(--mono);font-size:13px;color:var(--muted);margin:0;}
+.feat-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px;}
+.feat-tile{background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:9px 3px;text-align:center;}
+.feat-tile .ft-v{font-size:17px;font-weight:800;color:#fff;}
+.feat-tile .ft-l{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.feat-lbl{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:12px 0 6px;}
+.feat-chart{width:100%;display:block;}
+.feat-bars{height:88px;}
+.feat-line{height:58px;}
+.feat-bal{display:flex;height:20px;border-radius:6px;overflow:hidden;border:1px solid var(--border-2);font-family:var(--mono);font-size:10px;}
+.feat-bal .fb-tech{background:linear-gradient(90deg,#1e6bff,#2f8cff);color:#fff;display:flex;align-items:center;padding-left:8px;min-width:0;white-space:nowrap;}
+.feat-bal .fb-spd{flex:1;background:linear-gradient(90deg,#ff1e3c,#ff4d6d);color:#fff;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;white-space:nowrap;}
+</style>
 <style>.footlinks{align-items:stretch;}.footlinks>a{display:inline-flex;align-items:center;box-sizing:border-box;}</style></head>
 <body class="src-beatleader">
 
@@ -1270,6 +1285,15 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </div>
     </section>
 
+    <!-- Playlist Stats -->
+    <section class="panel" id="statsPanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><h2>Playlist Stats</h2><span class="ph-new">New</span></div>
+      <div class="panel-sub">A quick read on the shape of your current playlist: star spread, pacing and balance.</div>
+      <div class="panel-body">
+        <div id="statsBody"><p class="feat-empty">Add songs to see your playlist stats.</p></div>
+      </div>
+    </section>
+
     <!-- Playlist Library -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><h2>Playlist Library</h2></div>
@@ -1450,7 +1474,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-04T10:29:31Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:24:41Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2355,6 +2379,7 @@ window.PP = (function () {
    'ppCalc','ppCalcStars','ppCalcNote','ppCalcGrid','ppAccInput','ppAccChips','ppMods','ppResult','ppValue','ppBreakdown','ppReference',
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
    'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint','topChips','topHint',
+   'statsBody',
    'toast','tipbox'
   ].forEach(function (id) { el[id] = $(id); });
 
@@ -3336,10 +3361,56 @@ window.PP = (function () {
     }
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
   }
-  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); saveSession(); }
+  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); renderStats(); saveSession(); }
   // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
   // is unchanged, so the (expensive) Search Results list doesn't need re-rendering.
-  function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); saveSession(); }
+  function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); renderStats(); saveSession(); }
+
+  // ---- Playlist Stats -------------------------------------------------------
+  function renderStats() {
+    var box = el.statsBody; if (!box) return;
+    var b = state.basket;
+    if (!b.length) { box.innerHTML = '<p class="feat-empty">Add songs to see your playlist stats.</p>'; return; }
+    var seen = {}, u = [];
+    b.forEach(function (e) { var h = (e.hash || '').toLowerCase(); if (h && !seen[h]) { seen[h] = 1; u.push(e); } if (!h) u.push(e); });
+    var n = uniqueHashes(b) || u.length;
+    var starVals = u.filter(function (e) { return e.stars > 0; }).map(function (e) { return e.stars; });
+    var avgStar = starVals.length ? starVals.reduce(function (a, c) { return a + c; }, 0) / starVals.length : 0;
+    var mappers = {}; u.forEach(function (e) { if (e.mapper) mappers[e.mapper.toLowerCase()] = 1; });
+    var acc = state.ppAcc || 95, ppVals = [];
+    u.forEach(function (e) { if (PP.isRanked(e)) { var p = PP.ppFor(e, acc, ''); if (p != null) ppVals.push(p); } });
+    var avgPp = ppVals.length ? ppVals.reduce(function (a, c) { return a + c; }, 0) / ppVals.length : 0;
+    var rt = fmtDur(basketRuntime());
+    var tiles = [['Songs', n], ['Runtime', rt], ['Avg \u2605', avgStar ? avgStar.toFixed(1) : '\u2014'], ['Avg PP', avgPp ? Math.round(avgPp) : '\u2014'], ['Mappers', Object.keys(mappers).length]];
+    var html = '<div class="feat-tiles">' + tiles.map(function (t) { return '<div class="feat-tile"><div class="ft-v">' + t[1] + '</div><div class="ft-l">' + t[0] + '</div></div>'; }).join('') + '</div>';
+    if (starVals.length) {
+      var bins = []; var i; for (i = 0; i < 12; i++) bins.push(0);
+      starVals.forEach(function (s) { var k = Math.floor(s); if (k < 0) k = 0; if (k > 11) k = 11; bins[k]++; });
+      var maxBin = 0; bins.forEach(function (v, j) { if (v) maxBin = j; });
+      bins = bins.slice(0, Math.max(6, maxBin + 1));
+      var mx = 0; bins.forEach(function (v) { if (v > mx) mx = v; }); if (!mx) mx = 1;
+      var W = 260, barW = Math.floor((W - (bins.length - 1) * 4) / bins.length), H = 70;
+      var svg = '<svg viewBox="0 0 ' + W + ' ' + (H + 16) + '" class="feat-chart feat-bars" preserveAspectRatio="none">';
+      bins.forEach(function (v, j) { var h = Math.round(v / mx * H); var x = j * (barW + 4); var col = j < 6 ? '#2f8cff' : '#ff4d6d'; svg += '<rect x="' + x + '" y="' + (H - h) + '" width="' + barW + '" height="' + h + '" rx="2" fill="' + col + '" opacity="0.85"/>'; svg += '<text x="' + (x + barW / 2) + '" y="' + (H + 12) + '" fill="#5a6273" font-size="8" font-family="monospace" text-anchor="middle">' + (j + 1) + (j === bins.length - 1 ? '+' : '') + '</text>'; });
+      svg += '</svg>';
+      html += '<div class="feat-lbl">Star distribution</div>' + svg;
+    }
+    var npsVals = u.filter(function (e) { return e.nps > 0; }).map(function (e) { return e.nps; }).sort(function (a, c) { return a - c; });
+    if (npsVals.length > 2) {
+      var W2 = 260, H2 = 48, mx2 = 0; npsVals.forEach(function (v) { if (v > mx2) mx2 = v; }); if (!mx2) mx2 = 1;
+      var pts = npsVals.map(function (v, j) { var x = j / (npsVals.length - 1) * W2; var y = H2 - v / mx2 * H2; return x.toFixed(1) + ' ' + y.toFixed(1); });
+      var d = 'M ' + pts.join(' L ');
+      html += '<div class="feat-lbl">NPS spread (sorted)</div><svg viewBox="0 0 ' + W2 + ' ' + H2 + '" class="feat-chart feat-line" preserveAspectRatio="none"><path d="' + d + ' L ' + W2 + ' ' + H2 + ' L 0 ' + H2 + ' Z" fill="#1e6bff" opacity="0.1"/><path d="' + d + '" fill="none" stroke="#2f8cff" stroke-width="2"/></svg>';
+    }
+    var tr = 0, pr = 0, cnt = 0;
+    u.forEach(function (e) { if ((e.techRating || 0) > 0 || (e.passRating || 0) > 0) { tr += e.techRating || 0; pr += e.passRating || 0; cnt++; } });
+    if (cnt >= 3 && (tr + pr) > 0) {
+      var techPct = Math.round(tr / (tr + pr) * 100), spdPct = 100 - techPct;
+      html += '<div class="feat-lbl">Tech vs Speed</div><div class="feat-bal"><div class="fb-tech" style="width:' + techPct + '%">Tech ' + techPct + '%</div><div class="fb-spd">Speed ' + spdPct + '%</div></div>';
+    }
+    box.innerHTML = html;
+  }
+
 
   // ---- cover ----------------------------------------------------------------
   function coverSubtitle() {
