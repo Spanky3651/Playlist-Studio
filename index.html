@@ -823,6 +823,16 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .feat-srow .me{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px;}
 .feat-srow .pp{font-family:var(--mono);font-size:11px;font-weight:800;color:#fff;background:linear-gradient(180deg,#14916b,#0c5f45);padding:3px 8px;border-radius:6px;white-space:nowrap;}
 .feat-plan-hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.5;margin:10px 0 0;}
+.feat-plan-list{max-height:320px;overflow:auto;margin-top:6px;}
+.feat-prow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2);margin-top:7px;}
+.feat-prow-main{flex:1;min-width:0;cursor:pointer;}
+.feat-prow-main:hover .nm{color:#cfe4ff;}
+.feat-prow .nm{font-size:13px;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.feat-prow .me{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px;}
+.feat-prow .me .g{color:#5be08a;font-weight:700;}
+.feat-prow-add{flex:none;font-family:var(--mono);font-size:11px;font-weight:700;padding:6px 12px;border-radius:7px;border:1px solid var(--blue);background:#1e6bff1a;color:#cfe4ff;cursor:pointer;}
+.feat-prow-add:hover{background:#1e6bff33;}
+.feat-prow-add.added{border-color:#1c5c37;background:#123d24;color:#5be08a;cursor:default;}
 .wn-back{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .wn-back.show{opacity:1;pointer-events:auto;}
 .wn-card{width:100%;max-width:450px;background:var(--panel);border:1px solid var(--border-2);border-radius:16px;box-shadow:0 20px 70px -20px rgba(30,107,255,.5),0 0 0 1px #000;overflow:hidden;max-height:88vh;display:flex;flex-direction:column;}
@@ -1558,7 +1568,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:29:45Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:36:56Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3596,25 +3606,39 @@ window.PP = (function () {
   }
 
   // ---- Rank-Up Planner -----------------------------------------------------
-  var plannerMode = 'add', plannerAcc = 'pred';
+  var plannerMode = 'add', plannerAcc = 'pred', plannerPicked = [], plannerProjHtml = '';
   function plannerFail(msg) { state.fetching = false; if (el.plannerRunBtn) el.plannerRunBtn.disabled = false; setStatus('Could not plan', 'warn'); if (el.plannerBody) el.plannerBody.innerHTML = '<p class="feat-empty">' + esc(msg) + '</p>'; toast(msg, 'warn'); }
   function plannerNet() { state.fetching = false; if (el.plannerRunBtn) el.plannerRunBtn.disabled = false; setStatus('Lookup failed', 'warn'); toast('Could not reach BeatLeader to build your plan.', 'err'); }
+  function planInBasket(e) { for (var i = 0; i < state.basket.length; i++) { if (keyOf(state.basket[i]) === keyOf(e)) return true; } return false; }
   function plannerResult(base, curW, picked, neededGain) {
+    plannerPicked = picked || [];
+    if (!plannerPicked.length) { plannerProjHtml = ''; el.plannerBody.innerHTML = '<p class="feat-empty">No unplayed ranked maps found to build a plan. Try a wider Star Rating range.</p>'; setStatus('No plan', 'warn'); return; }
     var realPP = (state.player && state.player.pp) || base;
     var gain = curW - base, newTotal = realPP + gain;
     var curRank = (state.player && state.player.rank) || 0;
     var projRank = curRank > 0 ? Math.max(1, Math.round(curRank * Math.pow(realPP / (newTotal || realPP || 1), 2.1))) : 0;
-    if (!picked.length) { el.plannerBody.innerHTML = '<p class="feat-empty">No unplayed ranked maps found to build a plan. Try a wider Star Rating range.</p>'; setStatus('No plan', 'warn'); return; }
     var reached = gain + 0.0001 >= neededGain;
-    var dur = 0; picked.forEach(function (e) { dur += e.duration || 0; });
+    var dur = 0; plannerPicked.forEach(function (e) { dur += e.duration || 0; });
     var accNote = plannerAcc === 'pred' ? 'your predicted acc' : plannerAcc + '% each';
-    var html = '<div class="feat-proj' + (reached ? '' : ' short') + '">';
-    if (projRank) { var spots = curRank - projRank; html += '<div class="big">&rarr; <b>~#' + projRank.toLocaleString() + '</b> global</div><div class="delta">+' + Math.round(gain) + ' pp projected' + (spots > 0 ? ' \u00b7 up ~' + spots.toLocaleString() + ' spots' : '') + '</div>'; }
-    else html += '<div class="big">+' + Math.round(gain) + ' <b>pp</b></div><div class="delta">new total ~' + Math.round(newTotal).toLocaleString() + ' pp</div>';
-    html += '<div class="note">play all ' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' \u00b7 ' + accNote + ' \u00b7 ~' + fmtDur(dur) + ' of play' + (reached ? '' : ' \u00b7 goal not fully reached, widen your star range or lower the goal') + '</div></div>';
-    html += '<p class="feat-plan-hint">' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + ' loaded into <b>Results</b> with their PP gains - add the ones you want, preview any of them, or hit <b>+ Add all</b> there to take the whole plan.</p>';
-    el.plannerBody.innerHTML = html;
+    var h = '<div class="feat-proj' + (reached ? '' : ' short') + '">';
+    if (projRank) { var spots = curRank - projRank; h += '<div class="big">&rarr; <b>~#' + projRank.toLocaleString() + '</b> global</div><div class="delta">+' + Math.round(gain) + ' pp projected' + (spots > 0 ? ' \u00b7 up ~' + spots.toLocaleString() + ' spots' : '') + '</div>'; }
+    else h += '<div class="big">+' + Math.round(gain) + ' <b>pp</b></div><div class="delta">new total ~' + Math.round(newTotal).toLocaleString() + ' pp</div>';
+    h += '<div class="note">play all ' + plannerPicked.length + ' map' + (plannerPicked.length === 1 ? '' : 's') + ' \u00b7 ' + accNote + ' \u00b7 ~' + fmtDur(dur) + ' of play' + (reached ? '' : ' \u00b7 goal not fully reached, widen your star range or lower the goal') + '</div></div>';
+    plannerProjHtml = h;
+    renderPlannerList();
     setStatus(reached ? 'Plan ready' : 'Partial plan', reached ? 'on' : 'warn');
+  }
+  function renderPlannerList() {
+    if (!el.plannerBody || !plannerPicked.length) return;
+    var html = plannerProjHtml + '<div class="feat-plan-list">';
+    var remaining = 0;
+    plannerPicked.forEach(function (e, i) {
+      var added = planInBasket(e); if (!added) remaining++;
+      html += '<div class="feat-prow"><div class="feat-prow-main" data-pli="' + i + '" title="Preview this map"><div class="nm">' + esc(e.songName) + '</div><div class="me">' + esc(e.mapper || '') + (e.stars ? ' \u00b7 ' + e.stars.toFixed(1) + '\u2605' : '') + ' \u00b7 <span class="g">+' + Math.round(e._marg) + ' pp</span></div></div><button type="button" class="feat-prow-add' + (added ? ' added' : '') + '" data-pladd="' + i + '"' + (added ? ' disabled' : '') + '>' + (added ? 'Added' : 'Add') + '</button></div>';
+    });
+    html += '</div>';
+    html += '<button type="button" class="primary" id="plannerAddAllBtn" style="width:100%;margin-top:12px;"' + (remaining ? '' : ' disabled') + '>' + (remaining ? '\u2605 Add all ' + plannerPicked.length + ' to Your Playlist' : 'All ' + plannerPicked.length + ' added \u2713') + '</button>';
+    el.plannerBody.innerHTML = html;
   }
   function plannerRun() {
     var id = (state.player && state.player.id) || '';
@@ -3661,15 +3685,11 @@ window.PP = (function () {
           merged.splice(lo, 0, e._proj);
           var nw = recWeighted(merged), marg = nw - curW;
           if (marg <= 0.01) continue;
-          e._marg = marg; e._rec = { gain: marg, predAcc: e._pa, projPP: e._proj, conf: (e.stars <= M.maxStar ? 'ok' : 'ext') }; working = merged; curW = nw; picked.push(e);
+          e._marg = marg; working = merged; curW = nw; picked.push(e);
         }
         state.fetching = false; if (el.plannerRunBtn) el.plannerRunBtn.disabled = false;
         plannerResult(base, curW, picked, neededGain);
-        if (picked.length) {
-          state.viewMode = 'recommend'; state.raw = picked; state.fetched = true; state.filtered = picked.slice(); state.lastSig = 'plan:' + id;
-          renderResults(); renderSummary(); renderControls();
-          toast('Planned ' + picked.length + ' maps. They are in Results with their PP gains - add the ones you want, or use Add all.', 'ok');
-        }
+        if (picked.length) toast('Planned ' + picked.length + ' map' + (picked.length === 1 ? '' : 's') + '. Add them from the plan, or hit Add all.', 'ok');
       }, plannerNet);
     }, plannerNet);
   }
@@ -4933,6 +4953,13 @@ window.PP = (function () {
     if (el.plannerModeChips) el.plannerModeChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-mode]'); if (!c) return; plannerMode = c.getAttribute('data-pl-mode'); setChipOn(el.plannerModeChips, c); if (el.plannerGoalLabel) el.plannerGoalLabel.textContent = plannerMode === 'add' ? 'PP to gain' : 'Target total PP'; if (el.plannerGoal) el.plannerGoal.placeholder = plannerMode === 'add' ? 'e.g. 500' : 'e.g. 11000'; });
     if (el.plannerAccChips) el.plannerAccChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-acc]'); if (!c) return; plannerAcc = c.getAttribute('data-pl-acc'); setChipOn(el.plannerAccChips, c); });
     if (el.plannerRunBtn) el.plannerRunBtn.addEventListener('click', plannerRun);
+    if (el.plannerBody) el.plannerBody.addEventListener('click', function (e) {
+      var addOne = e.target.closest('[data-pladd]');
+      if (addOne) { var i = +addOne.getAttribute('data-pladd'); var ent = plannerPicked[i]; if (ent && addEntryStrict(ent)) renderBasketArea(); renderPlannerList(); return; }
+      if (e.target.closest('#plannerAddAllBtn')) { var before = state.basket.length; plannerPicked.forEach(function (en) { addEntryStrict(en); }); var added = state.basket.length - before; if (added) renderBasketArea(); renderPlannerList(); toast(added ? 'Added ' + added + ' map' + (added === 1 ? '' : 's') + ' from your plan.' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn'); return; }
+      var prev = e.target.closest('[data-pli]');
+      if (prev) { var j = +prev.getAttribute('data-pli'); var en2 = plannerPicked[j]; if (en2) openPreview(en2); }
+    });
     var _wnClose = document.getElementById('whatsnewClose'); if (_wnClose) _wnClose.addEventListener('click', closeWhatsNew);
     var _wnBack = document.getElementById('whatsnewBack'); if (_wnBack) _wnBack.addEventListener('click', function (e) { if (e.target === _wnBack) closeWhatsNew(); });
     el.clearBasketBtn.addEventListener('click', clearBasket);
