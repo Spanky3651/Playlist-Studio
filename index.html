@@ -1568,7 +1568,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:36:56Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:37:51Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3704,7 +3704,7 @@ window.PP = (function () {
   }
   function closeWhatsNew() { var back = document.getElementById('whatsnewBack'); if (back) { back.classList.remove('show'); setTimeout(function () { back.hidden = true; }, 200); } }
 
-  function featRefresh() { renderStats(); renderRampPreview(); renderShare(); }
+  function featRefresh() { renderStats(); renderRampPreview(); renderShare(); if (plannerPicked.length) renderPlannerList(); }
 
   // ---- Playlist Stats -------------------------------------------------------
   function renderStats() {
