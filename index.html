@@ -808,6 +808,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .feat-chip:hover{border-color:var(--blue);color:#cfe4ff;}
 .feat-chip.on{border-color:var(--blue);color:#cfe4ff;background:#1e6bff1a;}
 .feat-ramp-note{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;}
+#shareLink{width:100%;font-family:var(--mono);font-size:12px;}
+#shareImportInput{flex:1;font-family:var(--mono);font-size:12px;}
 </style>
 <style>.footlinks{align-items:stretch;}.footlinks>a{display:inline-flex;align-items:center;box-sizing:border-box;}</style></head>
 <body class="src-beatleader">
@@ -1321,6 +1323,19 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </div>
     </section>
 
+    <!-- Share by link -->
+    <section class="panel" id="sharePanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share Playlist</h2><span class="ph-new">New</span></div>
+      <div class="panel-sub">Pack this playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools and sending a set to a friend.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Your share link</label>
+          <input type="text" id="shareLink" readonly placeholder="Add songs to build a share link" /></div>
+        <div class="preset-row"><button class="ghost sm" id="shareCopyBtn" disabled>&#8690; Copy link</button><span class="muted" id="shareInfo" style="font-family:var(--mono);font-size:11px;"></span></div>
+        <div class="feat-lbl" style="margin-top:14px;">Import a shared playlist</div>
+        <div class="preset-row"><input type="text" id="shareImportInput" placeholder="Paste a share link or code…" /><button class="ghost sm" id="shareImportBtn">Import</button></div>
+      </div>
+    </section>
+
     <!-- Refine Playlist -->
     <section class="panel" id="panelRefine" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
@@ -1496,7 +1511,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:27:49Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T11:30:33Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -2402,6 +2417,7 @@ window.PP = (function () {
    'ppPanel','ppFilterAcc','ppFilterMods','ppMin','ppMax','ppFilterState',
    'introPanel','playFilterBar','playChips','playBarHint','playConnectJump','scanChips','scanHint','topChips','topHint',
    'statsBody','rampPreview','rampByChips','rampDirChips','rampApplyBtn',
+   'shareLink','shareCopyBtn','shareInfo','shareImportInput','shareImportBtn',
    'toast','tipbox'
   ].forEach(function (id) { el[id] = $(id); });
 
@@ -3413,7 +3429,50 @@ window.PP = (function () {
     toast('Ramped by ' + (rampBy === 'nps' ? 'NPS' : 'stars') + ' (' + (rampDir === 'up' ? 'warmup \u2192 peak' : 'peak \u2192 cooldown') + ').', 'ok');
     renderBasketArea();
   }
-  function featRefresh() { renderStats(); renderRampPreview(); }
+  // ---- Share by link -------------------------------------------------------
+  function b64enc(str) { return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function b64dec(b) { b = String(b).replace(/-/g, '+').replace(/_/g, '/'); while (b.length % 4) b += '='; return decodeURIComponent(escape(atob(b))); }
+  function buildShareStr() {
+    var seen = {}, arr = [];
+    state.basket.forEach(function (e) { var h = e.hash || ''; if (!h) return; var k = h.toLowerCase(); if (seen[k]) return; seen[k] = 1; arr.push([h, e.difficultyName || '', e.modeName || 'Standard']); });
+    var payload = { v: 1, t: (el.metaTitle.value || '').slice(0, 120), a: (el.metaAuthor.value || '').slice(0, 80), s: arr };
+    return b64enc(JSON.stringify(payload));
+  }
+  function buildShareLink() { return location.origin + location.pathname + '#p=' + buildShareStr(); }
+  function renderShare() {
+    if (!el.shareLink) return;
+    var seen = {}, n = 0; state.basket.forEach(function (e) { var h = (e.hash || '').toLowerCase(); if (h && !seen[h]) { seen[h] = 1; n++; } });
+    if (!n) { el.shareLink.value = ''; if (el.shareCopyBtn) el.shareCopyBtn.disabled = true; if (el.shareInfo) el.shareInfo.textContent = ''; return; }
+    var link = buildShareLink(); el.shareLink.value = link;
+    if (el.shareCopyBtn) el.shareCopyBtn.disabled = false;
+    if (el.shareInfo) el.shareInfo.textContent = n + ' map' + (n === 1 ? '' : 's') + ' packed \u00b7 ~' + (Math.max(1, Math.round(link.length / 1024 * 10) / 10)) + ' KB';
+  }
+  function copyShareLink() {
+    var v = el.shareLink.value; if (!v) return;
+    function fallback() { el.shareLink.removeAttribute('readonly'); el.shareLink.select(); try { document.execCommand('copy'); toast('Share link copied.', 'ok'); } catch (e) { toast('Press Ctrl/Cmd+C to copy.', 'warn'); } el.shareLink.setAttribute('readonly', 'readonly'); window.getSelection && window.getSelection().removeAllRanges(); }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(v).then(function () { toast('Share link copied.', 'ok'); }, fallback); } else { fallback(); }
+  }
+  function importFromShareStr(str) {
+    var raw = String(str || '').trim(); if (!raw) { toast('Paste a share link or code first.', 'warn'); return 0; }
+    var m = raw.match(/[#?&]p=([^&\s]+)/); if (m) raw = m[1];
+    var payload; try { payload = JSON.parse(b64dec(raw)); } catch (e) { toast("That doesn't look like a Playlist Studio share link.", 'err'); return 0; }
+    if (!payload || !Array.isArray(payload.s)) { toast('That share link is empty or invalid.', 'err'); return 0; }
+    var before = state.basket.length;
+    payload.s.forEach(function (row) { var h = row && row[0]; if (!h) return; addEntryStrict({ leaderboardId: '', hash: h, songName: 'Loading\u2026', subName: '', mapper: '', author: '', bpm: 0, duration: 0, cover: '', stars: 0, difficultyName: row[1] || '', modeName: row[2] || 'Standard', nps: 0, notes: 0, techRating: 0, accRating: 0, passRating: 0 }); });
+    var added = state.basket.length - before;
+    if (payload.t && (!el.metaTitle.value.trim() || el.metaTitle.value.trim() === DEFAULT_TITLE)) { el.metaTitle.value = payload.t; state.descAuto = state.descAuto; }
+    renderAll();
+    if (added) { toast('Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from a share link. Filling in details\u2026', 'ok'); if (typeof enrichImported === 'function') enrichImported(); }
+    else toast('Those maps are already in your playlist.', 'warn');
+    return added;
+  }
+  function checkShareOnLoad() {
+    var h = location.hash || ''; var m = h.match(/[#&]p=([^&]+)/); if (!m) return;
+    var code = m[1]; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    importFromShareStr(code);
+  }
+
+  function featRefresh() { renderStats(); renderRampPreview(); renderShare(); }
 
   // ---- Playlist Stats -------------------------------------------------------
   function renderStats() {
@@ -4655,6 +4714,8 @@ window.PP = (function () {
     if (el.rampByChips) el.rampByChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-by]'); if (!c) return; rampBy = c.getAttribute('data-ramp-by'); setChipOn(el.rampByChips, c); renderRampPreview(); });
     if (el.rampDirChips) el.rampDirChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-dir]'); if (!c) return; rampDir = c.getAttribute('data-ramp-dir'); setChipOn(el.rampDirChips, c); renderRampPreview(); });
     if (el.rampApplyBtn) el.rampApplyBtn.addEventListener('click', applyRamp);
+    if (el.shareCopyBtn) el.shareCopyBtn.addEventListener('click', copyShareLink);
+    if (el.shareImportBtn) el.shareImportBtn.addEventListener('click', function () { importFromShareStr(el.shareImportInput.value); el.shareImportInput.value = ''; });
     el.clearBasketBtn.addEventListener('click', clearBasket);
     el.clearResultsBtn.addEventListener('click', clearSearch);
     el.enrichBtn.addEventListener('click', enrichImported);
@@ -4781,7 +4842,7 @@ window.PP = (function () {
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI();
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); updateScanHint(); setStatus('Ready', 'on');
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on');
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
