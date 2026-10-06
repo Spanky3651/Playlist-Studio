@@ -773,7 +773,10 @@ body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5
 <style>
 /* Ko-fi support button (shared across MSploit tools) */
 a.kofi-support{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:11px;font-family:system-ui,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:800;letter-spacing:.2px;text-decoration:none;color:#fff;background:#060607;border:1px solid #2a2a2a;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;}
-a.kofi-support .kofi-heart{font-size:15px;line-height:1;}
+a.kofi-support .kofi-heart{font-size:15px;line-height:1;display:inline-block;transform-origin:center center;will-change:transform;}
+@keyframes kofiBeat{0%{transform:scale(1);}14%{transform:scale(1.32);}28%{transform:scale(1);}42%{transform:scale(1.22);}60%{transform:scale(1);}100%{transform:scale(1);}}
+a.kofi-support .kofi-heart.beat,a.kofi-support:hover .kofi-heart{animation:kofiBeat .95s ease-in-out;}
+@media (prefers-reduced-motion:reduce){a.kofi-support .kofi-heart.beat,a.kofi-support:hover .kofi-heart{animation:none;}}
 a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:0 8px 24px -8px rgba(255,39,64,.55);color:#fff;text-decoration:none;}
 </style>
 <style>
@@ -1568,7 +1571,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-06T11:19:45Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-06T18:00:36Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -5123,6 +5126,21 @@ window.PP = (function () {
   try { elu.title = new Date(then).toLocaleString(); } catch (e) {}
   tick();
   setInterval(tick, 60000);
+})();
+
+/* Ko-fi heart: beat once when it scrolls into view (hover beat is CSS-only). */
+(function () {
+  var h = document.querySelector('a.kofi-support .kofi-heart');
+  if (!h) return;
+  h.addEventListener('animationend', function () { h.classList.remove('beat'); });
+  function beat() { void h.offsetWidth; h.classList.add('beat'); }
+  if (!('IntersectionObserver' in window)) { return; }
+  var io = new IntersectionObserver(function (ents) {
+    ents.forEach(function (e) {
+      if (e.isIntersecting) { beat(); io.disconnect(); }
+    });
+  }, { threshold: 0.9 });
+  io.observe(h);
 })();
 
 /* Footer live usage counter — total visits from GoatCounter's public counter endpoint
