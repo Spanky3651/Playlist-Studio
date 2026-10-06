@@ -1568,7 +1568,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-05T15:37:51Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-06T11:19:45Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3448,9 +3448,9 @@ window.PP = (function () {
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.disabled = !hasBasket; });
   }
   function buildAutoDesc() {
-    var f = getFilters(), uniq = uniqueHashes(state.basket);
-    return uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' +
-      (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★') + '. Built with Playlist Studio (BeatLeader).';
+    var uniq = uniqueHashes(state.basket), st = playlistStats();
+    var starPart = st ? (st.min === st.max ? st.min.toFixed(1) + '★' : st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★') : 'unranked';
+    return uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' + starPart + '. Built with Playlist Studio (BeatLeader).';
   }
   function isAutoDesc(text) { return !text || !String(text).trim() || /Built with Playlist Studio/.test(text); }
   function refreshAutoDesc() {
