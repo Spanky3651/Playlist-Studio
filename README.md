@@ -1,6 +1,6 @@
 # 🎵 Playlist Studio
 
-**A Beat Saber playlist builder that searches [BeatLeader](https://beatleader.xyz) and [BeatSaver](https://beatsaver.com).**
+**A Beat Saber playlist tool and builder that searches [BeatLeader](https://beatleader.xyz) and [BeatSaver](https://beatsaver.com).**
 Filter the ranked catalog by star rating, mapper, NPS and more - or flip to the BeatSaver catalog and build by **tags** (tech, speed, genres) including unranked maps. Curate the maps you actually want, preview them in-app, see your own scores on every map, and export a ready-to-play `.bplist` - all from a single self-contained HTML file.
 
 ![Playlist Studio interface](screenshot.png)
