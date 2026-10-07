@@ -989,57 +989,6 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </div>
     </section>
 
-    <!-- PP Filter -->
-    <section class="panel bl-only" id="recPanel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>PP Optimizer</h2><span class="count" id="recState"></span></div>
-      <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
-        <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
-        <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:block;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
-        <div id="recFit" class="rec-fit"></div>
-        <div style="margin-top:12px;"><button type="button" class="primary" id="recRun">Find PP gains</button></div>
-      </div>
-    </section>
-
-    <!-- Rank-Up Planner -->
-    <section class="panel bl-only" id="plannerPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Rank-Up Planner</h2></div>
-      <div class="panel-sub">Set a goal and get the fewest ranked maps that reach it, with a projected new PP and rank. Needs your BeatLeader profile connected. Projections reuse the PP Optimizer's accuracy model.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Goal</label>
-          <div class="feat-chips" id="plannerModeChips"><span class="feat-chip on" data-pl-mode="add">+ PP</span><span class="feat-chip" data-pl-mode="total">Goal PP</span></div>
-        </div>
-        <div class="field"><label class="field-label" id="plannerGoalLabel">PP to gain</label>
-          <input type="number" id="plannerGoal" min="1" step="10" placeholder="e.g. 500" /></div>
-        <div class="field"><label class="field-label">Accuracy <span class="info" data-tip="Predicted uses the same star-vs-accuracy fit as the PP Optimizer. Or pin a fixed target accuracy for every map.">i</span></label>
-          <div class="feat-chips" id="plannerAccChips"><span class="feat-chip on" data-pl-acc="pred">Predicted</span><span class="feat-chip" data-pl-acc="94">94%</span><span class="feat-chip" data-pl-acc="96">96%</span><span class="feat-chip" data-pl-acc="98">98%</span></div>
-        </div>
-        <div id="plannerBody"></div>
-        <div style="margin-top:12px;"><button type="button" class="primary" id="plannerRunBtn" style="width:100%;">&#9678; Plan my rank-up</button></div>
-      </div>
-    </section>
-
-
-    <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
-      <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
-      <div class="panel-body">
-        <div class="grid-2">
-          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top — 99% is worth far more than 95%.">i</span></label>
-            <div class="pp-acc-input"><input type="number" id="ppFilterAcc" min="1" max="100" step="0.5" value="95" /><span class="pp-pct">%</span></div></div>
-          <div class="field"><label class="field-label">Speed <span class="info" data-tip="Evaluate PP at this speed. FS (Faster) and SF (Super Fast) re-rate the map higher, so more PP; SS (Slower) lowers it. A map not rated for the chosen speed is skipped by the PP range filter.">i</span></label>
-            <div class="pp-mods" id="ppFilterMods"></div></div>
-        </div>
-        <div class="metric-row">
-          <span class="metric-name">PP range <span class="info" data-tip="Keep only ranked maps whose estimated raw PP (at the accuracy and speed above) falls in this range. Blank = no bound. Unranked maps are excluded while a bound is set.">i</span></span>
-          <input type="number" id="ppMin" min="0" step="10" placeholder="min" />
-          <span class="dash">–</span>
-          <input type="number" id="ppMax" min="0" step="10" placeholder="max" />
-        </div>
-      </div>
-    </section>
-
     <!-- Tags (BeatSaver) -->
     <section class="panel bs-only">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><h2>Tags</h2></div>
@@ -1245,6 +1194,57 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <select id="presetSelect"><option value="">— saved presets —</option></select>
           <button class="ghost sm" id="presetLoad">Load</button>
           <button class="ghost sm danger" id="presetDelete">Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Advanced: PP tools (below the core filters) -->
+    <section class="panel bl-only" id="recPanel" data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>PP Optimizer</h2><span class="count" id="recState"></span></div>
+      <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
+        <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
+        <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:block;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
+        <div id="recFit" class="rec-fit"></div>
+        <div style="margin-top:12px;"><button type="button" class="primary" id="recRun">Find PP gains</button></div>
+      </div>
+    </section>
+
+    <!-- Rank-Up Planner -->
+    <section class="panel bl-only" id="plannerPanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Rank-Up Planner</h2></div>
+      <div class="panel-sub">Set a goal and get the fewest ranked maps that reach it, with a projected new PP and rank. Needs your BeatLeader profile connected. Projections reuse the PP Optimizer's accuracy model.</div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Goal</label>
+          <div class="feat-chips" id="plannerModeChips"><span class="feat-chip on" data-pl-mode="add">+ PP</span><span class="feat-chip" data-pl-mode="total">Goal PP</span></div>
+        </div>
+        <div class="field"><label class="field-label" id="plannerGoalLabel">PP to gain</label>
+          <input type="number" id="plannerGoal" min="1" step="10" placeholder="e.g. 500" /></div>
+        <div class="field"><label class="field-label">Accuracy <span class="info" data-tip="Predicted uses the same star-vs-accuracy fit as the PP Optimizer. Or pin a fixed target accuracy for every map.">i</span></label>
+          <div class="feat-chips" id="plannerAccChips"><span class="feat-chip on" data-pl-acc="pred">Predicted</span><span class="feat-chip" data-pl-acc="94">94%</span><span class="feat-chip" data-pl-acc="96">96%</span><span class="feat-chip" data-pl-acc="98">98%</span></div>
+        </div>
+        <div id="plannerBody"></div>
+        <div style="margin-top:12px;"><button type="button" class="primary" id="plannerRunBtn" style="width:100%;">&#9678; Plan my rank-up</button></div>
+      </div>
+    </section>
+
+
+    <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
+      <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top — 99% is worth far more than 95%.">i</span></label>
+            <div class="pp-acc-input"><input type="number" id="ppFilterAcc" min="1" max="100" step="0.5" value="95" /><span class="pp-pct">%</span></div></div>
+          <div class="field"><label class="field-label">Speed <span class="info" data-tip="Evaluate PP at this speed. FS (Faster) and SF (Super Fast) re-rate the map higher, so more PP; SS (Slower) lowers it. A map not rated for the chosen speed is skipped by the PP range filter.">i</span></label>
+            <div class="pp-mods" id="ppFilterMods"></div></div>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">PP range <span class="info" data-tip="Keep only ranked maps whose estimated raw PP (at the accuracy and speed above) falls in this range. Blank = no bound. Unranked maps are excluded while a bound is set.">i</span></span>
+          <input type="number" id="ppMin" min="0" step="10" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="ppMax" min="0" step="10" placeholder="max" />
         </div>
       </div>
     </section>
@@ -1571,7 +1571,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-06T18:36:02Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-07T11:01:52Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -4893,6 +4893,16 @@ window.PP = (function () {
   }
 
   // ---- wiring ---------------------------------------------------------------
+  function firstVisitIntro() {
+    try {
+      if (!localStorage.getItem('playlistStudio.introSeen.v1')) {
+        var ip = document.getElementById('introPanel');
+        if (ip) ip.open = true;
+        localStorage.setItem('playlistStudio.introSeen.v1', '1');
+      }
+    } catch (e) {}
+  }
+
   function init() {
     [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.addEventListener('click', runFetch); });
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.addEventListener('click', doDownload); });
@@ -5091,7 +5101,7 @@ window.PP = (function () {
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI();
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); showWhatsNew();
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); showWhatsNew(); firstVisitIntro();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
