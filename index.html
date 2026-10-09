@@ -1571,7 +1571,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-07T11:01:52Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-09T11:00:31Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -3507,6 +3507,7 @@ window.PP = (function () {
     state.basket.sort(function (a, b) { var d = rampMetric(a) - rampMetric(b); return rampDir === 'down' ? -d : d; });
     toast('Ramped by ' + (rampBy === 'nps' ? 'NPS' : 'stars') + ' (' + (rampDir === 'up' ? 'warmup \u2192 peak' : 'peak \u2192 cooldown') + ').', 'ok');
     if (el.rampUndoBtn) el.rampUndoBtn.hidden = false;
+    track('session-ramp');
     renderBasketArea();
   }
   function undoRamp() {
@@ -3536,6 +3537,7 @@ window.PP = (function () {
   }
   function copyShareLink() {
     var v = el.shareLink.value; if (!v) return;
+    track('share-create');
     function fallback() { el.shareLink.removeAttribute('readonly'); el.shareLink.select(); try { document.execCommand('copy'); toast('Share link copied.', 'ok'); } catch (e) { toast('Press Ctrl/Cmd+C to copy.', 'warn'); } el.shareLink.setAttribute('readonly', 'readonly'); window.getSelection && window.getSelection().removeAllRanges(); }
     if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(v).then(function () { toast('Share link copied.', 'ok'); }, fallback); } else { fallback(); }
   }
@@ -3556,6 +3558,7 @@ window.PP = (function () {
   function checkShareOnLoad() {
     var h = location.hash || ''; var m = h.match(/[#&]p=([^&]+)/); if (!m) return;
     var code = m[1]; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    track('share-open');
     importFromShareStr(code);
   }
 
@@ -3567,6 +3570,7 @@ window.PP = (function () {
     var srcHash = (src.hash || '').toLowerCase();
     var srcMapper = (src.mapper || '').toLowerCase();
     var smin = Math.max(1, +(src.stars - 1.3).toFixed(1)), smax = +(src.stars + 1.3).toFixed(1);
+    track('maps-like-this');
     closePreview();
     state.fetching = true;
     setStatus('Finding maps like ' + src.songName + '\u2026', 'busy');
@@ -3616,6 +3620,7 @@ window.PP = (function () {
   function plannerResult(base, curW, picked, neededGain) {
     plannerPicked = picked || [];
     if (!plannerPicked.length) { plannerProjHtml = ''; el.plannerBody.innerHTML = '<p class="feat-empty">No unplayed ranked maps found to build a plan. Try a wider Star Rating range.</p>'; setStatus('No plan', 'warn'); return; }
+    track('rank-up-plan');
     var realPP = (state.player && state.player.pp) || base;
     var gain = curW - base, newTotal = realPP + gain;
     var curRank = (state.player && state.player.rank) || 0;
@@ -4893,6 +4898,15 @@ window.PP = (function () {
   }
 
   // ---- wiring ---------------------------------------------------------------
+  function bindStatsEvent() {
+    var sp = document.getElementById('statsPanel'); if (!sp) return;
+    var head = sp.querySelector('.panel-head'); if (!head) return;
+    var done = false;
+    head.addEventListener('click', function () {
+      setTimeout(function () { if (!done && !sp.classList.contains('collapsed')) { done = true; track('stats-open'); } }, 0);
+    });
+  }
+
   function firstVisitIntro() {
     try {
       if (!localStorage.getItem('playlistStudio.introSeen.v1')) {
@@ -5101,7 +5115,7 @@ window.PP = (function () {
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI();
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); showWhatsNew(); firstVisitIntro();
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
