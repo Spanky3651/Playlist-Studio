@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://spanky3651.github.io/Playlist-Studio/preview.png" />
 <style>
 /* ============================================================
-   Playlist Studio — styles.css
+   Playlist Studio - styles.css
    Dark-mode Beat Saber console, styled to match the HSV /
    ReeSaber generators: true-black canvas, layered panels,
    mono uppercase labels, self-documenting panel subtitles,
@@ -193,7 +193,7 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
   border:1px solid var(--border);border-radius:var(--r);
   box-shadow:0 2px 0 rgba(0,0,0,.4),inset 0 1px 0 #ffffff06;
   overflow:hidden;
-  flex:none;               /* never let a flex column crush a panel — the sidebar scrolls instead */
+  flex:none;               /* never let a flex column crush a panel - the sidebar scrolls instead */
 }
 .panel-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0e131c,#0a0e15);}
 .panel-head .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue);flex:none;}
@@ -482,7 +482,7 @@ select{cursor:pointer;appearance:none;
 
 /* ---------- List action bars ---------- */
 .list-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:#0a0e15;}
-/* buttons are display:inline-flex, which overrides the [hidden] attribute — restore it */
+/* buttons are display:inline-flex, which overrides the [hidden] attribute - restore it */
 button[hidden],.filebtn[hidden]{display:none !important;}
 .fetch-progress[hidden],.sync-progress[hidden]{display:none !important;}
 .addtop{display:flex;align-items:center;gap:0;}
@@ -649,7 +649,7 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 
 /* ============================================================
    MOBILE ENHANCEMENTS (≤720px). Everything above is unchanged;
-   these rules only take effect on small screens — desktop is
+   these rules only take effect on small screens - desktop is
    never affected. Bottom tab bar switches Filters / Results /
    Playlist so you don't scroll one endless column.
    ============================================================ */
@@ -716,7 +716,7 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 }
 
 /* ============================================================
-   BEAT-SABER ANIMATIONS — gentle, GPU-light, no flashing/strobe.
+   BEAT-SABER ANIMATIONS - gentle, GPU-light, no flashing/strobe.
    Everything is gated behind body.anim, which is OFF under the OS
    "reduce motion" setting or the topbar toggle. When off, the page
    looks exactly as it did before.
@@ -872,7 +872,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
     <button class="ghost anim-toggle" id="animToggle" title="Turn background animations / effects on or off" aria-label="Toggle animations / effects">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 14l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7L19 14z"/></svg></button>
-    <button class="ghost" id="resetBtn" title="Reset search filters — your playlist is kept">
+    <button class="ghost" id="resetBtn" title="Reset search filters - your playlist is kept">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset</button>
     <button class="primary" id="fetchBtn" title="Search BeatLeader for maps that match your filters">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</button>
@@ -892,7 +892,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <button type="button" data-source="beatsaver" role="tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>BeatSaver</button>
     </div>
-    <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> — tech, speed, genres — incl. unranked.</span></p>
+    <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> - tech, speed, genres - incl. unranked.</span></p>
 
     <!-- Intro -->
     <details class="intro" id="introPanel">
@@ -908,14 +908,14 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <span class="arrow">→</span>
           <div class="step"><span class="num">4</span> Export</div>
         </div>
-        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b> (ScoreSaber isn't supported). On the BeatLeader source, if a search ever fails just hit Search again — it connects automatically. BeatSaver search connects directly.</span></div>
+        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b> (ScoreSaber isn't supported). On the BeatLeader source, if a search ever fails just hit Search again - it connects automatically. BeatSaver search connects directly.</span></div>
       </div>
     </details>
 
     <!-- Your Profile (BeatLeader) -->
     <section class="panel" id="profilePanel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h2>Your Profile</h2><span class="count" id="profileState"></span></div>
-      <div class="panel-sub">Connect your <b>BeatLeader</b> profile to see your score on every map and filter by what you've played. Public data only — no login. <b>BeatLeader only</b> — ScoreSaber profiles aren't supported.</div>
+      <div class="panel-sub">Connect your <b>BeatLeader</b> profile to see your score on every map and filter by what you've played. Public data only - no login. <b>BeatLeader only</b> - ScoreSaber profiles aren't supported.</div>
       <div class="panel-body">
         <div id="profileConnect">
           <div class="preset-row">
@@ -934,12 +934,12 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           </div>
           <div class="pcard-actions">
             <button class="ghost sm" id="syncBtn">⟳ Sync scores</button>
-            <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want — no search or import needed.">★ Build from my plays</button>
+            <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want - no search or import needed.">★ Build from my plays</button>
             <button class="ghost sm danger" id="disconnectBtn">Disconnect</button>
           </div>
           <div class="sync-progress" id="syncProgress" hidden><div class="bar"><div class="bar-fill" id="syncBar"></div></div><span id="syncText"></span></div>
           <div class="topplays bl-only">
-            <label class="field-label" style="margin-top:2px;">Top plays &rarr; playlist <span class="info" data-tip="Loads your connected profile's highest-PP (top) plays into the results so you can drop them straight into a playlist — great for grinding your best scores.">i</span></label>
+            <label class="field-label" style="margin-top:2px;">Top plays &rarr; playlist <span class="info" data-tip="Loads your connected profile's highest-PP (top) plays into the results so you can drop them straight into a playlist - great for grinding your best scores.">i</span></label>
             <div class="scan-chips" id="topChips" style="margin-top:6px;">
               <button type="button" data-top="25">Top 25</button>
               <button type="button" data-top="50">Top 50</button>
@@ -992,7 +992,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Tags (BeatSaver) -->
     <section class="panel bs-only">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><h2>Tags</h2></div>
-      <div class="panel-sub">Filter the BeatSaver catalog by tag — this is where <b>poodle / tech / midspeed</b> style lists come from. Click once to <b>require</b> a tag, again to <b>exclude</b> it. BeatSaver has a dedicated <b>Poodle</b> tag, so just click it and Search.</div>
+      <div class="panel-sub">Filter the BeatSaver catalog by tag - this is where <b>poodle / tech / midspeed</b> style lists come from. Click once to <b>require</b> a tag, again to <b>exclude</b> it. BeatSaver has a dedicated <b>Poodle</b> tag, so just click it and Search.</div>
       <div class="panel-body">
         <p class="tag-legend">click cycles: <b>include</b> → <i>exclude</i> → off</p>
         <div class="tag-grid" id="tagChips"><!-- built from BS_TAGS in JS --></div>
@@ -1004,7 +1004,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Star Rating (BeatLeader) -->
     <section class="panel bl-only">
       <div class="panel-head"><span class="ph-ic star"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h2>Star Rating</h2><span class="count" id="starRangeLabel">0.0★ – 15.0★</span></div>
-      <div class="panel-sub">The BeatLeader difficulty window for rated maps. Unranked maps have no stars, so this filter <b>skips</b> them rather than dropping them — set <b>Ranked status → Unranked</b> to build from those.</div>
+      <div class="panel-sub">The BeatLeader difficulty window for rated maps. Unranked maps have no stars, so this filter <b>skips</b> them rather than dropping them - set <b>Ranked status → Unranked</b> to build from those.</div>
       <div class="panel-body">
         <div class="starband"><div class="starband-fill" id="starBandFill"></div></div>
         <div class="slider-row">
@@ -1023,10 +1023,10 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Song Metrics -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Song Metrics</h2></div>
-      <div class="panel-sub">Optional numeric bounds. Blank = no limit. All applied instantly on the scanned set — no re-fetch needed.</div>
+      <div class="panel-sub">Optional numeric bounds. Blank = no limit. All applied instantly on the scanned set - no re-fetch needed.</div>
       <div class="panel-body">
         <div class="metric-row">
-          <span class="metric-name">NPS <span class="info" data-tip="Notes per second — raw density of the map. Higher = more notes thrown at you per second.">i</span></span>
+          <span class="metric-name">NPS <span class="info" data-tip="Notes per second - raw density of the map. Higher = more notes thrown at you per second.">i</span></span>
           <input type="number" id="fNpsMin" min="0" step="0.1" placeholder="min" />
           <span class="dash">–</span>
           <input type="number" id="fNpsMax" min="0" step="0.1" placeholder="max" />
@@ -1049,14 +1049,14 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Search -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
-      <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work — type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
+      <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work - type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Matches the mapper name. On BeatSaver, auto-generated lighting credits like 'Auto Lighter by …' are ignored so they don't flood the results. Example: Bloodcloak, Joetastic">i</span></label>
           <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
-        <div class="field"><label class="field-label">Exclude mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Hides any map whose mapper or artist matches — handy for dropping a mapper you don't want, or catching 'Auto Lighter by X' style credits.">i</span></label>
+        <div class="field"><label class="field-label">Exclude mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Hides any map whose mapper or artist matches - handy for dropping a mapper you don't want, or catching 'Auto Lighter by X' style credits.">i</span></label>
           <input type="text" id="fMapperExclude" placeholder="e.g. jonas, someMapper" /></div>
         <div class="field"><label class="field-label">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
-          <input type="text" id="fSearch" placeholder="e.g. camellia — or a BSR code / link" /></div>
+          <input type="text" id="fSearch" placeholder="e.g. camellia - or a BSR code / link" /></div>
       </div>
     </section>
 
@@ -1082,7 +1082,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg></span><h2>Difficulty</h2>
         <label class="switch head-switch"><input type="checkbox" id="diffEnable" /><span class="track"></span><span class="switch-lbl">Filter on</span></label>
       </div>
-      <div class="panel-sub">Optional — off by default so every difficulty comes through. Turn it on to keep only specific difficulties (e.g. Expert+ only).</div>
+      <div class="panel-sub">Optional - off by default so every difficulty comes through. Turn it on to keep only specific difficulties (e.g. Expert+ only).</div>
       <div class="panel-body">
         <div class="chips diff-chips off" id="diffChips">
           <label class="chip"><input type="checkbox" value="Easy" checked /><span>Easy</span></label>
@@ -1097,10 +1097,10 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Data Source -->
     <section class="panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Search Scope &amp; Sort</h2></div>
-      <div class="panel-sub"><span class="bl-only">Which slice of BeatLeader to search and how to order it.</span><span class="bs-only">How to order the BeatSaver catalog.</span> <b>Sort by</b> only re-orders results — it never changes which maps match.</div>
+      <div class="panel-sub"><span class="bl-only">Which slice of BeatLeader to search and how to order it.</span><span class="bs-only">How to order the BeatSaver catalog.</span> <b>Sort by</b> only re-orders results - it never changes which maps match.</div>
       <div class="panel-body">
         <div class="grid-2">
-          <div class="field bl-only"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline — you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
+          <div class="field bl-only"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline - you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
             <select id="fType">
               <option value="ranked" selected>Ranked</option>
               <option value="unranked">Unranked</option>
@@ -1108,7 +1108,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="qualified">Qualified</option>
               <option value="all">All</option>
             </select></div>
-          <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Latest = newest uploads (best for browsing a tag). Rating = up/down vote score. Curated = hand-picked by curators. Relevance = best text match — only use it with a mapper/keyword search, it returns junk on its own.">i</span></label>
+          <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Latest = newest uploads (best for browsing a tag). Rating = up/down vote score. Curated = hand-picked by curators. Relevance = best text match - only use it with a mapper/keyword search, it returns junk on its own.">i</span></label>
             <select id="bsSort">
               <option value="Latest" selected>Latest</option>
               <option value="Rating">Rating</option>
@@ -1116,7 +1116,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="Relevance">Relevance</option>
             </select></div>
           <label class="switch bs-only" style="align-self:end;padding-bottom:10px;"><input type="checkbox" id="bsCurated" /><span class="track"></span><span class="switch-lbl">Curated only</span></label>
-          <label class="switch bs-only" style="align-self:end;padding-bottom:10px;" title="Hide maps whose lighting was auto-generated (credited as 'Auto Lighter by …' / 'Autolighter'). The note maps are real, only the lighting is auto-made — turn this on to keep them out of your results."><input type="checkbox" id="bsNoAuto" /><span class="track"></span><span class="switch-lbl">Hide auto-lighting maps</span></label>
+          <label class="switch bs-only" style="align-self:end;padding-bottom:10px;" title="Hide maps whose lighting was auto-generated (credited as 'Auto Lighter by …' / 'Autolighter'). The note maps are real, only the lighting is auto-made - turn this on to keep them out of your results."><input type="checkbox" id="bsNoAuto" /><span class="track"></span><span class="switch-lbl">Hide auto-lighting maps</span></label>
           <div class="field bs-only"><label class="field-label">Min rating <small class="muted">(%)</small> <span class="info" data-tip="BeatSaver's weighted up/down vote rating. Set a floor (e.g. 70) to skip poorly-rated maps. Maps with no votes yet are kept.">i</span></label>
             <input type="number" id="bsMinRating" min="0" max="100" step="1" placeholder="e.g. 70" /></div>
           <div class="field bs-only"><label class="field-label">Uploaded <span class="info" data-tip="Keep only maps uploaded within this window. Great for finding fresh maps.">i</span></label>
@@ -1150,7 +1150,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="desc" selected>High → Low</option>
               <option value="asc">Low → High</option>
             </select></div>
-          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull before filtering in your browser. Higher = more thorough but slower — BeatLeader pages 100 at a time, BeatSaver 20. 2,500 is the default; drop to 300 for a quick pull.">i</span></label>
+          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull before filtering in your browser. Higher = more thorough but slower - BeatLeader pages 100 at a time, BeatSaver 20. 2,500 is the default; drop to 300 for a quick pull.">i</span></label>
             <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="2500" /></div>
         </div>
         <div class="scan-chips" id="scanChips">
@@ -1166,15 +1166,15 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <div class="divider bl-only"></div>
         <div class="field bl-only"><label class="field-label">Connection <span class="info" data-tip="BeatLeader blocks direct browser requests (no CORS). Auto tries a direct call first (~4s), then races a pool of relays. Relay skips straight to the race. Direct only works if you host this on a BeatLeader-allowlisted origin. Dead/slow relays are dropped automatically.">i</span></label>
           <select id="connMode">
-            <option value="auto" selected>Auto — direct, then relay race</option>
-            <option value="relay">Relay — race the proxy pool</option>
+            <option value="auto" selected>Auto - direct, then relay race</option>
+            <option value="relay">Relay - race the proxy pool</option>
             <option value="direct">Direct only</option>
           </select></div>
         <p class="scan-hint bs-only" style="margin-top:2px;">BeatSaver allows direct browser access, so no relay is needed here.</p>
         <details class="adv bl-only" id="relayAdv">
           <summary>Advanced: custom relay</summary>
           <div class="adv-body">
-            <p>Leave blank to use the built-in pool of public relays (this handles BeatLeader’s CORS block automatically). If you run your own CORS relay, paste its prefix here — end it with <code>=</code> to append the map URL encoded, or include <code>{url}</code> where the encoded URL should go.</p>
+            <p>Leave blank to use the built-in pool of public relays (this handles BeatLeader’s CORS block automatically). If you run your own CORS relay, paste its prefix here - end it with <code>=</code> to append the map URL encoded, or include <code>{url}</code> where the encoded URL should go.</p>
             <input type="text" id="customProxy" placeholder="https://your-relay.example/?url=" />
           </div>
         </details>
@@ -1191,7 +1191,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <button class="ghost sm" id="presetSave">Save filters</button>
         </div>
         <div class="preset-row">
-          <select id="presetSelect"><option value="">— saved presets —</option></select>
+          <select id="presetSelect"><option value="">- saved presets -</option></select>
           <button class="ghost sm" id="presetLoad">Load</button>
           <button class="ghost sm danger" id="presetDelete">Delete</button>
         </div>
@@ -1235,7 +1235,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge on every row and the <b>PP</b> sort.</div>
       <div class="panel-body">
         <div class="grid-2">
-          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top — 99% is worth far more than 95%.">i</span></label>
+          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top - 99% is worth far more than 95%.">i</span></label>
             <div class="pp-acc-input"><input type="number" id="ppFilterAcc" min="1" max="100" step="0.5" value="95" /><span class="pp-pct">%</span></div></div>
           <div class="field"><label class="field-label">Speed <span class="info" data-tip="Evaluate PP at this speed. FS (Faster) and SF (Super Fast) re-rate the map higher, so more PP; SS (Slower) lowers it. A map not rated for the chosen speed is skipped by the PP range filter.">i</span></label>
             <div class="pp-mods" id="ppFilterMods"></div></div>
@@ -1251,7 +1251,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
     <button class="primary big-fetch" id="fetchBtn2">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search BeatLeader</button>
-    <div class="stale-hint" id="staleHint" hidden>⟳ Filters changed since your last fetch — re-fetch to pull the new set.</div>
+    <div class="stale-hint" id="staleHint" hidden>⟳ Filters changed since your last fetch - re-fetch to pull the new set.</div>
     <div class="fetch-progress" id="fetchProgress" hidden>
       <div class="bar"><div class="bar-fill" id="barFill"></div></div>
       <span id="fetchProgressText">Searching…</span>
@@ -1278,7 +1278,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Quick Add (by BSR / link / hash) -->
     <section class="panel" id="panelQuickAdd" data-collapsible>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><h2>Quick Add</h2></div>
-      <div class="panel-sub">Already know the maps? Paste one or more <b>BSR codes</b>, <b>BeatSaver links</b>, or map <b>hashes</b> to drop them straight into <b>Your Playlist</b> — no searching. Perfect for tournament pools and shared code lists. Looks up maps on BeatSaver.</div>
+      <div class="panel-sub">Already know the maps? Paste one or more <b>BSR codes</b>, <b>BeatSaver links</b>, or map <b>hashes</b> to drop them straight into <b>Your Playlist</b> - no searching. Perfect for tournament pools and shared code lists. Looks up maps on BeatSaver.</div>
       <div class="panel-body">
         <div class="preset-row">
           <input type="text" id="quickAddInput" placeholder="e.g.  2c9e, 1a3f  or  beatsaver.com/maps/2c9e" />
@@ -1300,7 +1300,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
         <div class="addtop"><button class="ghost sm" id="fillRuntimeBtn" disabled title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">⏱ Fill to</button><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" /><span class="addtop-unit">min</span></div>
         <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear results</button>
-        <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its songs from these results — great for building a 'new stuff only' set.">⊘ Hide from file</button>
+        <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its songs from these results - great for building a 'new stuff only' set.">⊘ Hide from file</button>
         <input type="file" id="hideFromFile" accept=".bplist,application/json" hidden />
         <span class="hidefrom-info" id="hideFromInfo" hidden title="Click to stop hiding these maps"></span>
         <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>Collapse dupes</span></label>
@@ -1323,7 +1323,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <div class="empty">
             <div class="empty-ic">◇</div>
             <p><b>No results yet.</b></p>
-            <p>Set your filters and hit <b>Search</b> — or paste BSR codes into <b>Quick Add</b> below.</p>
+            <p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b> below.</p>
           </div>
         </div>
       </div>
@@ -1334,9 +1334,9 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span></div>
       <div class="list-actions">
         <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
-        <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending — good for warmup → hard">↑ Sort by ★</button>
+        <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
         <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported songs from BeatLeader">↻ Fill data</button>
-        <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader — catches rating recalcs">★ Re-check</button>
+        <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader - catches rating recalcs">★ Re-check</button>
         <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
         <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
       </div>
@@ -1345,7 +1345,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <div class="empty">
             <div class="empty-ic">♪</div>
             <p><b>Your playlist is empty.</b></p>
-            <p>Add maps from <b>Search Results</b> above — or hit <b>+ Add all</b>.</p>
+            <p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p>
           </div>
         </div>
       </div>
@@ -1370,7 +1370,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <button class="ghost sm" id="savePlaylistBtn">Save playlist</button>
         </div>
         <div class="preset-row">
-          <select id="savedPlaylists"><option value="">— saved playlists —</option></select>
+          <select id="savedPlaylists"><option value="">- saved playlists -</option></select>
           <button class="ghost sm" id="loadPlaylistBtn">Load</button>
           <button class="ghost sm danger" id="deletePlaylistBtn">Delete</button>
         </div>
@@ -1398,7 +1398,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Refine Playlist -->
     <section class="panel" id="panelRefine" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
-      <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty — handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
+      <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty - handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
       <div class="panel-body">
         <div class="refine-quick" id="refineQuick">
           <button class="ghost sm" data-refine="remove" data-crit="played" type="button">Remove played</button>
@@ -1406,7 +1406,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <button class="ghost sm" data-refine="keep" data-crit="unplayed" type="button">Keep unplayed</button>
           <button class="ghost sm" data-refine="keep" data-crit="nearfc" type="button">Keep near-FC</button>
         </div>
-        <div class="field"><label class="field-label">Criteria <span class="info" data-tip="Pick a set of maps in your playlist, then Remove them or Keep only them. Near-miss FC = played, no full-combo, ≤3 misses and a would-be FC accuracy ≥90%. Star tools use each map's BeatLeader rating — run ↻ Fill data first if imported maps show no stars.">i</span></label>
+        <div class="field"><label class="field-label">Criteria <span class="info" data-tip="Pick a set of maps in your playlist, then Remove them or Keep only them. Near-miss FC = played, no full-combo, ≤3 misses and a would-be FC accuracy ≥90%. Star tools use each map's BeatLeader rating - run ↻ Fill data first if imported maps show no stars.">i</span></label>
           <select id="refineCrit">
             <optgroup label="My play history">
               <option value="played">Maps I've played</option>
@@ -1480,7 +1480,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span><h2>Playlist Cover</h2>
         <label class="switch head-switch"><input type="checkbox" id="useCustomImage" /><span class="track"></span><span class="switch-lbl">Upload custom</span></label>
       </div>
-      <div class="panel-sub">A cover is generated from your title and star range automatically. Switch to a custom image any time — either is embedded as Base64 in the export.</div>
+      <div class="panel-sub">A cover is generated from your title and star range automatically. Switch to a custom image any time - either is embedded as Base64 in the export.</div>
       <div class="panel-body cover-body">
         <div class="cover-canvas-wrap"><canvas id="coverCanvas" width="512" height="512" aria-label="Playlist cover preview"></canvas></div>
         <div class="cover-controls">
@@ -1526,11 +1526,11 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h2>In-Game Sync</h2>
         <label class="switch head-switch"><input type="checkbox" id="syncEnable" /><span class="track"></span><span class="switch-lbl">Enable</span></label>
       </div>
-      <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist from wherever <i>you</i> host it. Nothing is uploaded here — Studio just writes the address you paste.</div>
+      <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist from wherever <i>you</i> host it. Nothing is uploaded here - Studio just writes the address you paste.</div>
       <div class="panel-body" id="syncBody" hidden>
-        <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once — the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
+        <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
           <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
-          <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant — if you move or rename it later, existing copies stop syncing.</p>
+          <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.</p>
         </div>
       </div>
     </section>
@@ -1571,7 +1571,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </span>
     </a>
   </div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-10T10:39:30Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-10T10:43:23Z">Last updated recently</div>
 </footer>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
@@ -1612,7 +1612,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           </div>
         </div>
         <div class="pp-result" id="ppResult">
-          <div class="pp-big"><span id="ppValue">—</span><span class="pp-unit">raw pp</span></div>
+          <div class="pp-big"><span id="ppValue">-</span><span class="pp-unit">raw pp</span></div>
           <div class="pp-breakdown" id="ppBreakdown"></div>
         </div>
         <div class="pp-reference" id="ppReference"></div>
@@ -1665,7 +1665,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
 <script>
 /* ============================================================
-   Playlist Studio — iconGenerator.js
+   Playlist Studio - iconGenerator.js
    Canvas-based playlist cover generator.
    Draws a themed Beat Saber cover in one of many procedural
    styles and exports it to a Base64 PNG. Also loads a custom
@@ -2189,7 +2189,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 </script>
 <script>
 /* ============================================================
-   Playlist Studio — bplistExporter.js
+   Playlist Studio - bplistExporter.js
    Builds a Beat Saber .bplist (JSON) from the matched song set
    and triggers a browser download.
    Exposes a single global: window.BplistExporter
@@ -2307,7 +2307,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 window.PP = (function () {
   'use strict';
 
-  // (accuracy, multiplier) — verbatim from BeatLeader's pointList2, top → bottom.
+  // (accuracy, multiplier) - verbatim from BeatLeader's pointList2, top → bottom.
   var CURVE = [
     [1.0, 7.424], [0.999, 6.241], [0.9975, 5.158], [0.995, 4.010], [0.9925, 3.241],
     [0.99, 2.700], [0.9875, 2.303], [0.985, 2.007], [0.9825, 1.786], [0.98, 1.618],
@@ -2342,7 +2342,7 @@ window.PP = (function () {
 
   // Speed modifiers, in display order. key '' = no modifier (base ratings).
   var MODIFIERS = [
-    { key: '', code: '—', label: 'No modifier' },
+    { key: '', code: '-', label: 'No modifier' },
     { key: 'ss', code: 'SS', label: 'Slower Song (0.85×)' },
     { key: 'fs', code: 'FS', label: 'Faster Song (1.2×)' },
     { key: 'sf', code: 'SF', label: 'Super Fast Song (1.5×)' }
@@ -2397,11 +2397,11 @@ window.PP = (function () {
   }
 
   function fmt(pp) {
-    if (pp == null) return '—';
+    if (pp == null) return '-';
     return (Math.round(pp * 100) / 100).toFixed(2);
   }
   function fmtShort(pp) {
-    if (pp == null) return '—';
+    if (pp == null) return '-';
     return Math.round(pp).toString();
   }
 
@@ -2415,12 +2415,12 @@ window.PP = (function () {
 </script>
 <script>
 /* ============================================================
-   Playlist Studio — app.js
+   Playlist Studio - app.js
    A BeatLeader-sourced Beat Saber playlist BUILDER.
 
    Workflow: filter → Fetch → add picks to "Your Playlist"
    (a persistent basket) → reorder / cover → export .bplist.
-   The basket — not the raw match set — is what gets exported,
+   The basket - not the raw match set - is what gets exported,
    so you curate instead of dumping every match.
 
    Connection: BeatLeader sends no CORS headers, so direct
@@ -2448,7 +2448,7 @@ window.PP = (function () {
   // PRIMARY = MSploit's own Cloudflare Worker (source in relay-worker.js): fast (~0.6s for a full
   // 100-map page), CORS-clean, host-allowlisted to BeatLeader/BeatSaver. It wins the race every
   // time, so it's the de-facto default. The public free proxies below are only fallbacks if the
-  // Worker is ever unreachable — the free-proxy landscape has largely collapsed (corsproxy.io now
+  // Worker is ever unreachable - the free-proxy landscape has largely collapsed (corsproxy.io now
   // wants an API key, proxy.cors.sh is gated, allorigins is slow and chokes on full pages, codetabs
   // is intermittent), which is exactly why the self-hosted Worker exists. Last verified 2026-09-09.
   var RELAYS = [
@@ -2507,7 +2507,7 @@ window.PP = (function () {
   function keyOf(e) { return e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName; }
   // Map-level score index: aggregates a player's scores by song hash across ALL difficulties.
   // Needed because diff-agnostic entries (BeatSaver one-per-map) have no difficultyName, so an
-  // exact hash|diff|mode lookup never matches — which made "Not played yet" return maps the
+  // exact hash|diff|mode lookup never matches - which made "Not played yet" return maps the
   // player had actually cleared on every difficulty. Rebuilt lazily; invalidated on score changes.
   function buildScoreHashIndex() {
     var idx = {}, s = state.scores || {};
@@ -2621,11 +2621,11 @@ window.PP = (function () {
     if (mode === 'relay') { setStatus('Finding a working relay…', 'busy'); return raceRelays(apiUrl, isValid).then(function (r) { setStatus('Relay: ' + r.adapter.id, 'on'); toast('Connected via ' + r.adapter.id + '.', 'ok'); return r.data; }); }
     setStatus('Connecting…', 'busy');
     return viaDirect(apiUrl, isValid).catch(function () {
-      setStatus('Direct blocked — finding a relay…', 'busy');
-      return raceRelays(apiUrl, isValid).then(function (r) { setStatus('Relay: ' + r.adapter.id, 'on'); toast('BeatLeader blocks direct browser access — using relay: ' + r.adapter.id + '.', 'warn'); return r.data; });
+      setStatus('Direct blocked - finding a relay…', 'busy');
+      return raceRelays(apiUrl, isValid).then(function (r) { setStatus('Relay: ' + r.adapter.id, 'on'); toast('BeatLeader blocks direct browser access - using relay: ' + r.adapter.id + '.', 'warn'); return r.data; });
     });
   }
-  // Quieter fetch for enrichment: reuse the pinned relay, else race — skip the slow direct probe.
+  // Quieter fetch for enrichment: reuse the pinned relay, else race - skip the slow direct probe.
   function relayFetch(apiUrl, isValid) {
     if (state.pinnedRelay) return viaAdapter(state.pinnedRelay, apiUrl, isValid).catch(function () { state.pinnedRelay = null; return raceRelays(apiUrl, isValid).then(function (r) { return r.data; }); });
     if (el.connMode.value === 'direct') return viaDirect(apiUrl, isValid);
@@ -2662,7 +2662,7 @@ window.PP = (function () {
       '<p class="fl-title">Scanning BeatLeader…</p>' +
       '<p class="fl-count" id="flCount">Connecting…</p>' +
       '<div class="fl-bar"><div class="fl-bar-fill" id="flBar"></div></div>' +
-      '<p class="fl-hint">Big scans page through the leaderboard 100 maps at a time — hang tight, this can take a bit.</p>' +
+      '<p class="fl-hint">Big scans page through the leaderboard 100 maps at a time - hang tight, this can take a bit.</p>' +
       '</div>';
   }
   function runFetch() {
@@ -2696,14 +2696,14 @@ window.PP = (function () {
     }
     step().then(function () {
         state.raw = collected; state.fetched = true; state.lastSig = serverSig(f); el.barFill.style.width = '100%';
-        if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched — try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
-        else { setStatus('Loaded ' + collected.length + ' maps' + (state.pinnedRelay ? ' · ' + state.pinnedRelay.id : ''), 'on'); toast('Loaded ' + collected.length + ' maps — now add the ones you want.', 'ok'); }
+        if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched - try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
+        else { setStatus('Loaded ' + collected.length + ' maps' + (state.pinnedRelay ? ' · ' + state.pinnedRelay.id : ''), 'on'); toast('Loaded ' + collected.length + ' maps - now add the ones you want.', 'ok'); }
         applyClientFilters();
         if (collected.length && isMobileView()) setMobileView('results');
       }).catch(function (err) {
         console.error(err); setStatus('Fetch failed', 'err'); var msg = err.message || 'Fetch failed.';
         el.counterMeta.textContent = msg; renderResults(); toast(msg, 'err');
-        if (/relays failed/i.test(msg)) toast('All public relays are busy right now — wait a moment and hit Fetch again.', 'warn');
+        if (/relays failed/i.test(msg)) toast('All public relays are busy right now - wait a moment and hit Fetch again.', 'warn');
       }).then(function () {
         state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; b.classList.remove('is-fetching'); });
         el.topLoadBar.classList.remove('on'); el.topLoadFill.style.width = '0%';
@@ -2727,10 +2727,10 @@ window.PP = (function () {
     if (src === state.source) return;
     state.source = src;
     state.viewMode = 'search';
-    // results belong to the OTHER source — clear them (keep the playlist/basket)
+    // results belong to the OTHER source - clear them (keep the playlist/basket)
     state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
     applySourceUI(); renderAll(); updateStale();
-    toast(src === 'beatsaver' ? 'Switched to BeatSaver — pick tags and Search.' : 'Switched to BeatLeader — set filters and Search.', 'ok');
+    toast(src === 'beatsaver' ? 'Switched to BeatSaver - pick tags and Search.' : 'Switched to BeatLeader - set filters and Search.', 'ok');
   }
   // Full BeatSaver tag set (slug = human name lowercased, non-alphanumeric runs → hyphen).
   var BS_TAGS = [
@@ -2798,7 +2798,7 @@ window.PP = (function () {
     var p = new URLSearchParams();
     var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
     // A text query needs Relevance to actually match by song name (Latest just returns the newest
-    // uploads and buries or drops name matches — non-Latin titles especially). No query → Relevance
+    // uploads and buries or drops name matches - non-Latin titles especially). No query → Relevance
     // returns a junk default set, so fall back to Latest there.
     var sort = el.bsSort.value || 'Latest';
     if (q) { if (sort === 'Latest') sort = 'Relevance'; }
@@ -2890,7 +2890,7 @@ window.PP = (function () {
         el.fetchProgressText.textContent = 'Scanned ' + label + '…';
         var fc = document.getElementById('flCount'); if (fc) fc.textContent = label;
         var fb = document.getElementById('flBar'); if (fb) fb.style.width = pct + '%';
-        // Keep paging until the API's last page (info.pages) — never rely on a fixed page size.
+        // Keep paging until the API's last page (info.pages) - never rely on a fixed page size.
         var morePages = totalPages != null ? (page + 1 < totalPages) : (docs.length > 0);
         if (docs.length && morePages && mapsSeen < capMaps) { page++; return delay(120).then(step); }
       });
@@ -2907,11 +2907,11 @@ window.PP = (function () {
       : step().then(function () { if (!collected.length && ref) return lookup(ref); }); // bare code → text search, fall back to code lookup
     run.then(function () {
       state.raw = collected; state.fetched = true; state.lastSig = 'bs'; el.barFill.style.width = '100%';
-      if (rateLimited && !collected.length) { setStatus('Rate-limited', 'err'); toast('BeatSaver rate-limited the search before any maps came back — wait a moment and Search again.', 'warn'); }
-      else if (!collected.length) { setStatus('No maps found', 'err'); toast(bsrMode ? 'No BeatSaver map matched that code or link — double-check it.' : 'No BeatSaver maps matched — loosen the tags, clear a filter, or try a different search.', 'warn'); }
-      else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited — search again to pull the rest.', 'warn'); }
-      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast('Found “' + collected[0].songName + '” — add it below.', 'ok'); }
-      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver — add the ones you want.', 'ok'); }
+      if (rateLimited && !collected.length) { setStatus('Rate-limited', 'err'); toast('BeatSaver rate-limited the search before any maps came back - wait a moment and Search again.', 'warn'); }
+      else if (!collected.length) { setStatus('No maps found', 'err'); toast(bsrMode ? 'No BeatSaver map matched that code or link - double-check it.' : 'No BeatSaver maps matched - loosen the tags, clear a filter, or try a different search.', 'warn'); }
+      else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited - search again to pull the rest.', 'warn'); }
+      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast('Found “' + collected[0].songName + '” - add it below.', 'ok'); }
+      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver - add the ones you want.', 'ok'); }
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
     }).catch(function (err) {
@@ -2932,7 +2932,7 @@ window.PP = (function () {
   }
   // True when a mapper credit indicates auto-generated LIGHTING (e.g. "Autolighter 2 by Jonas").
   function hasAutoCredit(name) { return /auto[\s_-]*light(?:er|ing)?/i.test(String(name || '')); }
-  // "Last played" is meaningless for unplayed maps — disable + neutralize it
+  // "Last played" is meaningless for unplayed maps - disable + neutralize it
   // whenever the play-status filter is set to "Not played yet".
   function syncRecencyControl() {
     if (!el.playRecency) return;
@@ -2994,7 +2994,7 @@ window.PP = (function () {
         if (blob.indexOf(f.search.toLowerCase()) === -1) return false;
       }
       // Mapper filter: applies on BOTH sources. On BeatSaver the server `q` also matches song name,
-      // artist and description, so narrow to maps whose MAPPER actually contains the term — and strip
+      // artist and description, so narrow to maps whose MAPPER actually contains the term - and strip
       // auto-generated lighting credits ("Auto Lighter by X") so they don't flood a mapper search.
       if (f.mapperTerms.length) {
         var mapperHay = state.source === 'beatsaver'
@@ -3015,7 +3015,7 @@ window.PP = (function () {
     if (state.viewMode === 'recommend') {
       out.sort(function (a, b) { var av = (a._rec && a._rec.gain) || 0, bv = (b._rec && b._rec.gain) || 0; return bv - av; });
     } else if (state.source === 'beatsaver') {
-      // BeatSaver returns results already ordered by the chosen sortOrder — keep that order.
+      // BeatSaver returns results already ordered by the chosen sortOrder - keep that order.
     } else if (key === 'pp') {
       // Sort by raw PP at the target accuracy (no modifier); unranked maps sink.
       out.sort(function (a, b) {
@@ -3142,7 +3142,7 @@ window.PP = (function () {
     var list = displayResults(), added = 0;
     for (var i = 0; i < list.length && cur < target; i++) { if (addEntry(list[i])) { added++; cur += (list[i].duration || 0); } }
     renderAll();
-    toast(added ? ('Added ' + added + ' map' + (added === 1 ? '' : 's') + ' — playlist is now ~' + fmtDur(basketRuntime()) + '.') : 'Nothing left in the results to add.', added ? 'ok' : 'warn');
+    toast(added ? ('Added ' + added + ' map' + (added === 1 ? '' : 's') + ' - playlist is now ~' + fmtDur(basketRuntime()) + '.') : 'Nothing left in the results to add.', added ? 'ok' : 'warn');
   }
 
   // ---- quick add: BSR code / BeatSaver link / hash --------------------------
@@ -3192,13 +3192,13 @@ window.PP = (function () {
       if (added) parts.push('added ' + added);
       if (dupes) parts.push(dupes + ' already in playlist');
       if (failed) parts.push(failed + ' not found');
-      toast('Quick Add — ' + (parts.join(' · ') || 'nothing to add') + '.', added ? 'ok' : (failed ? 'err' : 'warn'));
+      toast('Quick Add - ' + (parts.join(' · ') || 'nothing to add') + '.', added ? 'ok' : (failed ? 'err' : 'warn'));
     }).catch(function () {
-      toast('BeatSaver lookup failed — check the codes and try again.', 'err');
+      toast('BeatSaver lookup failed - check the codes and try again.', 'err');
     }).then(function () { el.quickAddBtn.disabled = false; el.quickAddBtn.textContent = lbl; });
   }
   // Reset everything that IDENTIFIES a playlist back to defaults, so nothing leaks
-  // between one list and the next. Author is intentionally NOT reset — it's your
+  // between one list and the next. Author is intentionally NOT reset - it's your
   // identity, the same across every playlist you make. The basket itself is handled
   // by the caller. Safe to call before elements are wired (guards each group).
   function resetPlaylistIdentity() {
@@ -3218,7 +3218,7 @@ window.PP = (function () {
     if (el.coverStyleGrid) buildCoverPickers();
     // In-Game Sync → off + empty (updateSyncUI also clears the persisted sync config)
     if (el.syncEnable) { el.syncEnable.checked = false; el.syncUrl.value = ''; updateSyncUI(); }
-    // The Refine undo snapshot belonged to the OLD list — drop it
+    // The Refine undo snapshot belonged to the OLD list - drop it
     state.refineUndo = null; if (el.refineUndoWrap) el.refineUndoWrap.hidden = true;
   }
 
@@ -3256,11 +3256,11 @@ window.PP = (function () {
     state.clearUndo = snapshotPlaylist();   // snapshot everything so Clear is reversible
     state.basket = [];
     resetPlaylistIdentity();
-    // Also clear the Library "save as" box and dropdown selection — a fresh slate.
+    // Also clear the Library "save as" box and dropdown selection - a fresh slate.
     if (el.playlistName) el.playlistName.value = '';
     if (el.savedPlaylists) el.savedPlaylists.value = '';
     renderAll();
-    toast('Cleared — started a fresh playlist. Undo clear is in the toolbar.', 'ok');
+    toast('Cleared - started a fresh playlist. Undo clear is in the toolbar.', 'ok');
   }
   function undoClear() {
     if (!state.clearUndo) return;
@@ -3330,7 +3330,7 @@ window.PP = (function () {
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
     if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
     if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
-    if (PP.isRanked(e)) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' — set in the PP Filter panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
+    if (PP.isRanked(e)) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Filter panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
     if (state.player) {
       var sc = scoreFor(e);
       if (sc) {
@@ -3345,7 +3345,7 @@ window.PP = (function () {
     if (e._rec) {
       b.push('<span class="rb rb-gain" title="Projected weighted PP this map would add to your profile">+' + e._rec.gain.toFixed(1) + 'pp</span>');
       b.push('<span class="rb rb-pred" title="Predicted accuracy from your star-vs-acc fit">~' + e._rec.predAcc.toFixed(1) + '%</span>');
-      if (e._rec.conf === 'ext') b.push('<span class="rb rb-stretch" title="Above your highest played star \u2014 prediction is extrapolated">STRETCH</span>');
+      if (e._rec.conf === 'ext') b.push('<span class="rb rb-stretch" title="Above your highest played star - prediction is extrapolated">STRETCH</span>');
     }
     return b.join('');
   }
@@ -3365,7 +3365,7 @@ window.PP = (function () {
         msg = '<p><b>Every match is already in your playlist.</b></p><p>Turn off <b>Hide added</b> to see them, or loosen your filters to find more.</p>';
       } else if (!state.raw.length) {
         if (!state.fetched) {
-          msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Search</b> — or paste BSR codes into <b>Quick Add</b>.</p>';
+          msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b>.</p>';
         } else if (el.fType.value === 'ranked') {
           msg = '<p><b>No ranked maps matched.</b></p><p>Most community maps aren\'t ranked. Switch <b>Ranked status</b> to <b>All</b> to search the full catalog, or loosen your other filters.</p><p><button type="button" class="ghost sm" id="emptySwitchAll">Search all maps instead</button></p>';
         } else {
@@ -3394,13 +3394,13 @@ window.PP = (function () {
         (added ? '<button class="row-btn added" disabled title="In your playlist">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>';
     });
-    if (rows.length > MAX) frag += '<div class="list-more">+ ' + (rows.length - MAX) + ' more — narrow your filters to see them</div>';
+    if (rows.length > MAX) frag += '<div class="list-more">+ ' + (rows.length - MAX) + ' more - narrow your filters to see them</div>';
     list.innerHTML = frag;
   }
   function renderBasket() {
     var list = el.basketList, n = state.basket.length;
     el.playlistCount.textContent = n ? n + (n === 1 ? ' map' : ' maps') : '';
-    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above — or hit <b>+ Add all</b>.</p></div>'; return; }
+    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p></div>'; return; }
     var last = n - 1, frag = '';
     state.basket.forEach(function (e, i) {
       frag += '<div class="song-row bk" draggable="true" data-key="' + esc(keyOf(e)) + '"><span class="bk-grip" title="Drag to reorder" aria-hidden="true">⠿</span><span class="bk-idx">' + (i + 1) + '</span>' + coverImg(e) + infoBlock(e) +
@@ -3443,7 +3443,7 @@ window.PP = (function () {
     el.addAllBtn.disabled = !hasResults; el.addTopBtn.disabled = !hasResults; el.addRandomBtn.disabled = !hasResults; el.fillRuntimeBtn.disabled = !hasResults;
     el.clearResultsBtn.disabled = state.raw.length === 0;
     el.shuffleBtn.disabled = el.sortPlaylistBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
-    // Fill data / Re-check only make sense once there ARE maps (and something to fill) — hide otherwise.
+    // Fill data / Re-check only make sense once there ARE maps (and something to fill) - hide otherwise.
     var canFill = needsEnrich().length > 0;
     el.enrichBtn.hidden = !canFill; el.enrichBtn.disabled = state.enriching || !canFill;
     el.refreshStarsBtn.hidden = !hasBasket; el.refreshStarsBtn.disabled = state.enriching || !hasBasket;
@@ -3471,8 +3471,8 @@ window.PP = (function () {
       var missing = state.basket.filter(function (s) { return !s.hash; }).length;
       if (missing) items.push({ level: 'warn', ico: '!', msg: missing + ' entr' + (missing === 1 ? 'y is' : 'ies are') + ' missing a hash and will be skipped.' });
       var imgKB = Math.round((state.coverDataUrl || '').length / 1024);
-      items.push({ level: imgKB > 1400 ? 'warn' : 'ok', ico: imgKB > 1400 ? '!' : '✓', msg: 'Cover embedded (~' + imgKB + ' KB Base64)' + (imgKB > 1400 ? ' — large covers can slow some clients.' : '.') });
-      items.push({ level: 'ok', ico: '✓', msg: 'Difficulty names PascalCase (ExpertPlus) — PlaylistManager compliant. Play order = list order.' });
+      items.push({ level: imgKB > 1400 ? 'warn' : 'ok', ico: imgKB > 1400 ? '!' : '✓', msg: 'Cover embedded (~' + imgKB + ' KB Base64)' + (imgKB > 1400 ? ' - large covers can slow some clients.' : '.') });
+      items.push({ level: 'ok', ico: '✓', msg: 'Difficulty names PascalCase (ExpertPlus) - PlaylistManager compliant. Play order = list order.' });
     }
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
   }
@@ -3565,7 +3565,7 @@ window.PP = (function () {
   // ---- Maps Like This ------------------------------------------------------
   function findSimilar(src) {
     if (!src) return;
-    if (state.fetching) { toast('Busy \u2014 wait for the current fetch to finish.', 'warn'); return; }
+    if (state.fetching) { toast('Busy - wait for the current fetch to finish.', 'warn'); return; }
     if (!(src.stars > 0)) { toast('Find Similar needs a ranked map (one with a star rating).', 'warn'); return; }
     var srcHash = (src.hash || '').toLowerCase();
     var srcMapper = (src.mapper || '').toLowerCase();
@@ -3651,7 +3651,7 @@ window.PP = (function () {
   function plannerRun() {
     var id = (state.player && state.player.id) || '';
     if (!id) { toast('Connect your BeatLeader profile first to plan a rank-up.', 'warn'); if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    if (state.fetching) { toast('Hang on \u2014 a fetch is already running.', 'warn'); return; }
+    if (state.fetching) { toast('Hang on - a fetch is already running.', 'warn'); return; }
     var goalVal = parseFloat(el.plannerGoal.value);
     if (!isFinite(goalVal) || goalVal <= 0) { toast('Enter a goal value first.', 'warn'); return; }
     track('search-recommend');
@@ -3729,7 +3729,7 @@ window.PP = (function () {
     u.forEach(function (e) { if (PP.isRanked(e)) { var p = PP.ppFor(e, acc, ''); if (p != null) ppVals.push(p); } });
     var avgPp = ppVals.length ? ppVals.reduce(function (a, c) { return a + c; }, 0) / ppVals.length : 0;
     var rt = fmtDur(basketRuntime());
-    var tiles = [['Songs', n], ['Runtime', rt], ['Avg \u2605', avgStar ? avgStar.toFixed(1) : '\u2014'], ['Avg PP', avgPp ? Math.round(avgPp) : '\u2014'], ['Mappers', Object.keys(mappers).length]];
+    var tiles = [['Songs', n], ['Runtime', rt], ['Avg \u2605', avgStar ? avgStar.toFixed(1) : '-'], ['Avg PP', avgPp ? Math.round(avgPp) : '-'], ['Mappers', Object.keys(mappers).length]];
     var html = '<div class="feat-tiles">' + tiles.map(function (t) { return '<div class="feat-tile"><div class="ft-v">' + t[1] + '</div><div class="ft-l">' + t[0] + '</div></div>'; }).join('') + '</div>';
     if (starVals.length) {
       var bins = []; var i; for (i = 0; i < 12; i++) bins.push(0);
@@ -3822,7 +3822,7 @@ window.PP = (function () {
     state.coverDataUrl = cv.toDataURL('image/png');
   }
   // Load a custom image (upload or restored from a saved playlist) as an
-  // editable base — text can then be written over it like the procedural covers.
+  // editable base - text can then be written over it like the procedural covers.
   function loadCustomImageEl(dataUrl) {
     state.usingCustom = true; el.useCustomImage.checked = true; el.customFileField.hidden = false;
     var img = new Image();
@@ -3830,7 +3830,7 @@ window.PP = (function () {
     img.onerror = function () { toast('That image could not be decoded.', 'err'); };
     img.src = dataUrl;
   }
-  // Shrink any uploaded image to a 512px cover-fit JPEG — matches the cover
+  // Shrink any uploaded image to a 512px cover-fit JPEG - matches the cover
   // resolution and keeps saved icons small enough for browser storage.
   function normalizeIcon(src, cb) {
     var img = new Image();
@@ -3850,7 +3850,7 @@ window.PP = (function () {
   function saveUploadedIcon(url) {
     var a = lsGetIcons(); if (a.indexOf(url) !== -1) return;
     a.unshift(url); if (a.length > 24) a = a.slice(0, 24);
-    if (!lsSetIcons(a)) toast('Icon applied, but your saved-icon shelf is full — remove a few to keep new ones.', 'warn');
+    if (!lsSetIcons(a)) toast('Icon applied, but your saved-icon shelf is full - remove a few to keep new ones.', 'warn');
   }
   function deleteIcon(url) { lsSetIcons(lsGetIcons().filter(function (u) { return u !== url; })); renderIconLibrary(); }
   function renderIconLibrary() {
@@ -3881,7 +3881,7 @@ window.PP = (function () {
     reader.readAsDataURL(file);
   }
   // Paint a finished data-URL cover as-is (used when importing a .bplist whose
-  // image already has text baked in — no overlay so it isn't doubled).
+  // image already has text baked in - no overlay so it isn't doubled).
   function setCoverFromDataUrl(dataUrl) {
     var img = new Image();
     img.onload = function () {
@@ -3903,8 +3903,8 @@ window.PP = (function () {
   function updateSyncUI() {
     var on = el.syncEnable.checked, raw = el.syncUrl.value.trim(), hint = el.syncHint;
     el.syncBody.hidden = !on;
-    if (!on || !raw) { hint.className = 'sync-hosthint'; hint.innerHTML = 'Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant — if you move or rename it later, existing copies stop syncing.'; }
-    else if (isHttpUrl(raw)) { hint.className = 'sync-hosthint ok'; hint.innerHTML = 'Ready — this URL is written into <code>customData.syncURL</code> on export.'; }
+    if (!on || !raw) { hint.className = 'sync-hosthint'; hint.innerHTML = 'Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.'; }
+    else if (isHttpUrl(raw)) { hint.className = 'sync-hosthint ok'; hint.innerHTML = 'Ready - this URL is written into <code>customData.syncURL</code> on export.'; }
     else { hint.className = 'sync-hosthint bad'; hint.textContent = "That doesn't look like a full http(s) URL."; }
     saveSyncCfg();
   }
@@ -3915,7 +3915,7 @@ window.PP = (function () {
     updateSyncUI();
   }
   function bindSyncUI() {
-    el.syncEnable.addEventListener('change', function () { updateSyncUI(); toast(el.syncEnable.checked ? 'In-game Sync on — paste your host URL.' : 'In-game Sync off.', 'ok'); });
+    el.syncEnable.addEventListener('change', function () { updateSyncUI(); toast(el.syncEnable.checked ? 'In-game Sync on - paste your host URL.' : 'In-game Sync off.', 'ok'); });
     el.syncUrl.addEventListener('input', updateSyncUI);
   }
 
@@ -3957,7 +3957,7 @@ window.PP = (function () {
     else {
       var m = refineCount(o);
       el.refinePreview.className = 'refine-note' + (m ? ' hot' : '');
-      el.refinePreview.innerHTML = 'Matches <b>' + m + '</b> of <b>' + total + '</b> — Remove leaves ' + (total - m) + ', Keep leaves ' + m + '.';
+      el.refinePreview.innerHTML = 'Matches <b>' + m + '</b> of <b>' + total + '</b> - Remove leaves ' + (total - m) + ', Keep leaves ' + m + '.';
     }
     var disable = !total || needProfile;
     el.refineRemoveBtn.disabled = disable;
@@ -3976,7 +3976,7 @@ window.PP = (function () {
       return mode === 'keep' ? hit : !hit;
     });
     var removed = before.length - kept.length;
-    if (!removed) { toast('No maps matched — nothing removed.', 'warn'); return; }
+    if (!removed) { toast('No maps matched - nothing removed.', 'warn'); return; }
     state.refineUndo = before;
     state.basket = kept;
     el.refineUndoWrap.hidden = false;
@@ -4016,7 +4016,7 @@ window.PP = (function () {
     var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
     var syncURL = getSyncUrl();
     var meta = { title: (!rawTitle || rawTitle === DEFAULT_TITLE) ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: state.descAuto ? autoDesc : (el.metaDescription.value.trim() || autoDesc), image: state.coverDataUrl || '', syncURL: syncURL };
-    if (el.syncEnable.checked && !syncURL) toast('Sync is on but the host URL is incomplete — exporting without a syncURL.', 'warn');
+    if (el.syncEnable.checked && !syncURL) toast('Sync is on but the host URL is incomplete - exporting without a syncURL.', 'warn');
     try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
     catch (err) { toast(err.message, 'err'); }
   }
@@ -4066,18 +4066,18 @@ window.PP = (function () {
   }
   function populatePresets() {
     var o = lsGet(), names = Object.keys(o).sort();
-    el.presetSelect.innerHTML = '<option value="">— saved presets —</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+    el.presetSelect.innerHTML = '<option value="">- saved presets -</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
   }
   function savePreset() {
     var name = el.presetName.value.trim(); if (!name) { toast('Give the preset a name first.', 'warn'); return; }
     var o = lsGet(); o[name] = captureFilters();
     if (lsSet(o)) { populatePresets(); el.presetSelect.value = name; el.presetName.value = ''; toast('Preset "' + name + '" saved.', 'ok'); }
-    else toast('Could not save — browser storage is unavailable here.', 'err');
+    else toast('Could not save - browser storage is unavailable here.', 'err');
   }
   function loadPreset() {
     var name = el.presetSelect.value; if (!name) { toast('Pick a saved preset first.', 'warn'); return; }
     var p = lsGet()[name]; if (!p) { toast('That preset is gone.', 'warn'); return; }
-    applyPreset(p); toast('Loaded "' + name + '" — hit Fetch to pull it.', 'ok');
+    applyPreset(p); toast('Loaded "' + name + '" - hit Fetch to pull it.', 'ok');
   }
   function deletePreset() {
     var name = el.presetSelect.value; if (!name) { toast('Pick a preset to delete.', 'warn'); return; }
@@ -4089,7 +4089,7 @@ window.PP = (function () {
   function lsSetPl(o) { try { localStorage.setItem(PLIST_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
   function populatePlaylists() {
     var o = lsGetPl(), names = Object.keys(o).sort();
-    el.savedPlaylists.innerHTML = '<option value="">— saved playlists —</option>' +
+    el.savedPlaylists.innerHTML = '<option value="">- saved playlists -</option>' +
       names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + ' (' + ((o[n].entries || []).length) + ')</option>'; }).join('');
   }
   function savePlaylist() {
@@ -4102,7 +4102,7 @@ window.PP = (function () {
     o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
       sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value } };
     if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
-    else toast('Could not save — browser storage is full or unavailable.', 'err');
+    else toast('Could not save - browser storage is full or unavailable.', 'err');
   }
   function loadPlaylist() {
     var name = el.savedPlaylists.value; if (!name) { toast('Pick a saved playlist first.', 'warn'); return; }
@@ -4126,7 +4126,7 @@ window.PP = (function () {
       state.usingCustom = false; state.customImgEl = null; state.customBaseUrl = ''; el.useCustomImage.checked = false; el.customFileField.hidden = true;
     }
     // Restore the saved sync config (resetPlaylistIdentity cleared it above). Older saves have no
-    // sync field — leave sync off in that case.
+    // sync field - leave sync off in that case.
     if (p.sync && p.sync.enabled && p.sync.url) { el.syncEnable.checked = true; el.syncUrl.value = p.sync.url; }
     updateSyncUI();
     renderAll(); toast('Loaded "' + name + '" (' + state.basket.length + ' maps).', 'ok');
@@ -4141,7 +4141,7 @@ window.PP = (function () {
     reader.onload = function () {
       var pl; try { pl = JSON.parse(reader.result); } catch (e) { toast('That file is not valid JSON / .bplist.', 'err'); return; }
       if (!pl || !Array.isArray(pl.songs)) { toast('No songs found in that .bplist.', 'err'); return; }
-      // A fresh import (empty playlist) should adopt the file's identity wholesale — reset first
+      // A fresh import (empty playlist) should adopt the file's identity wholesale - reset first
       // so any field the file omits falls back to default instead of inheriting the last list.
       // Importing INTO an existing playlist is a merge, so we leave the current metadata alone.
       var wasEmpty = !state.basket.length;
@@ -4227,7 +4227,7 @@ window.PP = (function () {
     function finish() {
       state.enriching = false; renderAll();
       setStatus((opts.doneVerb || 'Enriched') + ' ' + ok + '/' + total + ' songs', 'on');
-      toast(opts.doneMsg ? opts.doneMsg(ok, total) : ('Enriched ' + ok + ' of ' + total + ' song' + (total === 1 ? '' : 's') + (ok < total ? ' — the rest may be unranked or missing from BeatLeader.' : '.')), ok ? 'ok' : 'warn');
+      toast(opts.doneMsg ? opts.doneMsg(ok, total) : ('Enriched ' + ok + ' of ' + total + ' song' + (total === 1 ? '' : 's') + (ok < total ? ' - the rest may be unranked or missing from BeatLeader.' : '.')), ok ? 'ok' : 'warn');
       return ok;
     }
     return one(hashes[0]).then(function () {
@@ -4237,7 +4237,7 @@ window.PP = (function () {
       return Promise.all(ws);
     }).then(finish, function () { state.enriching = false; renderAll(); return ok; });
   }
-  function enrichImported() { return runEnrich(needsEnrich(), { emptyMsg: 'Nothing to enrich — every song already has BeatLeader data.' }); }
+  function enrichImported() { return runEnrich(needsEnrich(), { emptyMsg: 'Nothing to enrich - every song already has BeatLeader data.' }); }
   function refreshStars() {
     if (!state.basket.length) { toast('Your playlist is empty.', 'warn'); return Promise.resolve(0); }
     var hashes = allBasketHashes();
@@ -4260,7 +4260,7 @@ window.PP = (function () {
   }
 
   // ---- PP: global filter settings (drive row badges, PP sort, PP range filter)
-  function modCode(key) { for (var i = 0; i < PP.MODIFIERS.length; i++) if (PP.MODIFIERS[i].key === key) return PP.MODIFIERS[i].code; return '—'; }
+  function modCode(key) { for (var i = 0; i < PP.MODIFIERS.length; i++) if (PP.MODIFIERS[i].key === key) return PP.MODIFIERS[i].code; return '-'; }
   function buildGlobalPpMods() {
     el.ppFilterMods.innerHTML = '';
     PP.MODIFIERS.forEach(function (m) {
@@ -4299,7 +4299,7 @@ window.PP = (function () {
       var enabled = (m.key === '') ? PP.isRanked(entry) : PP.hasModifier(entry, m.key);
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'pp-mod'; b.textContent = m.code;
-      b.title = m.label + (enabled ? '' : ' — not rated for this map');
+      b.title = m.label + (enabled ? '' : ' - not rated for this map');
       b.dataset.mod = m.key; b.disabled = !enabled;
       el.ppMods.appendChild(b);
     });
@@ -4311,7 +4311,7 @@ window.PP = (function () {
     var ranked = PP.isRanked(entry);
     el.ppCalcStars.textContent = ranked && entry.stars ? entry.stars.toFixed(2) + '★ base' : '';
     if (!ranked) {
-      el.ppCalcNote.textContent = 'This map is unranked — PP only applies to ranked maps.';
+      el.ppCalcNote.textContent = 'This map is unranked - PP only applies to ranked maps.';
       el.ppCalcNote.hidden = false;
       el.ppCalcGrid.style.display = 'none'; el.ppResult.style.display = 'none'; el.ppReference.style.display = 'none';
       return;
@@ -4322,7 +4322,7 @@ window.PP = (function () {
     Array.prototype.forEach.call(el.ppAccChips.querySelectorAll('button'), function (b) { b.classList.toggle('active', parseFloat(b.dataset.acc) === state.ppModalAcc); });
     var acc = state.ppModalAcc, mod = state.ppModalMod;
     var bd = PP.breakdown(entry, acc, mod);
-    if (!bd) { el.ppValue.textContent = '—'; el.ppBreakdown.innerHTML = ''; return; }
+    if (!bd) { el.ppValue.textContent = '-'; el.ppBreakdown.innerHTML = ''; return; }
     el.ppValue.textContent = PP.fmt(bd.total);
     var starTxt = bd.stars ? bd.stars.toFixed(2) + '★' : '';
     el.ppBreakdown.innerHTML =
@@ -4343,7 +4343,7 @@ window.PP = (function () {
     var gen = (state.previewGen = (state.previewGen || 0) + 1);
     if (!el.previewModal.classList.contains('show')) state._previewReturnFocus = document.activeElement;
     el.previewModal.classList.add('show'); el.previewModal.setAttribute('aria-hidden', 'false');
-    el.previewTitle.textContent = entry.songName + (entry.mapper ? ' — ' + entry.mapper : '');
+    el.previewTitle.textContent = entry.songName + (entry.mapper ? ' - ' + entry.mapper : '');
     // your score line (from synced BeatLeader history)
     if (state.player) {
       var ps = scoreFor(entry);
@@ -4366,7 +4366,7 @@ window.PP = (function () {
     el.previewAudio.hidden = true; el.previewAudio.removeAttribute('src');
     el.previewBeatSaver.style.display = 'none'; el.previewViewer.style.display = 'none';
     try { el.previewClose.focus(); } catch (e) {}
-    if (!entry.hash) { el.previewStatus.textContent = 'No map hash — can’t preview this entry.'; return; }
+    if (!entry.hash) { el.previewStatus.textContent = 'No map hash - can’t preview this entry.'; return; }
     resolveBeatSaver(entry.hash).then(function (res) {
       if (state.previewGen !== gen || !el.previewModal.classList.contains('show')) return; // closed or a different map opened
       if (res.error || !res.id) { el.previewStatus.textContent = 'Couldn’t find this map on BeatSaver' + (res.error ? ' (' + res.error + ')' : '') + '.'; return; }
@@ -4416,7 +4416,7 @@ window.PP = (function () {
     if (state.player.avatar) { el.pcAvatar.src = state.player.avatar; el.pcAvatar.style.display = ''; } else { el.pcAvatar.style.display = 'none'; }
     el.pcName.textContent = state.player.name;
     var n = Object.keys(state.scores).length;
-    el.pcStats.textContent = '#' + (state.player.rank || '—') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
+    el.pcStats.textContent = '#' + (state.player.rank || '-') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
     setProfileState(state.player.name);
     renderPlayBar();
   }
@@ -4426,7 +4426,7 @@ window.PP = (function () {
     var v = clamp(num(el.fMaxScan, 2500), 20, 20000);
     Array.prototype.forEach.call(el.scanChips.querySelectorAll('button'), function (b) { b.classList.toggle('active', parseInt(b.dataset.scan, 10) === v); });
     var pages = Math.ceil(v / PAGE_SIZE), big = v > 5000;
-    var speed = v <= 500 ? ' · quick' : (v <= 5000 ? ' · a few seconds' : ' · big scan — slower, leans on the public relays');
+    var speed = v <= 500 ? ' · quick' : (v <= 5000 ? ' · a few seconds' : ' · big scan - slower, leans on the public relays');
     el.scanHint.textContent = '≈ ' + pages + ' API page' + (pages === 1 ? '' : 's') + speed;
     el.scanHint.classList.toggle('warn', big);
   }
@@ -4475,7 +4475,7 @@ window.PP = (function () {
         toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok'); track('connect-profile'); trackLookup(state.player);
         return syncScores(false);
       })
-      .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader player — check the username, ID, or profile link.", 'err'); })
+      .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader player - check the username, ID, or profile link.", 'err'); })
       .then(function () { el.connectBtn.disabled = false; });
   }
   function disconnectPlayer() {
@@ -4523,11 +4523,11 @@ window.PP = (function () {
       state.player.syncedMaxTime = newMax; el.syncBar.style.width = '100%';
       state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters();
       var tot = Object.keys(state.scores).length;
-      toast(incremental ? (got ? 'Refreshed — ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
+      toast(incremental ? (got ? 'Refreshed - ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
       if (state._buildAfterSync) { state._buildAfterSync = false; buildFromPlays(); }
     }).catch(function (e) {
       state._buildAfterSync = false;
-      // A partial sync still wrote some scores into state.scores — drop the stale map-level
+      // A partial sync still wrote some scores into state.scores - drop the stale map-level
       // index and re-render so those new scores are reflected even though paging failed.
       state._scoreHashIdx = null; savePlayerCache(); applyClientFilters();
       toast('Score sync failed' + (e && e.message ? ' (' + e.message + ')' : '') + '. Give it a moment and hit ⟳ Sync again.', 'err');
@@ -4536,7 +4536,7 @@ window.PP = (function () {
       setTimeout(function () { el.syncProgress.hidden = true; el.syncBar.style.width = '0%'; }, 800);
     });
   }
-  // Turn the player's synced BeatLeader scores into a browsable, filterable results list — so a
+  // Turn the player's synced BeatLeader scores into a browsable, filterable results list - so a
   // playlist can be built straight from "maps I've played" (e.g. everything not full-comboed) with
   // no search or import first. Reuses the normal results UI, play-status/acc/recency/star filters,
   // and cherry-pick flow.
@@ -4550,13 +4550,13 @@ window.PP = (function () {
     for (k in state.playIndex) if (state.playIndex.hasOwnProperty(k)) list.push(state.playIndex[k]);
     if (!list.length) {
       if (Object.keys(state.scores).length) {
-        // Scores are synced but from before play-details were captured — do one full re-sync, then build.
-        toast('Grabbing the song details for your plays — one-time re-sync…', 'ok');
+        // Scores are synced but from before play-details were captured - do one full re-sync, then build.
+        toast('Grabbing the song details for your plays - one-time re-sync…', 'ok');
         state._buildAfterSync = true; syncScores(false); return;
       }
       toast('Sync your scores first (hit ⟳ Sync scores), then Build from my plays.', 'warn'); return;
     }
-    // Plays are BeatLeader data — show the BeatLeader filter layout (star rating, play status; not tags)
+    // Plays are BeatLeader data - show the BeatLeader filter layout (star rating, play status; not tags)
     // no matter which search source was last active.
     if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
     state.viewMode = 'plays';
@@ -4602,7 +4602,7 @@ window.PP = (function () {
     state.viewMode = 'search';
     var id = (state.player && state.player.id) || '';
     if (!id) { toast('Connect your BeatLeader profile first, then find PP gains.', 'warn'); if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    if (state.fetching) { toast('Hang on — a fetch is already running.', 'warn'); return; }
+    if (state.fetching) { toast('Hang on - a fetch is already running.', 'warn'); return; }
     track('search-recommend');
     fxSlashGo();
     var f = getFilters();
@@ -4662,7 +4662,7 @@ window.PP = (function () {
         drawRecChart(M, smin, smax);
         setStatus(recs.length ? 'Found ' + recs.length + ' PP targets' : 'No unplayed maps in band', recs.length ? 'on' : 'warn');
         if (recs.length) toast('Ranked ' + recs.length + ' maps by projected PP gain. Add the ones you want, then export as usual.', 'ok');
-        else toast('No unplayed ranked maps in that star band — widen the Star Rating range.', 'warn');
+        else toast('No unplayed ranked maps in that star band - widen the Star Rating range.', 'warn');
       });
     }).catch(function (err) {
       state.fetching = false; recBtns(false);
@@ -4693,7 +4693,7 @@ window.PP = (function () {
     function buildTopPlays(n) {
     var id = (state.player && state.player.id) || '';
     if (!id) { toast('Connect your BeatLeader profile first, then grab your top plays.', 'warn'); if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    if (state.fetching || state.syncing) { toast('Hang on — a fetch is already running.', 'warn'); return; }
+    if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
     n = n || 50;
     state.fetching = true;
     if (el.topChips) Array.prototype.forEach.call(el.topChips.querySelectorAll('button'), function (b) { b.disabled = true; });
@@ -4722,7 +4722,7 @@ window.PP = (function () {
     }
     fetchPage(1)
       .then(function () {
-        if (!list.length) { setStatus('No top plays found', 'warn'); toast('That profile has no ranked plays to pull — top plays come from ranked (PP) scores.', 'warn'); return; }
+        if (!list.length) { setStatus('No top plays found', 'warn'); toast('That profile has no ranked plays to pull - top plays come from ranked (PP) scores.', 'warn'); return; }
         if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
         state.viewMode = 'plays';
         state.raw = list; state.fetched = true; state.lastSig = 'top:' + id + ':' + n;
@@ -4757,12 +4757,12 @@ window.PP = (function () {
   function clearSearch() {
     state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
     resetFilters(true);
-    toast('Search cleared — results and filters reset.', 'ok');
+    toast('Search cleared - results and filters reset.', 'ok');
   }
 
   // SECRET master reset (Ctrl+Shift+X): acts like clicking every Clear/Reset button at once.
   function masterClear() {
-    // Playlist — snapshot first so the toolbar "Undo clear" can bring it back.
+    // Playlist - snapshot first so the toolbar "Undo clear" can bring it back.
     if (state.basket.length) state.clearUndo = snapshotPlaylist();
     var hadUndo = !!state.clearUndo;
     state.basket = [];
@@ -4780,7 +4780,7 @@ window.PP = (function () {
     resetFilters(true);
     renderAll();
     clearFx();
-    toast('Everything cleared — fresh start.' + (hadUndo ? ' Playlist undo is in the toolbar.' : ''), 'ok');
+    toast('Everything cleared - fresh start.' + (hadUndo ? ' Playlist undo is in the toolbar.' : ''), 'ok');
   }
 
   // Cool one-shot feedback for the secret clear: snap-shake + a saber-colored flash.
@@ -4927,7 +4927,7 @@ window.PP = (function () {
     var debouncedFilter = debounce(applyClientFilters, 160);
     ['fMapper','fMapperExclude','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax']
       .forEach(function (k) { el[k].addEventListener('input', debouncedFilter); el[k].addEventListener('change', applyClientFilters); });
-    // Dropdowns are single discrete changes — no debounce needed.
+    // Dropdowns are single discrete changes - no debounce needed.
     ['fSort','fOrder'].forEach(function (k) { el[k].addEventListener('change', applyClientFilters); });
     el.bsNoAuto.addEventListener('change', applyClientFilters);   // client-side; re-filters without re-searching
     el.bsMinRating.addEventListener('input', debouncedFilter); el.bsMinRating.addEventListener('change', applyClientFilters);
@@ -4940,17 +4940,17 @@ window.PP = (function () {
     el.previewModal.addEventListener('click', function (e) { if (e.target === el.previewModal) closePreview(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && el.previewModal.classList.contains('show')) closePreview(); });
     document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'X' || e.key === 'x') && !e.repeat) { e.preventDefault(); masterClear(); } });
-    // PP calculator controls (modal-local exploration — do not touch the global filter)
+    // PP calculator controls (modal-local exploration - do not touch the global filter)
     el.ppAccInput.addEventListener('input', function () { var n = parseFloat(el.ppAccInput.value); if (!isNaN(n)) { state.ppModalAcc = Math.max(1, Math.min(100, n)); renderPpCalc(); } });
     el.ppAccChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-acc]'); if (b) { state.ppModalAcc = parseFloat(b.dataset.acc); el.ppAccInput.value = state.ppModalAcc; renderPpCalc(); } });
     el.ppMods.addEventListener('click', function (e) { var b = e.target.closest('.pp-mod'); if (b && !b.disabled) { state.ppModalMod = b.dataset.mod; renderPpCalc(); } });
-    // PP Filter panel (global — drives badges, PP sort, PP range filter)
+    // PP Filter panel (global - drives badges, PP sort, PP range filter)
     buildGlobalPpMods();
     el.ppFilterMods.addEventListener('click', function (e) { var b = e.target.closest('.pp-mod'); if (b) setGlobalPpMod(b.dataset.mod); });
     el.ppFilterAcc.addEventListener('input', function () { setGlobalPpAcc(el.ppFilterAcc.value); });
     var ppRangeDeb = debounce(applyClientFilters, 160);
     [el.ppMin, el.ppMax].forEach(function (inp) { inp.addEventListener('input', ppRangeDeb); inp.addEventListener('change', applyClientFilters); });
-    el.fType.addEventListener('change', function () { applyClientFilters(); if (state.raw.length) toast('Ranked status changed — re-fetch to pull the new set.', 'warn'); });
+    el.fType.addEventListener('change', function () { applyClientFilters(); if (state.raw.length) toast('Ranked status changed - re-fetch to pull the new set.', 'warn'); });
     // Enter in any filter field triggers a fetch (a mapper search shouldn't need a mouse).
     ['fMapper','fMapperExclude','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {
       el[k].addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runFetch(); } });
@@ -5131,7 +5131,7 @@ window.PP = (function () {
 
 </script>
 <script>
-/* Footer "last updated" — render as a live relative time (X minutes/hours/days ago). */
+/* Footer "last updated" - render as a live relative time (X minutes/hours/days ago). */
 (function () {
   var elu = document.getElementById('footUpdated');
   if (!elu) return;
@@ -5167,7 +5167,7 @@ window.PP = (function () {
   io.observe(h);
 })();
 
-/* Footer live usage counter — total visits from GoatCounter's public counter endpoint
+/* Footer live usage counter - total visits from GoatCounter's public counter endpoint
    (needs "Allow adding visitor counts on your website" enabled in GoatCounter Site settings).
    Tries the themed JSON first; if the browser blocks it cross-origin, falls back to GoatCounter's
    own <img> SVG counter (not subject to CORS). Silently stays hidden if neither can load. */
@@ -5207,7 +5207,7 @@ window.PP = (function () {
 })();
 </script>
 <!-- ============================================================================
-     USAGE ANALYTICS (GoatCounter) — privacy-friendly, no cookies.
+     USAGE ANALYTICS (GoatCounter) - privacy-friendly, no cookies.
      Dashboard: https://playliststudio.goatcounter.com/  (log in there to view stats).
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays)
