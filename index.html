@@ -133,6 +133,14 @@ button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
 button.big{padding:13px 20px;font-size:16px;}
 .big-fetch{width:100%;justify-content:center;padding:15px;font-size:17px;margin-top:2px;position:sticky;bottom:10px;z-index:6;box-shadow:0 8px 26px rgba(0,0,0,.6);}
 
+/* ---------- Drag-and-drop a .bplist onto the page ---------- */
+#dropZone{position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;background:rgba(4,8,13,.88);backdrop-filter:blur(6px);pointer-events:none;}
+#dropZone.show{display:flex;}
+#dropZone .dz-card{border:2px dashed var(--blue);border-radius:20px;padding:42px 56px;background:rgba(10,20,32,.9);box-shadow:0 0 70px rgba(47,140,255,.3);text-align:center;max-width:90vw;}
+#dropZone .dz-ic{color:var(--blue);display:flex;justify-content:center;margin-bottom:16px;}
+#dropZone .dz-ic svg{width:54px;height:54px;}
+#dropZone .dz-t{font-size:23px;font-weight:800;color:var(--text);margin:0 0 8px;}
+#dropZone .dz-d{font-size:15px;color:var(--muted,#9aa2ad);margin:0;font-family:var(--mono);}
 /* ---------- Map preview modal ---------- */
 .modal-back{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);padding:20px;}
 .modal-back.show{display:flex;}
@@ -1591,8 +1599,35 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-10T14:02:46Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-12T13:30:00Z">Last updated recently</div>
 </footer>
+
+<!-- ============ DRAG-AND-DROP A .BPLIST ============ -->
+<div id="dropZone" aria-hidden="true">
+  <div class="dz-card">
+    <div class="dz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+    <p class="dz-t">Drop a .bplist to load it</p>
+    <p class="dz-d">Loads into Your Playlist</p>
+  </div>
+</div>
+
+<!-- ============ DROP: MERGE OR REPLACE ============ -->
+<div class="modal-back" id="dropChoiceModal" aria-hidden="true">
+  <div class="modal" style="width:min(470px,100%);">
+    <div class="modal-head">
+      <span class="modal-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+      <h3>Your Playlist already has songs</h3>
+    </div>
+    <div class="modal-body">
+      <p id="dropChoiceMsg" style="margin:0;font-size:15px;line-height:1.6;color:var(--text);"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost" id="dropCancelBtn">Cancel</button>
+      <button class="cyan" id="dropReplaceBtn">Replace</button>
+      <button class="primary" id="dropMergeBtn">Merge</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ MAP PREVIEW MODAL ============ -->
 <div class="modal-back" id="previewModal" aria-hidden="true">
@@ -2514,7 +2549,8 @@ window.PP = (function () {
    'statsBody','rampPreview','rampByChips','rampDirChips','rampApplyBtn','rampUndoBtn',
    'shareLink','shareCopyBtn','shareInfo','shareImportInput','shareImportBtn','simBtn',
    'plannerPanel','plannerModeChips','plannerGoalLabel','plannerGoal','plannerAccChips','plannerBody','plannerRunBtn',
-   'toast','tipbox'
+   'toast','tipbox',
+   'dropZone','dropChoiceModal','dropChoiceMsg','dropCancelBtn','dropMergeBtn','dropReplaceBtn'
   ].forEach(function (id) { el[id] = $(id); });
 
   // ---- helpers --------------------------------------------------------------
@@ -4155,7 +4191,8 @@ window.PP = (function () {
     var name = el.savedPlaylists.value; if (!name) { toast('Pick a playlist to delete.', 'warn'); return; }
     var o = lsGetPl(); delete o[name]; lsSetPl(o); populatePlaylists(); toast('Deleted "' + name + '".', 'ok');
   }
-  function importBplistFile(file) {
+  function importBplistFile(file, opts) {
+    opts = opts || {};
     var reader = new FileReader();
     reader.onerror = function () { toast('Could not read that file.', 'err'); };
     reader.onload = function () {
@@ -4196,8 +4233,60 @@ window.PP = (function () {
       renderAll();
       toast(added ? 'Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from "' + (pl.playlistTitle || 'playlist') + '".' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn');
       if (needsEnrich().length) enrichImported();
+      if (opts.restoreUndo) { state.clearUndo = opts.restoreUndo; renderControls(); }
     };
     reader.readAsText(file);
+  }
+
+  // ---- drag a .bplist onto the page (routes into importBplistFile) ---------
+  var pendingDropFile = null, dropDragDepth = 0;
+  function dragHasFiles(e) {
+    var t = e.dataTransfer && e.dataTransfer.types; if (!t) return false;
+    for (var i = 0; i < t.length; i++) { if (t[i] === 'Files' || t[i] === 'application/x-moz-file') return true; }
+    return false;
+  }
+  function showDropZone() { if (el.dropZone) el.dropZone.classList.add('show'); }
+  function hideDropZone() { dropDragDepth = 0; if (el.dropZone) el.dropZone.classList.remove('show'); }
+  function validPlaylistFile(f) { return !!f && (/\.bplist$/i.test(f.name) || /\.json$/i.test(f.name) || f.type === 'application/json' || f.type === ''); }
+  function closeDropChoice() {
+    pendingDropFile = null;
+    if (el.dropChoiceModal) { el.dropChoiceModal.classList.remove('show'); el.dropChoiceModal.setAttribute('aria-hidden', 'true'); }
+  }
+  function handleDroppedPlaylist(file) {
+    if (!validPlaylistFile(file)) { toast('Drop a .bplist file (or its JSON).', 'warn'); return; }
+    if (!state.basket.length) { track('drop-import-fresh'); importBplistFile(file); return; }
+    pendingDropFile = file;
+    if (el.dropChoiceMsg) el.dropChoiceMsg.innerHTML = 'Your Playlist already has <b>' + state.basket.length + '</b> song' + (state.basket.length === 1 ? '' : 's') + '. <b>Merge</b> adds this file’s songs to it. <b>Replace</b> swaps in the file instead - your current list goes to <b>Undo clear</b> so you can bring it back.';
+    if (el.dropChoiceModal) { el.dropChoiceModal.classList.add('show'); el.dropChoiceModal.setAttribute('aria-hidden', 'false'); }
+  }
+  function dropMerge() { var f = pendingDropFile; closeDropChoice(); if (f) { track('drop-import-merge'); importBplistFile(f); } }
+  function dropReplace() {
+    var f = pendingDropFile; closeDropChoice(); if (!f) return;
+    track('drop-import-replace');
+    var snap = snapshotPlaylist();
+    state.basket = [];
+    resetPlaylistIdentity();
+    if (el.playlistName) el.playlistName.value = '';
+    if (el.savedPlaylists) el.savedPlaylists.value = '';
+    importBplistFile(f, { restoreUndo: snap });
+  }
+  function setupDropImport() {
+    if (!el.dropZone) return;
+    window.addEventListener('dragenter', function (e) { if (!dragHasFiles(e)) return; e.preventDefault(); dropDragDepth++; showDropZone(); });
+    window.addEventListener('dragover', function (e) { if (!dragHasFiles(e)) return; e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; });
+    window.addEventListener('dragleave', function (e) { if (!dragHasFiles(e)) return; dropDragDepth--; if (dropDragDepth <= 0) hideDropZone(); });
+    window.addEventListener('dragend', function () { hideDropZone(); });
+    window.addEventListener('drop', function (e) {
+      if (!dragHasFiles(e)) return;
+      e.preventDefault(); hideDropZone();
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleDroppedPlaylist(f);
+    });
+    if (el.dropCancelBtn) el.dropCancelBtn.addEventListener('click', closeDropChoice);
+    if (el.dropMergeBtn) el.dropMergeBtn.addEventListener('click', dropMerge);
+    if (el.dropReplaceBtn) el.dropReplaceBtn.addEventListener('click', dropReplace);
+    if (el.dropChoiceModal) el.dropChoiceModal.addEventListener('click', function (e) { if (e.target === el.dropChoiceModal) closeDropChoice(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && el.dropChoiceModal && el.dropChoiceModal.classList.contains('show')) closeDropChoice(); });
   }
 
   // ---- BeatLeader enrichment (backfill stars / NPS / duration / cover) ------
@@ -5074,6 +5163,7 @@ window.PP = (function () {
     el.deletePlaylistBtn.addEventListener('click', deletePlaylist);
     el.playlistName.addEventListener('keydown', function (e) { if (e.key === 'Enter') savePlaylist(); });
     el.importBplist.addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; if (f) importBplistFile(f); e.target.value = ''; });
+    setupDropImport();
 
     // BeatLeader profile
     el.connectBtn.addEventListener('click', connectPlayer);
