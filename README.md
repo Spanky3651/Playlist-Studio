@@ -203,7 +203,7 @@ Want the playlist to update itself in-game whenever you change it? Turn on the *
 
 ## Privacy
 
-- No account, no tracking, no analytics.
+- No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter that stores no personal data.
 - Presets, saved playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage - nothing is uploaded.
 - API requests hit BeatLeader and BeatSaver (public data) through a public relay; only anonymous, read-only GETs are ever sent.
 
@@ -214,6 +214,13 @@ Vanilla HTML, CSS and JavaScript - no framework and no build tooling. The single
 - Map data - [BeatLeader](https://api.beatleader.xyz) (ranked catalog, scores, PP) and [BeatSaver](https://beatsaver.com) (full catalog, tags)
 - Map previews - [BeatSaver](https://beatsaver.com) + [ArcViewer](https://github.com/allpoland/ArcViewer)
 - Export format - [PlaylistManager](https://github.com/rithik-b/PlaylistManager)
+
+## More tools
+
+Other free, single-file Beat Saber tools by MSploit:
+
+- **[ReeSaber Studio](https://spanky3651.github.io/ReeSaber-Studio/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual preset editor for the ReeSabers mod, with a live 3D preview and `.json` / `.reesaber` export.
+- **[HSV Config Generator](https://spanky3651.github.io/HSV-Config-Generator/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual editor and live simulator for HitScoreVisualizer configs, with push-to-Quest over USB.
 
 ## Credits
 
