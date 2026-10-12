@@ -513,6 +513,14 @@ button[hidden],.filebtn[hidden]{display:none !important;}
 .linklike{background:none;border:none;color:var(--blue);cursor:pointer;font:inherit;padding:0;text-decoration:underline;text-underline-offset:2px;}
 .linklike:hover{color:#fff;}
 .play-bar.connected .play-bar-hint{display:none;}
+.sort-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid var(--border);background:#0a0f17;}
+.sort-bar[hidden]{display:none;}
+.sort-bar-lbl{font-family:var(--mono);font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2);flex:none;}
+.sort-bar select{font-family:var(--mono);font-size:13px;color:var(--text);background:#0c1220;border:1px solid var(--border-2);border-radius:7px;padding:5px 9px;cursor:pointer;width:auto;max-width:220px;flex:0 1 auto;}
+.sort-bar select:hover{border-color:var(--blue);}
+.sort-bar .sort-order{font-family:var(--mono);font-size:13px;color:var(--muted);background:#0c1220;border:1px solid var(--border-2);border-radius:7px;padding:5px 11px;cursor:pointer;transition:.13s;}
+.sort-bar .sort-order:hover{border-color:var(--blue);color:#fff;}
+.sort-bar-sep{width:1px;height:20px;background:var(--border-2);margin:0 3px;flex:none;}
 .play-bar:not(.connected) .play-chips{display:none;}
 /* Maps-to-scan quick picks */
 .scan-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
@@ -1345,6 +1353,31 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         </div>
         <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
       </div>
+      <div class="sort-bar" id="sortBar" hidden>
+        <span class="sort-bar-lbl">Sort</span>
+        <select id="sortInline" title="Reorder the list below (same as the Search Scope &amp; Sort panel)">
+          <option value="myDate">Date I played</option>
+          <option value="stars">Stars</option>
+          <option value="nps">NPS</option>
+          <option value="duration">Duration</option>
+          <option value="bpm">BPM</option>
+          <option value="myAcc">My accuracy</option>
+          <option value="myRank">My rank</option>
+          <option value="techRating">Tech</option>
+          <option value="accRating">Acc</option>
+          <option value="passRating">Pass</option>
+          <option value="pp">PP @ target acc</option>
+          <option value="improve">Improvement potential</option>
+        </select>
+        <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
+        <span class="sort-bar-sep"></span>
+        <span class="sort-bar-lbl">Show</span>
+        <select id="rankInline" title="Filter by ranked status - ranked means the map has a BeatLeader star rating">
+          <option value="all">All maps</option>
+          <option value="ranked">Ranked only</option>
+          <option value="unranked">Unranked only</option>
+        </select>
+      </div>
       <div class="panel-body list-body">
         <div class="song-list" id="resultList">
           <div class="empty">
@@ -1599,7 +1632,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-12T13:30:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-12T16:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ DRAG-AND-DROP A .BPLIST ============ -->
@@ -2550,7 +2583,8 @@ window.PP = (function () {
    'shareLink','shareCopyBtn','shareInfo','shareImportInput','shareImportBtn','simBtn',
    'plannerPanel','plannerModeChips','plannerGoalLabel','plannerGoal','plannerAccChips','plannerBody','plannerRunBtn',
    'toast','tipbox',
-   'dropZone','dropChoiceModal','dropChoiceMsg','dropCancelBtn','dropMergeBtn','dropReplaceBtn'
+   'dropZone','dropChoiceModal','dropChoiceMsg','dropCancelBtn','dropMergeBtn','dropReplaceBtn',
+   'sortBar','sortInline','sortInlineOrder','rankInline'
   ].forEach(function (id) { el[id] = $(id); });
 
   // ---- helpers --------------------------------------------------------------
@@ -2610,6 +2644,7 @@ window.PP = (function () {
     var mapperExclude = el.fMapperExclude.value.split(',').map(function (m) { return m.trim().toLowerCase(); }).filter(Boolean);
     return {
       type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value,
+      rankView: el.rankInline ? el.rankInline.value : 'all',
       maxScan: clamp(num(el.fMaxScan, 2500), 20, 20000),
       starMin: clamp(num(el.starMinNum, 0), 0, 15), starMax: clamp(num(el.starMaxNum, 15), 0, 15),
       mapperTerms: mapperTerms, mapperExclude: mapperExclude, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
@@ -3013,6 +3048,11 @@ window.PP = (function () {
         if (ageCutoff != null) { if (!s.uploaded) return false; if ((nowSec - s.uploaded) / 86400 > ageCutoff) return false; }
       }
       if (state.source === 'beatleader' && s.stars > 0 && (s.stars < f.starMin || s.stars > f.starMax)) return false;
+      if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all') {
+        var isRanked = s.stars > 0;
+        if (f.rankView === 'ranked' && !isRanked) return false;
+        if (f.rankView === 'unranked' && isRanked) return false;
+      }
       if (f.modes.length) { var emo = s.modes || [s.modeName]; if (!f.modes.some(function (m) { return emo.indexOf(m) !== -1; })) return false; }
       if (f.diffEnabled && f.diffs.length) { var edi = s.diffSet || (s.difficultyName ? [s.difficultyName] : null); if (!edi || !f.diffs.some(function (d) { return edi.indexOf(d) !== -1; })) return false; }
       if (state.player && (f.playStatus !== 'any' || f.accMax != null || f.recency !== 'any')) {
@@ -4546,6 +4586,28 @@ window.PP = (function () {
     if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (el.playerInput) { try { el.playerInput.focus({ preventScroll: true }); } catch (e) { el.playerInput.focus(); } }
   }
+  // Compact inline sort control above the results list - mirrors the side-panel
+  // Sort by + Order so you can re-sort (newest played, stars, duration, ...) without
+  // opening the Search Scope & Sort panel.
+  function syncInlineSort() {
+    if (!el.sortBar) return;
+    var showable = state.source === 'beatleader' && state.fetched && state.raw.length > 0 && state.viewMode !== 'recommend';
+    el.sortBar.hidden = !showable;
+    if (!showable) return;
+    if (el.sortInline && el.sortInline.value !== el.fSort.value) el.sortInline.value = el.fSort.value;
+    if (el.sortInlineOrder) {
+      var desc = el.fOrder.value !== 'asc', dateLike = el.fSort.value === 'myDate';
+      el.sortInlineOrder.textContent = dateLike
+        ? (desc ? '↓ Newest first' : '↑ Oldest first')
+        : (desc ? '↓ High → Low' : '↑ Low → High');
+    }
+  }
+  function setupInlineSort() {
+    if (!el.sortInline) return;
+    el.sortInline.addEventListener('change', function () { el.fSort.value = el.sortInline.value; applyClientFilters(); });
+    el.sortInlineOrder.addEventListener('click', function () { el.fOrder.value = (el.fOrder.value === 'asc' ? 'desc' : 'asc'); applyClientFilters(); });
+    if (el.rankInline) el.rankInline.addEventListener('change', applyClientFilters);
+  }
   function renderPlayBar() {
     var connected = !!state.player;
     el.playFilterBar.classList.toggle('connected', connected);
@@ -4553,6 +4615,7 @@ window.PP = (function () {
     Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip'), function (b) {
       b.classList.toggle('active', b.dataset.ps === ps);
     });
+    syncInlineSort();
   }
   // Resolve whatever the user typed into a full BeatLeader player object. /player/{token} already
   // handles a SteamID, the short player id, and the exact alias; if that 404s (a display name or a
@@ -4670,6 +4733,10 @@ window.PP = (function () {
     if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
     state.viewMode = 'plays';
     state.raw = list; state.fetched = true; state.lastSig = 'plays';
+    // A "my plays" list reads most naturally newest-first (like BeatLeader's own
+    // Scores tab), not by star. Default the sort here; the user can still re-sort.
+    if (el.fSort) el.fSort.value = 'myDate';
+    if (el.fOrder) el.fOrder.value = 'desc';
     applyClientFilters();
     setStatus('Loaded ' + list.length + ' of your plays', 'on'); track('build-from-plays');
     toast('Loaded your ' + list.length + ' played maps. Set “Your play status” to “Played, not FC” (or use Near-miss FC / accuracy) to narrow, then add the ones you want.', 'ok');
@@ -5038,6 +5105,7 @@ window.PP = (function () {
       .forEach(function (k) { el[k].addEventListener('input', debouncedFilter); el[k].addEventListener('change', applyClientFilters); });
     // Dropdowns are single discrete changes - no debounce needed.
     ['fSort','fOrder'].forEach(function (k) { el[k].addEventListener('change', applyClientFilters); });
+    setupInlineSort();
     el.bsNoAuto.addEventListener('change', applyClientFilters);   // client-side; re-filters without re-searching
     el.bsMinRating.addEventListener('input', debouncedFilter); el.bsMinRating.addEventListener('change', applyClientFilters);
     el.bsAge.addEventListener('change', applyClientFilters);
