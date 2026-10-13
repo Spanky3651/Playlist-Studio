@@ -1632,7 +1632,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-12T16:00:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-13T13:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ DRAG-AND-DROP A .BPLIST ============ -->
@@ -3273,6 +3273,7 @@ window.PP = (function () {
   function quickAdd() {
     var toks = parseQuickAddTokens(el.quickAddInput.value);
     if (!toks.length) { toast('Enter a BSR code, BeatSaver link, or 40-char hash.', 'warn'); return; }
+    track('quick-add');
     if (toks.length > 100) toks = toks.slice(0, 100);
     el.quickAddBtn.disabled = true; var lbl = el.quickAddBtn.textContent; el.quickAddBtn.textContent = 'Adding…';
     Promise.all(toks.map(fetchBsMap)).then(function (maps) {
@@ -4066,6 +4067,7 @@ window.PP = (function () {
     var o = refineOpts();
     if (SCORE_CRITS[o.crit] && !state.player) { toast('Connect your BeatLeader profile first (Your scores).', 'warn'); updateRefineUI(); return; }
     if (!state.basket.length) return;
+    track('refine');
     var before = state.basket.slice();
     var kept = state.basket.filter(function (e) {
       var hit = refineMatches(e, o.crit, o.acc, o.smin, o.smax);
@@ -4191,6 +4193,7 @@ window.PP = (function () {
   function savePlaylist() {
     var name = el.playlistName.value.trim(); if (!name) { toast('Name the playlist first.', 'warn'); return; }
     if (!state.basket.length) { toast('Add some songs before saving.', 'warn'); return; }
+    track('save-playlist');
     var o = lsGetPl();
     var cover = { usingCustom: state.usingCustom, style: state.coverStyle, accent: state.coverAccent,
       seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
@@ -4203,6 +4206,7 @@ window.PP = (function () {
   function loadPlaylist() {
     var name = el.savedPlaylists.value; if (!name) { toast('Pick a saved playlist first.', 'warn'); return; }
     var p = lsGetPl()[name]; if (!p) { toast('That playlist is gone.', 'warn'); return; }
+    track('load-playlist');
     resetPlaylistIdentity();               // clean slate first so nothing leaks from the previous list
     state.basket = (p.entries || []).slice();
     if (p.meta) { el.metaTitle.value = p.meta.title || DEFAULT_TITLE; if (p.meta.author) el.metaAuthor.value = p.meta.author; el.metaDescription.value = p.meta.description || ''; state.descAuto = (p.meta.descAuto !== undefined) ? !!p.meta.descAuto : isAutoDesc(p.meta.description || ''); }
@@ -5126,7 +5130,8 @@ window.PP = (function () {
     el.ppFilterMods.addEventListener('click', function (e) { var b = e.target.closest('.pp-mod'); if (b) setGlobalPpMod(b.dataset.mod); });
     el.ppFilterAcc.addEventListener('input', function () { setGlobalPpAcc(el.ppFilterAcc.value); });
     var ppRangeDeb = debounce(applyClientFilters, 160);
-    [el.ppMin, el.ppMax].forEach(function (inp) { inp.addEventListener('input', ppRangeDeb); inp.addEventListener('change', applyClientFilters); });
+    var ppFilterTracked = false;
+    [el.ppMin, el.ppMax].forEach(function (inp) { inp.addEventListener('input', ppRangeDeb); inp.addEventListener('change', applyClientFilters); inp.addEventListener('change', function () { if (!ppFilterTracked && (num(el.ppMin, null) != null || num(el.ppMax, null) != null)) { ppFilterTracked = true; track('pp-filter'); } }); });
     el.fType.addEventListener('change', function () { applyClientFilters(); if (state.raw.length) toast('Ranked status changed - re-fetch to pull the new set.', 'warn'); });
     // Enter in any filter field triggers a fetch (a mapper search shouldn't need a mouse).
     ['fMapper','fMapperExclude','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {
@@ -5152,7 +5157,7 @@ window.PP = (function () {
     if (el.rampApplyBtn) el.rampApplyBtn.addEventListener('click', applyRamp);
     if (el.rampUndoBtn) el.rampUndoBtn.addEventListener('click', undoRamp);
     if (el.shareCopyBtn) el.shareCopyBtn.addEventListener('click', copyShareLink);
-    if (el.shareImportBtn) el.shareImportBtn.addEventListener('click', function () { importFromShareStr(el.shareImportInput.value); el.shareImportInput.value = ''; });
+    if (el.shareImportBtn) el.shareImportBtn.addEventListener('click', function () { if (el.shareImportInput.value.trim()) track('share-paste'); importFromShareStr(el.shareImportInput.value); el.shareImportInput.value = ''; });
     if (el.simBtn) el.simBtn.addEventListener('click', function () { findSimilar(state.ppEntry); });
     if (el.plannerModeChips) el.plannerModeChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-mode]'); if (!c) return; plannerMode = c.getAttribute('data-pl-mode'); setChipOn(el.plannerModeChips, c); if (el.plannerGoalLabel) el.plannerGoalLabel.textContent = plannerMode === 'add' ? 'PP to gain' : 'Target total PP'; if (el.plannerGoal) el.plannerGoal.placeholder = plannerMode === 'add' ? 'e.g. 500' : 'e.g. 11000'; });
     if (el.plannerAccChips) el.plannerAccChips.addEventListener('click', function (e) { var c = e.target.closest('[data-pl-acc]'); if (!c) return; plannerAcc = c.getAttribute('data-pl-acc'); setChipOn(el.plannerAccChips, c); });
@@ -5168,8 +5173,8 @@ window.PP = (function () {
     var _wnBack = document.getElementById('whatsnewBack'); if (_wnBack) _wnBack.addEventListener('click', function (e) { if (e.target === _wnBack) closeWhatsNew(); });
     el.clearBasketBtn.addEventListener('click', clearBasket);
     el.clearResultsBtn.addEventListener('click', clearSearch);
-    el.enrichBtn.addEventListener('click', enrichImported);
-    el.refreshStarsBtn.addEventListener('click', refreshStars);
+    el.enrichBtn.addEventListener('click', function () { track('fill-data'); enrichImported(); });
+    el.refreshStarsBtn.addEventListener('click', function () { track('refresh-stars'); refreshStars(); });
 
     // row delegation
     el.resultList.addEventListener('click', function (e) {
@@ -5230,7 +5235,7 @@ window.PP = (function () {
     el.loadPlaylistBtn.addEventListener('click', loadPlaylist);
     el.deletePlaylistBtn.addEventListener('click', deletePlaylist);
     el.playlistName.addEventListener('keydown', function (e) { if (e.key === 'Enter') savePlaylist(); });
-    el.importBplist.addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; if (f) importBplistFile(f); e.target.value = ''; });
+    el.importBplist.addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; if (f) { track('import'); importBplistFile(f); } e.target.value = ''; });
     setupDropImport();
 
     // BeatLeader profile
