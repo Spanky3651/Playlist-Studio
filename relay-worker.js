@@ -19,7 +19,7 @@
  *      (keep the trailing "?url=") then run a search to confirm it works.
  *   6. Send that URL to me and I'll bake it in as the default relay for everyone.
  *
- * It only proxies the two hosts this app needs, so it can't be abused as an
+ * It only proxies the hosts this app needs (BeatLeader, BeatSaver, ScoreSaber), so it can't be abused as an
  * open proxy.
  */
 export default {
@@ -39,7 +39,7 @@ export default {
     try { t = new URL(target); } catch (e) { return new Response("Bad url", { status: 400, headers: cors }); }
 
     // Allowlist so this can never be used as a general-purpose open proxy.
-    const ALLOWED = ["api.beatleader.xyz", "api.beatsaver.com"];
+    const ALLOWED = ["api.beatleader.xyz", "api.beatsaver.com", "scoresaber.com"];
     if (!ALLOWED.includes(t.hostname)) {
       return new Response("Host not allowed: " + t.hostname, { status: 403, headers: cors });
     }
