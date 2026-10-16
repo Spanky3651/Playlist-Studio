@@ -1704,7 +1704,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-16T12:40:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-16T12:45:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2818,20 +2818,23 @@ window.PP = (function () {
   var sv = { id: null, data: null, token: 0, range: 'day', rankedOnly: false };
   function svEl(id) { return document.getElementById(id); }
   function svNull() { return null; }
-  function anyRelay(apiUrl, isValid) {
+  function anyRelay(apiUrl, isValid, ms) {
     // Race the relay pool without pinning it, so BeatLeader's pinned relay is left alone.
     var custom = customAdapter(); var pool = custom ? [custom] : RELAYS;
     return new Promise(function (resolve, reject) {
       var pending = pool.length, done = false;
       pool.forEach(function (ad) {
-        viaAdapter(ad, apiUrl, isValid).then(function (j) { if (!done) { done = true; resolve(j); } },
+        fetchTimeout(ad.build(apiUrl), ms || RELAY_TIMEOUT)
+          .then(function (res) { if (!res.ok) throw new Error('http ' + res.status); return res.text(); })
+          .then(function (t) { var j = ad.unwrap(t); if (!isValid(j)) throw new Error('unexpected response'); return j; })
+          .then(function (j) { if (!done) { done = true; resolve(j); } },
           function (e) { if (done) return; if (/http 404/.test(e && e.message)) { done = true; reject(e); return; } if (--pending === 0) { done = true; reject(new Error('relays failed')); } });
       });
     });
   }
   function svOk(j) { return !!j; }
   function blGet(path, isValid) { return relayFetch(API_BASE + path, isValid || svOk); }
-  function ssGet(path, isValid) { return anyRelay(SS_API + path, isValid || svOk); }
+  function ssGet(path, isValid) { return anyRelay(SS_API + path, isValid || svOk, 8000); }
   function asGet(path) { return fetchTimeout(AS_API + path, 12000).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }); }
   function firstOk(ids, fn) {
     var i = 0;
@@ -2889,47 +2892,65 @@ window.PP = (function () {
   }
 
   function svLoad(id) {
-    var tok = ++sv.token; sv.id = id; sv.data = null; sv.range = 'day'; sv.rankedOnly = false;
+    var tok = ++sv.token; sv.id = id; sv.data = null; sv.dirty = false; sv.range = 'day'; sv.rankedOnly = false;
     svEl('sdBody').innerHTML = svSkeleton();
-    var D = {};
+    var D = { ssState: 'loading', asLoading: true };
     blGet('/player/' + encodeURIComponent(id) + '?stats=true', validPlayer).then(function (p) {
       if (tok !== sv.token) return;
-      D.bl = p;
+      D.bl = p; D.tok = tok;
       var li = p.linkedIds || {}, ids = [];
       [li.steamId, p.id].concat(Object.keys(li).map(function (k) { return li[k]; })).forEach(function (x) { if (x && /^\d{3,20}$/.test(String(x)) && ids.indexOf(String(x)) < 0) ids.push(String(x)); });
+      D.ids = ids;
+      // Each site paints as soon as it answers, so a slow or blocked one never holds up the rest.
+      svLoadSS(D);
+      svLoadAS(D);
+      blGaps(p.rank, p.pp).then(function (g) { D.blg = g; svPaint(D); }, svNull);
       return Promise.all([
         blGet('/player/' + encodeURIComponent(p.id) + '/history?count=40', Array.isArray).catch(svNull),
-        blGet('/player/' + encodeURIComponent(p.id) + '/scores?sortBy=date&order=desc&count=40', DATA_VALID).catch(svNull),
-        blGaps(p.rank, p.pp).catch(svNull),
-        firstOk(ids, function (x) { return ssGet('/player/' + x + '/full', function (j) { return j && j.id && !j.errorMessage; }); }).catch(svNull),
-        firstOk(ids, function (x) { return asGet('/users/' + x + '/statistics/all').then(function (st) { if (!st || !st.categories || !st.categories.length) throw new Error('none'); return { id: x, st: st }; }); }).catch(svNull)
+        blGet('/player/' + encodeURIComponent(p.id) + '/scores?sortBy=date&order=desc&count=40', DATA_VALID).catch(svNull)
       ]).then(function (r) {
         if (tok !== sv.token) return;
-        D.blh = r[0]; D.bls = r[1] ? r[1].data : []; D.blg = r[2]; D.ss = r[3]; D.as = r[4];
-        var more = [];
-        if (D.ss) {
-          more.push(ssGet('/player/' + D.ss.id + '/scores?sort=recent&limit=40', function (j) { return j && Array.isArray(j.playerScores); }).then(function (j) { D.sss = j.playerScores; }, svNull));
-          more.push(ssGaps(D.ss.rank, D.ss.pp).then(function (g) { D.ssg = g; }, svNull));
-        }
-        if (D.as) {
-          var aid = D.as.id, ov = null;
-          D.as.st.categories.forEach(function (c) { if (c.categoryId === AS_OVERALL) ov = c; });
-          D.as.ov = ov;
-          more.push(asGet('/users/' + aid + '/level').then(function (j) { D.asl = j; }, svNull));
-          more.push(asGet('/users/' + aid).then(function (j) { D.asu = j; }, svNull));
-          more.push(asGet('/users/' + aid + '/stats-diff?category=overall').then(function (j) { D.asd = j; }, svNull));
-          more.push(asGet('/users/' + aid + '/scores?page=0&size=40&sort=timeSet,desc').then(function (j) { D.ass = j.content || []; }, svNull));
-          if (ov) more.push(asBoard(ov.ranking).then(function (list) { D.asb = list; }, svNull));
-        }
-        return Promise.all(more).then(function () {
-          if (tok !== sv.token) return;
-          sv.data = D; svRender();
-        });
+        D.blh = r[0]; D.bls = r[1] ? r[1].data : []; D.blReady = true;
+        sv.data = D; svPaint(D);
       });
     }).catch(function () {
       if (tok !== sv.token) return;
       svEl('sdBody').innerHTML = '<div class="sv-err">Couldn\'t load this player from BeatLeader. Check the connection and try again.</div>';
     });
+  }
+  var svPaintTimer = null;
+  function svPaint(D) {
+    if (D.tok !== sv.token || !D.blReady) return;
+    // Don't rebuild the list under an open replay; repaint once it closes.
+    if (document.querySelector('#sdBody .sv-rp:not([hidden])')) { sv.dirty = true; return; }
+    clearTimeout(svPaintTimer);
+    svPaintTimer = setTimeout(function () { if (D.tok === sv.token) svRender(); }, 50);
+  }
+  function svLoadSS(D) {
+    D.ssState = 'loading'; D.ss = null; D.sss = null; D.ssg = null;
+    var notFound = false;
+    firstOk(D.ids, function (x) {
+      return ssGet('/player/' + x + '/full', function (j) { return j && j.id && !j.errorMessage; })
+        .catch(function (e) { if (/http 404/.test(e && e.message)) notFound = true; throw e; });
+    }).then(function (ss) {
+      D.ss = ss; D.ssState = 'ok'; svPaint(D);
+      ssGet('/player/' + ss.id + '/scores?sort=recent&limit=40', function (j) { return j && Array.isArray(j.playerScores); }).then(function (j) { D.sss = j.playerScores; svPaint(D); }, svNull);
+      ssGaps(ss.rank, ss.pp).then(function (g) { D.ssg = g; svPaint(D); }, svNull);
+    }, function () { D.ssState = notFound ? 'none' : 'down'; svPaint(D); });
+  }
+  function svLoadAS(D) {
+    firstOk(D.ids, function (x) { return asGet('/users/' + x + '/statistics/all').then(function (st) { if (!st || !st.categories || !st.categories.length) throw new Error('none'); return { id: x, st: st }; }); })
+      .then(function (as) {
+        var aid = as.id, ov = null;
+        as.st.categories.forEach(function (c) { if (c.categoryId === AS_OVERALL) ov = c; });
+        as.ov = ov; D.as = as; D.asLoading = false; svPaint(D);
+        var done = function () { svPaint(D); };
+        asGet('/users/' + aid + '/level').then(function (j) { D.asl = j; done(); }, svNull);
+        asGet('/users/' + aid).then(function (j) { D.asu = j; done(); }, svNull);
+        asGet('/users/' + aid + '/stats-diff?category=overall').then(function (j) { D.asd = j; done(); }, svNull);
+        asGet('/users/' + aid + '/scores?page=0&size=40&sort=timeSet,desc').then(function (j) { D.ass = j.content || []; done(); }, svNull);
+        if (ov) asBoard(ov.ranking).then(function (list) { D.asb = list; done(); }, svNull);
+      }, function () { D.as = null; D.asLoading = false; svPaint(D); });
   }
 
   function svSkeleton() {
@@ -2975,7 +2996,11 @@ window.PP = (function () {
 
     // ScoreSaber card
     var ssCard;
-    if (ss) {
+    if (D.ssState === 'loading') {
+      ssCard = '<div class="sv-rk" style="--ac:var(--amber);--act:#ffd56b"><div class="sv-lab"><span>SCORESABER</span><span>GLOBAL</span></div><div class="sk" style="width:150px;height:30px;margin-top:12px"></div><div class="sk" style="height:46px;margin-top:12px"></div><div class="sk" style="height:28px;margin-top:12px"></div></div>';
+    } else if (D.ssState === 'down') {
+      ssCard = '<div class="sv-rk" style="--ac:#3a3420;--act:#ffd56b"><div class="sv-lab"><span>SCORESABER</span><span>GLOBAL</span></div><div class="sv-none"><b>ScoreSaber didn\'t respond</b>Couldn\'t reach ScoreSaber right now.<a href="#" data-ss-retry>Try again &#8635;</a></div></div>';
+    } else if (ss) {
       var ssh = String(ss.histories || '').split(',').map(Number).filter(function (x) { return x > 0; });
       var ssOld = ssh.length ? ssh[ssh.length - 1] : null;
       var ssSpark = ssh.slice(-29); ssSpark.push(ss.rank);
@@ -2988,7 +3013,9 @@ window.PP = (function () {
 
     // AccSaber card
     var asCard;
-    if (ov) {
+    if (D.asLoading) {
+      asCard = '<div class="sv-rk" style="--ac:var(--red);--act:#ff7a8c"><div class="sv-lab"><span>ACCSABER</span><span>OVERALL</span></div><div class="sk" style="width:150px;height:30px;margin-top:12px"></div><div class="sk" style="height:46px;margin-top:12px"></div><div class="sk" style="height:28px;margin-top:12px"></div></div>';
+    } else if (ov) {
       var cat = {}; D.as.st.categories.forEach(function (c) { var k = AS_CAT[c.categoryId]; if (k) cat[k] = c; });
       var sess = D.asd && D.asd.rankingDiff != null ? -D.asd.rankingDiff : null;
       var me = null, nx = null, mid = String(D.as.id);
@@ -3087,6 +3114,7 @@ window.PP = (function () {
     svEl('sdPanel').classList.remove('open'); svEl('sdBack').classList.remove('open'); svEl('sdPanel').setAttribute('aria-hidden', 'true');
     document.body.classList.remove('sd-lock');
     Array.prototype.forEach.call(document.querySelectorAll('#sdBody .sv-rp'), function (x) { x.hidden = true; x.innerHTML = ''; });
+    if (sv.dirty) { sv.dirty = false; svRender(); }
   }
   function svShareUrl() {
     var id = (sv.data && sv.data.bl && sv.data.bl.id) || sv.id;
@@ -3104,6 +3132,8 @@ window.PP = (function () {
       else prompt('Copy this link:', url);
     });
     svEl('sdBody').addEventListener('click', function (e) {
+      var rt = e.target.closest('[data-ss-retry]');
+      if (rt) { e.preventDefault(); if (sv.data) { svLoadSS(sv.data); svRender(); } return; }
       var f = e.target.closest('#svFilters button');
       if (f) {
         if (f.dataset.r === 'ranked') sv.rankedOnly = !sv.rankedOnly; else sv.range = f.dataset.r;
@@ -3116,7 +3146,7 @@ window.PP = (function () {
       var panel = svEl('svrp-' + b.dataset.rp), wasOpen = panel && !panel.hidden;
       Array.prototype.forEach.call(document.querySelectorAll('#sdBody .sv-rp'), function (x) { x.hidden = true; x.innerHTML = ''; });
       Array.prototype.forEach.call(document.querySelectorAll('#sdBody button[data-rp]'), function (x) { x.innerHTML = '&#9654; Replay'; });
-      if (!panel || wasOpen) return;
+      if (!panel || wasOpen) { if (sv.dirty) { sv.dirty = false; svRender(); } return; }
       panel.innerHTML = '<iframe src="' + url + '" allow="autoplay; fullscreen" allowfullscreen title="Replay"></iframe>';
       panel.hidden = false; b.innerHTML = '&#9632; Close';
       panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
