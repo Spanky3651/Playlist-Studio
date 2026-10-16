@@ -1704,7 +1704,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-16T12:05:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-16T12:40:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3076,11 +3076,11 @@ window.PP = (function () {
     }).join('') + '</div>';
   }
 
-  function svOpen(id) {
+  function svOpen(id, fromLink) {
     id = id || (state.player && state.player.id);
     if (!id) { focusProfileConnect(); return; }
     svEl('sdPanel').classList.add('open'); svEl('sdBack').classList.add('open'); svEl('sdPanel').setAttribute('aria-hidden', 'false');
-    document.body.classList.add('sd-lock'); track('full-stats');
+    document.body.classList.add('sd-lock'); track(fromLink ? 'full-stats-link' : 'full-stats');
     if (String(sv.id) !== String(id) || !sv.data) svLoad(id);
   }
   function svClose() {
@@ -3099,7 +3099,7 @@ window.PP = (function () {
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && svEl('sdPanel').classList.contains('open')) svClose(); });
     svEl('sdShare').addEventListener('click', function () {
       var url = svShareUrl();
-      var done = function () { toast('Share link copied.', 'ok'); track('stats-share'); };
+      var done = function () { toast('Share link copied.', 'ok'); track('full-stats-share'); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { prompt('Copy this link:', url); });
       else prompt('Copy this link:', url);
     });
@@ -3111,7 +3111,7 @@ window.PP = (function () {
       }
       var b = e.target.closest('button[data-rp]'); if (!b) return;
       var url = 'https://replay.beatleader.com/?scoreId=' + encodeURIComponent(b.dataset.rp);
-      track('stats-replay');
+      track('full-stats-replay');
       if (window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)').matches) { window.open(url, '_blank', 'noopener'); return; }
       var panel = svEl('svrp-' + b.dataset.rp), wasOpen = panel && !panel.hidden;
       Array.prototype.forEach.call(document.querySelectorAll('#sdBody .sv-rp'), function (x) { x.hidden = true; x.innerHTML = ''; });
@@ -3123,7 +3123,7 @@ window.PP = (function () {
     });
     var q = null;
     try { q = new URLSearchParams(location.search).get('stats'); } catch (e) {}
-    if (q && /^[A-Za-z0-9_-]{1,40}$/.test(q)) setTimeout(function () { svOpen(q); }, 0);
+    if (q && /^[A-Za-z0-9_-]{1,40}$/.test(q)) setTimeout(function () { svOpen(q, true); }, 0);
   }
 
   // ---- normalize + fetch ----------------------------------------------------
