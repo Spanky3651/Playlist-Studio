@@ -1852,7 +1852,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T11:40:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T12:05:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4796,6 +4796,7 @@ window.PP = (function () {
     document.getElementById('platPc').hidden = p !== 'pc';
     document.getElementById('platQuest').hidden = p !== 'quest';
     try { localStorage.setItem(PLAT_KEY, p); } catch (e) {}
+    if (p === 'quest' && !webusbCheck()) loadAdbLibs(true).catch(function () {});
   }
   function renderQuestUI() {
     var btn = document.getElementById('questSendBtn'), hint = document.getElementById('questHint'); if (!btn) return;
@@ -4811,18 +4812,20 @@ window.PP = (function () {
   function classifyUsbError(e) {
     var name = (e && e.name) || '', msg = String((e && e.message) || e || '');
     if (name === 'NotFoundError' || /no device selected/i.test(msg)) return 'cancelled';
+    if (/user gesture|user activation/i.test(msg)) return 'gesture';
     if (name === 'SecurityError' || /permissions policy|secure context/i.test(msg)) return 'security';
     if (name === 'NetworkError' || /claim|busy|in use|access denied|unable to open|LIBUSB/i.test(msg)) return 'locked';
     return 'other';
   }
-  var adbLibs = null;
-  function loadAdbLibs() {
+  var adbLibs = null, adbLibsP = null;
+  function loadAdbLibs(silent) {
     if (adbLibs) return Promise.resolve(adbLibs);
+    if (adbLibsP) return adbLibsP;
     var base = 'https://esm.sh/@yume-chan/', v = '@2.1.0';
-    qlog('Loading the USB connector…');
-    return Promise.all([import(base + 'adb' + v), import(base + 'adb-daemon-webusb' + v), import(base + 'adb-credential-web' + v)])
+    if (!silent) qlog('Loading the USB connector…');
+    return adbLibsP = Promise.all([import(base + 'adb' + v), import(base + 'adb-daemon-webusb' + v), import(base + 'adb-credential-web' + v)])
       .then(function (m) { adbLibs = { adb: m[0], usb: m[1], cred: m[2] }; return adbLibs; })
-      .catch(function (e) { throw new Error('Could not load the USB connector. Check your internet connection. (' + ((e && e.message) || e) + ')'); });
+      .catch(function (e) { adbLibsP = null; throw new Error('Could not load the USB connector. Check your internet connection. (' + ((e && e.message) || e) + ')'); });
   }
   function questConnect() {
     return loadAdbLibs().then(function (L) {
@@ -4849,7 +4852,13 @@ window.PP = (function () {
     });
   }
   function isDirStat(st) { return !!st && (st.type === 4 || (typeof st.mode === 'number' && (st.mode & 61440) === 16384)); }
-  function statDir(sync, path) { return Promise.resolve().then(function () { return sync.stat(path); }).then(isDirStat, function () { return false; }); }
+  function statDir(sync, path) {
+    return Promise.resolve().then(function () { return sync.isDirectory ? sync.isDirectory(path) : sync.stat(path).then(isDirStat); })
+      .then(function (v) { return !!v; }, function () { return false; });
+  }
+  function fileExists(sync, path) {
+    return Promise.resolve().then(function () { return (sync.lstat || sync.stat).call(sync, path); }).then(function () { return true; }, function () { return false; });
+  }
   function listNames(sync, path) {
     return Promise.resolve().then(function () {
       if (sync.readdir) return sync.readdir(path);
@@ -4890,7 +4899,7 @@ window.PP = (function () {
           if (destInput) { destInput.value = dir; document.getElementById('questDestRow').hidden = false; }
           try { localStorage.setItem(QDEST_KEY, dir); } catch (e) {}
           var path = dir + '/' + fname;
-          return sync.stat(path).then(function () { return true; }, function () { return false; }).then(function (existed) {
+          return fileExists(sync, path).then(function (existed) {
             qlog((existed ? 'Updating ' : 'Writing ') + fname + ' (' + playlist.songs.length + ' songs)…');
             var file = new ReadableStream({ start: function (c) { c.enqueue(bytes); c.close(); } });
             return Promise.resolve(sync.write({ filename: path, file: file, permission: 420 })).then(function () { return existed; });
@@ -4908,6 +4917,7 @@ window.PP = (function () {
         var r = document.getElementById('questDestRow'); if (r) r.hidden = false;
       } else if (kind === 'cancelled') qlog('No headset picked.', 'dim');
       else if (kind === 'locked') { qlog('Another app (SideQuest, Meta Quest Link or adb) is using the headset. Close it, unplug and replug the cable, then try again.', 'err'); questReset(); }
+      else if (kind === 'gesture') qlog('The USB connector is ready now. Click Send to Quest again to pick your headset.', 'warn');
       else if (kind === 'security') qlog('The browser blocked USB here. Open Studio in its own Chrome or Edge tab.', 'err');
       else { qlog('Send failed: ' + msg, 'err'); questReset(); }
       if (kind !== 'cancelled') toast('Couldn\'t send to your Quest - see the Export panel for details.', 'warn');
