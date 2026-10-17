@@ -173,7 +173,7 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 > The URL must point at the **raw file** (not a web page) and stay constant. If you move or rename the hosted file later, existing copies stop syncing - keep the same path and just overwrite the file to push an update.
 
 #### Hosted sync
-No website? **Host this playlist** (in the In-Game Sync panel) stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
+No website? Turn on **In-Game Sync** and hit **Host this playlist**. Studio stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
 
 ### Share by link
 
@@ -213,7 +213,7 @@ If you run your own CORS relay and would rather use it, point the app at it unde
 3. In-game, refresh your song list. The [PlaylistManager](https://github.com/rithik-b/PlaylistManager) mod loads the playlist; any maps you don't have download automatically if you use playlist syncing / BeatSaver downloading.
 
 ### On Quest
-Switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable, use Chrome or Edge, and approve the USB debugging prompt in the headset; Studio finds your PlaylistManager folder and writes the playlist there. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
+Switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable and use Chrome or Edge. The first time, put the headset on after you pick it and accept **Allow USB debugging?** (tick **Always allow from this computer**). The browser gets its own approval, separate from SideQuest or adb, so it shows up once even if those already work. Studio finds your PlaylistManager folder, writes the playlist there and lets go of the headset afterwards so SideQuest and adb keep working. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
 
 ### Keeping a playlist in sync
 
