@@ -408,6 +408,8 @@ select{cursor:pointer;appearance:none;
 .quest-dest input{flex:1 1 320px;font-family:var(--mono);font-size:12.5px;}
 .quest-log{margin-top:10px;font-family:var(--mono);font-size:12.5px;line-height:1.6;max-height:140px;overflow:auto;}
 .quest-log:empty{display:none;}
+.no-quest-usb [data-needs-usb]{display:none!important;}
+html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .quest-log .ok{color:#7ee2a8;} .quest-log .warn{color:#ffc56b;} .quest-log .err{color:#ff8597;} .quest-log .dim{color:var(--muted);}
 .lib-backup{margin-top:10px;}
 .lib-note{font-size:12.5px;margin:6px 0 0;}
@@ -1026,6 +1028,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 </script>
 <style>.foot-more{width:100%;text-align:center;font-family:var(--mono);font-size:12.5px;color:var(--muted-2);letter-spacing:.3px;margin-top:6px;}.foot-more a{color:var(--blue);text-decoration:none;}.foot-more a:hover{color:#fff;text-decoration:underline;}.foot-more .sep{color:var(--muted-2);margin:0 6px;}</style><style>.footlinks a.src-badge{font-family:system-ui,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:800;letter-spacing:.2px;padding:9px 16px;border-radius:11px;}</style></head>
 <body class="src-beatleader">
+<script>/* Quest over USB needs WebUSB on a computer. Hide it on phones, in the Quest's own browser and where WebUSB is missing. */
+(function(){var n=navigator,u=n.userAgent||"",ok=!!n.usb&&!/OculusBrowser|Quest/i.test(u)&&!(n.userAgentData&&n.userAgentData.mobile)&&!/Android.+Mobile|iPhone|iPad|iPod/i.test(u);window.QUEST_USB=ok;if(!ok)document.documentElement.classList.add("no-quest-usb");})();</script>
 
 <canvas id="fxCanvas" aria-hidden="true"></canvas>
 <div id="fxSlash" aria-hidden="true"></div>
@@ -1791,7 +1795,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-body" id="syncBody" hidden>
         <div class="pub-box" id="pubBox" hidden>
           <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
-          <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download or Send to Quest), then the in-game <b>Sync</b> button pulls every update.</p>
+          <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update.</p>
           <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
           <div class="pub-info" id="pubInfo"></div>
         </div>
@@ -1810,7 +1814,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <div class="export-validation" id="exportValidation">
           <div class="valitem ok"><span class="ico">◇</span><span>Add songs to <b>Your Playlist</b>, then export.</span></div>
         </div>
-        <div class="plat-tabs" id="platTabs" role="tablist" aria-label="Where do you play?">
+        <div class="plat-tabs" id="platTabs" data-needs-usb role="tablist" aria-label="Where do you play?">
           <button type="button" data-plat="pc" class="on" role="tab">PC</button>
           <button type="button" data-plat="quest" role="tab">Quest</button>
         </div>
@@ -1821,6 +1825,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <span class="export-hint" id="exportHint">Your playlist is empty.</span>
         </div>
         <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <b>PlaylistManager</b> mod.</p>
+        <p class="panel-sub" data-no-usb>Playing on Quest? Copy the file to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest, or turn on <b>In-Game Sync</b> so the headset pulls updates itself.</p>
         </div>
         <div class="plat-pane" id="platQuest" hidden>
           <div class="export-row">
@@ -1859,7 +1864,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T13:20:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T13:45:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -1975,7 +1980,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="wn-group" data-wn="new">
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><div><p class="wn-t">For You picks</p><p class="wn-d">Connect your BeatLeader profile and a For You card picks maps for your level: top pp gains, a rank-up plan, a practice set and maps to revisit.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Searches start at your level</p><p class="wn-d">Search now opens at your level instead of the hardest maps. Level chips in Star Rating switch it in one click.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><div><p class="wn-t">Send to Quest</p><p class="wn-d">Plug in your Quest and send a playlist straight to its PlaylistManager folder from the Export panel. No SideQuest needed.</p></div></div>
+      <div class="wn-item" data-needs-usb><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><div><p class="wn-t">Send to Quest</p><p class="wn-d">Plug in your Quest and send a playlist straight to its PlaylistManager folder from the Export panel. No SideQuest needed.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v6a4 4 0 0 0 4 4h4"/><polyline points="13 9 17 13 13 17"/><line x1="8" y1="21" x2="8" y2="13"/></svg></span><div><p class="wn-t">ScoreSaber plays</p><p class="wn-d">Add your ScoreSaber history in Your Profile so the played and FC filters cover both leaderboards.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="wn-t">AccSaber pools</p><p class="wn-d">Load the ranked AccSaber charts by category, with complexity, then filter by what you have and haven't played.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><div><p class="wn-t">Smart playlists</p><p class="wn-d">Save how you built a playlist and rebuild it from fresh results in one click.</p></div></div>
@@ -1984,7 +1989,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="wn-group" data-wn="tour" hidden>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Start at your level</p><p class="wn-d">Pick a level in Star Rating, or connect your profile and Studio picks it for you.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><p class="wn-t">Connect your BeatLeader profile</p><p class="wn-d">See your score on every map, filter by what you've played or FC'd, and get For You picks plus a Stats card.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Cherry-pick, then export</p><p class="wn-d">Add maps from any search, drag to reorder, then download the .bplist or send it straight to your Quest.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Cherry-pick, then export</p><p class="wn-d">Add maps from any search, drag to reorder, then download the .bplist<span data-needs-usb> or send it straight to your Quest</span>.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><div><p class="wn-t">Share it</p><p class="wn-d">Pack a playlist into a link for friends or tournament pools. No account needed.</p></div></div>
       </div>
     </div>
@@ -4473,7 +4478,7 @@ window.PP = (function () {
     Array.prototype.forEach.call(back.querySelectorAll('.wn-group'), function (g) { g.hidden = g.getAttribute('data-wn') !== (tour ? 'tour' : 'new'); });
     var wt = document.getElementById('wnTitle'), wc = document.getElementById('wnChip');
     if (wt) wt.textContent = tour ? 'Welcome to Playlist Studio' : 'What\'s New';
-    if (wc) wc.textContent = tour ? 'Quick tour' : back.querySelectorAll('.wn-group[data-wn="new"] .wn-item').length + ' updates';
+    if (wc) wc.textContent = tour ? 'Quick tour' : Array.prototype.filter.call(back.querySelectorAll('.wn-group[data-wn="new"] .wn-item'), function (x) { return window.QUEST_USB || !x.hasAttribute('data-needs-usb'); }).length + ' updates';
     track(tour ? 'tour-shown' : 'whatsnew-shown');
     back.hidden = false; requestAnimationFrame(function () { back.classList.add('show'); });
     try { localStorage.setItem(WHATSNEW_KEY, '1'); } catch (e) {}
@@ -4807,7 +4812,7 @@ window.PP = (function () {
     box.scrollTop = box.scrollHeight;
   }
   function setPlatform(p) {
-    p = p === 'quest' ? 'quest' : 'pc';
+    p = (p === 'quest' && window.QUEST_USB) ? 'quest' : 'pc';
     var tabs = document.getElementById('platTabs'); if (!tabs) return;
     Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { var on = b.getAttribute('data-plat') === p; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
     document.getElementById('platPc').hidden = p !== 'pc';
@@ -5197,7 +5202,7 @@ window.PP = (function () {
     stop.hidden = !p;
     var or = document.getElementById('pubOr'); if (or) or.textContent = p ? 'address written into the file' : 'or use your own host';
     info.innerHTML = p ? 'Hosted at <code>' + esc(p.url) + '</code>' + (p.at ? ' &middot; updated ' + agoStr(Math.floor(p.at / 1000)) : '') +
-      '<br>Loaded this playlist on your headset before hosting it? Download or send it once more so it knows this address.' : '';
+      '<br>Loaded this playlist on your headset before hosting it? ' + (window.QUEST_USB ? 'Download or send it once more' : 'Download it and load it once more') + ' so it knows this address.' : '';
   }
   function applyPublishToSync() {
     if (!state.publish) return;
@@ -5216,7 +5221,7 @@ window.PP = (function () {
         applyPublishToSync();
         if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { o[state.activeRecipe].pub = state.publish; lsSetRecipes(o); } }
         saveSession();
-        toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : 'Hosted! Download or send the file once more - after that, in-game Sync keeps it current.', 'ok');
+        toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : (window.QUEST_USB ? 'Hosted! Download or send the file once more' : 'Hosted! Download the file and load it once more') + ' - after that, in-game Sync keeps it current.', 'ok');
         track(pub ? (auto ? 'pub-auto-update' : 'pub-update') : 'pub-create');
       } else if (res.status === 404 && pub) {
         state.publish = null;
