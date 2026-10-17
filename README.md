@@ -11,7 +11,7 @@ Filter the ranked catalog by star rating, mapper, NPS and more - or flip to the 
 
 Playlist Studio turns live map data into curated Beat Saber playlists. Instead of dumping every map that matches your filters, it works like a shopping cart: search, add the good ones to **Your Playlist**, reorder and cover it, then export. A **source switch** at the top of the filters chooses where you're searching - **BeatLeader** (the ranked catalog, with stars, PP and your scores) or **BeatSaver** (the whole catalog, browsable by **tags**, including unranked maps). Already know exactly which maps you want? Paste their **BSR codes** into **Quick Add** and skip searching entirely. It runs entirely in your browser as one HTML file - no install or build step, and no account.
 
-> Scores and PP come from **BeatLeader** - ScoreSaber profiles aren't supported. Tag browsing and Quick Add map lookups use **BeatSaver** (which is CORS-friendly, so those need no relay). Your BeatLeader score badges still show on BeatSaver-sourced maps you've played, since they match by hash.
+> Scores and PP come from **BeatLeader**. You can also merge your **ScoreSaber** play history so the played and FC filters cover both leaderboards (ScoreSaber pp is shown, never mixed into BeatLeader pp). Tag browsing and Quick Add map lookups use **BeatSaver** (which is CORS-friendly, so those need no relay). Your BeatLeader score badges still show on BeatSaver-sourced maps you've played, since they match by hash.
 
 ## Features
 
@@ -36,12 +36,13 @@ In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's o
 
 ### Search & filter (BeatLeader)
 - **Star-rating** range and **ranked status** (ranked / unranked / nominated / qualified / all)
+- **Starts at your level** - a fresh search no longer opens on the hardest maps. With your profile connected it searches your comfort-to-stretch band (worked out from your top plays); without it, it starts at 4-7★. Level chips (**My level**, Learning, Comfortable, Pushing, Top, All) switch the band in one click
 - **Mapper** and **keyword** search
 - **Game mode** - Standard, One Saber, No Arrows, 90°/360°, Lightshow, Lawless
 - **Optional difficulty filter** (Easy → Expert+) - off by default so every difficulty comes through until you want to narrow it
 - **NPS, duration and BPM** bounds
 - **PP range** - keep only ranked maps worth a target PP at your accuracy and speed (see below)
-- **Sort by** - Stars, Tech, Acc, Pass, NPS, Duration, BPM, or **PP at your target accuracy** (in the **Search Scope & Sort** panel)
+- **Sort by** - Stars, Tech, Acc, Pass, NPS, Duration, BPM, **PP at your target accuracy** or **AccSaber complexity**, from the **Sort** bar right above the results (your plays open newest-first) or the **Search Scope & Sort** panel. A **Show** filter next to it narrows the list to ranked or unranked maps
 - **Adjustable scan depth** - pull anywhere from 300 up to 20,000 maps per search (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max), **default 2.5k**. Bigger scans dig deeper for matches - handy for wide star ranges or "unplayed" hunts - at the cost of a longer search; drop to 300 for a quick pull
 - Live client-side filtering: tweak a value and the match count updates instantly, no re-search
 - Press **Enter** in any filter to search; the Search button flags when your filters have drifted from your last pull
@@ -68,13 +69,21 @@ Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play hist
 - **★ Build from my plays** - one button turns *every map you've played* (ranked or unranked) into the results list, with no search or import needed. Then narrow with **Your play status** (e.g. **Played, not FC**), **Near-miss FC**, or **only my accuracy below X%**, and cherry-pick the ones you want into your playlist. Perfect for "make me a set of everything I haven't full-comboed yet." (The first time, it does a quick one-off re-sync to grab the song details.)
 - **Score badges on every map** - your accuracy with a green **FC** / blue **passed** / dashed **NEW** marker and your rank
 - **"Your plays" filter right above the results** - one-tap chips for **All / Unplayed / Played / FC'd / Not FC / Near-FC**, so "hide everything I've already played" is a single click where you're actually looking. (Not connected yet? The bar shows a one-tap link to connect.)
-- **Filter by your history** - the same set is also in the profile panel, plus "only my accuracy below X%"
+- **More history filters** in the profile panel - "only my accuracy below X%", Last played, and one-tap smart lists
+- **Practice context on every row** - on maps you've played, the row shows how long ago, and for ranked maps how much raw pp you'd gain by reaching your target accuracy (e.g. **+44pp at 95%**)
+- **Merge your ScoreSaber plays** - **+ ScoreSaber plays** in the profile card pulls your ScoreSaber history into the same played / FC index, so the filters and Build from my plays cover both leaderboards. Charts that are on BeatLeader keep BeatLeader's data; ScoreSaber-only plays carry an **SS** tag
 - **Last played** - narrow to maps you've played within the last month / 3 months / 6 months / year, or ones you *haven't* touched in **over a year** (great for rebuilding a set worth revisiting). Reads off your synced play dates and auto-disables when you're filtering for unplayed maps
 - **One-tap smart lists** - Unplayed, Near-miss FC, Sub-90%
 - **Sort by you** - my accuracy, my rank, date I played, or improvement potential
 - **Your best in the preview** - accuracy, misses (and the would-be FC accuracy), rank, date, and a link to watch the replay
 - **Playlist readout** - "you've FC'd 4 of 15 here, 91% avg"
 - Scores are cached in your browser; **↻ Sync** does a fast incremental refresh afterward
+
+### For You
+Connect your profile and a **For You** card sits at the top of the results column with four one-click starts, all built on your own plays: **Top pp gains** (the PP Optimizer), **Rank-up plan** (opens the planner), **Practice set** (maps you've played but haven't FC'd) and **Revisit** (maps you haven't played in over 6 months). Not connected yet? The card offers a one-tap connect instead.
+
+### Player stats card
+**Stats** in the profile card opens your BeatLeader, ScoreSaber and AccSaber ranks side by side, with rank movement, the gap to the next player, recent scores with in-app replays, and a share link (`?stats=<id>`). **+ Add** on any recent score drops that map into Your Playlist, and **Build from top 50 plays** loads that player's best plays as results, which is handy on a friend's shared link.
 
 ### Preview before you commit
 - ▶ on any row opens an in-app preview - the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
@@ -111,6 +120,9 @@ The math mirrors BeatLeader's server exactly: `passPP = 15.2·e^(passRating^(1/2
 
 Tell it a goal - a flat PP gain, or a target total PP - and Playlist Studio works out the fewest ranked maps that get you there. It learns your accuracy curve the same way the PP Optimizer does, projects the weighted PP each map would add, and greedily picks the most efficient set until the goal is met. You get a projected new total PP and an estimated new global rank, the exact maps with their individual PP gains, and a one-tap **Add all** into Your Playlist. Needs your BeatLeader profile connected. The rank figure is an estimate; the PP math mirrors BeatLeader's weighting exactly.
 
+### AccSaber pools
+The **AccSaber Pools** panel loads every ranked AccSaber chart straight from AccSaber, with its category (True Acc, Standard, Tech) and complexity, easiest first. Pick a category, then use the **Your plays** chips to find the charts you haven't played or FC'd and add them.
+
 ### Covers & export
 - Auto-generated neon cover art - **25 procedural styles and 13 accent palettes**, picked from a live thumbnail grid - drawn from your title and star range. The styles include a set of **Beat Saber–themed** designs: **Note Cubes**, **Saber Slash**, **Bombs**, **Obstacles**, **Note Highway**, **Cut Spark** and **Saber Trails**, alongside the abstract neon ones (Pulse, Grid, Waveform, Spectrum, Vortex, Aurora, and more).
 - **Title + subtitle overlay** with adjustable **text position** (Bottom / Center / Off) and **text color** (White / Black / Gold / Green / Blue / Red). The legibility scrim flips automatically - dark behind light text, light behind dark - so the title stays readable on any art.
@@ -122,6 +134,9 @@ Tell it a goal - a flat PP gain, or a target total PP - and Playlist Studio work
 ### Save, reload & import
 - **Filter presets** - save filter combos you reuse (e.g. "6★ tech warmup")
 - **Playlist Library** - save and reload whole playlists (cover included)
+- **Smart playlists** - save the results you built (a search, your plays, top plays, PP gains or an AccSaber pool) as a recipe. **Rebuild** refills Your Playlist from fresh results with the same filters and sort, and if the playlist is hosted it pushes the update so your headset's Sync picks it up
+- **Gallery** - **Browse the gallery** loads ready-made playlists in one click, starting with the official AccSaber pools (pulled live, so they're never stale)
+- **Library backup** - **Back up library** downloads every saved playlist, preset, smart playlist and saved icon as one file; **Restore backup** merges it back on any computer without overwriting anything
 - **Session autosave** - an accidental refresh won't lose your work in progress
 - **Import `.bplist`** - open an existing playlist to edit it; covers stored as either a data URI *or* raw base64 both load, for broad compatibility with community playlists
 - **BeatLeader enrichment** - `↻ Fill data` fills in stars / NPS / duration / cover for imported songs by hash; `★ Re-check` re-checks every song in the playlist to catch rating recalcs
@@ -150,12 +165,15 @@ A collapsible **Playlist Stats** panel gives you a quick read on the shape of wh
 ### In-game sync (optional)
 Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button - no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** - it lives in its own **In-Game Sync** panel and does nothing unless you turn it on.
 
-- **You host the file, not Playlist Studio.** Nothing is uploaded here - the app only writes the address you paste, so your playlist stays entirely on your own hosting. (Great for keeping the tool shared without your playlists riding along.)
+- **Your own host, or Studio's.** Paste your own address and nothing is uploaded - the app only writes the address you paste. Or hit **Host this playlist** and Studio keeps a copy for you and fills in the address (see *Hosted sync* below).
 - **One box** - turn the panel on and paste the URL your `.bplist` will live at (e.g. `https://mysite.com/playlists/mix.bplist`). Whatever you type goes straight into `customData.syncURL`; a live hint confirms it's a valid link.
 - **Round-trips on import** - open a `.bplist` that already has a `syncURL` and the box fills itself back in.
 - Your URL is remembered in your browser, so re-publishing is just: edit → export → re-upload to the same spot.
 
 > The URL must point at the **raw file** (not a web page) and stay constant. If you move or rename the hosted file later, existing copies stop syncing - keep the same path and just overwrite the file to push an update.
+
+#### Hosted sync
+No website? **Host this playlist** (in the In-Game Sync panel) stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
 
 ### Share by link
 
@@ -182,6 +200,8 @@ Pack your whole playlist into a single link with **Share Playlist**. The maps, t
 
 BeatLeader's API doesn't send cross-origin CORS headers, so a browser can't call it directly from a file or a third-party site - it fails with *"Failed to fetch."* Playlist Studio gets around this by routing read-only public requests through a **pool of public CORS relays**, racing them and using the first that responds. Dead or slow relays are dropped automatically, and there's nothing to configure.
 
+The relay is a small Cloudflare Worker (`relay-worker.js` in this repo). It only proxies BeatLeader, BeatSaver and ScoreSaber, and it also serves hosted playlists once a KV namespace is bound to it; the deploy steps are at the top of the file. AccSaber sends CORS headers, so the AccSaber pools and stats call it directly.
+
 If you run your own CORS relay and would rather use it, point the app at it under **Search Scope & Sort → Advanced: custom relay**. (Map previews use BeatSaver and ArcViewer directly - both are CORS-friendly, so they need no relay.)
 
 **BeatSaver mode needs no relay at all.** BeatSaver *does* send CORS headers, so tag searches (and Quick Add lookups) call it directly from your browser - which is why the whole relay/connection section disappears when you switch to the BeatSaver source.
@@ -192,9 +212,14 @@ If you run your own CORS relay and would rather use it, point the app at it unde
 2. Drop it into your Beat Saber `Playlists` folder - on PC that's usually `…\Steam\steamapps\common\Beat Saber\Playlists\`.
 3. In-game, refresh your song list. The [PlaylistManager](https://github.com/rithik-b/PlaylistManager) mod loads the playlist; any maps you don't have download automatically if you use playlist syncing / BeatSaver downloading.
 
+### On Quest
+Switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable, use Chrome or Edge, and approve the USB debugging prompt in the headset; Studio finds your PlaylistManager folder and writes the playlist there. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
+
 ### Keeping a playlist in sync
 
 Want the playlist to update itself in-game whenever you change it? Turn on the **In-Game Sync** panel before exporting (see *In-game sync* above):
+
+No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 
 1. Pick where you'll host the file and let the helper build the `syncURL`, then export.
 2. Upload the exported `.bplist` to that address.
@@ -204,8 +229,9 @@ Want the playlist to update itself in-game whenever you change it? Turn on the *
 ## Privacy
 
 - No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter that stores no personal data.
-- Presets, saved playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage - nothing is uploaded.
-- API requests hit BeatLeader and BeatSaver (public data) through a public relay; only anonymous, read-only GETs are ever sent.
+- Presets, saved playlists, smart playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage. Nothing is uploaded unless you choose **Host this playlist**, which stores that one playlist (songs, title, cover) on the Playlist Studio relay until you hit **Stop hosting** or it expires.
+- API requests hit BeatLeader, BeatSaver, ScoreSaber and AccSaber (public data), with BeatLeader and ScoreSaber going through the relay. Only anonymous, read-only requests are sent, apart from hosting a playlist when you ask for it.
+- **Send to Quest** talks to your headset over USB straight from your browser; the playlist never leaves your computer.
 
 ## Built with
 
@@ -214,6 +240,12 @@ Vanilla HTML, CSS and JavaScript - no framework and no build tooling. The single
 - Map data - [BeatLeader](https://api.beatleader.xyz) (ranked catalog, scores, PP) and [BeatSaver](https://beatsaver.com) (full catalog, tags)
 - Map previews - [BeatSaver](https://beatsaver.com) + [ArcViewer](https://github.com/allpoland/ArcViewer)
 - Export format - [PlaylistManager](https://github.com/rithik-b/PlaylistManager)
+- Extra stats and history - [ScoreSaber](https://scoresaber.com) and [AccSaber](https://accsaber.com)
+- Quest transfer - [ya-webadb](https://github.com/yume-chan/ya-webadb), loaded on demand
+
+## Adding gallery entries
+
+The gallery reads `gallery/index.json`. Each entry has a `name`, a `description`, an optional `author` and `tags`, and one source: `"type": "url"` with a live `.bplist` link (the host must allow CORS), `"type": "file"` with a `.bplist` saved in the `gallery/` folder, or `"type": "share"` with a Playlist Studio share code.
 
 ## More tools
 

@@ -1,0 +1,29 @@
+{
+  "about": "Playlist Studio gallery. Each entry is loaded like a dropped .bplist. type 'url' fetches a live playlist (the host must allow CORS), type 'file' loads gallery/<file> from this repo, type 'share' opens a Playlist Studio share code.",
+  "entries": [
+    {
+      "name": "AccSaber True Acc pool",
+      "description": "Every ranked AccSaber True Acc chart, pulled live from AccSaber so it is always current.",
+      "author": "AccSaber",
+      "type": "url",
+      "url": "https://api.accsaber.com/v1/playlists/true_acc",
+      "tags": ["AccSaber", "True Acc"]
+    },
+    {
+      "name": "AccSaber Standard Acc pool",
+      "description": "Every ranked AccSaber Standard Acc chart, pulled live from AccSaber so it is always current.",
+      "author": "AccSaber",
+      "type": "url",
+      "url": "https://api.accsaber.com/v1/playlists/standard_acc",
+      "tags": ["AccSaber", "Standard Acc"]
+    },
+    {
+      "name": "AccSaber Tech Acc pool",
+      "description": "Every ranked AccSaber Tech Acc chart, pulled live from AccSaber so it is always current.",
+      "author": "AccSaber",
+      "type": "url",
+      "url": "https://api.accsaber.com/v1/playlists/tech_acc",
+      "tags": ["AccSaber", "Tech Acc"]
+    }
+  ]
+}

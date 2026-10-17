@@ -398,6 +398,34 @@ select{cursor:pointer;appearance:none;
 .valitem.err .ico{color:var(--danger);}
 .export-row{display:flex;align-items:center;gap:16px;}
 .export-hint{font-size:13px;color:var(--muted);font-family:var(--mono);}
+.plat-tabs{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--border-2);border-radius:10px;background:#070b11;margin:0 0 14px;}
+.plat-tabs button{font-family:var(--mono);font-size:13px;padding:6px 16px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;}
+.plat-tabs button.on{background:rgba(47,140,255,.18);border-color:var(--blue);color:#fff;}
+.plat-pane[hidden]{display:none;}
+.quest-dest{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+.quest-dest[hidden]{display:none;}
+.quest-dest label{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.quest-dest input{flex:1 1 320px;font-family:var(--mono);font-size:12.5px;}
+.quest-log{margin-top:10px;font-family:var(--mono);font-size:12.5px;line-height:1.6;max-height:140px;overflow:auto;}
+.quest-log:empty{display:none;}
+.quest-log .ok{color:#7ee2a8;} .quest-log .warn{color:#ffc56b;} .quest-log .err{color:#ff8597;} .quest-log .dim{color:var(--muted);}
+.lib-backup{margin-top:10px;}
+.lib-note{font-size:12.5px;margin:6px 0 0;}
+.pub-box{margin:0 16px 14px;border:1px solid #23406b;border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,#081426,#060c16);}
+.pub-box[hidden]{display:none;}
+.pub-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#fff;font-size:14.5px;}
+.pub-badge{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;background:rgba(61,220,132,.14);color:#7ee2a8;border:1px solid #1c5c37;}
+.pub-box p{margin:0 0 10px;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.pub-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.pub-info{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.6;word-break:break-all;}
+.pub-info:empty{display:none;}
+.gal-list{display:grid;gap:10px;}
+.gal-card{display:flex;gap:14px;align-items:center;border:1px solid var(--border-2);border-radius:12px;padding:12px 14px;background:#0a0f17;}
+.gal-card h4{margin:0 0 3px;font-size:15px;color:#fff;}
+.gal-card p{margin:0;font-size:13px;color:var(--muted);line-height:1.45;}
+.gal-meta{font-family:var(--mono);font-size:12px;color:var(--muted-2);margin-top:5px;}
+.gal-card .gal-go{margin-left:auto;flex:none;}
+@media(max-width:560px){.gal-card{flex-wrap:wrap;}.gal-card .gal-go{margin-left:0;width:100%;}}
 
 /* ---------- Your Profile (BeatLeader) ---------- */
 .hint-line{font-size:12.5px;font-family:var(--mono);line-height:1.5;margin-top:8px;}
@@ -420,6 +448,16 @@ select{cursor:pointer;appearance:none;
 .rb-you{color:#cfe4ff;border-color:rgba(47,140,255,.5);background:rgba(47,140,255,.12);}
 .rb-you.fc{color:#a5f5cf;border-color:rgba(34,224,161,.55);background:rgba(34,224,161,.12);}
 .rb-new{color:var(--muted);border-color:var(--border-2);border-style:dashed;}
+.rb-ago{color:#9fb3c8;border-color:var(--border-2);}
+.rb-up{color:#7ee2a8;border-color:#1c5c37;background:#0e2a1a;font-weight:700;}
+.rb-as{color:#ffb3c0;border-color:rgba(255,77,106,.45);background:rgba(255,77,106,.10);font-weight:700;}
+.rb-ss{color:#ffd56b;border-color:rgba(255,194,61,.45);background:rgba(255,194,61,.10);}
+.ss-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;}
+.ss-state{font-size:12.5px;font-family:var(--mono);}
+.lib-sub{font-family:var(--mono);font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2);margin:14px 0 6px;padding-top:12px;border-top:1px solid var(--border);}
+#recipeN{width:72px;flex:none;}
+.sv-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.sv-acts{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
 
 /* your score in the preview modal */
 .preview-score{font-family:var(--mono);font-size:14px;color:#cbd3e4;padding:9px 11px;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2);line-height:1.5;}
@@ -660,6 +698,26 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 
 /* ---------- Toast ---------- */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(140%);background:#0a1420;border:1px solid var(--blue);color:var(--text);font-size:14.5px;font-weight:600;padding:12px 20px;border-radius:10px;z-index:200;transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 30px rgba(0,0,0,.6),var(--blue-glow);display:flex;align-items:center;gap:10px;max-width:min(90vw,460px);}
+.toast{z-index:1000;}
+#playStatusField[hidden]{display:none !important;}
+.ps-hint{margin:0 0 4px;font-size:13px;}
+.lvl-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+.lvl-chips button{font-family:var(--mono);font-size:12.5px;color:var(--muted);background:#0c1220;border:1px solid var(--border-2);border-radius:7px;padding:5px 9px;cursor:pointer;transition:.13s;}
+.lvl-chips button:hover{border-color:var(--blue);color:#fff;}
+.lvl-chips button.on{background:rgba(47,140,255,.18);border-color:var(--blue);color:#fff;box-shadow:0 0 9px rgba(47,140,255,.22);}
+.lvl-chips button[hidden]{display:none;}
+.fy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.fy-grid[hidden],.fy-cta[hidden]{display:none;}
+@media(max-width:1180px){.fy-grid{grid-template-columns:repeat(2,1fr);}}
+.fy-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:4px;text-align:left;padding:13px 14px;border-radius:11px;background:linear-gradient(180deg,#0d1726,#0a111c);border:1px solid var(--border-2);color:var(--text);cursor:pointer;transition:.15s;white-space:normal;height:auto;}
+.fy-btn b{font-size:15px;color:#fff;font-weight:800;}
+.fy-btn span{font-size:12.5px;color:var(--muted);line-height:1.4;font-weight:500;}
+.fy-btn:hover{border-color:var(--blue);box-shadow:0 0 16px rgba(47,140,255,.25);}
+.fy-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.fy-cta p{flex:1 1 300px;margin:0;color:var(--muted);font-size:14px;line-height:1.5;}
+@media(max-width:720px){body.m-view-results .col-right>.foryou-panel{display:block !important;}body.m-view-playlist .col-right>.foryou-panel{display:none !important;}}
+.rec-empty{margin-top:10px;border:1px dashed var(--border-2);border-radius:10px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.55;background:#07090d;}
+.rec-empty b{color:#cfe0f5;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast::before{content:"◆";color:var(--blue);}
 .toast.err{border-color:var(--danger);box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 14px rgba(255,77,109,.4);}
@@ -1019,7 +1077,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <span class="arrow">→</span>
           <div class="step"><span class="num">4</span> Export</div>
         </div>
-        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b> (ScoreSaber isn't supported). On the BeatLeader source, if a search ever fails just hit Search again - it connects automatically. BeatSaver search connects directly.</span></div>
+        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b>, and you can add your <b>ScoreSaber</b> plays from Your Profile. BeatSaver search connects directly.</span></div>
       </div>
     </details>
 
@@ -1049,6 +1107,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
             <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want - no search or import needed.">★ Build from my plays</button>
             <button class="ghost sm danger" id="disconnectBtn">Disconnect</button>
           </div>
+          <div class="ss-row"><button class="ghost sm" id="ssSyncBtn" type="button" title="Pull your ScoreSaber scores so the played and FC filters cover both leaderboards">+ ScoreSaber plays</button><span class="muted ss-state" id="ssState"></span></div>
           <div class="sync-progress" id="syncProgress" hidden><div class="bar"><div class="bar-fill" id="syncBar"></div></div><span id="syncText"></span></div>
           <div class="topplays bl-only">
             <label class="field-label" style="margin-top:2px;">Top plays &rarr; playlist <span class="info" data-tip="Loads your connected profile's highest-PP (top) plays into the results so you can drop them straight into a playlist - great for grinding your best scores.">i</span></label>
@@ -1062,7 +1121,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
             <p class="muted hint-line" id="topHint">Loads your highest-PP plays into the results, then hit <b>Add all</b> to build the playlist.</p>
           </div>
           <div class="divider"></div>
-          <div class="field"><label class="field-label">Your play status <span class="info" data-tip="Filter results by your BeatLeader history. Near-miss FC = you've played it, didn't full-combo, but were close (few misses and a high would-be FC accuracy).">i</span></label>
+          <p class="muted hint-line ps-hint">Filter by play status with the <b>Your plays</b> chips above the results.</p>
+          <div class="field" id="playStatusField" hidden><label class="field-label">Your play status <span class="info" data-tip="Filter results by your BeatLeader history. Near-miss FC = you've played it, didn't full-combo, but were close (few misses and a high would-be FC accuracy).">i</span></label>
             <select id="playStatus">
               <option value="any" selected>Any</option>
               <option value="unplayed">Not played yet</option>
@@ -1118,6 +1178,14 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-head"><span class="ph-ic star"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h2>Star Rating</h2><span class="count" id="starRangeLabel">0.0★ – 15.0★</span></div>
       <div class="panel-sub">The BeatLeader difficulty window for rated maps. Unranked maps have no stars, so this filter <b>skips</b> them rather than dropping them - set <b>Ranked status → Unranked</b> to build from those.</div>
       <div class="panel-body">
+        <div class="lvl-chips" id="lvlChips" role="group" aria-label="Pick your level">
+          <button type="button" data-lvl="me" id="lvlMe" hidden title="Your comfort-to-stretch band, from your top BeatLeader plays">My level</button>
+          <button type="button" data-lvl="0-4">Learning 0-4★</button>
+          <button type="button" data-lvl="4-7">Comfortable 4-7★</button>
+          <button type="button" data-lvl="7-10">Pushing 7-10★</button>
+          <button type="button" data-lvl="10-15">Top 10★+</button>
+          <button type="button" data-lvl="0-15">All</button>
+        </div>
         <div class="starband"><div class="starband-fill" id="starBandFill"></div></div>
         <div class="slider-row">
           <label>Min</label>
@@ -1253,7 +1321,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="myAcc">My accuracy</option>
               <option value="myRank">My rank</option>
               <option value="myDate">Date I played</option>
-              <option value="improve">Improvement potential</option>
+              <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
             </select></div>
         </div>
         <div class="grid-2">
@@ -1317,7 +1385,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-body">
         <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
         <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
-        <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:block;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
+        <div class="rec-empty" id="recEmpty"><b>Your PP targets show up here.</b><br>Connect your BeatLeader profile, then hit <b>Find PP gains</b>. Studio charts your accuracy curve and lists the unplayed ranked maps that add the most pp.</div>
+        <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:none;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
         <div id="recFit" class="rec-fit"></div>
         <div style="margin-top:12px;"><button type="button" class="primary" id="recRun">Find PP gains</button></div>
       </div>
@@ -1341,6 +1410,21 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       </div>
     </section>
 
+
+    <!-- AccSaber Pools -->
+    <section class="panel bl-only" id="accPanel" data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></span><h2>AccSaber Pools</h2><span class="count" id="accState"></span></div>
+      <div class="panel-sub">The ranked AccSaber charts with their complexity, straight from AccSaber. Load a pool as results, then use the <b>Your plays</b> chips to find the ones you haven't played or FC'd.</div>
+      <div class="panel-body">
+        <div class="lvl-chips" id="accCats" role="group" aria-label="AccSaber category">
+          <button type="button" data-ascat="all" class="on">All</button>
+          <button type="button" data-ascat="true">True Acc</button>
+          <button type="button" data-ascat="standard">Standard</button>
+          <button type="button" data-ascat="tech">Tech</button>
+        </div>
+        <button type="button" class="primary" id="accLoadBtn" style="width:100%;">Load AccSaber maps</button>
+      </div>
+    </section>
 
     <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
@@ -1385,6 +1469,23 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <div class="sum-lbl">in your playlist<br><b id="basketTime">0:00</b> · <span id="basketUnique">0</span> songs</div>
       </div>
       <div class="sum-meta" id="counterMeta">Set filters and search to begin.</div>
+    </section>
+
+    <!-- For You: one-click starts built on your own plays -->
+    <section class="panel foryou-panel" id="forYouPanel" data-collapsible>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><h2>For You</h2><span class="count" id="fyName"></span></div>
+      <div class="panel-body">
+        <div class="fy-cta" id="fyConnect">
+          <p>Connect your BeatLeader profile and Studio picks maps for your level: pp gains, a rank-up plan and practice sets built from your own plays.</p>
+          <button type="button" class="primary" id="fyConnectBtn">Connect my profile</button>
+        </div>
+        <div class="fy-grid" id="fyGrid" hidden>
+          <button type="button" class="fy-btn" data-fy="gains"><b>Top pp gains</b><span>Unplayed ranked maps that add the most pp for you</span></button>
+          <button type="button" class="fy-btn" data-fy="plan"><b>Rank-up plan</b><span>The fewest maps to reach your next pp or rank goal</span></button>
+          <button type="button" class="fy-btn" data-fy="practice"><b>Practice set</b><span>Maps you've played but haven't full-combo'd</span></button>
+          <button type="button" class="fy-btn" data-fy="revisit"><b>Revisit</b><span>Maps you haven't played in over 6 months</span></button>
+        </div>
+      </div>
     </section>
 
     <!-- Quick Add (by BSR / link / hash) -->
@@ -1444,7 +1545,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <option value="accRating">Acc</option>
           <option value="passRating">Pass</option>
           <option value="pp">PP @ target acc</option>
-          <option value="improve">Improvement potential</option>
+          <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
         </select>
         <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
         <span class="sort-bar-sep"></span>
@@ -1516,6 +1617,25 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <input type="file" id="importBplist" accept=".bplist,application/json" hidden />
           <span class="muted import-hint">Merges its songs into your current playlist</span>
         </div>
+        <div class="preset-row"><button class="ghost sm" id="galleryBtn" type="button">&#9638; Browse the gallery</button><span class="muted import-hint">Ready-made playlists you can load in one click</span></div>
+        <div class="lib-sub">Smart playlists <span class="info" data-tip="A smart playlist remembers how you built a list, not the songs: the view (a search, your plays, top plays, PP gains or an AccSaber pool), filters and sort. Rebuild refills Your Playlist from fresh results.">i</span></div>
+        <div class="preset-row">
+          <input type="text" id="recipeName" placeholder="Save these results as a smart playlist…" />
+          <input type="number" id="recipeN" min="5" max="250" step="1" value="20" title="How many maps it takes from the top of the results" />
+          <button class="ghost sm" id="recipeSaveBtn" type="button">Save</button>
+        </div>
+        <div class="preset-row">
+          <select id="recipeSelect"><option value="">- smart playlists -</option></select>
+          <button class="ghost sm" id="recipeRunBtn" type="button">Rebuild</button>
+          <button class="ghost sm danger" id="recipeDelBtn" type="button">Delete</button>
+        </div>
+        <p class="muted lib-note">Rebuild replaces Your Playlist with fresh picks. Undo clear brings the old list back.</p>
+        <div class="preset-row lib-backup">
+          <button class="ghost sm" id="libBackupBtn" type="button" title="Download every saved playlist, filter preset, smart playlist and saved icon as one file">&#8615; Back up library</button>
+          <label class="filebtn" for="libRestoreFile" title="Restore a library backup file. Nothing you have now is overwritten.">&#8613; Restore backup</label>
+          <input type="file" id="libRestoreFile" accept=".json,application/json" hidden />
+        </div>
+        <p class="muted lib-note">Your library lives in this browser only. Back it up before clearing site data or moving to another computer.</p>
       </div>
     </section>
 
@@ -1663,7 +1783,13 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h2>In-Game Sync</h2>
         <label class="switch head-switch"><input type="checkbox" id="syncEnable" /><span class="track"></span><span class="switch-lbl">Enable</span></label>
       </div>
-      <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist from wherever <i>you</i> host it. Nothing is uploaded here - Studio just writes the address you paste.</div>
+      <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist from wherever <i>you</i> host it. With your own host nothing is uploaded - Studio just writes the address you paste.</div>
+      <div class="pub-box" id="pubBox" hidden>
+        <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
+        <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download or Send to Quest), then the in-game <b>Sync</b> button pulls every update.</p>
+        <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
+        <div class="pub-info" id="pubInfo"></div>
+      </div>
       <div class="panel-body" id="syncBody" hidden>
         <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
           <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
@@ -1679,12 +1805,29 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <div class="export-validation" id="exportValidation">
           <div class="valitem ok"><span class="ico">◇</span><span>Add songs to <b>Your Playlist</b>, then export.</span></div>
         </div>
+        <div class="plat-tabs" id="platTabs" role="tablist" aria-label="Where do you play?">
+          <button type="button" data-plat="pc" class="on" role="tab">PC</button>
+          <button type="button" data-plat="quest" role="tab">Quest</button>
+        </div>
+        <div class="plat-pane" id="platPc">
         <div class="export-row">
           <button class="primary big" id="downloadBtn2" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .bplist</button>
           <span class="export-hint" id="exportHint">Your playlist is empty.</span>
         </div>
         <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <b>PlaylistManager</b> mod.</p>
+        </div>
+        <div class="plat-pane" id="platQuest" hidden>
+          <div class="export-row">
+            <button class="primary big" id="questSendBtn" type="button" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>Send to Quest</button>
+            <span class="export-hint" id="questHint">Your playlist is empty.</span>
+          </div>
+          <div class="quest-dest" id="questDestRow" hidden><label for="questDest">Folder</label><input type="text" id="questDest" spellcheck="false" /></div>
+          <div class="quest-log" id="questLog" aria-live="polite"></div>
+          <p class="panel-sub" style="margin-top:12px;">Plug your Quest into this computer with a USB cable and use Chrome or Edge. Developer mode needs to be on, which modding already did. Studio finds your PlaylistManager folder on the headset and drops the playlist in. Restart Beat Saber to see a new playlist.</p>
+          <p class="panel-sub">No cable handy? <a href="#" id="questDlLink">Download the .bplist</a> and copy it to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest. Turn on <b>In-Game Sync</b> and later updates come down with the in-game Sync button, no cable needed.</p>
+        </div>
       </div>
     </section>
   </div>
@@ -1709,7 +1852,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-16T12:55:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T11:40:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -1810,15 +1953,33 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 <div id="tipbox"></div>
 
 <!-- ============ MOBILE TAB BAR (hidden on desktop) ============ -->
+<div class="modal-back" id="galleryModal" aria-hidden="true">
+  <div class="modal" style="width:min(720px,100%);">
+    <div class="modal-head"><span class="modal-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span><h3>Playlist Gallery</h3><button class="ghost sm" id="galleryClose" title="Close (Esc)">&#10005;</button></div>
+    <div class="modal-body"><div class="gal-list" id="galleryList"><p class="muted">Loading&hellip;</p></div></div>
+    <div class="modal-foot"><span class="muted preview-note">Loading one works like dropping a .bplist: if Your Playlist already has songs you choose Merge or Replace.</span></div>
+  </div>
+</div>
+
 <div class="wn-back" id="whatsnewBack" hidden>
   <div class="wn-card" role="dialog" aria-modal="true" aria-label="What's new in Playlist Studio">
-    <div class="wn-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><h3>What's New</h3><span class="wn-chip">5 updates</span></div>
+    <div class="wn-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><h3 id="wnTitle">What's New</h3><span class="wn-chip" id="wnChip">7 updates</span></div>
     <div class="wn-body">
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="wn-t">Rank-Up Planner</p><p class="wn-d">Set a PP or rank goal and get the fewest ranked maps to reach it, with a projected new PP and global rank. In the filters, under PP Optimizer.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><div><p class="wn-t">Playlist Stats</p><p class="wn-d">A quick read on your current set: star spread, NPS pacing, tech vs speed balance, average PP and more.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><div><p class="wn-t">Share by link</p><p class="wn-d">Pack a playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><div><p class="wn-t">Maps Like This</p><p class="wn-d">Open any map's preview and hit Similar to pull up ranked maps that match it by mapper, star rating and NPS.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><div><p class="wn-t">Session Ramp</p><p class="wn-d">Reorder Your Playlist into a smooth warmup-to-peak climb by stars or NPS, so a set plays like a real practice session.</p></div></div>
+      <div class="wn-group" data-wn="new">
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><div><p class="wn-t">For You picks</p><p class="wn-d">Connect your BeatLeader profile and a For You card picks maps for your level: top pp gains, a rank-up plan, a practice set and maps to revisit.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Searches start at your level</p><p class="wn-d">Search now opens at your level instead of the hardest maps. Level chips in Star Rating switch it in one click.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><div><p class="wn-t">Send to Quest</p><p class="wn-d">Plug in your Quest and send a playlist straight to its PlaylistManager folder from the Export panel. No SideQuest needed.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v6a4 4 0 0 0 4 4h4"/><polyline points="13 9 17 13 13 17"/><line x1="8" y1="21" x2="8" y2="13"/></svg></span><div><p class="wn-t">ScoreSaber plays</p><p class="wn-d">Add your ScoreSaber history in Your Profile so the played and FC filters cover both leaderboards.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="wn-t">AccSaber pools</p><p class="wn-d">Load the ranked AccSaber charts by category, with complexity, then filter by what you have and haven't played.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><div><p class="wn-t">Smart playlists</p><p class="wn-d">Save how you built a playlist and rebuild it from fresh results in one click.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Library backup</p><p class="wn-d">Back up saved playlists, presets and smart playlists to a file, and restore them on any computer.</p></div></div>
+      </div>
+      <div class="wn-group" data-wn="tour" hidden>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Start at your level</p><p class="wn-d">Pick a level in Star Rating, or connect your profile and Studio picks it for you.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><p class="wn-t">Connect your BeatLeader profile</p><p class="wn-d">See your score on every map, filter by what you've played or FC'd, and get For You picks plus a Stats card.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Cherry-pick, then export</p><p class="wn-d">Add maps from any search, drag to reorder, then download the .bplist or send it straight to your Quest.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><div><p class="wn-t">Share it</p><p class="wn-d">Pack a playlist into a link for friends or tournament pools. No account needed.</p></div></div>
+      </div>
     </div>
     <div class="wn-foot"><button type="button" class="primary" id="whatsnewClose" style="width:100%;">Got it</button></div>
   </div>
@@ -2447,6 +2608,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 
     toJSON: function (playlist) { return JSON.stringify(playlist, null, 2); },
 
+    fileName: function (title) { return sanitizeFilename(title) + '.bplist'; },
+
     /** Build + trigger a browser download. Returns unique-song count. */
     download: function (meta, songs) {
       var playlist = this.build(meta, songs);
@@ -2615,6 +2778,7 @@ window.PP = (function () {
   var SESSION_KEY = 'playlistStudio.session.v1';
   var PLAYER_KEY = 'playlistStudio.player.v1';
   var PLAYS_KEY = 'playlistStudio.plays.v1';
+  var FIRST_VISIT = (function () { try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('playlistStudio.') === 0) return false; } } catch (e) {} return true; })();
   var ICON_KEY = 'playlistStudio.icons.v1';
   var SYNC_KEY = 'playlistStudio.sync.v1';
   var SRC_KEY = 'playlistStudio.source.v1';
@@ -2716,6 +2880,12 @@ window.PP = (function () {
   function scoreFor(e) { var pi = playInfo(e); return pi ? pi.sc : null; }
   function myVal(sc, key) { if (!sc) return null; if (key === 'myAcc') return sc.a; if (key === 'myRank') return sc.rk; if (key === 'myDate') return sc.t; return (sc.fa || 0) - sc.a; }
   function fmtDate(t) { if (!t) return ''; var d = new Date(t * 1000); return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear(); }
+  function agoStr(t) {
+    var s = Date.now() / 1000 - t; if (!(s > 0)) return 'today';
+    if (s < 3600) return 'just now'; if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    if (s < 86400 * 60) return Math.floor(s / 86400) + 'd ago'; if (s < 86400 * 365) return Math.floor(s / 86400 / 30) + 'mo ago';
+    return Math.floor(s / 86400 / 365) + 'y ago';
+  }
   // Fire a privacy-friendly custom event to GoatCounter (no-op until analytics is configured).
   function track(name) { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'app/' + name, title: name, event: true }); } catch (e) {} }
   function trackLookup(p) { try { if (!p) return; var name = String(p.name || 'unknown').slice(0, 60); if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'profile/' + name, title: 'Profile lookup: ' + name + (p.id ? ' (' + p.id + ')' : ''), event: true }); } catch (e) {} }
@@ -2978,7 +3148,8 @@ window.PP = (function () {
     if (D.asl && D.asl.level != null) pills.push('<span class="sv-pill">AccSaber Lv ' + D.asl.level + '</span>');
     h += '<section class="sv-hero">' + (cover ? '<img class="cvr" src="' + esc(cover) + '" alt="" onerror="this.remove()">' : '') +
       '<div class="sv-hero-in"><img class="sv-ava" src="' + esc(p.avatar || '') + '" alt="' + esc(p.name) + ' avatar" onerror="this.style.visibility=\'hidden\'">' +
-      '<div class="sv-who"><div class="sv-kick">BEAT SABER STATS</div><div class="sv-name">' + esc(p.name) + '</div><div class="sv-pills">' + pills.join('') + '</div></div></div></section>';
+      '<div class="sv-who"><div class="sv-kick">BEAT SABER STATS</div><div class="sv-name">' + esc(p.name) + '</div><div class="sv-pills">' + pills.join('') + '</div>' +
+      '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button></div></div></div></section>';
 
     // BeatLeader card
     var hist = (D.blh || []).slice().sort(function (a, b) { return a.timestamp - b.timestamp; });
@@ -3074,7 +3245,7 @@ window.PP = (function () {
     (D.ass || []).forEach(function (x) { if (x.blScoreId != null) asMap[String(x.blScoreId)] = x; });
     var rows = (D.bls || []).map(function (s) {
       var lb = s.leaderboard || {}, song = lb.song || {}, diff = lb.difficulty || {};
-      var r = { id: s.id, t: parseInt(s.timeset, 10) || s.timepost || 0, song: song.name, sub: song.subName, hash: String(song.hash || ''), diff: diff.difficultyName, mode: diff.modeName,
+      var r = { lb: lb, id: s.id, t: parseInt(s.timeset, 10) || s.timepost || 0, song: song.name, sub: song.subName, hash: String(song.hash || ''), diff: diff.difficultyName, mode: diff.modeName,
         stars: diff.stars, acc: s.accuracy * 100, fc: !!s.fullCombo, miss: (s.missedNotes || 0) + (s.badCuts || 0), mods: s.modifiers, rank: s.rank, blpp: s.pp || 0, blw: (s.pp || 0) * (s.weight || 0) };
       var x = ssMap[r.hash.toUpperCase() + '|' + diff.value + '|' + diff.modeName];
       if (x && x.leaderboard && x.leaderboard.ranked) r.sspp = x.score.pp;
@@ -3090,7 +3261,8 @@ window.PP = (function () {
       msg = '<div class="sv-msg">' + (list.length ? 'Nothing in the last ' + (sv.range === 'week' ? '7 days' : '24 hours') + '. Showing the latest scores instead.' : 'No scores found.') + '</div>';
     }
     var catName = { 'true': 'True Acc', standard: 'Standard', tech: 'Tech' };
-    return msg + '<div>' + list.map(function (r) {
+    sv.rows = list;
+    return msg + '<div>' + list.map(function (r, ri) {
       var d = SV_DIFF[r.diff] || [r.diff || '', '#888'];
       var meta = ['<span style="color:' + d[1] + '">' + esc(d[0]) + '</span>'];
       if (r.mode && r.mode !== 'Standard') meta.push('<span>' + esc(r.mode) + '</span>');
@@ -3104,7 +3276,8 @@ window.PP = (function () {
       return '<div class="sv-sc"><div class="sv-row"><img class="sv-cv" style="--dc:' + d[1] + '" src="https://eu.cdn.beatsaver.com/' + esc(r.hash.toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
         '<div style="min-width:0"><div class="sv-song">' + esc(r.song || '') + (r.sub ? ' <small style="color:var(--muted)">' + esc(r.sub) + '</small>' : '') + '</div><div class="sv-meta">' + meta.join('') + '</div></div>' +
         '<div class="sv-acc"><b>' + r.acc.toFixed(2) + '%</b><span class="' + (r.fc ? 'sv-up' : 'sv-dn') + '">' + (r.fc ? 'FC' : r.miss + (r.miss === 1 ? ' miss' : ' misses')) + '</span></div>' +
-        '<button type="button" class="ghost" data-rp="' + esc(String(r.id)) + '">&#9654; Replay</button></div><div class="sv-rp" id="svrp-' + esc(String(r.id)) + '" hidden></div></div>';
+        '<div class="sv-btns">' + (r.lb && r.lb.song && r.lb.song.hash ? (inBasket(normalize(r.lb)) ? '<button type="button" class="ghost" disabled>&#10003; In playlist</button>' : '<button type="button" class="ghost" data-add="' + ri + '" title="Add this map to Your Playlist">+ Add</button>') : '') +
+        '<button type="button" class="ghost" data-rp="' + esc(String(r.id)) + '">&#9654; Replay</button></div></div><div class="sv-rp" id="svrp-' + esc(String(r.id)) + '" hidden></div></div>';
     }).join('') + '</div>';
   }
 
@@ -3142,6 +3315,22 @@ window.PP = (function () {
       else prompt('Copy this link:', url);
     });
     svEl('sdBody').addEventListener('click', function (e) {
+      var ad = e.target.closest('button[data-add]');
+      if (ad) {
+        var row = (sv.rows || [])[+ad.getAttribute('data-add')];
+        if (row && row.lb) {
+          var en = normalize(row.lb);
+          if (addEntry(en)) { renderAll(); toast('Added "' + en.songName + '" to Your Playlist.', 'ok'); track('stats-add'); }
+          else toast('That map is already in Your Playlist.', 'warn');
+          ad.disabled = true; ad.innerHTML = '&#10003; In playlist';
+        }
+        return;
+      }
+      if (e.target.closest('#svTopBtn')) {
+        var pd = sv.data && sv.data.bl;
+        if (pd) { svClose(); track('stats-top-plays'); buildTopPlays(50, pd.id, pd.name); }
+        return;
+      }
       var rt = e.target.closest('[data-ss-retry]');
       if (rt) { e.preventDefault(); if (sv.data) { svLoadSS(sv.data); svRender(); } return; }
       var f = e.target.closest('#svFilters button');
@@ -3204,6 +3393,7 @@ window.PP = (function () {
     if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
     track('search-beatleader');
+    autoBandForSearch();
     fxSlashGo();
     var f = getFilters(); state.fetching = true; state.pinnedRelay = null;
     [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = true; b.classList.add('is-fetching'); });
@@ -3237,7 +3427,8 @@ window.PP = (function () {
       }).catch(function (err) {
         console.error(err); setStatus('Fetch failed', 'err'); var msg = err.message || 'Fetch failed.';
         el.counterMeta.textContent = msg; renderResults(); toast(msg, 'err');
-        if (/relays failed/i.test(msg)) toast('All public relays are busy right now - wait a moment and hit Fetch again.', 'warn');
+        if (/relays failed/i.test(msg)) toast('All public relays are busy right now - wait a moment and hit Search again.', 'warn');
+        else toast('Hit Search again - Studio automatically tries another route to BeatLeader.', 'warn');
       }).then(function () {
         state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; b.classList.remove('is-fetching'); });
         el.topLoadBar.classList.remove('on'); el.topLoadFill.style.width = '0%';
@@ -3490,7 +3681,8 @@ window.PP = (function () {
         // Uploaded-within window (drop maps with no known date when a window is set).
         if (ageCutoff != null) { if (!s.uploaded) return false; if ((nowSec - s.uploaded) / 86400 > ageCutoff) return false; }
       }
-      if (state.source === 'beatleader' && s.stars > 0 && (s.stars < f.starMin || s.stars > f.starMax)) return false;
+      if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && state.viewMode === 'plays') && (s.stars < f.starMin || s.stars > f.starMax)) return false;
+      if (state.viewMode === 'accsaber' && state.asCat && state.asCat !== 'all' && s.asCat !== state.asCat) return false;
       if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all') {
         var isRanked = s.stars > 0;
         if (f.rankView === 'ranked' && !isRanked) return false;
@@ -3742,6 +3934,7 @@ window.PP = (function () {
   // identity, the same across every playlist you make. The basket itself is handled
   // by the caller. Safe to call before elements are wired (guards each group).
   function resetPlaylistIdentity() {
+    state.activeRecipe = null;
     // Metadata written into the .bplist
     if (el.metaTitle) el.metaTitle.value = DEFAULT_TITLE;
     if (el.metaDescription) el.metaDescription.value = ''; state.descAuto = true;
@@ -3758,6 +3951,7 @@ window.PP = (function () {
     if (el.coverStyleGrid) buildCoverPickers();
     // In-Game Sync → off + empty (updateSyncUI also clears the persisted sync config)
     if (el.syncEnable) { el.syncEnable.checked = false; el.syncUrl.value = ''; updateSyncUI(); }
+    state.publish = null; if (typeof renderPubUI === 'function') renderPubUI();
     // The Refine undo snapshot belonged to the OLD list - drop it
     state.refineUndo = null; if (el.refineUndoWrap) el.refineUndoWrap.hidden = true;
   }
@@ -3773,7 +3967,7 @@ window.PP = (function () {
       usingCustom: state.usingCustom, customImgEl: state.customImgEl, customBaseUrl: state.customBaseUrl, coverDataUrl: state.coverDataUrl,
       useCustom: el.useCustomImage.checked, customFieldHidden: el.customFileField.hidden,
       syncEnabled: el.syncEnable.checked, syncUrl: el.syncUrl.value,
-      playlistName: el.playlistName.value, savedSel: el.savedPlaylists.value
+      playlistName: el.playlistName.value, savedSel: el.savedPlaylists.value, publish: state.publish || null
     };
   }
   function restorePlaylist(s) {
@@ -3788,7 +3982,7 @@ window.PP = (function () {
     el.useCustomImage.checked = s.useCustom; el.customFileField.hidden = s.customFieldHidden;
     buildCoverPickers();
     el.syncEnable.checked = s.syncEnabled; el.syncUrl.value = s.syncUrl; updateSyncUI();
-    el.playlistName.value = s.playlistName; el.savedPlaylists.value = s.savedSel;
+    el.playlistName.value = s.playlistName; el.savedPlaylists.value = s.savedSel; state.publish = s.publish || null; renderPubUI();
   }
 
   function clearBasket() {
@@ -3841,7 +4035,7 @@ window.PP = (function () {
   function saveSession() {
     clearTimeout(sessionTimer);
     sessionTimer = setTimeout(function () {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto } })); } catch (e) {}
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, pub: state.publish || null })); } catch (e) {}
     }, 600);
   }
   function restoreSession() {
@@ -3850,7 +4044,7 @@ window.PP = (function () {
       if (s && s.ppAcc) { state.ppAcc = Math.max(1, Math.min(100, s.ppAcc)); if (el.ppFilterAcc) el.ppFilterAcc.value = state.ppAcc; }
       if (s && s.ppMod) { state.ppMod = s.ppMod; buildGlobalPpMods(); }
       if (s && Array.isArray(s.entries) && s.entries.length) {
-        state.basket = s.entries;
+        state.basket = s.entries; state.publish = s.pub || null;
         if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; state.descAuto = (s.meta.descAuto !== undefined) ? !!s.meta.descAuto : isAutoDesc(s.meta.description || ''); }
         toast('Restored your last playlist (' + state.basket.length + ' maps). Clear to start fresh.', 'ok');
       }
@@ -3865,7 +4059,10 @@ window.PP = (function () {
   }
   function badges(e) {
     var b = [];
-    b.push(e.stars > 0 ? '<span class="rb rb-star">' + e.stars.toFixed(2) + '★</span>' : '<span class="rb rb-ur">UR</span>');
+    if (e.stars > 0) b.push('<span class="rb rb-star">' + e.stars.toFixed(2) + '★</span>');
+    else if (e.asCat) b.push('<span class="rb rb-as" title="AccSaber ' + esc(AS_LABEL[e.asCat] || e.asCat) + ' · complexity ' + (+e.complexity || 0).toFixed(1) + '">AS ' + esc(AS_LABEL[e.asCat] || e.asCat) + ' ' + (+e.complexity || 0).toFixed(1) + '</span>');
+    else if (e.ssStars > 0) b.push('<span class="rb rb-ss" title="ScoreSaber star rating (not on BeatLeader\'s ranked list)">SS ' + e.ssStars.toFixed(2) + '★</span>');
+    else b.push('<span class="rb rb-ur">UR</span>');
     b.push('<span class="rb rb-diff">' + esc(e.difficultyName ? (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) : (e.diffCount ? e.diffCount + (e.diffCount === 1 ? ' diff' : ' diffs') : 'All diffs')) + '</span>');
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
     if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
@@ -3874,9 +4071,14 @@ window.PP = (function () {
     if (state.player) {
       var sc = scoreFor(e);
       if (sc) {
-        var acc = (sc.a * 100).toFixed(2) + '%';
-        if (sc.fc) b.push('<span class="rb rb-you fc" title="Full combo · rank #' + sc.rk + '">FC ' + acc + '</span>');
-        else b.push('<span class="rb rb-you" title="rank #' + sc.rk + (sc.m ? ' · ' + sc.m + ' miss' : '') + '">' + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
+        var ssTag = sc.src === 'ss' ? 'SS ' : '', acc = sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'played';
+        if (sc.fc) b.push('<span class="rb rb-you fc" title="Full combo' + (sc.rk ? ' · rank #' + sc.rk : '') + (ssTag ? ' · from ScoreSaber' : '') + '">' + ssTag + 'FC ' + acc + '</span>');
+        else b.push('<span class="rb rb-you" title="' + (sc.rk ? 'rank #' + sc.rk : 'your best') + (sc.m ? ' · ' + sc.m + ' miss' : '') + (ssTag ? ' · from ScoreSaber' : '') + '">' + ssTag + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
+        if (sc.t) b.push('<span class="rb rb-ago" title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
+        if (sc.src !== 'ss' && sc.pp > 0 && PP.isRanked(e)) {
+          var tgt = PP.ppFor(e, state.ppAcc, state.ppMod);
+          if (tgt != null && tgt - sc.pp >= 1) b.push('<span class="rb rb-up" title="Raw pp you would gain going from your best score to ' + state.ppAcc + '% (set the target in the PP Filter panel)">+' + Math.round(tgt - sc.pp) + 'pp at ' + state.ppAcc + '%</span>');
+        }
       } else {
         b.push('<span class="rb rb-new" title="You haven\'t played this yet">NEW</span>');
       }
@@ -3964,7 +4166,8 @@ window.PP = (function () {
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
     if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
     else if (!entries) el.counterMeta.textContent = state.viewMode === 'plays'
-      ? matched + ' of your played maps shown. Narrow with “Your play status” (e.g. Played, not FC), then add the ones you want.'
+      ? matched + ' of your played maps shown. Narrow with the Your plays chips (e.g. Not FC), then add the ones you want.'
+      : state.viewMode === 'accsaber' ? matched + ' AccSaber charts shown, easiest first. Use the Your plays chips to find the ones you haven\'t played or FC\'d.'
       : matched + ' maps matched. Add the ones you want to build your playlist.';
     else {
       var st = playlistStats();
@@ -4015,6 +4218,7 @@ window.PP = (function () {
       items.push({ level: 'ok', ico: '✓', msg: 'Difficulty names PascalCase (ExpertPlus) - PlaylistManager compliant. Play order = list order.' });
     }
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
+    renderQuestUI(); renderPubUI();
   }
   function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); featRefresh(); saveSession(); }
   // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
@@ -4243,10 +4447,17 @@ window.PP = (function () {
   }
 
   // ---- What's New (one-time) ------------------------------------------------
-  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v2';
+  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v3';
   function showWhatsNew(force) {
     try { if (!force && localStorage.getItem(WHATSNEW_KEY)) return; } catch (e) {}
     var back = document.getElementById('whatsnewBack'); if (!back) return;
+    // First-timers get a quick tour; returning players get the release notes.
+    var tour = FIRST_VISIT && !force;
+    Array.prototype.forEach.call(back.querySelectorAll('.wn-group'), function (g) { g.hidden = g.getAttribute('data-wn') !== (tour ? 'tour' : 'new'); });
+    var wt = document.getElementById('wnTitle'), wc = document.getElementById('wnChip');
+    if (wt) wt.textContent = tour ? 'Welcome to Playlist Studio' : 'What\'s New';
+    if (wc) wc.textContent = tour ? 'Quick tour' : back.querySelectorAll('.wn-group[data-wn="new"] .wn-item').length + ' updates';
+    track(tour ? 'tour-shown' : 'whatsnew-shown');
     back.hidden = false; requestAnimationFrame(function () { back.classList.add('show'); });
     try { localStorage.setItem(WHATSNEW_KEY, '1'); } catch (e) {}
   }
@@ -4544,8 +4755,9 @@ window.PP = (function () {
   }
 
   // ---- export ---------------------------------------------------------------
-  function doDownload() {
-    if (!state.basket.length) return;
+  // Everything an export needs (title, cover, songs with difficulties, sync URL), shared by
+  // Download, Send to Quest and hosted sync so all three write the same file.
+  function exportParts() {
     if (!state.coverDataUrl) updateCover();
     var songs = state.basket.map(function (s) {
       var diffs = s.difficultyName ? [{ characteristic: s.modeName || 'Standard', name: BplistExporter.mapDifficultyName(s.difficultyName) }] : [];
@@ -4557,9 +4769,578 @@ window.PP = (function () {
     var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
     var syncURL = getSyncUrl();
     var meta = { title: (!rawTitle || rawTitle === DEFAULT_TITLE) ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: state.descAuto ? autoDesc : (el.metaDescription.value.trim() || autoDesc), image: state.coverDataUrl || '', syncURL: syncURL };
-    if (el.syncEnable.checked && !syncURL) toast('Sync is on but the host URL is incomplete - exporting without a syncURL.', 'warn');
-    try { var c = BplistExporter.download(meta, songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
+    return { meta: meta, songs: songs, syncURL: syncURL };
+  }
+  function doDownload() {
+    if (!state.basket.length) return;
+    var x = exportParts();
+    if (el.syncEnable.checked && !x.syncURL) toast('Sync is on but the host URL is incomplete - exporting without a syncURL.', 'warn');
+    try { var c = BplistExporter.download(x.meta, x.songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (x.syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
     catch (err) { toast(err.message, 'err'); }
+  }
+
+  // ---- Send to Quest (WebUSB + ADB, same approach as HSV Config Generator) ---
+  var PLAT_KEY = 'playlistStudio.platform.v1', QDEST_KEY = 'playlistStudio.questDest.v1';
+  var QS = { adb: null, transport: null, dir: '', busy: false };
+  var QUEST_MODS = '/sdcard/ModData/com.beatgames.beatsaber/Mods';
+  function qlog(msg, cls) {
+    var box = document.getElementById('questLog'); if (!box) return;
+    var line = document.createElement('div'); line.className = cls || 'dim'; line.textContent = msg;
+    box.appendChild(line); while (box.childNodes.length > 40) box.removeChild(box.firstChild);
+    box.scrollTop = box.scrollHeight;
+  }
+  function setPlatform(p) {
+    p = p === 'quest' ? 'quest' : 'pc';
+    var tabs = document.getElementById('platTabs'); if (!tabs) return;
+    Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { var on = b.getAttribute('data-plat') === p; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    document.getElementById('platPc').hidden = p !== 'pc';
+    document.getElementById('platQuest').hidden = p !== 'quest';
+    try { localStorage.setItem(PLAT_KEY, p); } catch (e) {}
+  }
+  function renderQuestUI() {
+    var btn = document.getElementById('questSendBtn'), hint = document.getElementById('questHint'); if (!btn) return;
+    var entries = state.basket.length;
+    btn.disabled = !entries || QS.busy;
+    hint.textContent = QS.busy ? 'Working…' : (entries ? uniqueHashes(state.basket) + ' songs ready' + (QS.adb ? ' · Quest connected' : '') : 'Your playlist is empty.');
+  }
+  function webusbCheck() {
+    if (!('usb' in navigator)) return 'This browser has no WebUSB. Use Chrome or Edge on a desktop computer.';
+    if (!window.isSecureContext) return 'Open Studio from its https address to use USB.';
+    return '';
+  }
+  function classifyUsbError(e) {
+    var name = (e && e.name) || '', msg = String((e && e.message) || e || '');
+    if (name === 'NotFoundError' || /no device selected/i.test(msg)) return 'cancelled';
+    if (name === 'SecurityError' || /permissions policy|secure context/i.test(msg)) return 'security';
+    if (name === 'NetworkError' || /claim|busy|in use|access denied|unable to open|LIBUSB/i.test(msg)) return 'locked';
+    return 'other';
+  }
+  var adbLibs = null;
+  function loadAdbLibs() {
+    if (adbLibs) return Promise.resolve(adbLibs);
+    var base = 'https://esm.sh/@yume-chan/', v = '@2.1.0';
+    qlog('Loading the USB connector…');
+    return Promise.all([import(base + 'adb' + v), import(base + 'adb-daemon-webusb' + v), import(base + 'adb-credential-web' + v)])
+      .then(function (m) { adbLibs = { adb: m[0], usb: m[1], cred: m[2] }; return adbLibs; })
+      .catch(function (e) { throw new Error('Could not load the USB connector. Check your internet connection. (' + ((e && e.message) || e) + ')'); });
+  }
+  function questConnect() {
+    return loadAdbLibs().then(function (L) {
+      var Manager = L.usb.AdbDaemonWebUsbDeviceManager && L.usb.AdbDaemonWebUsbDeviceManager.BROWSER;
+      if (!Manager) throw new Error('WebUSB is not available in this browser.');
+      qlog('Pick your Quest in the browser prompt…');
+      return Manager.requestDevice().then(function (device) {
+        if (!device) { var c = new Error('No device selected'); c.name = 'NotFoundError'; throw c; }
+        return device.connect().then(function (connection) {
+          qlog('Approve the "Allow USB debugging" prompt in your headset if it appears.');
+          var Cred = L.cred.AdbWebCredentialStore || L.cred.default;
+          return L.adb.AdbDaemonTransport.authenticate({ serial: device.serial, connection: connection, credentialStore: new Cred('Playlist Studio') });
+        }).then(function (transport) {
+          QS.transport = transport; QS.adb = new L.adb.Adb(transport);
+          qlog('Connected to ' + (device.name || 'your Quest') + '.', 'ok'); track('quest-connect');
+        });
+      });
+    });
+  }
+  function withSync(fn) {
+    return QS.adb.sync().then(function (sync) {
+      return Promise.resolve(fn(sync)).then(function (r) { try { sync.dispose && sync.dispose(); } catch (e) {} return r; },
+        function (e) { try { sync.dispose && sync.dispose(); } catch (x) {} throw e; });
+    });
+  }
+  function isDirStat(st) { return !!st && (st.type === 4 || (typeof st.mode === 'number' && (st.mode & 61440) === 16384)); }
+  function statDir(sync, path) { return Promise.resolve().then(function () { return sync.stat(path); }).then(isDirStat, function () { return false; }); }
+  function listNames(sync, path) {
+    return Promise.resolve().then(function () {
+      if (sync.readdir) return sync.readdir(path);
+      var out = [], it = sync.opendir(path)[Symbol.asyncIterator]();
+      function step() { return it.next().then(function (r) { if (r.done) return out; out.push(r.value); return step(); }); }
+      return step();
+    }).then(function (ents) { return (ents || []).map(function (x) { return x && x.name; }).filter(function (n) { return n && n !== '.' && n !== '..'; }); }, function () { return []; });
+  }
+  // Find the PlaylistManager folder by looking at what is actually on the headset.
+  function findPlaylistDir(sync) {
+    var saved = ''; try { saved = localStorage.getItem(QDEST_KEY) || ''; } catch (e) {}
+    var cands = [];
+    if (saved) cands.push(saved);
+    return listNames(sync, QUEST_MODS).then(function (names) {
+      names.filter(function (n) { return /playlist/i.test(n); }).forEach(function (n) { cands.push(QUEST_MODS + '/' + n + '/Playlists'); cands.push(QUEST_MODS + '/' + n); });
+      cands.push(QUEST_MODS + '/PlaylistManager/Playlists', '/sdcard/BMBFData/Playlists');
+      var seen = {}; cands = cands.filter(function (c) { if (seen[c]) return false; seen[c] = 1; return true; });
+      var i = 0;
+      function next() { if (i >= cands.length) return ''; var c = cands[i++]; return statDir(sync, c).then(function (ok) { return ok ? c : next(); }); }
+      return next();
+    });
+  }
+  function questSend() {
+    if (!state.basket.length || QS.busy) return;
+    var why = webusbCheck();
+    if (why) { qlog(why, 'err'); toast(why, 'err'); return; }
+    QS.busy = true; renderQuestUI();
+    var x = exportParts(), playlist = BplistExporter.build(x.meta, x.songs);
+    var fname = BplistExporter.fileName(playlist.playlistTitle), bytes = new TextEncoder().encode(BplistExporter.toJSON(playlist));
+    var destInput = document.getElementById('questDest');
+    (QS.adb ? Promise.resolve() : questConnect()).then(function () {
+      return withSync(function (sync) {
+        var typed = destInput && destInput.value.trim().replace(/\/+$/, '');
+        var pick = typed ? statDir(sync, typed).then(function (ok) { return ok ? typed : findPlaylistDir(sync); }) : findPlaylistDir(sync);
+        return pick.then(function (dir) {
+          if (!dir) throw new Error('NO_DIR');
+          QS.dir = dir;
+          if (destInput) { destInput.value = dir; document.getElementById('questDestRow').hidden = false; }
+          try { localStorage.setItem(QDEST_KEY, dir); } catch (e) {}
+          var path = dir + '/' + fname;
+          return sync.stat(path).then(function () { return true; }, function () { return false; }).then(function (existed) {
+            qlog((existed ? 'Updating ' : 'Writing ') + fname + ' (' + playlist.songs.length + ' songs)…');
+            var file = new ReadableStream({ start: function (c) { c.enqueue(bytes); c.close(); } });
+            return Promise.resolve(sync.write({ filename: path, file: file, permission: 420 })).then(function () { return existed; });
+          });
+        });
+      });
+    }).then(function (existed) {
+      qlog('Done. ' + (existed ? 'Updated' : 'Added') + ' "' + playlist.playlistTitle + '" on your Quest. Restart Beat Saber to see it.', 'ok');
+      toast((existed ? 'Updated' : 'Sent') + ' "' + playlist.playlistTitle + '" on your Quest.', 'ok');
+      track('quest-send');
+    }).catch(function (e) {
+      var msg = (e && e.message) || String(e), kind = classifyUsbError(e);
+      if (msg === 'NO_DIR') {
+        qlog('Couldn\'t find a PlaylistManager folder on the headset. Install the PlaylistManager mod and launch Beat Saber once, or type the folder path above and try again.', 'warn');
+        var r = document.getElementById('questDestRow'); if (r) r.hidden = false;
+      } else if (kind === 'cancelled') qlog('No headset picked.', 'dim');
+      else if (kind === 'locked') { qlog('Another app (SideQuest, Meta Quest Link or adb) is using the headset. Close it, unplug and replug the cable, then try again.', 'err'); questReset(); }
+      else if (kind === 'security') qlog('The browser blocked USB here. Open Studio in its own Chrome or Edge tab.', 'err');
+      else { qlog('Send failed: ' + msg, 'err'); questReset(); }
+      if (kind !== 'cancelled') toast('Couldn\'t send to your Quest - see the Export panel for details.', 'warn');
+    }).then(function () { QS.busy = false; renderQuestUI(); });
+  }
+  function questReset() {
+    try { QS.transport && QS.transport.close && QS.transport.close(); } catch (e) {}
+    QS.adb = null; QS.transport = null;
+  }
+  function setupQuestExport() {
+    var tabs = document.getElementById('platTabs'); if (!tabs) return;
+    tabs.addEventListener('click', function (e) { var b = e.target.closest('button[data-plat]'); if (b) { setPlatform(b.getAttribute('data-plat')); track('export-tab-' + b.getAttribute('data-plat')); } });
+    var p = 'pc'; try { p = localStorage.getItem(PLAT_KEY) || 'pc'; } catch (e) {}
+    setPlatform(p);
+    document.getElementById('questSendBtn').addEventListener('click', questSend);
+    document.getElementById('questDlLink').addEventListener('click', function (e) { e.preventDefault(); doDownload(); });
+    var dest = document.getElementById('questDest');
+    try { var sd = localStorage.getItem(QDEST_KEY); if (sd) { dest.value = sd; } } catch (e) {}
+    renderQuestUI();
+  }
+
+
+  // ---- ScoreSaber play history ----------------------------------------------
+  // Pulls the player's ScoreSaber scores into the same played/FC index BeatLeader fills, so
+  // the play filters and Build from my plays cover both leaderboards. BeatLeader wins when a
+  // chart is on both (it has the richer data); ScoreSaber pp never mixes into BeatLeader pp.
+  var SS_DIFF = { 1: 'Easy', 3: 'Normal', 5: 'Hard', 7: 'Expert', 9: 'ExpertPlus' };
+  function keepSSPlays(idx) {
+    var out = {}; idx = idx || {};
+    Object.keys(idx).forEach(function (k) { if (idx[k] && idx[k].src === 'ss') out[k] = idx[k]; });
+    return out;
+  }
+  function ssUI(msg) {
+    var b = document.getElementById('ssSyncBtn'), s = document.getElementById('ssState'); if (!b) return;
+    var p = state.player;
+    b.disabled = !p || !!state.ssSyncing;
+    b.textContent = p && p.ssId ? '⟳ ScoreSaber' : '+ ScoreSaber plays';
+    if (s) s.textContent = msg != null ? msg : (p && p.ssId ? 'ScoreSaber: ' + (p.ssCount || 0) + ' plays merged' : '');
+  }
+  function ssResolve() {
+    var p = state.player;
+    if (p.ssId) return Promise.resolve({ id: p.ssId, name: p.ssName });
+    return blGet('/player/' + encodeURIComponent(p.id) + '?stats=true', validPlayer).catch(function () { return p; }).then(function (bp) {
+      var li = (bp && bp.linkedIds) || {}, ids = [];
+      [li.steamId, p.id, bp && bp.id].concat(Object.keys(li).map(function (k) { return li[k]; })).forEach(function (x) { if (x && /^\d{3,20}$/.test(String(x)) && ids.indexOf(String(x)) < 0) ids.push(String(x)); });
+      if (!ids.length) throw new Error('NO_SS');
+      return firstOk(ids, function (x) { return ssGet('/player/' + x + '/basic', function (j) { return j && j.id && !j.errorMessage; }); })
+        .catch(function () { throw new Error('NO_SS'); });
+    });
+  }
+  function ssSync() {
+    if (!state.player || state.syncing || state.ssSyncing) return;
+    var p = state.player, since = p.ssSyncedMax || 0, added = 0, both = 0, seen = 0, newMax = since;
+    state.ssSyncing = true; ssUI('Finding your ScoreSaber profile…');
+    ssResolve().then(function (ss) {
+      p.ssId = String(ss.id); p.ssName = ss.name || p.ssName;
+      var page = 1, stop = false;
+      function step() {
+        ssUI('ScoreSaber: reading page ' + page + '…');
+        return ssGet('/player/' + p.ssId + '/scores?sort=recent&limit=100&page=' + page, function (j) { return j && Array.isArray(j.playerScores); }).then(function (j) {
+          var items = j.playerScores || [];
+          for (var i = 0; i < items.length; i++) {
+            var x = items[i], s = x.score || {}, lb = x.leaderboard || {}, df = lb.difficulty || {};
+            var t = Math.floor((Date.parse(s.timeSet) || 0) / 1000);
+            if (since && t && t <= since) { stop = true; break; }
+            var hash = String(lb.songHash || '').toLowerCase(), dn = SS_DIFF[df.difficulty], mode = String(df.gameMode || 'SoloStandard').replace(/^Solo/, '') || 'Standard';
+            if (!hash || !dn) continue;
+            seen++; if (t > newMax) newMax = t;
+            var key = hash + '|' + dn + '|' + mode, cur = state.scores[key];
+            if (cur && cur.src !== 'ss') { both++; continue; }
+            state.scores[key] = { a: lb.maxScore > 0 ? (s.baseScore || 0) / lb.maxScore : 0, fc: !!s.fullCombo, m: s.missedNotes || 0, b: s.badCuts || 0, s: s.modifiedScore || 0,
+              pp: 0, ssp: s.pp || 0, rk: s.rank || 0, t: t, fa: 0, lb: '', rp: '', src: 'ss' };
+            if (!state.playIndex[key] || state.playIndex[key].src === 'ss') {
+              state.playIndex[key] = { leaderboardId: '', hash: hash, songName: lb.songName || 'Unknown', subName: lb.songSubName || '', mapper: lb.levelAuthorName || '', author: lb.songAuthorName || '',
+                bpm: 0, duration: 0, cover: lb.coverImage || '', stars: 0, ssStars: lb.ranked ? (+lb.stars || 0) : 0, difficultyName: dn, modeName: mode,
+                nps: 0, notes: 0, techRating: 0, accRating: 0, passRating: 0, src: 'ss' };
+            }
+            if (!cur) added++;
+          }
+          var total = (j.metadata && j.metadata.total) || 0;
+          if (!stop && items.length >= 100 && page * 100 < (total || 1e9) && page < 60) { page++; return delay(140).then(step); }
+        });
+      }
+      return step();
+    }).then(function () {
+      p.ssSyncedMax = newMax;
+      p.ssCount = Object.keys(state.scores).filter(function (k) { return state.scores[k].src === 'ss'; }).length;
+      state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters();
+      toast(since ? (added ? 'ScoreSaber: ' + added + ' new play' + (added === 1 ? '' : 's') + ' merged.' : 'ScoreSaber is already up to date.')
+        : 'Merged ' + added + ' ScoreSaber play' + (added === 1 ? '' : 's') + (both ? ' (' + both + (both === 1 ? ' was' : ' were') + ' already on BeatLeader)' : '') + '.', 'ok');
+      track('ss-sync');
+    }).catch(function (e) {
+      var none = e && e.message === 'NO_SS';
+      toast(none ? 'No ScoreSaber profile found for this player.' : 'ScoreSaber didn\'t respond. Try again in a moment.', 'warn');
+      ssUI(none ? 'No ScoreSaber profile found' : 'ScoreSaber didn\'t respond');
+      state.ssSyncing = false; return 'failed';
+    }).then(function (r) { state.ssSyncing = false; if (r !== 'failed') ssUI(); });
+  }
+
+  // ---- smart playlists (saved recipes) --------------------------------------
+  function renderRecipes() {
+    var sel = document.getElementById('recipeSelect'); if (!sel) return;
+    var o = lsGetRecipes(), names = Object.keys(o).sort(), cur = sel.value;
+    sel.innerHTML = '<option value="">- smart playlists -</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + ' (' + (o[n].n || 20) + ')</option>'; }).join('');
+    if (cur && o[cur]) sel.value = cur;
+  }
+  function recipeKind() {
+    var sig = String(state.lastSig || ''), vm = state.viewMode;
+    if (vm === 'recommend') return 'recommend';
+    if (vm === 'accsaber') return 'accsaber';
+    if (vm === 'plays') return /^top:/.test(sig) ? 'top' : 'plays';
+    if (vm === 'search' && sig && !/^(sim:|bs$)/.test(sig)) return 'search';
+    return '';
+  }
+  function saveRecipe() {
+    var name = (document.getElementById('recipeName').value || '').trim();
+    if (!name) { toast('Name the smart playlist first.', 'warn'); return; }
+    if (state.source !== 'beatleader' || !state.fetched) { toast('Run a BeatLeader search, load your plays, PP gains or an AccSaber pool first, then save it.', 'warn'); return; }
+    var kind = recipeKind();
+    if (!kind) { toast('These results can\'t be rebuilt automatically. Smart playlists work with searches, your plays, top plays, PP gains and AccSaber pools.', 'warn'); return; }
+    if (!displayResults().length) { toast('Nothing in the results right now. Adjust the filters until the list shows the maps you want, then save.', 'warn'); return; }
+    var sig = String(state.lastSig || '').split(':');
+    var r = { v: 1, kind: kind, n: clamp(num(document.getElementById('recipeN'), 20), 5, 250), filters: captureFilters(), bandAuto: state.bandAuto !== false,
+      play: { status: el.playStatus.value, recency: el.playRecency.value, accMax: el.accMax ? el.accMax.value : '' },
+      rankView: el.rankInline ? el.rankInline.value : 'all', collapse: !!el.collapseSongs.checked, asCat: state.asCat || 'all', title: name };
+    if (kind === 'top') { r.topN = +sig[2] || 50; if (!(state.player && String(state.player.id) === sig[1])) r.topId = sig[1]; }
+    var o = lsGetRecipes(), prev = o[name]; if (prev && prev.pub) r.pub = prev.pub;
+    o[name] = r;
+    if (!lsSetRecipes(o)) { toast('Could not save - browser storage is full or unavailable.', 'err'); return; }
+    document.getElementById('recipeName').value = ''; renderRecipes(); document.getElementById('recipeSelect').value = name;
+    toast('Saved smart playlist "' + name + '". Rebuild it any time from the Library.', 'ok'); track('recipe-save');
+  }
+  function waitIdle(maxMs) {
+    var t0 = Date.now(), calm = 0;
+    return new Promise(function (resolve) {
+      (function tick() {
+        if (!state.fetching && !state.syncing && !state.ssSyncing) calm++; else calm = 0;
+        if (calm >= 3 || Date.now() - t0 > (maxMs || 120000)) return resolve();
+        setTimeout(tick, 150);
+      })();
+    });
+  }
+  function rebuildRecipe() {
+    var name = document.getElementById('recipeSelect').value, r = lsGetRecipes()[name];
+    if (!r) { toast('Pick a smart playlist first.', 'warn'); return; }
+    if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
+    if (/^(plays|top|recommend)$/.test(r.kind) && !state.player && !r.topId) { toast('Connect your BeatLeader profile first - this one is built from your plays.', 'warn'); focusProfileConnect(); return; }
+    ensureBL();
+    applyPreset(r.filters);
+    state.bandAuto = !!r.bandAuto; markLvl(null);
+    el.playStatus.value = r.play.status || 'any'; el.playRecency.value = r.play.recency || 'any'; if (el.accMax) el.accMax.value = r.play.accMax || '';
+    syncRecencyControl();
+    if (el.rankInline) el.rankInline.value = r.rankView || 'all';
+    el.collapseSongs.checked = !!r.collapse;
+    state.asCat = r.asCat || 'all';
+    track('recipe-run');
+    if (r.kind === 'search') runFetch();
+    else if (r.kind === 'plays') buildFromPlays();
+    else if (r.kind === 'top') buildTopPlays(r.topN || 50, r.topId, r.topId ? r.title : '');
+    else if (r.kind === 'recommend') runFetchRecommend();
+    else if (r.kind === 'accsaber') loadAccSaber(r.asCat || 'all');
+    setTimeout(function () {
+      waitIdle().then(function () {
+        el.fSort.value = r.filters.sort || 'stars'; el.fOrder.value = r.filters.order || 'desc';
+        applyClientFilters();
+        var list = displayResults().slice(0, r.n || 20);
+        if (!list.length) { toast('Rebuilt "' + name + '" but nothing matched. Check its filters.', 'warn'); return; }
+        var snap = state.basket.length ? snapshotPlaylist() : null;
+        state.basket = []; resetPlaylistIdentity();
+        el.metaTitle.value = r.title || name;
+        list.forEach(addEntryStrict);
+        if (snap) state.clearUndo = snap;
+        state.activeRecipe = name;
+        if (r.pub) { state.publish = r.pub; if (typeof applyPublishToSync === 'function') applyPublishToSync(); }
+        renderAll();
+        toast('Rebuilt "' + name + '" with ' + state.basket.length + ' maps.' + (snap ? ' Undo clear brings back your old list.' : ''), 'ok');
+        if (r.pub && typeof publishHosted === 'function' && state.pubAvailable) publishHosted(true);
+      });
+    }, 60);
+  }
+  function deleteRecipe() {
+    var name = document.getElementById('recipeSelect').value; if (!name) { toast('Pick a smart playlist to delete.', 'warn'); return; }
+    var o = lsGetRecipes(); delete o[name]; lsSetRecipes(o); renderRecipes(); toast('Deleted "' + name + '".', 'ok');
+  }
+  function setupRecipes() {
+    var s = document.getElementById('recipeSaveBtn'); if (!s) return;
+    s.addEventListener('click', saveRecipe);
+    document.getElementById('recipeRunBtn').addEventListener('click', rebuildRecipe);
+    document.getElementById('recipeDelBtn').addEventListener('click', deleteRecipe);
+    document.getElementById('recipeName').addEventListener('keydown', function (e) { if (e.key === 'Enter') saveRecipe(); });
+    renderRecipes();
+  }
+
+
+  // ---- hosted sync (needs the PLAYLISTS KV binding on the relay Worker) ------
+  // The box stays hidden until the Worker says hosting is set up, so nothing changes
+  // for players before it is deployed.
+  var PUB_BASE = 'https://playlist-replay.msploit.workers.dev';
+  function pubFetch(method, path, body, key) {
+    var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 20000);
+    var h = { 'Content-Type': 'application/json' }; if (key) h['X-Edit-Key'] = key;
+    return fetch(PUB_BASE + path, { method: method, headers: h, body: body, signal: ctrl.signal }).then(function (r) {
+      clearTimeout(t);
+      return r.text().then(function (txt) { var j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {} return { status: r.status, ok: r.ok, j: j }; });
+    }, function (e) { clearTimeout(t); throw e; });
+  }
+  function probePublish() {
+    fetchTimeout(PUB_BASE + '/pub/health', 6000).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { state.pubAvailable = !!(j && j.ok === true); renderPubUI(); }, function () { state.pubAvailable = false; renderPubUI(); });
+  }
+  function renderPubUI() {
+    var box = document.getElementById('pubBox'); if (!box) return;
+    box.hidden = !state.pubAvailable;
+    var btn = document.getElementById('pubBtn'), stop = document.getElementById('pubStopBtn'), info = document.getElementById('pubInfo'), p = state.publish;
+    btn.disabled = !state.basket.length || !!state.pubBusy;
+    btn.innerHTML = state.pubBusy ? 'Working&hellip;' : (p ? '&#9729; Update hosted copy' : '&#9729; Host this playlist');
+    stop.hidden = !p;
+    info.innerHTML = p ? 'Hosted at <code>' + esc(p.url) + '</code>' + (p.at ? ' &middot; updated ' + agoStr(Math.floor(p.at / 1000)) : '') +
+      '<br>Loaded this playlist on your headset before hosting it? Download or send it once more so it knows this address.' : '';
+  }
+  function applyPublishToSync() {
+    if (!state.publish) return;
+    el.syncEnable.checked = true; el.syncUrl.value = state.publish.url; updateSyncUI();
+  }
+  function publishHosted(auto) {
+    if (!state.pubAvailable || state.pubBusy) return;
+    if (!state.basket.length) { toast('Add songs to Your Playlist first.', 'warn'); return; }
+    var pub = state.publish; if (pub) applyPublishToSync();
+    var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
+    if (body.length > 1950000) { toast('This playlist is too big to host. A smaller cover image usually fixes it.', 'warn'); return; }
+    state.pubBusy = true; renderPubUI();
+    (pub ? pubFetch('PUT', '/pub/' + encodeURIComponent(pub.id), body, pub.key) : pubFetch('POST', '/pub', body)).then(function (res) {
+      if (res.ok && (pub || (res.j && res.j.id && res.j.key && res.j.url))) {
+        state.publish = pub ? { id: pub.id, key: pub.key, url: pub.url, at: Date.now() } : { id: res.j.id, key: res.j.key, url: res.j.url, at: Date.now() };
+        applyPublishToSync();
+        if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { o[state.activeRecipe].pub = state.publish; lsSetRecipes(o); } }
+        saveSession();
+        toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : 'Hosted! Download or send the file once more - after that, in-game Sync keeps it current.', 'ok');
+        track(pub ? (auto ? 'pub-auto-update' : 'pub-update') : 'pub-create');
+      } else if (res.status === 404 && pub) {
+        state.publish = null;
+        toast('That hosted copy expired or was removed. Hit Host to make a new one, then load it on your headset again.', 'warn');
+      } else if (res.status === 429) toast('Too many updates in a short time. Wait a few minutes and try again.', 'warn');
+      else toast('Hosting failed' + (res.j && res.j.error ? ': ' + res.j.error : '.'), 'warn');
+    }, function () { toast('Couldn\'t reach the hosting service. Try again in a moment.', 'warn'); })
+      .then(function () { state.pubBusy = false; renderPubUI(); });
+  }
+  function stopHosting() {
+    var pub = state.publish; if (!pub || state.pubBusy) return;
+    state.pubBusy = true; renderPubUI();
+    pubFetch('DELETE', '/pub/' + encodeURIComponent(pub.id), null, pub.key).then(function (res) {
+      if (res.ok || res.status === 404) {
+        state.publish = null;
+        if (el.syncUrl.value.trim() === pub.url) { el.syncEnable.checked = false; el.syncUrl.value = ''; updateSyncUI(); }
+        if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { delete o[state.activeRecipe].pub; lsSetRecipes(o); } }
+        saveSession(); toast('Stopped hosting. Copies on headsets keep working but won\'t sync anymore.', 'ok'); track('pub-delete');
+      } else toast('Couldn\'t stop hosting right now.', 'warn');
+    }, function () { toast('Couldn\'t reach the hosting service.', 'warn'); })
+      .then(function () { state.pubBusy = false; renderPubUI(); });
+  }
+  function setupHosting() {
+    var b = document.getElementById('pubBtn'); if (!b) return;
+    b.addEventListener('click', function () { publishHosted(false); });
+    document.getElementById('pubStopBtn').addEventListener('click', stopHosting);
+    renderPubUI(); probePublish();
+  }
+
+  // ---- AccSaber pools -------------------------------------------------------
+  var AS_LABEL = { 'true': 'True', standard: 'Standard', tech: 'Tech' };
+  var AS_DIFF = { EASY: 'Easy', NORMAL: 'Normal', HARD: 'Hard', EXPERT: 'Expert', EXPERT_PLUS: 'ExpertPlus' };
+  function markAsCat(cat) {
+    var box = document.getElementById('accCats'); if (!box) return;
+    Array.prototype.forEach.call(box.querySelectorAll('button'), function (b) { b.classList.toggle('on', b.getAttribute('data-ascat') === cat); });
+  }
+  function showAccSaber() {
+    state.viewMode = 'accsaber'; state.raw = state.asCache.slice(); state.fetched = true; state.lastSig = 'as';
+    el.fSort.value = 'complexity'; el.fOrder.value = 'asc';
+    applyClientFilters();
+    var n = state.filtered.length, cat = state.asCat && state.asCat !== 'all' ? AS_LABEL[state.asCat] + ' ' : '';
+    setStatus('Loaded ' + n + ' AccSaber charts', 'on');
+    toast('Loaded ' + n + ' ranked AccSaber ' + cat + 'charts, easiest first. Use the Your plays chips to find the ones you haven\'t played.', 'ok');
+    var st = document.getElementById('accState'); if (st) st.textContent = state.asCache.length + ' charts';
+    if (isMobileView()) setMobileView('results');
+  }
+  function loadAccSaber(cat) {
+    state.asCat = cat || state.asCat || 'all'; markAsCat(state.asCat);
+    if (state.fetching) { toast('Hang on - a fetch is already running.', 'warn'); return; }
+    ensureBL();
+    track('accsaber-load');
+    if (state.asCache && state.asCache.length) { showAccSaber(); return; }
+    var btn = document.getElementById('accLoadBtn');
+    state.fetching = true; if (btn) btn.disabled = true;
+    setStatus('Loading AccSaber ranked maps…', 'busy');
+    var cats = {};
+    asGet('/categories').then(function (list) {
+      (Array.isArray(list) ? list : (list && list.content) || []).forEach(function (c) { if (c && c.id) cats[c.id] = String(c.code || '').replace(/_acc$/, ''); });
+    }, function () {}).then(function () {
+      Object.keys(AS_CAT).forEach(function (k) { if (!cats[k]) cats[k] = AS_CAT[k]; });
+      var out = [], page = 0;
+      function step() {
+        return asGet('/maps/difficulties?page=' + page + '&size=100').then(function (j) {
+          var items = (j && j.content) || [];
+          items.forEach(function (m) {
+            if (String(m.status || '').toUpperCase() !== 'RANKED') return;
+            var hm = String(m.coverUrl || '').match(/([0-9a-fA-F]{40})/), dn = AS_DIFF[m.difficulty];
+            if (!hm || !dn) return;
+            out.push({ leaderboardId: '', hash: hm[1].toLowerCase(), songName: m.songName || 'Unknown', subName: m.songSubName || '', mapper: m.mapAuthor || '', author: m.songAuthor || '',
+              bpm: 0, duration: (m.metadata && m.metadata.duration) || 0, cover: m.coverUrl || '', stars: 0, difficultyName: dn, modeName: m.characteristic || 'Standard',
+              nps: +m.nps || 0, notes: 0, techRating: 0, accRating: 0, passRating: 0, asCat: cats[m.categoryId] || '', complexity: +m.complexity || 0, key: m.beatsaverCode || '' });
+          });
+          page++;
+          if (!j || j.last === true || !items.length || page >= 30) return;
+          return delay(120).then(step);
+        });
+      }
+      return step().then(function () { if (!out.length) throw new Error('empty'); state.asCache = out; });
+    }).then(function () {
+      state.fetching = false; if (btn) btn.disabled = false; showAccSaber();
+    }, function () {
+      state.fetching = false; if (btn) btn.disabled = false;
+      setStatus('AccSaber unavailable', 'warn'); toast('Couldn\'t reach AccSaber right now. Try again in a moment.', 'warn');
+    });
+  }
+  function setupAccSaber() {
+    var box = document.getElementById('accCats'); if (!box) return;
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-ascat]'); if (!b) return;
+      state.asCat = b.getAttribute('data-ascat'); markAsCat(state.asCat); track('accsaber-cat-' + state.asCat);
+      if (state.viewMode === 'accsaber') applyClientFilters();
+    });
+    document.getElementById('accLoadBtn').addEventListener('click', function () { loadAccSaber(state.asCat); });
+  }
+
+  // ---- gallery --------------------------------------------------------------
+  var dropTag = 'drop';
+  function closeGallery() { var m = document.getElementById('galleryModal'); m.classList.remove('show'); m.setAttribute('aria-hidden', 'true'); }
+  function renderGallery() {
+    var box = document.getElementById('galleryList'), g = state.gallery || [];
+    if (!g.length) { box.innerHTML = '<p class="muted">Nothing in the gallery yet.</p>'; return; }
+    box.innerHTML = g.map(function (x, i) {
+      var meta = [x.author ? 'by ' + esc(x.author) : '', x.maps ? x.maps + ' maps' : '', (x.tags || []).map(esc).join(' · ')].filter(Boolean).join(' &middot; ');
+      return '<div class="gal-card"><div><h4>' + esc(x.name || 'Playlist') + '</h4><p>' + esc(x.description || '') + '</p>' + (meta ? '<div class="gal-meta">' + meta + '</div>' : '') + '</div>' +
+        '<button type="button" class="primary gal-go" data-gal="' + i + '">Load</button></div>';
+    }).join('');
+  }
+  function openGallery() {
+    var m = document.getElementById('galleryModal'); m.classList.add('show'); m.setAttribute('aria-hidden', 'false');
+    track('gallery-open');
+    if (state.gallery) { renderGallery(); return; }
+    fetchTimeout('gallery/index.json', 10000).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (j) {
+      state.gallery = Array.isArray(j) ? j : ((j && j.entries) || []); renderGallery();
+    }).catch(function () { document.getElementById('galleryList').innerHTML = '<p class="muted">The gallery couldn\'t load right now. Try again in a moment.</p>'; });
+  }
+  function loadGalleryEntry(i, btn) {
+    var g = (state.gallery || [])[i]; if (!g) return;
+    if (g.type === 'share' && g.code) { closeGallery(); importFromShareStr(g.code); track('gallery-load'); return; }
+    var url = g.type === 'file' ? 'gallery/' + encodeURIComponent(String(g.file || '')) : String(g.url || '');
+    if (g.type !== 'file' && !/^https:\/\//i.test(url)) { toast('That gallery entry has no valid link.', 'warn'); return; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+    fetchTimeout(url, 20000).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); }).then(function (txt) {
+      var pl = JSON.parse(txt); if (!pl || !Array.isArray(pl.songs) || !pl.songs.length) throw new Error('empty');
+      closeGallery(); track('gallery-load');
+      dropTag = 'gallery';
+      handleDroppedPlaylist(new File([txt], (g.name || 'playlist') + '.bplist', { type: 'application/json' }));
+    }).catch(function () { toast('Couldn\'t load that playlist right now.', 'warn'); })
+      .then(function () { if (btn) { btn.disabled = false; btn.textContent = 'Load'; } });
+  }
+  function setupGallery() {
+    var b = document.getElementById('galleryBtn'); if (!b) return;
+    b.addEventListener('click', openGallery);
+    document.getElementById('galleryClose').addEventListener('click', closeGallery);
+    var m = document.getElementById('galleryModal');
+    m.addEventListener('click', function (e) { if (e.target === m) { closeGallery(); return; } var go = e.target.closest('[data-gal]'); if (go) loadGalleryEntry(+go.getAttribute('data-gal'), go); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && m.classList.contains('show')) closeGallery(); });
+  }
+
+  // ---- library backup / restore --------------------------------------------
+  var RECIPE_KEY = 'playlistStudio.recipes.v1';
+  function lsGetRecipes() { try { var o = JSON.parse(localStorage.getItem(RECIPE_KEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
+  function lsSetRecipes(o) { try { localStorage.setItem(RECIPE_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
+  function backupLibrary() {
+    var sync = null; try { sync = JSON.parse(localStorage.getItem(SYNC_KEY) || 'null'); } catch (e) {}
+    var data = { playlists: lsGetPl(), presets: lsGet(), recipes: lsGetRecipes(), icons: lsGetIcons(), sync: sync };
+    var nPl = Object.keys(data.playlists).length, nPr = Object.keys(data.presets).length, nRe = Object.keys(data.recipes).length;
+    if (!nPl && !nPr && !nRe && !data.icons.length) { toast('Nothing saved yet - save a playlist or preset first.', 'warn'); return; }
+    var out = { app: 'playlist-studio', kind: 'library-backup', version: 1, exportedAt: new Date().toISOString(), data: data };
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'playlist-studio-library-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    toast('Backed up ' + nPl + ' playlist' + (nPl === 1 ? '' : 's') + ', ' + nPr + ' preset' + (nPr === 1 ? '' : 's') + ' and ' + nRe + ' smart playlist' + (nRe === 1 ? '' : 's') + '.', 'ok');
+    track('library-backup');
+  }
+  // Merge a backup in. Nothing existing is overwritten: a name clash keeps both, and the
+  // restored copy gets "(restored)" added.
+  function mergeNamed(cur, inc) {
+    var added = 0;
+    Object.keys(inc || {}).forEach(function (name) {
+      var v = inc[name]; if (!v || typeof v !== 'object') return;
+      if (!cur[name]) { cur[name] = v; added++; return; }
+      if (JSON.stringify(cur[name]) === JSON.stringify(v)) return;
+      var n2 = name + ' (restored)', k = 2; while (cur[n2]) n2 = name + ' (restored ' + (k++) + ')';
+      cur[n2] = v; added++;
+    });
+    return added;
+  }
+  function restoreLibrary(file) {
+    var reader = new FileReader();
+    reader.onerror = function () { toast('Could not read that file.', 'err'); };
+    reader.onload = function () {
+      var j; try { j = JSON.parse(reader.result); } catch (e) { toast('That file is not a library backup.', 'err'); return; }
+      if (!j || j.kind !== 'library-backup' || !j.data) { toast('That file is not a Playlist Studio library backup.', 'err'); return; }
+      var D = j.data;
+      var pl = lsGetPl(), pr = lsGet(), re = lsGetRecipes();
+      var aPl = mergeNamed(pl, D.playlists), aPr = mergeNamed(pr, D.presets), aRe = mergeNamed(re, D.recipes);
+      var okPl = lsSetPl(pl), okPr = lsSet(pr), okRe = lsSetRecipes(re);
+      if (Array.isArray(D.icons) && D.icons.length) {
+        var ic = lsGetIcons(); D.icons.forEach(function (u) { if (typeof u === 'string' && ic.indexOf(u) === -1) ic.push(u); });
+        lsSetIcons(ic.slice(0, 24)); if (typeof renderIconLibrary === 'function') renderIconLibrary();
+      }
+      if (D.sync && D.sync.url && !el.syncUrl.value.trim()) { el.syncEnable.checked = !!D.sync.enabled; el.syncUrl.value = D.sync.url; updateSyncUI(); }
+      populatePlaylists(); populatePresets(); if (typeof renderRecipes === 'function') renderRecipes();
+      if (!okPl || !okPr || !okRe) toast('Restored part of the backup - browser storage is full.', 'warn');
+      else toast('Restored ' + aPl + ' playlist' + (aPl === 1 ? '' : 's') + ', ' + aPr + ' preset' + (aPr === 1 ? '' : 's') + ' and ' + aRe + ' smart playlist' + (aRe === 1 ? '' : 's') + '.', 'ok');
+      track('library-restore');
+    };
+    reader.readAsText(file);
+  }
+  function setupLibraryBackup() {
+    var b = document.getElementById('libBackupBtn'), f = document.getElementById('libRestoreFile'); if (!b || !f) return;
+    b.addEventListener('click', backupLibrary);
+    f.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) restoreLibrary(file); e.target.value = ''; });
   }
 
   // ---- star range -----------------------------------------------------------
@@ -4574,7 +5355,133 @@ window.PP = (function () {
     value = clamp(value, 0, 15);
     if (side === 'min') lo = Math.min(value, hi); else hi = Math.max(value, lo);
     el.starMinNum.value = lo.toFixed(1); el.starMaxNum.value = hi.toFixed(1);
+    state.bandAuto = false; markLvl(null);
     refreshStarUI(); applyClientFilters();
+  }
+
+
+  // ---- level-aware star band ------------------------------------------------
+  // The default 0-15 band sorted high to low opens on maps most players can't touch.
+  // Searches start at the player's level instead: their comfort-to-stretch band when a
+  // profile is connected, else 4-7. state.bandAuto stays true until the player sets a
+  // band themselves, so the PP Optimizer keeps auto-centering and Build from my plays
+  // still shows every play.
+  function comfortBand() {
+    if (!state.player || !state.scores) return null;
+    var arr = [], k, idx = state.playIndex || {};
+    for (k in state.scores) {
+      if (!Object.prototype.hasOwnProperty.call(state.scores, k)) continue;
+      var sc = state.scores[k], pe = idx[k];
+      if (sc && sc.src !== 'ss' && sc.pp > 0 && pe && pe.stars > 0 && (pe.modeName || 'Standard') === 'Standard') arr.push([sc.pp, pe.stars]);
+    }
+    if (arr.length < 5) return null;
+    arr.sort(function (a, b) { return b[0] - a[0]; });
+    var top = arr.slice(0, 20).map(function (x) { return x[1]; }).sort(function (a, b) { return b - a; });
+    var peak = (top[0] + (top[1] || top[0]) + (top[2] || top[0])) / 3;
+    var lo = Math.max(0, Math.round((peak - 2.5) * 10) / 10), hi = Math.min(15, Math.round((peak + 0.5) * 10) / 10);
+    return { lo: lo, hi: hi, peak: peak };
+  }
+  function markLvl(chip) {
+    var box = document.getElementById('lvlChips'); if (!box) return;
+    Array.prototype.forEach.call(box.querySelectorAll('button'), function (b) { b.classList.toggle('on', !!chip && b.getAttribute('data-lvl') === chip); });
+  }
+  function setBand(lo, hi, auto, chip) {
+    el.starMinNum.value = (+lo).toFixed(1); el.starMaxNum.value = (+hi).toFixed(1);
+    refreshStarUI(); state.bandAuto = !!auto; markLvl(chip);
+  }
+  function updateLevelUI() {
+    var me = document.getElementById('lvlMe'); if (!me) return;
+    var cb = comfortBand();
+    me.hidden = !cb;
+    if (cb) me.textContent = 'My level ' + cb.lo.toFixed(1) + '-' + cb.hi.toFixed(1) + '★';
+  }
+  // Quietly move an untouched band to the player's level (profile connect, page load).
+  function applyAutoBandQuiet() {
+    updateLevelUI();
+    if (state.bandAuto === false) return;
+    var cb = comfortBand(); if (!cb) return;
+    setBand(cb.lo, cb.hi, true, 'me');
+    if (state.raw.length) applyClientFilters();
+  }
+  // Right before a BeatLeader search: never open on the full 0-15 band by accident.
+  function autoBandForSearch() {
+    if (state.source !== 'beatleader' || state.bandAuto === false || el.fType.value !== 'ranked') return;
+    var lo = num(el.starMinNum, 0), hi = num(el.starMaxNum, 15), cb = comfortBand();
+    if (cb) {
+      if (Math.abs(cb.lo - lo) > 0.05 || Math.abs(cb.hi - hi) > 0.05) {
+        setBand(cb.lo, cb.hi, true, 'me'); track('level-auto-me');
+        toast('Searching your level: ' + cb.lo.toFixed(1) + ' to ' + cb.hi.toFixed(1) + '★, based on your top plays. Pick another level in Star Rating any time.', 'ok');
+      }
+    } else if (lo <= 0 && hi >= 15) {
+      setBand(4, 7, true, '4-7'); track('level-auto-default');
+      toast('Starting at 4 to 7★. Pick your level in Star Rating, or connect your profile and Studio picks it for you.', 'ok');
+    }
+  }
+  function setupLevelChips() {
+    var box = document.getElementById('lvlChips'); if (!box) return;
+    box.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button[data-lvl]'); if (!b) return;
+      var lvl = b.getAttribute('data-lvl');
+      if (lvl === 'me') {
+        var cb = comfortBand();
+        if (!cb) { toast('Connect your profile and sync your scores to find your level.', 'warn'); return; }
+        setBand(cb.lo, cb.hi, false, 'me');
+      } else {
+        var p = lvl.split('-'); setBand(parseFloat(p[0]), parseFloat(p[1]), false, lvl);
+      }
+      track('level-' + lvl);
+      applyClientFilters();
+    });
+    updateLevelUI();
+  }
+
+  // ---- For You --------------------------------------------------------------
+  function ensureBL() {
+    if (state.source !== 'beatleader') { state.source = 'beatleader'; try { localStorage.setItem(SRC_KEY, 'beatleader'); } catch (e) {} applySourceUI(); }
+  }
+  // Expand a collapsible panel (and remember it), then bring it into view.
+  function openPanel(panel) {
+    if (!panel) return;
+    if (panel.classList.contains('collapsed')) {
+      panel.classList.remove('collapsed');
+      var h2 = panel.querySelector('.panel-head h2'), key = panel.id || (h2 ? h2.textContent.trim() : '');
+      if (collapseApi && key) { collapseApi.store[key] = false; try { localStorage.setItem(collapseApi.key, JSON.stringify(collapseApi.store)); } catch (e) {} }
+    }
+    try { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+  }
+  function renderForYou() {
+    var cta = document.getElementById('fyConnect'), grid = document.getElementById('fyGrid'); if (!cta || !grid) return;
+    var on = !!state.player;
+    cta.hidden = on; grid.hidden = !on;
+    var nm = document.getElementById('fyName'); if (nm) nm.textContent = on ? state.player.name : '';
+  }
+  function runForYou(kind) {
+    if (!state.player) { focusProfileConnect(); return; }
+    if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
+    ensureBL();
+    track('foryou-' + kind);
+    if (kind === 'gains') {
+      runFetchRecommend();
+      if (isMobileView()) setMobileView('results');
+    } else if (kind === 'plan') {
+      if (isMobileView()) setMobileView('filters');
+      openPanel(el.plannerPanel);
+      setTimeout(function () { try { if (el.plannerGoal) el.plannerGoal.focus(); } catch (e) {} }, 400);
+      toast('Set a pp or rank goal, then hit Plan my rank-up.', 'ok');
+    } else if (kind === 'practice' || kind === 'revisit') {
+      el.playStatus.value = kind === 'practice' ? 'nofc' : 'played';
+      el.playRecency.value = kind === 'revisit' ? 'o6m' : 'any';
+      if (el.accMax) el.accMax.value = '';
+      syncRecencyControl();
+      buildFromPlays();
+    }
+  }
+  function setupForYou() {
+    var grid = document.getElementById('fyGrid'); if (!grid) return;
+    var cbtn = document.getElementById('fyConnectBtn');
+    if (cbtn) cbtn.addEventListener('click', function () { track('foryou-connect'); if (isMobileView()) setMobileView('filters'); focusProfileConnect(); });
+    grid.addEventListener('click', function (ev) { var b = ev.target.closest('[data-fy]'); if (b) runForYou(b.getAttribute('data-fy')); });
+    renderForYou();
   }
 
   // ---- presets (localStorage) ----------------------------------------------
@@ -4591,6 +5498,7 @@ window.PP = (function () {
   function applyPreset(p) {
     el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc';
     el.fMaxScan.value = p.maxScan || '2500'; el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
+    state.bandAuto = (parseFloat(el.starMinNum.value) <= 0 && parseFloat(el.starMaxNum.value) >= 15); markLvl(null);
     el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
     el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fDurMin.value = p.durMin || '';
     el.fDurMax.value = p.durMax || ''; el.fBpmMin.value = p.bpmMin || ''; el.fBpmMax.value = p.bpmMax || '';
@@ -4642,7 +5550,7 @@ window.PP = (function () {
       seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
     if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
     o[name] = { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
-      sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value } };
+      sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value }, pub: state.publish || null };
     if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
     else toast('Could not save - browser storage is full or unavailable.', 'err');
   }
@@ -4671,6 +5579,7 @@ window.PP = (function () {
     // Restore the saved sync config (resetPlaylistIdentity cleared it above). Older saves have no
     // sync field - leave sync off in that case.
     if (p.sync && p.sync.enabled && p.sync.url) { el.syncEnable.checked = true; el.syncUrl.value = p.sync.url; }
+    state.publish = p.pub || null; renderPubUI();
     updateSyncUI();
     renderAll(); toast('Loaded "' + name + '" (' + state.basket.length + ' maps).', 'ok');
   }
@@ -4741,15 +5650,15 @@ window.PP = (function () {
   }
   function handleDroppedPlaylist(file) {
     if (!validPlaylistFile(file)) { toast('Drop a .bplist file (or its JSON).', 'warn'); return; }
-    if (!state.basket.length) { track('drop-import-fresh'); importBplistFile(file); return; }
+    if (!state.basket.length) { track(dropTag + '-import-fresh'); dropTag = 'drop'; importBplistFile(file); return; }
     pendingDropFile = file;
     if (el.dropChoiceMsg) el.dropChoiceMsg.innerHTML = 'Your Playlist already has <b>' + state.basket.length + '</b> song' + (state.basket.length === 1 ? '' : 's') + '. <b>Merge</b> adds this file’s songs to it. <b>Replace</b> swaps in the file instead - your current list goes to <b>Undo clear</b> so you can bring it back.';
     if (el.dropChoiceModal) { el.dropChoiceModal.classList.add('show'); el.dropChoiceModal.setAttribute('aria-hidden', 'false'); }
   }
-  function dropMerge() { var f = pendingDropFile; closeDropChoice(); if (f) { track('drop-import-merge'); importBplistFile(f); } }
+  function dropMerge() { var f = pendingDropFile; closeDropChoice(); if (f) { track(dropTag + '-import-merge'); dropTag = 'drop'; importBplistFile(f); } }
   function dropReplace() {
     var f = pendingDropFile; closeDropChoice(); if (!f) return;
-    track('drop-import-replace');
+    track(dropTag + '-import-replace'); dropTag = 'drop';
     var snap = snapshotPlaylist();
     state.basket = [];
     resetPlaylistIdentity();
@@ -4764,6 +5673,7 @@ window.PP = (function () {
     window.addEventListener('dragleave', function (e) { if (!dragHasFiles(e)) return; dropDragDepth--; if (dropDragDepth <= 0) hideDropZone(); });
     window.addEventListener('dragend', function () { hideDropZone(); });
     window.addEventListener('drop', function (e) {
+      dropTag = 'drop';
       if (!dragHasFiles(e)) return;
       e.preventDefault(); hideDropZone();
       var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
@@ -5005,7 +5915,7 @@ window.PP = (function () {
   function renderProfile() {
     if (!state.player) {
       el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState('');
-      renderPlayBar(); return;
+      renderPlayBar(); renderForYou(); updateLevelUI(); return;
     }
     el.profileConnect.hidden = true; el.profileCard.hidden = false;
     if (el.topHint) el.topHint.innerHTML = 'Loads <b>' + esc(state.player.name) + "</b>'s highest-PP plays into the results, then hit <b>Add all</b>.";
@@ -5014,7 +5924,7 @@ window.PP = (function () {
     var n = Object.keys(state.scores).length;
     el.pcStats.textContent = '#' + (state.player.rank || '-') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
     setProfileState(state.player.name);
-    renderPlayBar();
+    renderPlayBar(); renderForYou(); updateLevelUI(); ssUI();
   }
   // The play-history filter surfaced at the results (connected -> chips, else a
   // prompt to connect). Keeps the chip in sync with the profile-panel dropdown.
@@ -5106,7 +6016,7 @@ window.PP = (function () {
   function syncScores(incremental) {
     if (!state.player || state.syncing) return Promise.resolve();
     state.syncing = true; el.syncBtn.disabled = true;
-    state.playIndex = incremental ? (state.playIndex || {}) : {};   // full sync rebuilds the play list
+    state.playIndex = incremental ? (state.playIndex || {}) : keepSSPlays(state.playIndex);   // full sync rebuilds the play list (ScoreSaber-only plays stay)
     el.syncProgress.hidden = false; el.syncBar.style.width = '4%'; el.syncText.textContent = 'Starting…';
     var id = state.player.id, page = 1, minTime = incremental ? (state.player.syncedMaxTime || 0) : 0;
     var got = 0, newMax = state.player.syncedMaxTime || 0, stop = false, total = 0;
@@ -5140,7 +6050,7 @@ window.PP = (function () {
     }
     return step().then(function () {
       state.player.syncedMaxTime = newMax; el.syncBar.style.width = '100%';
-      state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters();
+      state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters(); applyAutoBandQuiet();
       var tot = Object.keys(state.scores).length;
       toast(incremental ? (got ? 'Refreshed - ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
       if (state._buildAfterSync) { state._buildAfterSync = false; buildFromPlays(); }
@@ -5247,7 +6157,7 @@ window.PP = (function () {
       if (!scores.length) { state.fetching = false; recBtns(false); setStatus('No ranked plays found', 'warn'); toast('That profile has no ranked plays to learn from.', 'warn'); return; }
       var M = recPredictor(scores);
       if (M.n < 5) { state.fetching = false; recBtns(false); setStatus('Not enough ranked plays', 'warn'); toast('Need a few more no-modifier Standard scores to model your accuracy.', 'warn'); return; }
-      if (smax - smin > 4.5 || (smin <= 0 && smax >= 15)) { smin = Math.max(1, +(M.maxStar - 1.3).toFixed(1)); smax = +(M.maxStar + 0.3).toFixed(1); }
+      if (state.bandAuto !== false || smax - smin > 4.5 || (smin <= 0 && smax >= 15)) { smin = Math.max(1, +(M.maxStar - 1.3).toFixed(1)); smax = +(M.maxStar + 0.3).toFixed(1); }
       var base = recWeighted(M.curPP);
       setStatus('Scanning ranked maps ' + smin + '–' + smax + '★…', 'busy');
       var cands = [];
@@ -5295,6 +6205,7 @@ window.PP = (function () {
   }
   function drawRecChart(M, smin, smax) {
     var cv = document.getElementById('recChart'); if (!cv || !cv.getContext) return;
+    cv.style.display = 'block'; var recE = document.getElementById('recEmpty'); if (recE) recE.hidden = true;
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, pad = 48;
     ctx.clearRect(0, 0, W, H);
     var fitEl = document.getElementById('recFit');
@@ -5313,8 +6224,9 @@ window.PP = (function () {
     ctx.strokeStyle = '#ffcf3a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(xmin), Y(M.pAcc(xmin) * 100)); ctx.lineTo(X(xmax), Y(M.pAcc(xmax) * 100)); ctx.stroke();
     if (fitEl) fitEl.innerHTML = 'Fit: acc ≈ ' + (M.intc * 100).toFixed(1) + '% − ' + (Math.abs(M.slope) * 100).toFixed(2) + '%/★ · ±' + M.mae.toFixed(2) + '% over ' + M.n + ' plays · max played ' + M.maxStar.toFixed(2) + '★. Dots are your scores; line is the prediction; shaded past your max is extrapolated.';
   }
-    function buildTopPlays(n) {
-    var id = (state.player && state.player.id) || '';
+    function buildTopPlays(n, forId, forName) {
+    var id = forId || (state.player && state.player.id) || '';
+    var who = forId && !(state.player && String(state.player.id) === String(forId)) ? (forName || 'that player') + '\'s' : 'your';
     if (!id) { toast('Connect your BeatLeader profile first, then grab your top plays.', 'warn'); if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
     n = n || 50;
@@ -5351,7 +6263,7 @@ window.PP = (function () {
         state.raw = list; state.fetched = true; state.lastSig = 'top:' + id + ':' + n;
         applyClientFilters();
         setStatus('Loaded top ' + list.length + ' plays', 'on');
-        toast('Loaded the top ' + list.length + ' plays. Hit "Add all" in the results to drop them into your playlist.', 'ok'); track('top-plays');
+        toast('Loaded ' + who + ' top ' + list.length + ' plays. Hit "Add all" in the results to drop them into your playlist.', 'ok'); track('top-plays');
         if (isMobileView()) setMobileView('results');
       })
       .catch(function (e) { setStatus('Load failed', 'err'); toast("Couldn't load top plays" + (e && e.message ? ' (' + e.message + ')' : '') + '. Check the profile URL/ID or try again.', 'err'); })
@@ -5375,6 +6287,7 @@ window.PP = (function () {
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
     if (el.playStatus) el.playStatus.value = 'any'; if (el.playRecency) el.playRecency.value = 'any'; if (el.accMax) el.accMax.value = '';
     el.ppMin.value = ''; el.ppMax.value = '';
+    state.bandAuto = true; markLvl(null);
     refreshStarUI(); applyClientFilters(); if (silent !== true) toast('Filters reset (your playlist is kept).', 'ok');
   }
   function clearSearch() {
@@ -5496,9 +6409,11 @@ window.PP = (function () {
   }
 
   // ---- collapsible left-column panels ---------------------------------------
+  var collapseApi = null;
   function initCollapsibles() {
     var KEY = 'playlistStudio.collapsed.v1', store = {};
     try { store = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+    collapseApi = { key: KEY, store: store };
     var heads = document.querySelectorAll('.col-left .panel > .panel-head, .panel[data-collapsible] > .panel-head');
     Array.prototype.forEach.call(heads, function (head) {
       var panel = head.parentNode, h2 = head.querySelector('h2');
@@ -5741,8 +6656,9 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI();
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupQuestExport(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
+    var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
