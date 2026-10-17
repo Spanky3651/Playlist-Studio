@@ -209,11 +209,8 @@ If you run your own CORS relay and would rather use it, point the app at it unde
 ## Installing a playlist in Beat Saber
 
 1. Export the `.bplist` from Playlist Studio.
-2. Drop it into your Beat Saber `Playlists` folder - on PC that's usually `…\Steam\steamapps\common\Beat Saber\Playlists\`.
+2. Drop it into your Beat Saber `Playlists` folder - on PC that's usually `…\Steam\steamapps\common\Beat Saber\Playlists\`, and on Quest copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` with SideQuest.
 3. In-game, refresh your song list. The [PlaylistManager](https://github.com/rithik-b/PlaylistManager) mod loads the playlist; any maps you don't have download automatically if you use playlist syncing / BeatSaver downloading.
-
-### On Quest
-Switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable and use Chrome or Edge. The first time, put the headset on after you pick it and accept **Allow USB debugging?** (tick **Always allow from this computer**). The browser gets its own approval, separate from SideQuest or adb, so it shows up once even if those already work. Studio finds your PlaylistManager folder, writes the playlist there and lets go of the headset afterwards so SideQuest and adb keep working. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
 
 ### Keeping a playlist in sync
 
@@ -231,7 +228,6 @@ No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 - No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter that stores no personal data.
 - Presets, saved playlists, smart playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage. Nothing is uploaded unless you choose **Host this playlist**, which stores that one playlist (songs, title, cover) on the Playlist Studio relay until you hit **Stop hosting** or it expires.
 - API requests hit BeatLeader, BeatSaver, ScoreSaber and AccSaber (public data), with BeatLeader and ScoreSaber going through the relay. Only anonymous, read-only requests are sent, apart from hosting a playlist when you ask for it.
-- **Send to Quest** talks to your headset over USB straight from your browser; the playlist never leaves your computer.
 
 ## Built with
 
@@ -241,7 +237,6 @@ Vanilla HTML, CSS and JavaScript - no framework and no build tooling. The single
 - Map previews - [BeatSaver](https://beatsaver.com) + [ArcViewer](https://github.com/allpoland/ArcViewer)
 - Export format - [PlaylistManager](https://github.com/rithik-b/PlaylistManager)
 - Extra stats and history - [ScoreSaber](https://scoresaber.com) and [AccSaber](https://accsaber.com)
-- Quest transfer - [ya-webadb](https://github.com/yume-chan/ya-webadb), loaded on demand
 
 ## Adding gallery entries
 
@@ -252,7 +247,7 @@ The gallery reads `gallery/index.json`. Each entry has a `name`, a `description`
 Other free, single-file Beat Saber tools by MSploit:
 
 - **[ReeSaber Studio](https://spanky3651.github.io/ReeSaber-Studio/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual preset editor for the ReeSabers mod, with a live 3D preview and `.json` / `.reesaber` export.
-- **[HSV Config Generator](https://spanky3651.github.io/HSV-Config-Generator/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual editor and live simulator for HitScoreVisualizer configs, with push-to-Quest over USB.
+- **[HSV Config Generator](https://spanky3651.github.io/HSV-Config-Generator/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual editor and live simulator for HitScoreVisualizer configs.
 
 ## Credits
 

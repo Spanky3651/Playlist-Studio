@@ -398,17 +398,6 @@ select{cursor:pointer;appearance:none;
 .valitem.err .ico{color:var(--danger);}
 .export-row{display:flex;align-items:center;gap:16px;}
 .export-hint{font-size:13px;color:var(--muted);font-family:var(--mono);}
-.plat-tabs{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--border-2);border-radius:10px;background:#070b11;margin:0 0 14px;}
-.plat-tabs button{font-family:var(--mono);font-size:13px;padding:6px 16px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;}
-.plat-tabs button.on{background:rgba(47,140,255,.18);border-color:var(--blue);color:#fff;}
-.plat-pane[hidden]{display:none;}
-.quest-dest{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;}
-.quest-dest[hidden]{display:none;}
-.quest-dest label{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
-.quest-dest input{flex:1 1 320px;font-family:var(--mono);font-size:12.5px;}
-.quest-log{margin-top:10px;font-family:var(--mono);font-size:12.5px;line-height:1.6;max-height:140px;overflow:auto;}
-.quest-log:empty{display:none;}
-.quest-log .ok{color:#7ee2a8;} .quest-log .warn{color:#ffc56b;} .quest-log .err{color:#ff8597;} .quest-log .dim{color:var(--muted);}
 .lib-backup{margin-top:10px;}
 .lib-note{font-size:12.5px;margin:6px 0 0;}
 .pub-box{margin:0 16px 14px;border:1px solid #23406b;border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,#081426,#060c16);}
@@ -1791,7 +1780,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="panel-body" id="syncBody" hidden>
         <div class="pub-box" id="pubBox" hidden>
           <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
-          <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download or Send to Quest), then the in-game <b>Sync</b> button pulls every update.</p>
+          <p>Studio keeps a copy of this playlist online and writes its address into the file. Download the file and load it on your headset once, then the in-game <b>Sync</b> button pulls every update.</p>
           <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
           <div class="pub-info" id="pubInfo"></div>
         </div>
@@ -1810,31 +1799,12 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <div class="export-validation" id="exportValidation">
           <div class="valitem ok"><span class="ico">◇</span><span>Add songs to <b>Your Playlist</b>, then export.</span></div>
         </div>
-        <div class="plat-tabs" id="platTabs" role="tablist" aria-label="Where do you play?">
-          <button type="button" data-plat="pc" class="on" role="tab">PC</button>
-          <button type="button" data-plat="quest" role="tab">Quest</button>
-        </div>
-        <div class="plat-pane" id="platPc">
         <div class="export-row">
           <button class="primary big" id="downloadBtn2" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .bplist</button>
           <span class="export-hint" id="exportHint">Your playlist is empty.</span>
         </div>
         <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <b>PlaylistManager</b> mod.</p>
-        </div>
-        <div class="plat-pane" id="platQuest" hidden>
-          <div class="export-row">
-            <button class="primary big" id="questSendBtn" type="button" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>Send to Quest</button>
-            <span class="export-hint" id="questHint">Your playlist is empty.</span>
-            <button type="button" class="ghost sm" id="questCancelBtn" hidden>Cancel</button>
-          </div>
-          <div class="quest-dest" id="questDestRow" hidden><label for="questDest">Folder</label><input type="text" id="questDest" spellcheck="false" /></div>
-          <div class="quest-log" id="questLog" aria-live="polite"></div>
-          <p class="panel-sub" style="margin-top:12px;">Plug your Quest into this computer with a USB cable and use Chrome or Edge. Developer mode needs to be on, which modding already did. Studio finds your PlaylistManager folder on the headset and drops the playlist in. Restart Beat Saber to see a new playlist.</p>
-          <p class="panel-sub"><b>First time:</b> put the headset on after you pick it. It asks <b>Allow USB debugging?</b> for this browser. Tick <b>Always allow from this computer</b> and tap <b>Allow</b>. This is separate from SideQuest or adb on this PC, so it shows up once even if those already work.</p>
-          <p class="panel-sub">No cable handy? <a href="#" id="questDlLink">Download the .bplist</a> and copy it to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest. Turn on <b>In-Game Sync</b> and later updates come down with the in-game Sync button, no cable needed.</p>
-        </div>
       </div>
     </section>
   </div>
@@ -1859,7 +1829,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T12:30:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-17T13:00:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -1975,7 +1945,6 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="wn-group" data-wn="new">
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><div><p class="wn-t">For You picks</p><p class="wn-d">Connect your BeatLeader profile and a For You card picks maps for your level: top pp gains, a rank-up plan, a practice set and maps to revisit.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Searches start at your level</p><p class="wn-d">Search now opens at your level instead of the hardest maps. Level chips in Star Rating switch it in one click.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><div><p class="wn-t">Send to Quest</p><p class="wn-d">Plug in your Quest and send a playlist straight to its PlaylistManager folder from the Export panel. No SideQuest needed.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v6a4 4 0 0 0 4 4h4"/><polyline points="13 9 17 13 13 17"/><line x1="8" y1="21" x2="8" y2="13"/></svg></span><div><p class="wn-t">ScoreSaber plays</p><p class="wn-d">Add your ScoreSaber history in Your Profile so the played and FC filters cover both leaderboards.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="wn-t">AccSaber pools</p><p class="wn-d">Load the ranked AccSaber charts by category, with complexity, then filter by what you have and haven't played.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><div><p class="wn-t">Smart playlists</p><p class="wn-d">Save how you built a playlist and rebuild it from fresh results in one click.</p></div></div>
@@ -1984,7 +1953,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
       <div class="wn-group" data-wn="tour" hidden>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Start at your level</p><p class="wn-d">Pick a level in Star Rating, or connect your profile and Studio picks it for you.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><p class="wn-t">Connect your BeatLeader profile</p><p class="wn-d">See your score on every map, filter by what you've played or FC'd, and get For You picks plus a Stats card.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Cherry-pick, then export</p><p class="wn-d">Add maps from any search, drag to reorder, then download the .bplist or send it straight to your Quest.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Cherry-pick, then export</p><p class="wn-d">Add maps from any search, drag to reorder, then download the .bplist.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><div><p class="wn-t">Share it</p><p class="wn-d">Pack a playlist into a link for friends or tournament pools. No account needed.</p></div></div>
       </div>
     </div>
@@ -4225,7 +4194,7 @@ window.PP = (function () {
       items.push({ level: 'ok', ico: '✓', msg: 'Difficulty names PascalCase (ExpertPlus) - PlaylistManager compliant. Play order = list order.' });
     }
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
-    renderQuestUI(); renderPubUI();
+    renderPubUI();
   }
   function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); featRefresh(); saveSession(); }
   // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
@@ -4763,7 +4732,7 @@ window.PP = (function () {
 
   // ---- export ---------------------------------------------------------------
   // Everything an export needs (title, cover, songs with difficulties, sync URL), shared by
-  // Download, Send to Quest and hosted sync so all three write the same file.
+  // Download and hosted sync so both write the same file.
   function exportParts() {
     if (!state.coverDataUrl) updateCover();
     var songs = state.basket.map(function (s) {
@@ -4786,201 +4755,6 @@ window.PP = (function () {
     catch (err) { toast(err.message, 'err'); }
   }
 
-  // ---- Send to Quest (WebUSB + ADB, same approach as HSV Config Generator) ---
-  var PLAT_KEY = 'playlistStudio.platform.v1', QDEST_KEY = 'playlistStudio.questDest.v1';
-  var QS = { adb: null, transport: null, dir: '', busy: false, wait: null };
-  var QUEST_MODS = '/sdcard/ModData/com.beatgames.beatsaber/Mods';
-  function qlog(msg, cls) {
-    var box = document.getElementById('questLog'); if (!box) return;
-    var line = document.createElement('div'); line.className = cls || 'dim'; line.textContent = msg;
-    box.appendChild(line); while (box.childNodes.length > 40) box.removeChild(box.firstChild);
-    box.scrollTop = box.scrollHeight;
-  }
-  function setPlatform(p) {
-    p = p === 'quest' ? 'quest' : 'pc';
-    var tabs = document.getElementById('platTabs'); if (!tabs) return;
-    Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { var on = b.getAttribute('data-plat') === p; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
-    document.getElementById('platPc').hidden = p !== 'pc';
-    document.getElementById('platQuest').hidden = p !== 'quest';
-    try { localStorage.setItem(PLAT_KEY, p); } catch (e) {}
-    if (p === 'quest' && !webusbCheck()) loadAdbLibs(true).catch(function () {});
-  }
-  function renderQuestUI() {
-    var btn = document.getElementById('questSendBtn'), hint = document.getElementById('questHint'); if (!btn) return;
-    var entries = state.basket.length;
-    btn.disabled = !entries || QS.busy;
-    hint.textContent = QS.wait ? 'Waiting for your headset…' : QS.busy ? 'Working…' : (entries ? (function (n) { return n + (n === 1 ? ' song ready' : ' songs ready'); })(uniqueHashes(state.basket)) : 'Your playlist is empty.');
-    var cb = document.getElementById('questCancelBtn'); if (cb) cb.hidden = !QS.wait;
-  }
-  function webusbCheck() {
-    if (!('usb' in navigator)) return 'This browser has no WebUSB. Use Chrome or Edge on a desktop computer.';
-    if (!window.isSecureContext) return 'Open Studio from its https address to use USB.';
-    return '';
-  }
-  function classifyUsbError(e) {
-    var name = (e && e.name) || '', msg = String((e && e.message) || e || '');
-    if (name === 'NotFoundError' || /no device selected/i.test(msg)) return 'cancelled';
-    if (/user gesture|user activation/i.test(msg)) return 'gesture';
-    if (name === 'SecurityError' || /permissions policy|secure context/i.test(msg)) return 'security';
-    if (name === 'NetworkError' || /claim|busy|in use|access denied|unable to open|LIBUSB/i.test(msg)) return 'locked';
-    if (/closed unexpectedly|disconnected|device unavailable|transfer error|no device/i.test(msg) || name === 'AbortError' || name === 'InvalidStateError') return 'gone';
-    return 'other';
-  }
-  var adbLibs = null, adbLibsP = null;
-  function loadAdbLibs(silent) {
-    if (adbLibs) return Promise.resolve(adbLibs);
-    if (adbLibsP) return adbLibsP;
-    var base = 'https://esm.sh/@yume-chan/', v = '@2.1.0';
-    if (!silent) qlog('Loading the USB connector…');
-    return adbLibsP = Promise.all([import(base + 'adb' + v), import(base + 'adb-daemon-webusb' + v), import(base + 'adb-credential-web' + v)])
-      .then(function (m) { adbLibs = { adb: m[0], usb: m[1], cred: m[2] }; return adbLibs; })
-      .catch(function (e) { adbLibsP = null; throw new Error('Could not load the USB connector. Check your internet connection. (' + ((e && e.message) || e) + ')'); });
-  }
-  // Reuse a headset this browser already has permission for, so later sends skip the picker.
-  function pickQuest(Manager) {
-    return Promise.resolve().then(function () { return Manager.getDevices ? Manager.getDevices() : []; }).then(function (list) {
-      if (list && list.length === 1) return list[0];
-      qlog('Pick your Quest in the browser prompt…');
-      return Manager.requestDevice();
-    }, function () { qlog('Pick your Quest in the browser prompt…'); return Manager.requestDevice(); });
-  }
-  // The headset answers only after "Allow USB debugging" is accepted inside it. Guide the player,
-  // offer Cancel, and give up after two minutes instead of sitting on "Working…" forever.
-  function waitForApproval(device, auth) {
-    return new Promise(function (resolve, reject) {
-      var done = false, timers = [];
-      function finish(fn, v) { if (done) return; done = true; timers.forEach(clearTimeout); QS.wait = null; renderQuestUI(); fn(v); }
-      function abort(reason) {
-        if (done) return;
-        try { var raw = device.raw; if (raw && raw.close) Promise.resolve(raw.close()).catch(function () {}); } catch (e) {}
-        finish(reject, new Error(reason === 'cancel' ? 'AUTH_CANCEL' : 'AUTH_TIMEOUT'));
-      }
-      QS.wait = { abort: abort }; renderQuestUI();
-      timers.push(setTimeout(function () {
-        qlog('Put on your Quest. Inside the headset you should see "Allow USB debugging?". Tick "Always allow from this computer" and tap Allow.', 'warn');
-        qlog('This browser needs its own OK once, even if SideQuest or adb already work on this PC.', 'dim');
-      }, 2500));
-      timers.push(setTimeout(function () { qlog('Still waiting. No prompt in the headset? Click Cancel, unplug the cable, plug it back in with the headset on, then try again.', 'warn'); }, 30000));
-      timers.push(setTimeout(function () { abort('timeout'); }, 120000));
-      auth.then(function (t) { if (done) { try { t.close(); } catch (e) {} return; } finish(resolve, t); }, function (e) { finish(reject, e); });
-    });
-  }
-  function questConnect() {
-    return loadAdbLibs().then(function (L) {
-      var Manager = L.usb.AdbDaemonWebUsbDeviceManager && L.usb.AdbDaemonWebUsbDeviceManager.BROWSER;
-      if (!Manager) throw new Error('WebUSB is not available in this browser.');
-      return pickQuest(Manager).then(function (device) {
-        if (!device) { var c = new Error('No device selected'); c.name = 'NotFoundError'; throw c; }
-        qlog('Opening ' + (device.name || 'your Quest') + ' over USB…');
-        return device.connect().then(function (connection) {
-          qlog('USB connected. Waiting for the headset to allow this browser…');
-          var Cred = L.cred.AdbWebCredentialStore || L.cred.default;
-          return waitForApproval(device, L.adb.AdbDaemonTransport.authenticate({ serial: device.serial, connection: connection, credentialStore: new Cred('Playlist Studio') }));
-        }).then(function (transport) {
-          QS.transport = transport; QS.adb = new L.adb.Adb(transport);
-          qlog('Connected to ' + (device.name || 'your Quest') + '.', 'ok'); track('quest-connect');
-        });
-      });
-    });
-  }
-  function withSync(fn) {
-    return QS.adb.sync().then(function (sync) {
-      return Promise.resolve(fn(sync)).then(function (r) { try { sync.dispose && sync.dispose(); } catch (e) {} return r; },
-        function (e) { try { sync.dispose && sync.dispose(); } catch (x) {} throw e; });
-    });
-  }
-  function isDirStat(st) { return !!st && (st.type === 4 || (typeof st.mode === 'number' && (st.mode & 61440) === 16384)); }
-  function statDir(sync, path) {
-    return Promise.resolve().then(function () { return sync.isDirectory ? sync.isDirectory(path) : sync.stat(path).then(isDirStat); })
-      .then(function (v) { return !!v; }, function () { return false; });
-  }
-  function fileExists(sync, path) {
-    return Promise.resolve().then(function () { return (sync.lstat || sync.stat).call(sync, path); }).then(function () { return true; }, function () { return false; });
-  }
-  function listNames(sync, path) {
-    return Promise.resolve().then(function () {
-      if (sync.readdir) return sync.readdir(path);
-      var out = [], it = sync.opendir(path)[Symbol.asyncIterator]();
-      function step() { return it.next().then(function (r) { if (r.done) return out; out.push(r.value); return step(); }); }
-      return step();
-    }).then(function (ents) { return (ents || []).map(function (x) { return x && x.name; }).filter(function (n) { return n && n !== '.' && n !== '..'; }); }, function () { return []; });
-  }
-  // Find the PlaylistManager folder by looking at what is actually on the headset.
-  function findPlaylistDir(sync) {
-    var saved = ''; try { saved = localStorage.getItem(QDEST_KEY) || ''; } catch (e) {}
-    var cands = [];
-    if (saved) cands.push(saved);
-    return listNames(sync, QUEST_MODS).then(function (names) {
-      names.filter(function (n) { return /playlist/i.test(n); }).forEach(function (n) { cands.push(QUEST_MODS + '/' + n + '/Playlists'); cands.push(QUEST_MODS + '/' + n); });
-      cands.push(QUEST_MODS + '/PlaylistManager/Playlists', '/sdcard/BMBFData/Playlists');
-      var seen = {}; cands = cands.filter(function (c) { if (seen[c]) return false; seen[c] = 1; return true; });
-      var i = 0;
-      function next() { if (i >= cands.length) return ''; var c = cands[i++]; return statDir(sync, c).then(function (ok) { return ok ? c : next(); }); }
-      return next();
-    });
-  }
-  function questSend() {
-    if (!state.basket.length || QS.busy) return;
-    var why = webusbCheck();
-    if (why) { qlog(why, 'err'); toast(why, 'err'); return; }
-    QS.busy = true; renderQuestUI();
-    var x = exportParts(), playlist = BplistExporter.build(x.meta, x.songs);
-    var fname = BplistExporter.fileName(playlist.playlistTitle), bytes = new TextEncoder().encode(BplistExporter.toJSON(playlist));
-    var destInput = document.getElementById('questDest');
-    questReset();
-    questConnect().then(function () {
-      return withSync(function (sync) {
-        var typed = destInput && destInput.value.trim().replace(/\/+$/, '');
-        var pick = typed ? statDir(sync, typed).then(function (ok) { return ok ? typed : findPlaylistDir(sync); }) : findPlaylistDir(sync);
-        return pick.then(function (dir) {
-          if (!dir) throw new Error('NO_DIR');
-          QS.dir = dir;
-          if (destInput) { destInput.value = dir; document.getElementById('questDestRow').hidden = false; }
-          try { localStorage.setItem(QDEST_KEY, dir); } catch (e) {}
-          var path = dir + '/' + fname;
-          return fileExists(sync, path).then(function (existed) {
-            qlog((existed ? 'Updating ' : 'Writing ') + fname + ' (' + playlist.songs.length + ' songs)…');
-            var file = new ReadableStream({ start: function (c) { c.enqueue(bytes); c.close(); } });
-            return Promise.resolve(sync.write({ filename: path, file: file, permission: 420 })).then(function () { return existed; });
-          });
-        });
-      });
-    }).then(function (existed) {
-      qlog('Done. ' + (existed ? 'Updated' : 'Added') + ' "' + playlist.playlistTitle + '" on your Quest. Restart Beat Saber to see it.', 'ok');
-      toast((existed ? 'Updated' : 'Sent') + ' "' + playlist.playlistTitle + '" on your Quest.', 'ok');
-      track('quest-send');
-    }).catch(function (e) {
-      var msg = (e && e.message) || String(e), kind = classifyUsbError(e);
-      if (msg === 'NO_DIR') {
-        qlog('Couldn\'t find a PlaylistManager folder on the headset. Install the PlaylistManager mod and launch Beat Saber once, or type the folder path above and try again.', 'warn');
-        var r = document.getElementById('questDestRow'); if (r) r.hidden = false;
-      } else if (msg === 'AUTH_CANCEL') qlog('Stopped. Nothing was sent.', 'dim');
-      else if (msg === 'AUTH_TIMEOUT') qlog('The headset didn\'t answer in 2 minutes. Put it on, unplug and replug the cable, click Send to Quest and tap Allow inside the headset.', 'err');
-      else if (kind === 'cancelled') qlog('No headset picked.', 'dim');
-      else if (kind === 'locked') qlog('Another app is using the headset (SideQuest, Meta Quest Link, an adb window or another Studio tab). Close it or run "adb kill-server", unplug and replug the cable, then try again.', 'err');
-      else if (kind === 'gone') qlog('The headset disconnected. Check the cable and that the headset is awake, then try again.', 'err');
-      else if (kind === 'gesture') qlog('The USB connector is ready now. Click Send to Quest again to pick your headset.', 'warn');
-      else if (kind === 'security') qlog('The browser blocked USB here. Open Studio in its own Chrome or Edge tab.', 'err');
-      else qlog('Send failed: ' + msg, 'err');
-      if (kind !== 'cancelled' && msg !== 'AUTH_CANCEL') toast('Couldn\'t send to your Quest - see the Export panel for details.', 'warn');
-    }).then(function () { questReset(); QS.busy = false; renderQuestUI(); });
-  }
-  function questReset() {
-    try { if (QS.transport && QS.transport.close) Promise.resolve(QS.transport.close()).catch(function () {}); } catch (e) {}
-    QS.adb = null; QS.transport = null;
-  }
-  function setupQuestExport() {
-    var tabs = document.getElementById('platTabs'); if (!tabs) return;
-    tabs.addEventListener('click', function (e) { var b = e.target.closest('button[data-plat]'); if (b) { setPlatform(b.getAttribute('data-plat')); track('export-tab-' + b.getAttribute('data-plat')); } });
-    var p = 'pc'; try { p = localStorage.getItem(PLAT_KEY) || 'pc'; } catch (e) {}
-    setPlatform(p);
-    document.getElementById('questSendBtn').addEventListener('click', questSend);
-    document.getElementById('questCancelBtn').addEventListener('click', function () { if (QS.wait) { QS.wait.abort('cancel'); track('quest-cancel'); } });
-    document.getElementById('questDlLink').addEventListener('click', function (e) { e.preventDefault(); doDownload(); });
-    var dest = document.getElementById('questDest');
-    try { var sd = localStorage.getItem(QDEST_KEY); if (sd) { dest.value = sd; } } catch (e) {}
-    renderQuestUI();
-  }
 
 
   // ---- ScoreSaber play history ----------------------------------------------
@@ -5180,7 +4954,7 @@ window.PP = (function () {
     stop.hidden = !p;
     var or = document.getElementById('pubOr'); if (or) or.textContent = p ? 'address written into the file' : 'or use your own host';
     info.innerHTML = p ? 'Hosted at <code>' + esc(p.url) + '</code>' + (p.at ? ' &middot; updated ' + agoStr(Math.floor(p.at / 1000)) : '') +
-      '<br>Loaded this playlist on your headset before hosting it? Download or send it once more so it knows this address.' : '';
+      '<br>Loaded this playlist on your headset before hosting it? Download it and load it once more so it knows this address.' : '';
   }
   function applyPublishToSync() {
     if (!state.publish) return;
@@ -5199,7 +4973,7 @@ window.PP = (function () {
         applyPublishToSync();
         if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { o[state.activeRecipe].pub = state.publish; lsSetRecipes(o); } }
         saveSession();
-        toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : 'Hosted! Download or send the file once more - after that, in-game Sync keeps it current.', 'ok');
+        toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : 'Hosted! Download the file and load it once more - after that, in-game Sync keeps it current.', 'ok');
         track(pub ? (auto ? 'pub-auto-update' : 'pub-update') : 'pub-create');
       } else if (res.status === 404 && pub) {
         state.publish = null;
@@ -6710,7 +6484,7 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupQuestExport(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
