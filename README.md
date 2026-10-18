@@ -27,7 +27,7 @@ Switching sources swaps in the relevant filters (the BeatLeader-only Star Rating
 In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's own tags - this is where **poodle / tech / midspeed** style lists come from (poodles live under the **Tech** tag). The full official tag set is here: 7 **style** tags (Tech, Speed, Dance Style, Balanced, Challenge, Accuracy, Fitness) and the complete **genre** list, plus a custom-tag box for anything else.
 
 - Each chip is **tri-state**: click once to **require** a tag, again to **exclude** it, again to clear.
-- Sort by **Relevance, Rating, Curated, or Latest**, with an optional **curated-only** toggle.
+- Sort by **Rating** (the default, best-liked first), **Relevance, Curated, or Latest**, with an optional **curated-only** toggle.
 - **Hide auto-lighting maps** - a one-click toggle to drop maps whose lighting was auto-generated (credited as *"Auto Lighter by …"* / *"Autolighter"*). The note maps are real; only the lighting is auto-made, so flip it on when those clutter your results.
 - **Min rating and Uploaded-within filters** - set a rating floor (BeatSaver's weighted up/down score, in %) to skip poorly-rated maps, and limit to maps uploaded in the past week / month / 3 / 6 months / year to surface fresh stuff.
 - Searching a **mapper** name matches the mapper only (not song/artist/description) and ignores auto-lighting credits, so you get that mapper's actual maps. There's also an **Exclude mapper(s)** box to hide any map whose mapper or artist matches.
@@ -36,7 +36,7 @@ In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's o
 
 ### Search & filter (BeatLeader)
 - **Star-rating** range and **ranked status** (ranked / unranked / nominated / qualified / all)
-- **Starts at your level** - a fresh search no longer opens on the hardest maps. With your profile connected it searches your comfort-to-stretch band (worked out from your top plays); without it, it starts at 4-7★. Level chips (**My level**, Learning, Comfortable, Pushing, Top, All) switch the band in one click
+- **Starts at your level** - a fresh search no longer opens on the hardest maps. With your profile connected it searches your comfort-to-stretch band (worked out from your top plays); without it, it starts at 4-7★ with the easiest maps first, plus a one-tap **Start easier (0-4★)** tip for new players. Level chips (**My level**, Learning, Comfortable, Pushing, Top, All) switch the band in one click
 - **Mapper** and **keyword** search
 - **Game mode** - Standard, One Saber, No Arrows, 90°/360°, Lightshow, Lawless
 - **Optional difficulty filter** (Easy → Expert+) - off by default so every difficulty comes through until you want to narrow it
@@ -57,10 +57,10 @@ Already know the maps you want? Skip searching. Paste one or more **BSR codes**,
 - **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard)
 - **Clear playlist** empties the list and resets its name, cover and sync to a fresh start - with a one-tap **Undo clear** if you didn't mean it
 - **Clear results** - a separate button that empties the results and resets your filters to defaults (your playlist is kept)
-- **Collapse duplicate songs** to keep one entry per song
+- **One row per song** - collapse duplicate difficulties to keep one entry per song
 - **Hide added** - a toggle above the results that hides maps already in Your Playlist, so you only see what you haven't picked yet (great for working through a big search without re-seeing your choices). Maps drop out the moment you add them and come back if you remove them.
-- **Hide from file** - load another `.bplist` and hide its songs from the results too, so you can build a "new stuff only" set that skips everything in a playlist you already have.
-- **Fill to N min** - top up Your Playlist with maps from the current results until it reaches a target length (handy for a set of a specific duration). Respects your Hide added / Hide from file choices.
+- **Skip maps from a playlist file** - load another `.bplist` and hide its songs from the results too, so you can build a "new stuff only" set that skips everything in a playlist you already have.
+- **Fill to N min** - top up Your Playlist with maps from the current results until it reaches a target length (handy for a set of a specific duration). Respects your Hide added and Skip maps from a playlist file choices.
 - Build a single playlist from several different searches
 - Live totals: song count, runtime, star range + average, and average NPS
 
@@ -110,7 +110,7 @@ Work out exactly what a score is worth before you grind it.
 The **PP Filter** panel turns all of that into a real filter - "only show me maps worth grinding."
 
 - Set your **target accuracy** and **speed** once (No modifier / SS / FS / SF), then give a **PP range** - a minimum, a maximum, or both. Only ranked maps whose estimated raw PP lands in that band survive; unranked maps drop out while a bound is set.
-- That same accuracy and speed drive the **≈pp badge** on every row and the **PP sort**, so what you filter on is exactly what you see - flip to **FS** and the whole list re-evaluates at Faster Song, badges and all.
+- That same accuracy and speed drive the **≈pp badge** on every row (shown once your profile is connected or the PP Filter is open) and the **PP sort**, so what you filter on is exactly what you see - flip to **FS** and the whole list re-evaluates at Faster Song, badges and all.
 - A map that isn't rated for the chosen speed is skipped by the range filter (it has no PP at that speed to compare).
 - The PP range, accuracy, and speed all save into **filter presets**, so "6★+ tech that pays ≥300pp at 96% FS" is one click away next time.
 
@@ -135,7 +135,7 @@ The **AccSaber Pools** panel loads every ranked AccSaber chart straight from Acc
 - **Filter presets** - save filter combos you reuse (e.g. "6★ tech warmup")
 - **Playlist Library** - save and reload whole playlists (cover included)
 - **Smart playlists** - save the results you built (a search, your plays, top plays, PP gains or an AccSaber pool) as a recipe. **Rebuild** refills Your Playlist from fresh results with the same filters and sort, and if the playlist is hosted it pushes the update so your headset's Sync picks it up
-- **Gallery** - **Browse the gallery** loads ready-made playlists in one click, starting with the official AccSaber pools (pulled live, so they're never stale)
+- **Gallery** - **Browse the gallery** loads ready-made playlists in one click: three starter lists for new players (BeatSaver's best-rated maps, each set to an easy, medium or harder difficulty) and the official AccSaber pools, all pulled live so they're never stale. New players also get a link to it from the empty results
 - **Library backup** - **Back up library** downloads every saved playlist, preset, smart playlist and saved icon as one file; **Restore backup** merges it back on any computer without overwriting anything
 - **Session autosave** - an accidental refresh won't lose your work in progress
 - **Import `.bplist`** - open an existing playlist to edit it; covers stored as either a data URI *or* raw base64 both load, for broad compatibility with community playlists
@@ -210,7 +210,9 @@ If you run your own CORS relay and would rather use it, point the app at it unde
 
 1. Export the `.bplist` from Playlist Studio.
 2. Drop it into your Beat Saber `Playlists` folder - on PC that's usually `…\Steam\steamapps\common\Beat Saber\Playlists\`.
-3. In-game, refresh your song list. The [PlaylistManager](https://github.com/rithik-b/PlaylistManager) mod loads the playlist; any maps you don't have download automatically if you use playlist syncing / BeatSaver downloading.
+3. In-game, refresh your song list. The [PlaylistManager](https://github.com/rithik-b/PlaylistManager) mod loads the playlist. The file lists the songs but doesn't contain them, so open the playlist and use PlaylistManager's download button to grab any you don't have.
+
+New to mods? The [BSMG wiki](https://bsmg.wiki/) walks you through installing them on PC and Quest.
 
 ### On Quest
 Switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable and use Chrome or Edge. The first time, put the headset on after you pick it and accept **Allow USB debugging?** (tick **Always allow from this computer**). The browser gets its own approval, separate from SideQuest or adb, so it shows up once even if those already work. Studio finds your PlaylistManager folder, writes the playlist there and lets go of the headset afterwards so SideQuest and adb keep working. If it says the headset hasn't answered, another tab or app that talks to the Quest (HSV Config Generator, MBF, SideQuest, adb) is holding the connection: close it, unplug and replug the cable, and try again. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
@@ -245,7 +247,7 @@ Vanilla HTML, CSS and JavaScript - no framework and no build tooling. The single
 
 ## Adding gallery entries
 
-The gallery reads `gallery/index.json`. Each entry has a `name`, a `description`, an optional `author` and `tags`, and one source: `"type": "url"` with a live `.bplist` link (the host must allow CORS), `"type": "file"` with a `.bplist` saved in the `gallery/` folder, or `"type": "share"` with a Playlist Studio share code.
+The gallery reads `gallery/index.json`. Each entry has a `name`, a `description`, an optional `author` and `tags`, and one source: `"type": "url"` with a live `.bplist` link (the host must allow CORS), `"type": "file"` with a `.bplist` saved in the `gallery/` folder, `"type": "share"` with a Playlist Studio share code, or `"type": "beatsaver"` to build a live list from a BeatSaver search: `query` holds the search parameters (for example `{"sortOrder": "Rating", "curated": true}`), `pick` the notes-per-second window used to choose one Standard difficulty per map (`{"minNps": 1.5, "maxNps": 3.5}`), and `count` how many maps to take.
 
 ## More tools
 

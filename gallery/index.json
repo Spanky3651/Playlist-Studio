@@ -1,13 +1,75 @@
 {
-  "about": "Playlist Studio gallery. Each entry is loaded like a dropped .bplist. type 'url' fetches a live playlist (the host must allow CORS), type 'file' loads gallery/<file> from this repo, type 'share' opens a Playlist Studio share code.",
+  "about": "Playlist Studio gallery. Each entry is loaded like a dropped .bplist. type 'url' fetches a live playlist (the host must allow CORS), type 'file' loads gallery/<file> from this repo, type 'share' opens a Playlist Studio share code, and type 'beatsaver' builds a live list from a BeatSaver search: 'query' holds the search parameters, 'pick' the notes-per-second window used to choose one Standard difficulty per map, and 'count' how many maps to take.",
   "entries": [
+    {
+      "id": "starter-first",
+      "name": "First custom maps",
+      "description": "20 of the best-rated curated maps on BeatSaver, each set to an easier difficulty (about 1.5 to 3.5 notes a second). A good first playlist after installing mods.",
+      "author": "BeatSaver, picked live",
+      "type": "beatsaver",
+      "query": {
+        "sortOrder": "Rating",
+        "curated": true
+      },
+      "pick": {
+        "minNps": 1.5,
+        "maxNps": 3.5
+      },
+      "count": 20,
+      "tags": [
+        "Starter",
+        "Easy"
+      ]
+    },
+    {
+      "id": "starter-popular",
+      "name": "Popular fun maps",
+      "description": "The highest-rated maps on BeatSaver at a medium difficulty (about 3.5 to 5.5 notes a second). Well-loved songs, not ranked-only.",
+      "author": "BeatSaver, picked live",
+      "type": "beatsaver",
+      "query": {
+        "sortOrder": "Rating"
+      },
+      "pick": {
+        "minNps": 3.5,
+        "maxNps": 5.5
+      },
+      "count": 25,
+      "tags": [
+        "Starter",
+        "Medium"
+      ]
+    },
+    {
+      "id": "starter-stepup",
+      "name": "Step it up",
+      "description": "Highly rated curated maps at a harder difficulty (about 5 to 7 notes a second), for when the first two feel easy.",
+      "author": "BeatSaver, picked live",
+      "type": "beatsaver",
+      "query": {
+        "sortOrder": "Rating",
+        "curated": true
+      },
+      "pick": {
+        "minNps": 5,
+        "maxNps": 7
+      },
+      "count": 20,
+      "tags": [
+        "Starter",
+        "Harder"
+      ]
+    },
     {
       "name": "AccSaber True Acc pool",
       "description": "Every ranked AccSaber True Acc chart, pulled live from AccSaber so it is always current.",
       "author": "AccSaber",
       "type": "url",
       "url": "https://api.accsaber.com/v1/playlists/true_acc",
-      "tags": ["AccSaber", "True Acc"]
+      "tags": [
+        "AccSaber",
+        "True Acc"
+      ]
     },
     {
       "name": "AccSaber Standard Acc pool",
@@ -15,7 +77,10 @@
       "author": "AccSaber",
       "type": "url",
       "url": "https://api.accsaber.com/v1/playlists/standard_acc",
-      "tags": ["AccSaber", "Standard Acc"]
+      "tags": [
+        "AccSaber",
+        "Standard Acc"
+      ]
     },
     {
       "name": "AccSaber Tech Acc pool",
@@ -23,7 +88,10 @@
       "author": "AccSaber",
       "type": "url",
       "url": "https://api.accsaber.com/v1/playlists/tech_acc",
-      "tags": ["AccSaber", "Tech Acc"]
+      "tags": [
+        "AccSaber",
+        "Tech Acc"
+      ]
     }
   ]
 }
