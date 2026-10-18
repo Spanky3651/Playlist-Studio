@@ -526,6 +526,7 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .pp-ref.hot{color:#fff;}
 .pp-ref.hot b{color:var(--blue);}
 .rb-pp{color:#bcd8ff;border-color:rgba(47,140,255,.45);background:rgba(47,140,255,.1);}
+.rb-vs{color:#ffb3c1;border-color:rgba(255,77,109,.45);background:rgba(255,77,109,.1);}
 .pp-target{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:13px;color:var(--muted);}
 .pp-target input{width:52px;background:var(--panel-2);color:var(--text);border:1px solid var(--border-2);border-radius:6px;padding:4px 6px;font-size:13px;font-family:var(--mono);text-align:right;}
 .pp-target input:focus{outline:none;border-color:var(--blue);}
@@ -1238,6 +1239,12 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <input type="number" id="fNpsMax" min="0" step="0.1" placeholder="max" />
         </div>
         <div class="metric-row">
+          <span class="metric-name">NJS <span class="info" data-tip="Note jump speed - how fast notes fly at you. Higher NJS is harder to read for some players and easier for others. Maps with no NJS on record are left out while this is set.">i</span></span>
+          <input type="number" id="fNjsMin" min="0" step="0.5" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="fNjsMax" min="0" step="0.5" placeholder="max" />
+        </div>
+        <div class="metric-row">
           <span class="metric-name">Duration <span class="unit">(sec)</span></span>
           <input type="number" id="fDurMin" min="0" step="1" placeholder="min" />
           <span class="dash">–</span>
@@ -1341,6 +1348,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="accRating">Acc</option>
               <option value="passRating">Pass</option>
               <option value="nps">NPS</option>
+              <option value="njs">NJS</option>
               <option value="duration">Duration</option>
               <option value="bpm">BPM</option>
               <option value="pp">PP @ target acc</option>
@@ -1348,6 +1356,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="myRank">My rank</option>
               <option value="myDate">Date I played</option>
               <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
+              <option value="vsGap" hidden>Gap to them</option>
             </select></div>
         </div>
         <div class="grid-2">
@@ -1518,13 +1527,13 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Quick Add (by BSR / link / hash) -->
     <section class="panel" id="panelQuickAdd" data-collapsible data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><h2>Quick Add</h2></div>
-      <div class="panel-sub">Already know the maps? Paste one or more <b>BSR codes</b>, <b>BeatSaver links</b>, or map <b>hashes</b> to drop them straight into <b>Your Playlist</b> - no searching. Perfect for tournament pools and shared code lists. Looks up maps on BeatSaver.</div>
+      <div class="panel-sub">Already know the maps? Paste one or more <b>BSR codes</b>, <b>BeatSaver links</b>, or map <b>hashes</b> to drop them straight into <b>Your Playlist</b> - no searching. Paste a <b>playlist link</b> to load a whole playlist. Perfect for tournament pools and shared code lists. Looks up maps on BeatSaver.</div>
       <div class="panel-body">
         <div class="preset-row">
-          <input type="text" id="quickAddInput" placeholder="e.g.  2c9e, 1a3f  or  beatsaver.com/maps/2c9e" />
+          <input type="text" id="quickAddInput" placeholder="e.g.  2c9e, 1a3f  or a playlist link" />
           <button class="ghost sm" id="quickAddBtn">+ Add</button>
         </div>
-        <p class="muted hint-line" id="quickAddHint">Separate multiple with spaces or commas. Accepts BSR codes, <code>beatsaver.com/maps/…</code> links, and 40-character hashes.</p>
+        <p class="muted hint-line" id="quickAddHint">Separate multiple with spaces or commas. Accepts BSR codes, <code>beatsaver.com/maps/…</code> links, 40-character hashes, and playlist links: <code>beatsaver.com/playlists/…</code>, a hosted Playlist Studio link or any link to a <code>.bplist</code> file.</p>
       </div>
     </section>
 
@@ -1564,6 +1573,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <option value="myDate">Date I played</option>
           <option value="stars">Stars</option>
           <option value="nps">NPS</option>
+          <option value="njs">NJS</option>
           <option value="duration">Duration</option>
           <option value="bpm">BPM</option>
           <option value="myAcc">My accuracy</option>
@@ -1573,6 +1583,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <option value="passRating">Pass</option>
           <option value="pp">PP @ target acc</option>
           <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
+          <option value="vsGap" hidden>Gap to them</option>
         </select>
         <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
         <span class="sort-bar-sep"></span>
@@ -1606,6 +1617,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
         <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader - catches rating recalcs">★ Re-check</button>
         <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
         <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
+        <button class="ghost sm" id="undoBtn" type="button" hidden>↶ Undo</button>
+        <button class="ghost sm" id="redoBtn" type="button" hidden>↷ Redo</button>
       </div>
       <div class="panel-body list-body">
         <div class="song-list basket" id="basketList">
@@ -1886,7 +1899,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-18T10:55:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-18T16:45:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2000,13 +2013,11 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <div class="wn-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><h3 id="wnTitle">What's New</h3><span class="wn-chip" id="wnChip">7 updates</span></div>
     <div class="wn-body">
       <div class="wn-group" data-wn="new">
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><div><p class="wn-t">For You picks</p><p class="wn-d">Connect your BeatLeader profile and a For You card picks maps for your level: top pp gains, a rank-up plan, a practice set and maps to revisit.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Searches start at your level</p><p class="wn-d">Search now opens at your level instead of the hardest maps. Level chips in Star Rating switch it in one click.</p></div></div>
-      <div class="wn-item" data-needs-usb><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><div><p class="wn-t">Send to Quest</p><p class="wn-d">Plug in your Quest and send a playlist straight to its PlaylistManager folder from the Export panel. No SideQuest needed.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v6a4 4 0 0 0 4 4h4"/><polyline points="13 9 17 13 13 17"/><line x1="8" y1="21" x2="8" y2="13"/></svg></span><div><p class="wn-t">ScoreSaber plays</p><p class="wn-d">Add your ScoreSaber history in Your Profile so the played and FC filters cover both leaderboards.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="wn-t">AccSaber pools</p><p class="wn-d">Load the ranked AccSaber charts by category, with complexity, then filter by what you have and haven't played.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><div><p class="wn-t">Smart playlists</p><p class="wn-d">Save how you built a playlist and rebuild it from fresh results in one click.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><div><p class="wn-t">Library backup</p><p class="wn-d">Back up saved playlists, presets and smart playlists to a file, and restore them on any computer.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="13 6 19 12 13 18"/></svg></span><div><p class="wn-t">NJS on every map</p><p class="wn-d">Each map shows its note jump speed, and Song Metrics can filter and sort by NJS.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></span><div><p class="wn-t">Undo and redo</p><p class="wn-d">Undo any change to Your Playlist with the Undo button or Ctrl+Z, and redo with Ctrl+Y.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><div><p class="wn-t">Paste a playlist link</p><p class="wn-d">Quick Add now loads a whole playlist from a BeatSaver playlist page or any .bplist link.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div><p class="wn-t">Maps a friend beats you on</p><p class="wn-d">Open a player's Stats card and load the ranked maps where they beat you, closest gaps first.</p></div></div>
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span><div><p class="wn-t">Starter playlists</p><p class="wn-d">New to custom maps? The gallery has three live starter lists at an easy, medium and harder difficulty.</p></div></div>
       </div>
       <div class="wn-group" data-wn="tour" hidden>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Start at your level</p><p class="wn-d">Pick a level in Star Rating, or connect your profile and Studio picks it for you.</p></div></div>
@@ -2857,7 +2868,7 @@ window.PP = (function () {
    'presetName','presetSave','presetSelect','presetLoad','presetDelete','presetPanel',
    'profilePanel','profileState','profileConnect','profileCard','playerInput','connectBtn','pcAvatar','pcName','pcStats','syncBtn','buildPlaysBtn','disconnectBtn','syncProgress','syncBar','syncText','playStatus','playRecency','accMax','previewScore',
    'starMin','starMax','starMinNum','starMaxNum','starBandFill','starRangeLabel',
-   'fMapper','fMapperExclude','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax','diffEnable','diffChips',
+   'fMapper','fMapperExclude','fSearch','fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax','diffEnable','diffChips',
    'fetchBtn','fetchBtn2','resetBtn','downloadBtn','downloadBtn2',
    'fetchProgress','barFill','fetchProgressText','statusPill','statusText','brandCount',
    'matchCount','basketCount','basketTime','basketUnique','counterMeta',
@@ -2952,7 +2963,7 @@ window.PP = (function () {
       mapperTerms: mapperTerms, mapperExclude: mapperExclude, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
       diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
       playStatus: el.playStatus.value, recency: el.playRecency.value, accMax: num(el.accMax, null),
-      npsMin: num(el.fNpsMin, null), npsMax: num(el.fNpsMax, null),
+      npsMin: num(el.fNpsMin, null), npsMax: num(el.fNpsMax, null), njsMin: num(el.fNjsMin, null), njsMax: num(el.fNjsMax, null),
       durMin: num(el.fDurMin, null), durMax: num(el.fDurMax, null),
       bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null),
       ppMin: num(el.ppMin, null), ppMax: num(el.ppMax, null),
@@ -3193,7 +3204,7 @@ window.PP = (function () {
     h += '<section class="sv-hero">' + (cover ? '<img class="cvr" src="' + esc(cover) + '" alt="" onerror="this.remove()">' : '') +
       '<div class="sv-hero-in"><img class="sv-ava" src="' + esc(p.avatar || '') + '" alt="' + esc(p.name) + ' avatar" onerror="this.style.visibility=\'hidden\'">' +
       '<div class="sv-who"><div class="sv-kick">BEAT SABER STATS</div><div class="sv-name">' + esc(p.name) + '</div><div class="sv-pills">' + pills.join('') + '</div>' +
-      '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button></div></div></div></section>';
+      '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button>' + (state.player && String(state.player.id) !== String(p.id) ? '<button type="button" class="ghost sm" id="svVsBtn">&#9876; Maps ' + esc(p.name) + ' beats you on</button>' : '') + '</div></div></div></section>';
 
     // BeatLeader card
     var hist = (D.blh || []).slice().sort(function (a, b) { return a.timestamp - b.timestamp; });
@@ -3370,6 +3381,11 @@ window.PP = (function () {
         }
         return;
       }
+      if (e.target.closest('#svVsBtn')) {
+        var pv = sv.data && sv.data.bl;
+        if (pv) { svClose(); track('stats-versus'); buildVersus(pv.id, pv.name); }
+        return;
+      }
       if (e.target.closest('#svTopBtn')) {
         var pd = sv.data && sv.data.bl;
         if (pd) { svClose(); track('stats-top-plays'); buildTopPlays(50, pd.id, pd.name); }
@@ -3419,7 +3435,7 @@ window.PP = (function () {
       mapper: song.mapper || song.author || 'Unknown', author: song.author || '',
       bpm: song.bpm || 0, duration: song.duration || 0, cover: song.coverImage || '',
       stars: diff.stars || 0, difficultyName: diff.difficultyName || 'ExpertPlus', modeName: diff.modeName || 'Standard',
-      nps: diff.nps || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0,
+      nps: diff.nps || 0, njs: diff.njs || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0,
       mods: modsFrom(diff.modifiersRating)
     };
   }
@@ -3614,7 +3630,7 @@ window.PP = (function () {
       stars: diffs.reduce(function (m, d) { return Math.max(m, d.stars || 0); }, 0),
       difficultyName: '', modeName: (charSet['Standard'] ? 'Standard' : (hardest.characteristic || 'Standard')),
       modes: modes, diffSet: Object.keys(diffSet), diffCount: diffs.length, bsScore: score, uploaded: upT,
-      nps: hardest.nps || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
+      nps: hardest.nps || 0, njs: hardest.njs || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
   }
   // The keyword box can hold a direct map reference: a BSR code, a beatsaver.com/maps link, or a
   // 40-char hash. Link / hash / !-prefixed / bsr-prefixed forms are unambiguous (explicit); a bare
@@ -3726,7 +3742,7 @@ window.PP = (function () {
         // Uploaded-within window (drop maps with no known date when a window is set).
         if (ageCutoff != null) { if (!s.uploaded) return false; if ((nowSec - s.uploaded) / 86400 > ageCutoff) return false; }
       }
-      if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && state.viewMode === 'plays') && (s.stars < f.starMin || s.stars > f.starMax)) return false;
+      if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && (state.viewMode === 'plays' || state.viewMode === 'versus')) && (s.stars < f.starMin || s.stars > f.starMax)) return false;
       if (state.viewMode === 'accsaber' && state.asCat && state.asCat !== 'all' && s.asCat !== state.asCat) return false;
       if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all') {
         var isRanked = s.stars > 0;
@@ -3752,6 +3768,8 @@ window.PP = (function () {
       }
       if (f.npsMin != null && s.nps < f.npsMin) return false;
       if (f.npsMax != null && s.nps > f.npsMax) return false;
+      if (f.njsMin != null && !(s.njs >= f.njsMin)) return false;
+      if (f.njsMax != null && !(s.njs > 0 && s.njs <= f.njsMax)) return false;
       if (f.durMin != null && s.duration < f.durMin) return false;
       if (f.durMax != null && s.duration > f.durMax) return false;
       if (f.bpmMin != null && s.bpm < f.bpmMin) return false;
@@ -3823,7 +3841,7 @@ window.PP = (function () {
     return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
   }
   function updateStale() {
-    if (state.viewMode === 'plays') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
+    if (state.viewMode === 'plays' || state.viewMode === 'versus') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
     var stale = state.source === 'beatleader' && state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
     el.staleHint.hidden = !stale;
     el.fetchBtn.classList.toggle('stale', stale);
@@ -3927,8 +3945,11 @@ window.PP = (function () {
     var out = [], seen = {};
     (text || '').split(/[\s,;]+/).forEach(function (tok) {
       tok = tok.trim(); if (!tok) return;
-      var type, val, m = tok.match(/beatsaver\.com\/maps\/([0-9a-fA-F]+)/i);
-      if (m) { type = 'id'; val = m[1].toLowerCase(); }
+      var type, val, m = tok.match(/beatsaver\.com\/maps\/([0-9a-fA-F]+)/i), pl = tok.match(/beatsaver\.com\/playlists\/(?:id\/)?(\d+)/i);
+      if (pl) { type = 'playlist'; val = 'https://api.beatsaver.com/playlists/id/' + pl[1] + '/download'; }
+      else if (/beatleader\.(xyz|com)\/playlist/i.test(tok)) { type = 'blplaylist'; val = tok; }
+      else if (/^https:\/\/\S+\.(bplist|json)(\?\S*)?$/i.test(tok)) { type = 'playlist'; val = tok; }
+      else if (m) { type = 'id'; val = m[1].toLowerCase(); }
       else if (/^[0-9a-fA-F]{40}$/.test(tok)) { type = 'hash'; val = tok.toLowerCase(); }
       else { var t = tok.replace(/^!/, '').replace(/^bsr$/i, ''); if (/^[0-9a-fA-F]{1,8}$/.test(t)) { type = 'id'; val = t.toLowerCase(); } }
       if (!type) return;
@@ -3950,9 +3971,32 @@ window.PP = (function () {
     var url = 'https://api.beatsaver.com/maps/' + (tok.type === 'hash' ? 'hash/' : 'id/') + tok.val;
     return fetch(url).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
   }
+  // A pasted playlist link loads like a dropped .bplist (merge or replace when the playlist has songs).
+  function importPlaylistLink(url, more) {
+    el.quickAddBtn.disabled = true;
+    var lbl = el.quickAddBtn.textContent; el.quickAddBtn.textContent = 'Loading…';
+    return fetchTimeout(url, 20000).then(function (r) { if (!r.ok) { var x = new Error('status'); x.status = r.status; throw x; } return r.text(); }).then(function (txt) {
+      var pl; try { pl = JSON.parse(txt); } catch (e) { pl = null; }
+      if (!pl || !Array.isArray(pl.songs)) { var y = new Error('notplaylist'); y.notPlaylist = true; throw y; }
+      if (!pl.songs.length) { toast('That playlist is empty.', 'warn'); return; }
+      el.quickAddInput.value = ''; track('link-load');
+      if (more) toast('Loading the first playlist link. Paste the others one at a time.', 'warn');
+      dropTag = 'link';
+      handleDroppedPlaylist(new File([txt], (pl.playlistTitle || 'playlist') + '.bplist', { type: 'application/json' }));
+    }).catch(function (e) {
+      track('link-load-failed');
+      if (e && e.notPlaylist) toast('That link didn\'t return a playlist file.', 'warn');
+      else if (e && e.status === 404) toast('That playlist wasn\'t found. Check the link.', 'warn');
+      else toast('Couldn\'t load that link. Some sites block loading from other pages; download the file and drop it here instead.', 'warn');
+    }).then(function () { el.quickAddBtn.disabled = false; el.quickAddBtn.textContent = lbl; });
+  }
   function quickAdd() {
-    var toks = parseQuickAddTokens(el.quickAddInput.value);
-    if (!toks.length) { toast('Enter a BSR code, BeatSaver link, or 40-char hash.', 'warn'); return; }
+    var all = parseQuickAddTokens(el.quickAddInput.value);
+    if (!all.length) { toast('Enter a BSR code, BeatSaver link, 40-char hash or a playlist link.', 'warn'); return; }
+    var links = all.filter(function (t) { return t.type === 'playlist'; }), bl = all.filter(function (t) { return t.type === 'blplaylist'; });
+    var toks = all.filter(function (t) { return t.type === 'id' || t.type === 'hash'; });
+    if (bl.length && !links.length && !toks.length) { toast('BeatLeader playlist links can\'t be loaded directly yet. Download the playlist from BeatLeader and drop the file here.', 'warn'); return; }
+    if (links.length) { importPlaylistLink(links[0].val, links.length > 1); if (!toks.length) return; }
     track('quick-add');
     if (toks.length > 100) toks = toks.slice(0, 100);
     el.quickAddBtn.disabled = true; var lbl = el.quickAddBtn.textContent; el.quickAddBtn.textContent = 'Adding…';
@@ -4041,6 +4085,72 @@ window.PP = (function () {
     renderAll();
     toast('Cleared - started a fresh playlist. Undo clear is in the toolbar.', 'ok');
   }
+  // ---- undo / redo for Your Playlist ------------------------------------------
+  // Any change to the playlist's songs or their order is noticed when the list re-renders, so add,
+  // remove, drag, shuffle, sort, import and rebuild all undo the same way. Only the songs and their
+  // order come back; the title and cover stay as they are (Undo clear restores those too).
+  var UNDO = { past: [], future: [], sig: null, snap: null, cache: {}, busy: false };
+  function basketSig(list) { return list.map(keyOf).join('\n'); }
+  function describeChange(before, after) {
+    var a = {}, b = {}, added = 0, removed = 0;
+    before.forEach(function (e) { a[keyOf(e)] = 1; }); after.forEach(function (e) { b[keyOf(e)] = 1; });
+    after.forEach(function (e) { if (!a[keyOf(e)]) added++; }); before.forEach(function (e) { if (!b[keyOf(e)]) removed++; });
+    var m = function (n) { return n + (n === 1 ? ' map' : ' maps'); };
+    if (added && !removed) return 'added ' + m(added);
+    if (removed && !added) return 'removed ' + m(removed);
+    if (!added && !removed) return 'reordered the playlist';
+    return 'changed ' + m(added + removed);
+  }
+  function noteBasketChange() {
+    var sig = basketSig(state.basket);
+    state.basket.forEach(function (e) { UNDO.cache[keyOf(e)] = e; });
+    if (UNDO.sig === null) { UNDO.sig = sig; UNDO.snap = state.basket.slice(); renderUndoUI(); return; }
+    if (sig === UNDO.sig) return;
+    if (!UNDO.busy) {
+      UNDO.past.push({ list: UNDO.snap, label: describeChange(UNDO.snap, state.basket) });
+      if (UNDO.past.length > 50) UNDO.past.shift();
+      UNDO.future = [];
+    }
+    UNDO.sig = sig; UNDO.snap = state.basket.slice(); renderUndoUI();
+  }
+  function restoreList(list) { return list.map(function (e) { return UNDO.cache[keyOf(e)] || e; }); }
+  function undoBasket() {
+    if (!UNDO.past.length) { toast('Nothing to undo.', 'warn'); return; }
+    var step = UNDO.past.pop();
+    if (state.clearUndo && !state.basket.length) {   // undoing a Clear also brings back the name, cover and sync
+      UNDO.future.push({ list: [], label: step.label });
+      UNDO.busy = true; undoClear(); UNDO.busy = false; renderUndoUI(); track('undo'); return;
+    }
+    UNDO.future.push({ list: state.basket.slice(), label: step.label });
+    UNDO.busy = true; state.basket = restoreList(step.list); renderAll(); UNDO.busy = false; renderUndoUI();
+    toast('Undone: ' + step.label + '.', 'ok'); track('undo');
+  }
+  function redoBasket() {
+    if (!UNDO.future.length) { toast('Nothing to redo.', 'warn'); return; }
+    var step = UNDO.future.pop();
+    UNDO.past.push({ list: state.basket.slice(), label: step.label });
+    UNDO.busy = true; state.basket = restoreList(step.list); renderAll(); UNDO.busy = false; renderUndoUI();
+    toast('Redone: ' + step.label + '.', 'ok'); track('redo');
+  }
+  function renderUndoUI() {
+    var u = document.getElementById('undoBtn'), r = document.getElementById('redoBtn'); if (!u || !r) return;
+    var p = UNDO.past[UNDO.past.length - 1], f = UNDO.future[UNDO.future.length - 1];
+    u.hidden = !p; u.title = p ? 'Undo: ' + p.label + ' (Ctrl+Z)' : '';
+    r.hidden = !f; r.title = f ? 'Redo: ' + f.label + ' (Ctrl+Y)' : '';
+  }
+  function setupUndo() {
+    document.getElementById('undoBtn').addEventListener('click', undoBasket);
+    document.getElementById('redoBtn').addEventListener('click', redoBasket);
+    document.addEventListener('keydown', function (e) {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      var t = e.target, tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;   // let text boxes keep their own undo
+      var k = String(e.key || '').toLowerCase();
+      if (k === 'z' && !e.shiftKey) { e.preventDefault(); undoBasket(); }
+      else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redoBasket(); }
+    });
+    renderUndoUI();
+  }
   function undoClear() {
     if (!state.clearUndo) return;
     restorePlaylist(state.clearUndo); state.clearUndo = null;
@@ -4111,6 +4221,7 @@ window.PP = (function () {
     b.push('<span class="rb rb-diff">' + esc(e.difficultyName ? (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) : (e.diffCount ? e.diffCount + (e.diffCount === 1 ? ' diff' : ' diffs') : 'All diffs')) + '</span>');
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
     if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
+    if (e.njs) b.push('<span class="rb" title="Note jump speed">' + (Math.round(e.njs * 10) / 10) + ' NJS</span>');
     if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
     if (PP.isRanked(e) && ppBadgesOn()) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Filter panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
     if (state.player) {
@@ -4128,6 +4239,7 @@ window.PP = (function () {
         b.push('<span class="rb rb-new" title="You haven\'t played this yet">NEW</span>');
       }
     }
+    if (e.vsAcc) b.push('<span class="rb rb-vs" title="' + esc(e.vsName) + '\'s accuracy, ' + e.vsGap.toFixed(2) + ' points ahead of yours">' + esc(String(e.vsName).slice(0, 14)) + ' ' + (e.vsAcc * 100).toFixed(2) + '%</span>');
     if (e._sim != null) b.push('<span class="rb rb-sim" title="How closely this matches the map you searched from">' + e._sim + '% match</span>');
     if (e._rec) {
       b.push('<span class="rb rb-gain" title="Projected weighted PP this map would add to your profile">+' + e._rec.gain.toFixed(1) + 'pp</span>');
@@ -4194,6 +4306,7 @@ window.PP = (function () {
     list.innerHTML = frag;
   }
   function renderBasket() {
+    noteBasketChange();
     var list = el.basketList, n = state.basket.length;
     el.playlistCount.textContent = n ? n + (n === 1 ? ' map' : ' maps') : '';
     if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p></div>'; return; }
@@ -4219,7 +4332,9 @@ window.PP = (function () {
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
     if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
-    else if (!entries) el.counterMeta.textContent = state.viewMode === 'plays'
+    else if (!entries) el.counterMeta.textContent = state.viewMode === 'versus'
+      ? matched + ' maps where ' + ((state.raw[0] && state.raw[0].vsName) || 'they') + ' beats you, closest gaps first. Add the ones you want to chase.'
+      : state.viewMode === 'plays'
       ? matched + ' of your played maps shown. Narrow with the Your plays chips (e.g. Not FC), then add the ones you want.'
       : state.viewMode === 'accsaber' ? matched + ' AccSaber charts shown, easiest first. Use the Your plays chips to find the ones you haven\'t played or FC\'d.'
       : matched + ' maps matched. Add the ones you want to build your playlist.';
@@ -4501,7 +4616,7 @@ window.PP = (function () {
   }
 
   // ---- What's New (one-time) ------------------------------------------------
-  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v3';
+  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v4';
   function showWhatsNew(force) {
     try { if (!force && localStorage.getItem(WHATSNEW_KEY)) return; } catch (e) {}
     var back = document.getElementById('whatsnewBack'); if (!back) return;
@@ -5662,7 +5777,7 @@ window.PP = (function () {
     return { type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value, maxScan: el.fMaxScan.value,
       starMin: el.starMinNum.value, starMax: el.starMaxNum.value, mapper: el.fMapper.value, search: el.fSearch.value,
       modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
-      npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value,
+      npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value, njsMin: el.fNjsMin.value, njsMax: el.fNjsMax.value,
       durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value,
       ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod };
   }
@@ -5671,7 +5786,7 @@ window.PP = (function () {
     el.fMaxScan.value = p.maxScan || '2500'; el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
     state.bandAuto = (parseFloat(el.starMinNum.value) <= 0 && parseFloat(el.starMaxNum.value) >= 15); markLvl(null);
     el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
-    el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fDurMin.value = p.durMin || '';
+    el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fNjsMin.value = p.njsMin || ''; el.fNjsMax.value = p.njsMax || ''; el.fDurMin.value = p.durMin || '';
     el.fDurMax.value = p.durMax || ''; el.fBpmMin.value = p.bpmMin || ''; el.fBpmMax.value = p.bpmMax || '';
     var modes = p.modes || ['Standard'];
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = modes.indexOf(c.value) !== -1; });
@@ -6122,6 +6237,8 @@ window.PP = (function () {
     var showable = state.source === 'beatleader' && state.fetched && state.raw.length > 0 && state.viewMode !== 'recommend';
     el.sortBar.hidden = !showable;
     if (!showable) return;
+    var vo = el.sortInline && el.sortInline.querySelector('option[value="vsGap"]'); if (vo) vo.hidden = state.viewMode !== 'versus';
+    if (state.viewMode !== 'versus' && el.fSort.value === 'vsGap') { el.fSort.value = 'stars'; }
     if (el.sortInline && el.sortInline.value !== el.fSort.value) el.sortInline.value = el.fSort.value;
     if (el.sortInlineOrder) {
       var desc = el.fOrder.value !== 'asc', dateLike = el.fSort.value === 'myDate';
@@ -6180,7 +6297,7 @@ window.PP = (function () {
   }
   function disconnectPlayer() {
     state.player = null; state.scores = {}; state._scoreHashIdx = null; state.playIndex = {};
-    if (state.viewMode === 'plays') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
+    if (state.viewMode === 'plays' || state.viewMode === 'versus') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
     try { localStorage.removeItem(PLAYER_KEY); localStorage.removeItem(PLAYS_KEY); } catch (e) {}
     el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
   }
@@ -6395,6 +6512,48 @@ window.PP = (function () {
     ctx.strokeStyle = '#ffcf3a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(xmin), Y(M.pAcc(xmin) * 100)); ctx.lineTo(X(xmax), Y(M.pAcc(xmax) * 100)); ctx.stroke();
     if (fitEl) fitEl.innerHTML = 'Fit: acc ≈ ' + (M.intc * 100).toFixed(1) + '% − ' + (Math.abs(M.slope) * 100).toFixed(2) + '%/★ · ±' + M.mae.toFixed(2) + '% over ' + M.n + ' plays · max played ' + M.maxStar.toFixed(2) + '★. Dots are your scores; line is the prediction; shaded past your max is extrapolated.';
   }
+  // Maps another player beats you on: their ranked plays (top 300 by pp) that you have also played
+  // on BeatLeader, where their accuracy is higher. Closest gaps first, so the easiest catches lead.
+  function buildVersus(id, name) {
+    name = name || 'That player';
+    if (!state.player) { toast('Connect your BeatLeader profile first so there is something to compare with.', 'warn'); focusProfileConnect(); return; }
+    if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
+    state.fetching = true; setStatus('Comparing with ' + name + '…', 'busy');
+    var list = [], seen = {}, both = 0;
+    function page(p) {
+      return relayFetch(API_BASE + '/player/' + encodeURIComponent(id) + '/scores?page=' + p + '&count=100&sortBy=pp&order=desc', function (j) { return j && Array.isArray(j.data); })
+        .then(function (dd) {
+          var items = (dd && dd.data) || [];
+          items.forEach(function (sc) {
+            if (!sc.leaderboard || !sc.leaderboard.song || !sc.leaderboard.song.hash) return;
+            var pe = normalize(sc.leaderboard), k = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
+            if (seen[k]) return; seen[k] = 1;
+            var mine = state.scores[k]; if (!mine || mine.src === 'ss' || !(mine.a > 0)) return;
+            both++;
+            var theirs = sc.accuracy || 0; if (!(theirs > mine.a)) return;
+            pe.vsAcc = theirs; pe.vsGap = Math.round((theirs - mine.a) * 10000) / 100; pe.vsName = name;
+            list.push(pe);
+          });
+          setStatus('Comparing with ' + name + '… ' + Object.keys(seen).length + ' of their plays', 'busy');
+          if (items.length >= 100 && p < 3) return page(p + 1);
+        });
+    }
+    page(1).then(function () {
+      if (!list.length) {
+        setStatus(both ? 'You lead on every shared map' : 'No shared maps', 'on');
+        toast(both ? 'You beat ' + name + ' on all ' + both + ' ranked maps you have both played.' : 'You and ' + name + ' have no ranked maps in common yet.', 'ok');
+        return;
+      }
+      ensureBL();
+      state.viewMode = 'versus'; state.raw = list; state.fetched = true; state.lastSig = 'vs:' + id;
+      el.fSort.value = 'vsGap'; el.fOrder.value = 'asc';
+      applyClientFilters();
+      setStatus(name + ' leads on ' + list.length + ' maps', 'on');
+      toast(name + ' beats you on ' + list.length + ' of the ' + both + ' ranked maps you have both played. Closest gaps first.', 'ok'); track('versus-build');
+      if (isMobileView()) setMobileView('results');
+    }).catch(function (e) { setStatus('Compare failed', 'err'); toast('Couldn\'t load ' + name + '\'s plays' + (e && e.message ? ' (' + e.message + ')' : '') + '. Try again in a moment.', 'err'); })
+      .then(function () { state.fetching = false; });
+  }
     function buildTopPlays(n, forId, forName) {
     var id = forId || (state.player && state.player.id) || '';
     var who = forId && !(state.player && String(state.player.id) === String(forId)) ? (forName || 'that player') + '\'s' : 'your';
@@ -6451,7 +6610,7 @@ window.PP = (function () {
   // ---- reset ----------------------------------------------------------------
   function resetFilters(silent) {
     el.starMinNum.value = '0'; el.starMaxNum.value = '15'; el.fMapper.value = ''; el.fMapperExclude.value = ''; el.fSearch.value = '';
-    ['fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
+    ['fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
     el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500'; state.sortTouched = false;
     el.bsMinRating.value = ''; el.bsAge.value = 'any';
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
@@ -6636,7 +6795,7 @@ window.PP = (function () {
     // Rapid free-text/number filters run through a short debounce so a burst of
     // keystrokes triggers one filter+render pass instead of one per character.
     var debouncedFilter = debounce(applyClientFilters, 160);
-    ['fMapper','fMapperExclude','fSearch','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax']
+    ['fMapper','fMapperExclude','fSearch','fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax']
       .forEach(function (k) { el[k].addEventListener('input', debouncedFilter); el[k].addEventListener('change', applyClientFilters); });
     // Dropdowns are single discrete changes - no debounce needed.
     ['fSort','fOrder'].forEach(function (k) { el[k].addEventListener('change', function () { state.sortTouched = true; applyClientFilters(); }); });
@@ -6666,7 +6825,7 @@ window.PP = (function () {
     [el.ppMin, el.ppMax].forEach(function (inp) { inp.addEventListener('input', ppRangeDeb); inp.addEventListener('change', applyClientFilters); inp.addEventListener('change', function () { if (!ppFilterTracked && (num(el.ppMin, null) != null || num(el.ppMax, null) != null)) { ppFilterTracked = true; track('pp-filter'); } }); });
     el.fType.addEventListener('change', function () { applyClientFilters(); if (state.raw.length) toast('Ranked status changed - re-fetch to pull the new set.', 'warn'); });
     // Enter in any filter field triggers a fetch (a mapper search shouldn't need a mouse).
-    ['fMapper','fMapperExclude','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {
+    ['fMapper','fMapperExclude','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {
       el[k].addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runFetch(); } });
     });
     el.collapseSongs.addEventListener('change', renderAll);
@@ -6830,7 +6989,7 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
@@ -6929,6 +7088,7 @@ window.PP = (function () {
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays;
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
+     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build,
      playlistmanager-link;
      Send to Quest: export-tab-quest, quest-connect, quest-auth-wait, quest-no-answer, quest-cancel,
      quest-send, quest-picker-cancel, quest-error-<not-approved|no-answer|busy|blocked|disconnected|

@@ -40,22 +40,23 @@ In BeatSaver mode, the **Tags** panel filters the whole catalog by BeatSaver's o
 - **Mapper** and **keyword** search
 - **Game mode** - Standard, One Saber, No Arrows, 90°/360°, Lightshow, Lawless
 - **Optional difficulty filter** (Easy → Expert+) - off by default so every difficulty comes through until you want to narrow it
-- **NPS, duration and BPM** bounds
+- **NPS, NJS, duration and BPM** bounds, and every row shows the map's NPS and NJS (note jump speed)
 - **PP range** - keep only ranked maps worth a target PP at your accuracy and speed (see below)
-- **Sort by** - Stars, Tech, Acc, Pass, NPS, Duration, BPM, **PP at your target accuracy** or **AccSaber complexity**, from the **Sort** bar right above the results (your plays open newest-first) or the **Search Scope & Sort** panel. A **Show** filter next to it narrows the list to ranked or unranked maps
+- **Sort by** - Stars, Tech, Acc, Pass, NPS, NJS, Duration, BPM, **PP at your target accuracy** or **AccSaber complexity**, from the **Sort** bar right above the results (your plays open newest-first) or the **Search Scope & Sort** panel. A **Show** filter next to it narrows the list to ranked or unranked maps
 - **Adjustable scan depth** - pull anywhere from 300 up to 20,000 maps per search (quick-pick chips: 300 / 1k / 2.5k / 5k / 10k / Max), **default 2.5k**. Bigger scans dig deeper for matches - handy for wide star ranges or "unplayed" hunts - at the cost of a longer search; drop to 300 for a quick pull
 - Live client-side filtering: tweak a value and the match count updates instantly, no re-search
 - Press **Enter** in any filter to search; the Search button flags when your filters have drifted from your last pull
 - **Collapsible filter panels** - collapse the boxes you don't use to keep the sidebar tidy; your layout is remembered between visits
 
-### Quick Add - by BSR code, link, or hash
-Already know the maps you want? Skip searching. Paste one or more **BSR codes**, **BeatSaver links** (`beatsaver.com/maps/…`), or 40-character **map hashes** - separated by spaces or commas - and Quick Add looks each up on BeatSaver and drops it straight into **Your Playlist**. Purpose-built for **tournament pools** and shared code lists, where maps arrive as a list of `!bsr` codes rather than something you'd hunt for by filter.
+### Quick Add - by BSR code, link, hash or playlist link
+Already know the maps you want? Skip searching. Paste one or more **BSR codes**, **BeatSaver links** (`beatsaver.com/maps/…`), or 40-character **map hashes** - separated by spaces or commas - and Quick Add looks each up on BeatSaver and drops it straight into **Your Playlist**. Paste a **playlist link** instead (a `beatsaver.com/playlists/…` page, a hosted Playlist Studio link or any link to a `.bplist` file) and it loads the whole playlist, asking whether to merge or replace if Your Playlist already has songs. BeatLeader playlist links aren't supported yet; download those and drop the file in. Purpose-built for **tournament pools** and shared code lists, where maps arrive as a list of `!bsr` codes rather than something you'd hunt for by filter.
 
 ### Build a playlist
 - Two-panel builder: **Search Results → Your Playlist** (the playlist is what gets exported)
 - Add one at a time, **Add all**, **Add top N**, or **⚄ Random**
 - **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard)
-- **Clear playlist** empties the list and resets its name, cover and sync to a fresh start - with a one-tap **Undo clear** if you didn't mean it
+- **Undo and redo** any change to Your Playlist (adds, removes, reorders, shuffles, sorts, imports) with the **Undo** / **Redo** buttons or **Ctrl+Z** / **Ctrl+Y**
+- **Clear playlist** empties the list and resets its name, cover and sync to a fresh start - with a one-tap **Undo clear** if you didn't mean it (Ctrl+Z brings the name and cover back too)
 - **Clear results** - a separate button that empties the results and resets your filters to defaults (your playlist is kept)
 - **One row per song** - collapse duplicate difficulties to keep one entry per song
 - **Hide added** - a toggle above the results that hides maps already in Your Playlist, so you only see what you haven't picked yet (great for working through a big search without re-seeing your choices). Maps drop out the moment you add them and come back if you remove them.
@@ -83,7 +84,7 @@ Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play hist
 Connect your profile and a **For You** card sits at the top of the results column with four one-click starts, all built on your own plays: **Top pp gains** (the PP Optimizer), **Rank-up plan** (opens the planner), **Practice set** (maps you've played but haven't FC'd) and **Revisit** (maps you haven't played in over 6 months). Not connected yet? The card offers a one-tap connect instead.
 
 ### Player stats card
-**Stats** in the profile card opens your BeatLeader, ScoreSaber and AccSaber ranks side by side, with rank movement, the gap to the next player, recent scores with in-app replays, and a share link (`?stats=<id>`). **+ Add** on any recent score drops that map into Your Playlist, and **Build from top 50 plays** loads that player's best plays as results, which is handy on a friend's shared link.
+**Stats** in the profile card opens your BeatLeader, ScoreSaber and AccSaber ranks side by side, with rank movement, the gap to the next player, recent scores with in-app replays, and a share link (`?stats=<id>`). **+ Add** on any recent score drops that map into Your Playlist, and **Build from top 50 plays** loads that player's best plays as results, which is handy on a friend's shared link. On someone else's card, **Maps [name] beats you on** compares their top 300 ranked plays with yours and loads the maps where their accuracy is higher, closest gaps first, with their accuracy shown next to yours on each row.
 
 ### Preview before you commit
 - ▶ on any row opens an in-app preview - the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
