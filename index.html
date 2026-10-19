@@ -989,6 +989,69 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 #shareLink{width:100%;font-family:var(--mono);font-size:12px;}
 #shareImportInput{flex:1;font-family:var(--mono);font-size:12px;}
 .rb-sim{background:#0e2a4d !important;color:#7db5ff !important;border-color:#1c4a84 !important;font-weight:800;}
+/* ---------- Clan maps (BeatLeader Global Map) ---------- */
+.clan-bar{padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0a0f17,#070a0f);display:flex;flex-direction:column;gap:12px;}
+.clan-bar[hidden]{display:none;}
+.cb-head{display:flex;flex-wrap:wrap;align-items:center;gap:14px;}
+.cb-ic{width:48px;height:48px;border-radius:11px;border:2px solid var(--cb,#45adde);object-fit:cover;background:#05070c;flex:none;}
+.cb-who{flex:1 1 220px;min-width:0;}
+.cb-kick{font:600 12px var(--mono);letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);}
+.cb-name{font-size:24px;font-weight:800;line-height:1.15;overflow-wrap:anywhere;}
+.cb-name .cb-sub{font-weight:500;}
+.cb-sub{font-size:14px;color:#aab4c6;}
+.cb-pick select{width:auto;font-family:var(--mono);font-size:13px;padding:7px 9px;}
+.cb-sincewrap{display:flex;flex-direction:column;gap:4px;}
+.cb-since{display:flex;align-items:center;gap:10px;font-size:14px;color:#c3cbd9;}
+.cb-since b{font-size:20px;color:var(--green);} .cb-since b.neg{color:var(--danger);}
+.cb-since svg{width:120px;height:34px;flex:none;}
+.cb-since-diff{margin:0;font-size:13px;color:#aab4c6;} .cb-since-diff b{color:#fff;}
+.cb-acts{display:flex;gap:8px;flex-wrap:wrap;}
+.cb-note{display:flex;gap:9px;align-items:flex-start;padding:9px 12px;border-radius:9px;font-size:14px;line-height:1.5;}
+.cb-note.ok{background:rgba(34,224,161,.07);border:1px solid rgba(34,224,161,.35);color:#bff5e2;}
+.cb-note.warn{background:rgba(255,194,61,.06);border:1px solid rgba(255,194,61,.45);color:#ffe2a3;}
+.cb-note svg{width:17px;height:17px;flex:none;margin-top:2px;}
+.cb-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.cb-tab{font:700 14px var(--mono);letter-spacing:.4px;border-radius:22px;padding:9px 16px;background:var(--panel-2);border:1px solid var(--border-2);color:#aab4c6;}
+.cb-tab svg{width:15px;height:15px;}
+.cb-tab[aria-selected="true"]{border-color:var(--blue);background:rgba(30,107,255,.16);color:#fff;box-shadow:0 0 14px rgba(30,107,255,.25);}
+.cb-tab .cb-n{border-radius:10px;padding:0 8px;font-size:13px;border:1px solid var(--border-2);color:#c3cbd9;}
+.cb-tab[aria-selected="true"] .cb-n{background:var(--blue);border-color:var(--blue);color:#fff;}
+.cb-mods{display:inline-flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.cb-mods .lbl{font:600 12px var(--mono);letter-spacing:.6px;text-transform:uppercase;color:var(--muted);}
+.cb-mods button{font-family:var(--mono);font-weight:700;border-radius:18px;}
+.cb-mods button[aria-pressed="true"]{border-color:var(--blue);background:rgba(30,107,255,.16);color:#fff;}
+.cb-explain{margin:0;font-size:14.5px;color:#c3cbd9;line-height:1.55;}
+.cb-explain b{color:#fff;}
+.cb-progress{display:flex;align-items:center;gap:10px;font:600 13px var(--mono);color:#c3cbd9;flex-wrap:wrap;}
+.cb-progress .bar{flex:1 1 160px;height:8px;border-radius:5px;background:#0c1220;border:1px solid var(--border-2);overflow:hidden;}
+.cb-progress .bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--amber),var(--blue));transition:width .25s;}
+.cb-empty{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,194,61,.45);background:rgba(255,194,61,.06);}
+.cb-empty svg{width:20px;height:20px;flex:none;color:var(--amber);margin-top:2px;}
+.cb-empty .t{font-size:16px;font-weight:700;color:#ffe2a3;} .cb-empty p{margin:3px 0 0;font-size:14.5px;color:#e3d6b6;}
+.cb-err{margin:0;font-size:14px;color:#ff9fb2;}
+.cb-how summary{cursor:pointer;font:600 13px var(--mono);color:#aab4c6;letter-spacing:.4px;}
+.cb-how[open] summary{color:#cdd8e6;}
+.cb-how-body{margin-top:10px;font-size:14px;color:#c3cbd9;display:flex;flex-direction:column;gap:8px;line-height:1.55;}
+.cb-how-body p{margin:0;}
+.cb-acc{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px;}
+.cb-acc div{text-align:center;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:6px 4px;}
+.cb-acc span{display:block;font:600 12px var(--mono);color:var(--amber);} .cb-acc b{font-size:17px;color:#fff;}
+.cb-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+.clan-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.rb-clan-lead,.rb-clan-own{color:#e9edf5;border-color:#3a4459;}
+.rb-clan-gain,.rb-clan-ok{color:#7ff0c6;border-color:rgba(34,224,161,.5);background:rgba(34,224,161,.1);}
+.rb-clan-need{color:#fff;border-color:rgba(47,140,255,.55);background:rgba(47,140,255,.14);}
+.rb-clan-stretch{color:#ffd56b;border-color:rgba(255,194,61,.5);background:rgba(255,194,61,.08);}
+.rb-clan-far{color:#aab4c6;border-color:#3a4459;}
+.rb-clan-out{color:#aab4c6;border-color:#3a4459;border-style:dashed;}
+.clan-meter{display:flex;height:6px;border-radius:4px;overflow:hidden;background:#0c1220;border:1px solid var(--border);margin-top:7px;max-width:320px;}
+.clan-meter .cm-lead{background:#45adde;} .clan-meter .cm-gain{background:var(--green);flex:1;}
+.clan-mate{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;font-size:13.5px;color:#c3cbd9;}
+.clan-mate svg{width:15px;height:15px;color:#45adde;flex:none;}
+.clan-mate .lbl{font:600 12px var(--mono);letter-spacing:.6px;text-transform:uppercase;color:var(--muted);}
+.clan-mate b{color:#fff;}
+.clan-mate .lever{font:700 12px var(--mono);padding:1px 7px;border-radius:5px;border:1px solid rgba(34,224,161,.5);background:rgba(34,224,161,.08);color:#7ff0c6;}
+#svClanBtn .new-tag{font:700 11px var(--mono);padding:1px 5px;border-radius:4px;background:var(--red);color:#fff;margin-left:2px;}
 .feat-proj{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2f8cff55;background:radial-gradient(130% 160% at 0% 0%,#10233f,#070b12 65%);}
 .feat-proj .big{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.3px;}
 .feat-proj .big b{color:#2f8cff;}
@@ -1356,7 +1419,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="myRank">My rank</option>
               <option value="myDate">Date I played</option>
               <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
-              <option value="vsGap" hidden>Gap to them</option>
+              <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
             </select></div>
         </div>
         <div class="grid-2">
@@ -1540,6 +1603,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <!-- Results -->
     <section class="panel list-panel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count" id="resultCount"></span></div>
+      <div class="clan-bar" id="clanBar" hidden></div>
       <div class="list-actions" id="resultActions" hidden>
         <button class="ghost sm" id="addAllBtn" disabled>+ Add all</button>
         <div class="addtop">
@@ -1583,7 +1647,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <option value="passRating">Pass</option>
           <option value="pp">PP @ target acc</option>
           <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
-          <option value="vsGap" hidden>Gap to them</option>
+          <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
         </select>
         <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
         <span class="sort-bar-sep"></span>
@@ -1899,7 +1963,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-18T16:45:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-19T13:30:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2013,11 +2077,11 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     <div class="wn-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.8 20 12 16.5 6.2 20 8 13.2 3 9l6.6-.7z"/></svg></span><h3 id="wnTitle">What's New</h3><span class="wn-chip" id="wnChip">7 updates</span></div>
     <div class="wn-body">
       <div class="wn-group" data-wn="new">
+      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><div><p class="wn-t">Clan maps</p><p class="wn-d">In a BeatLeader clan? Open your Stats card and hit Clan maps to see the Global Map maps your run would help defend, and what it would take to capture others.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="13 6 19 12 13 18"/></svg></span><div><p class="wn-t">NJS on every map</p><p class="wn-d">Each map shows its note jump speed, and Song Metrics can filter and sort by NJS.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></span><div><p class="wn-t">Undo and redo</p><p class="wn-d">Undo any change to Your Playlist with the Undo button or Ctrl+Z, and redo with Ctrl+Y.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><div><p class="wn-t">Paste a playlist link</p><p class="wn-d">Quick Add now loads a whole playlist from a BeatSaver playlist page or any .bplist link.</p></div></div>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div><p class="wn-t">Maps a friend beats you on</p><p class="wn-d">Open a player's Stats card and load the ranked maps where they beat you, closest gaps first.</p></div></div>
-      <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span><div><p class="wn-t">Starter playlists</p><p class="wn-d">New to custom maps? The gallery has three live starter lists at an easy, medium and harder difficulty.</p></div></div>
       </div>
       <div class="wn-group" data-wn="tour" hidden>
       <div class="wn-item"><span class="wn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><div><p class="wn-t">Start at your level</p><p class="wn-d">Pick a level in Star Rating, or connect your profile and Studio picks it for you.</p></div></div>
@@ -3204,7 +3268,9 @@ window.PP = (function () {
     h += '<section class="sv-hero">' + (cover ? '<img class="cvr" src="' + esc(cover) + '" alt="" onerror="this.remove()">' : '') +
       '<div class="sv-hero-in"><img class="sv-ava" src="' + esc(p.avatar || '') + '" alt="' + esc(p.name) + ' avatar" onerror="this.style.visibility=\'hidden\'">' +
       '<div class="sv-who"><div class="sv-kick">BEAT SABER STATS</div><div class="sv-name">' + esc(p.name) + '</div><div class="sv-pills">' + pills.join('') + '</div>' +
-      '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button>' + (state.player && String(state.player.id) !== String(p.id) ? '<button type="button" class="ghost sm" id="svVsBtn">&#9876; Maps ' + esc(p.name) + ' beats you on</button>' : '') + '</div></div></div></section>';
+      '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button>' + (state.player && String(state.player.id) !== String(p.id) ? '<button type="button" class="ghost sm" id="svVsBtn">&#9876; Maps ' + esc(p.name) + ' beats you on</button>' : '') +
+      (state.player && String(state.player.id) === String(p.id) && (p.clans || []).length ? '<button type="button" class="ghost sm" id="svClanBtn" title="Maps your clan could defend or capture on the BeatLeader Global Map">&#9873; Clan maps · ' + esc(p.clans[0].tag) + '<span class="new-tag">NEW</span></button>' : '') +
+      '</div></div></div></section>';
 
     // BeatLeader card
     var hist = (D.blh || []).slice().sort(function (a, b) { return a.timestamp - b.timestamp; });
@@ -3384,6 +3450,11 @@ window.PP = (function () {
       if (e.target.closest('#svVsBtn')) {
         var pv = sv.data && sv.data.bl;
         if (pv) { svClose(); track('stats-versus'); buildVersus(pv.id, pv.name); }
+        return;
+      }
+      if (e.target.closest('#svClanBtn')) {
+        var pc = sv.data && sv.data.bl;
+        if (pc) { svClose(); track('stats-clan'); openClanView(pc.clans || []); }
         return;
       }
       if (e.target.closest('#svTopBtn')) {
@@ -3742,7 +3813,7 @@ window.PP = (function () {
         // Uploaded-within window (drop maps with no known date when a window is set).
         if (ageCutoff != null) { if (!s.uploaded) return false; if ((nowSec - s.uploaded) / 86400 > ageCutoff) return false; }
       }
-      if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && (state.viewMode === 'plays' || state.viewMode === 'versus')) && (s.stars < f.starMin || s.stars > f.starMax)) return false;
+      if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan')) && (s.stars < f.starMin || s.stars > f.starMax)) return false;
       if (state.viewMode === 'accsaber' && state.asCat && state.asCat !== 'all' && s.asCat !== state.asCat) return false;
       if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all') {
         var isRanked = s.stars > 0;
@@ -3841,7 +3912,7 @@ window.PP = (function () {
     return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
   }
   function updateStale() {
-    if (state.viewMode === 'plays' || state.viewMode === 'versus') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
+    if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
     var stale = state.source === 'beatleader' && state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
     el.staleHint.hidden = !stale;
     el.fetchBtn.classList.toggle('stale', stale);
@@ -4248,9 +4319,10 @@ window.PP = (function () {
     }
     return b.join('');
   }
-  function infoBlock(e) {
+  function infoBlock(e, inResults) {
     return '<div class="song-info"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
-      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + '</div></div>';
+      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + '</div>' +
+      (inResults && e._clan && state.viewMode === 'clan' ? clanBlock(e) : '') + '</div>';
   }
   // The ≈pp estimate only means something once you know pp: show it with a profile connected,
   // the PP Filter open or in use, or when sorting by pp.
@@ -4265,11 +4337,16 @@ window.PP = (function () {
   function renderResults() {
     var avail = resultsAvailable(), rows = collapseList(avail), list = el.resultList;
     var ra = document.getElementById('resultActions'); if (ra) ra.hidden = !state.fetched && !state.raw.length && !state.excludeHashes;
+    var cbar = document.getElementById('clanBar'); if (cbar && !cbar.hidden && state.viewMode !== 'clan') { cbar.hidden = true; cbar.innerHTML = ''; }
+    var chid = document.getElementById('cbHidden');
+    if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Search Scope & Sort).' : ''; }
     renderNewbieHint();
     el.resultCount.textContent = rows.length ? rows.length + (collapseOn() && rows.length !== avail.length ? ' songs' : '') : '';
     if (!rows.length) {
       var msg;
-      if (state.raw.length && hideAddedOn() && state.filtered.length) {
+      if (state.viewMode === 'clan') {
+        msg = clanEmptyMsg();
+      } else if (state.raw.length && hideAddedOn() && state.filtered.length) {
         msg = '<p><b>Every match is already in your playlist.</b></p><p>Turn off <b>Hide added</b> to see them, or loosen your filters to find more.</p>';
       } else if (!state.raw.length) {
         if (!state.fetched) {
@@ -4297,7 +4374,7 @@ window.PP = (function () {
     var MAX = 400, frag = '';
     rows.slice(0, MAX).forEach(function (e) {
       var added = inBasket(e);
-      frag += '<div class="song-row" data-key="' + esc(keyOf(e)) + '">' + coverImg(e) + infoBlock(e) +
+      frag += '<div class="song-row" data-key="' + esc(keyOf(e)) + '">' + coverImg(e) + infoBlock(e, true) +
         '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
         (added ? '<button class="row-btn added" disabled title="In your playlist">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>';
@@ -4332,7 +4409,9 @@ window.PP = (function () {
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
     if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
-    else if (!entries) el.counterMeta.textContent = state.viewMode === 'versus'
+    else if (!entries) el.counterMeta.textContent = state.viewMode === 'clan'
+      ? matched + (clan.tab === 'def' ? ' maps where your run adds the most to ' : ' capture targets for ') + (clan.sel ? clan.sel.tag : 'your clan') + '. Add the ones you want to play.'
+      : state.viewMode === 'versus'
       ? matched + ' maps where ' + ((state.raw[0] && state.raw[0].vsName) || 'they') + ' beats you, closest gaps first. Add the ones you want to chase.'
       : state.viewMode === 'plays'
       ? matched + ' of your played maps shown. Narrow with the Your plays chips (e.g. Not FC), then add the ones you want.'
@@ -4616,7 +4695,7 @@ window.PP = (function () {
   }
 
   // ---- What's New (one-time) ------------------------------------------------
-  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v4';
+  var WHATSNEW_KEY = 'playlistStudio.whatsnew.v5';
   function showWhatsNew(force) {
     try { if (!force && localStorage.getItem(WHATSNEW_KEY)) return; } catch (e) {}
     var back = document.getElementById('whatsnewBack'); if (!back) return;
@@ -6236,6 +6315,8 @@ window.PP = (function () {
     if (!el.sortBar) return;
     var showable = state.source === 'beatleader' && state.fetched && state.raw.length > 0 && state.viewMode !== 'recommend';
     el.sortBar.hidden = !showable;
+    var co = el.sortInline && el.sortInline.querySelector('option[value="clanRank"]'); if (co) co.hidden = state.viewMode !== 'clan';
+    if (state.viewMode !== 'clan' && el.fSort.value === 'clanRank') { el.fSort.value = 'stars'; }
     if (!showable) return;
     var vo = el.sortInline && el.sortInline.querySelector('option[value="vsGap"]'); if (vo) vo.hidden = state.viewMode !== 'versus';
     if (state.viewMode !== 'versus' && el.fSort.value === 'vsGap') { el.fSort.value = 'stars'; }
@@ -6297,7 +6378,8 @@ window.PP = (function () {
   }
   function disconnectPlayer() {
     state.player = null; state.scores = {}; state._scoreHashIdx = null; state.playIndex = {};
-    if (state.viewMode === 'plays' || state.viewMode === 'versus') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
+    if (state.viewMode === 'clan') { clan.token++; clan.open = false; clan.busy = false; }
+    if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
     try { localStorage.removeItem(PLAYER_KEY); localStorage.removeItem(PLAYS_KEY); } catch (e) {}
     el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
   }
@@ -6326,7 +6408,7 @@ window.PP = (function () {
             state.scores[key] = {
               a: sc.accuracy || 0, fc: !!sc.fullCombo, m: sc.missedNotes || 0, b: sc.badCuts || 0,
               s: sc.modifiedScore || 0, pp: sc.pp || 0, rk: sc.rank || 0, t: t, fa: sc.fcAccuracy || 0,
-              lb: sc.leaderboardId || '', rp: sc.replay || ''
+              lb: sc.leaderboardId || '', rp: sc.replay || '', md: sc.modifiers || ''
             };
             state.playIndex[key] = pe;
             if (t > newMax) newMax = t; got++;
@@ -6553,6 +6635,466 @@ window.PP = (function () {
       if (isMobileView()) setMobileView('results');
     }).catch(function (e) { setStatus('Compare failed', 'err'); toast('Couldn\'t load ' + name + '\'s plays' + (e && e.message ? ' (' + e.message + ')' : '') + '. Try again in a moment.', 'err'); })
       .then(function () { state.fetching = false; });
+  }
+
+  // ---- Clan maps: the BeatLeader Global Map ---------------------------------
+  // Every ranked map has a clan ranking. A clan's total on a map is its members' best scores sorted by
+  // pp, each worth 80% of the one above (s1 + 0.8*s2 + 0.8^2*s3 ...), and only a player's FIRST clan
+  // gets their scores. The highest total owns the map (beatleader-server Utils/ClanUtils.cs).
+  // Defend: maps the clan holds by a thin lead, ranked by how much of that lead the player's realistic
+  // run adds. Capture: maps another clan owns, with the exact score and accuracy the player would need
+  // and the clanmate who is closest. Realistic run = the player's 75th percentile no-mod accuracy near
+  // that map's stars, only where they have at least 8 such plays.
+  var CLAN_W = 0.8, CLAN_LEAD_MAX = 100, CLAN_DEF_CAP = 60, CLAN_CAP_CAP = 35, CLAN_CAP_ABOVE = 5;
+  var CLAN_SNAP_KEY = 'playlistStudio.clanSnap.v1';
+  var CLAN_POW = (function () { var a = [1]; for (var i = 1; i <= 400; i++) a.push(a[i - 1] * CLAN_W); return a; })();
+  var CLAN_SVG = {
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="#22e0a1" stroke-width="2.4" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="#ffc23d" stroke-width="2" aria-hidden="true"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4"/><path d="M12 17v.5"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5v.5"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
+    flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>',
+    mate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg>'
+  };
+  var clan = { open: false, busy: false, token: 0, tab: 'def', mod: '', sel: null, clans: [], info: null, top: null, primaryCount: null,
+    hist: null, since: null, gm: null, model: null, modelSS: null, def: [], cap: [], checked: { def: 0, cap: 0 }, progress: null, err: '', t: 0, howOpen: false };
+
+  // Clan total for a list of pp values, and the smallest new score that lifts it past a target.
+  function clanSolver(pps) {
+    var S = pps.slice().sort(function (a, b) { return b - a; }), n = S.length, P = [0], T = [], i;
+    for (i = 0; i < n; i++) P.push(P[i] + S[i] * CLAN_POW[Math.min(i, 400)]);
+    T[n] = 0; for (i = n - 1; i >= 0; i--) T[i] = T[i + 1] + S[i] * CLAN_POW[Math.min(i, 400)];
+    function total(p) { var k = 0; while (k < n && S[k] > p) k++; return P[k] + p * CLAN_POW[Math.min(k, 400)] + CLAN_W * T[k]; }
+    function need(target) {
+      var hi = 6000, lo = 0, j, mid;
+      if (total(hi) <= target) return null;
+      for (j = 0; j < 48; j++) { mid = (lo + hi) / 2; if (total(mid) > target) hi = mid; else lo = mid; }
+      return hi;
+    }
+    return { total: total, base: P[n], need: need };
+  }
+  // Accuracy (percent) that earns this much pp on a map; null when even 100% falls short.
+  function accForPp(e, pp, mod) {
+    var top = PP.ppFor(e, 100, mod || '');
+    if (top == null || !(top > pp)) return null;
+    var lo = 0, hi = 100, j, mid;
+    for (j = 0; j < 40; j++) { mid = (lo + hi) / 2; if (PP.ppFor(e, mid, mod || '') > pp) hi = mid; else lo = mid; }
+    return hi;
+  }
+  // The player's realistic run: 75th percentile accuracy of their ranked scores near a star level.
+  // want = '' (no modifiers) or 'SS'. Battery Energy doesn't change accuracy, so it counts as no mods.
+  function clanModel(want) {
+    var pts = [];
+    Object.keys(state.scores || {}).forEach(function (k) {
+      var sc = state.scores[k]; if (!sc || sc.src === 'ss' || !(sc.a > 0) || sc.md == null) return;
+      var md = String(sc.md).split(',').filter(function (x) { return x && x !== 'BE'; }).join(',');
+      if (md !== want) return;
+      var pe = state.playIndex && state.playIndex[k]; if (!pe || !(pe.stars > 0)) return;
+      pts.push([pe.stars, sc.a]);
+    });
+    function near(st, w) { var o = []; for (var i = 0; i < pts.length; i++) if (Math.abs(pts[i][0] - st) <= w) o.push(pts[i][1]); return o; }
+    var maxStar = 0, minStar = 0, memo = {};
+    pts.forEach(function (p) { if (near(p[0], 0.75).length >= 8) { if (!minStar || p[0] < minStar) minStar = p[0]; if (p[0] > maxStar) maxStar = p[0]; } });
+    function acc(st) {
+      if (!(st > 0) || !maxStar || st > maxStar + 0.25 || st < minStar - 0.75) return null;
+      var key = Math.round(st * 100); if (memo[key] !== undefined) return memo[key];
+      var w = 0.75, pool;
+      do { pool = near(st, w); w += 0.5; } while (pool.length < 8 && w < 4);
+      var r = null;
+      if (pool.length >= 8) { pool.sort(function (a, b) { return a - b; }); r = pool[Math.min(pool.length - 1, Math.floor(0.75 * pool.length))]; }
+      memo[key] = r; return r;
+    }
+    return { n: pts.length, maxStar: maxStar, minStar: minStar, acc: acc };
+  }
+  function clanNeedsResync() {
+    var bl = 0, md = 0;
+    Object.keys(state.scores || {}).forEach(function (k) { var sc = state.scores[k]; if (!sc || sc.src === 'ss') return; bl++; if (sc.md != null) md++; });
+    return bl > 0 && md < bl * 0.6;
+  }
+  function clanMine(e) { var sc = state.scores[keyOf(e)]; return sc && sc.src !== 'ss' && sc.pp > 0 ? sc : null; }
+  function clanTopPp() { var t = 0; Object.keys(state.scores || {}).forEach(function (k) { var sc = state.scores[k]; if (sc && sc.src !== 'ss' && sc.pp > t) t = sc.pp; }); return t; }
+  function clanFmt(n, d) { var m = Math.pow(10, d); return (Math.round(n * m) / m).toFixed(d); }
+  function clanDay(ts) { try { return new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch (e) { return ''; } }
+  function clanTagHtml(c) { return '<i class="cb-dot" style="background:' + esc(c.color || '#8792a6') + '"></i>' + esc(c.tag || '?'); }
+  function clanDiffLabel(e) { return (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) + (e.modeName && e.modeName !== 'Standard' ? ' ' + e.modeName : ''); }
+
+  function openClanView(clans) {
+    if (!state.player) { focusProfileConnect(); return; }
+    var list = (clans || []).filter(function (c) { return c && c.id != null && c.tag; });
+    if (!list.length) { toast('Join a clan on BeatLeader to see clan maps.', 'warn'); return; }
+    clan.clans = list;
+    if (!clan.sel || !list.some(function (c) { return c.id === clan.sel.id; })) clan.sel = list[0];
+    clan.open = true; clan.tab = 'def'; clan.mod = '';
+    ensureBL();
+    state.viewMode = 'clan'; state.raw = []; state.filtered = []; state.fetched = true; state.lastSig = 'clan';
+    el.fSort.value = 'clanRank'; el.fOrder.value = 'asc';
+    track('clan-open');
+    applyClientFilters(); renderClanBar();
+    if (isMobileView()) setMobileView('results');
+    else { var bar = document.getElementById('clanBar'); if (bar && bar.scrollIntoView) bar.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    clanScan();
+  }
+  function clanExit() {
+    clan.token++; clan.open = false; clan.busy = false; clan.progress = null;
+    state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
+    if (el.fSort.value === 'clanRank') el.fSort.value = 'stars';
+    renderClanBar(); applyClientFilters(); setStatus('Ready', '');
+  }
+  // Page through /clan/id/{id}/maps until stop(lastItem) or maxPages.
+  function clanPages(path, stop, maxPages, live) {
+    var out = [];
+    function page(p) {
+      if (!live()) return Promise.resolve(out);
+      return blGet(path + '&count=100&page=' + p, DATA_VALID).then(function (j) {
+        var items = j.data || []; out = out.concat(items);
+        if (items.length < 100 || p >= maxPages || stop(items[items.length - 1])) return out;
+        return delay(120).then(function () { return page(p + 1); });
+      });
+    }
+    return page(1);
+  }
+  function clanScan() {
+    var c = clan.sel; if (!c || !state.player) return;
+    var token = ++clan.token, me = String(state.player.id), cid = c.id;
+    function live() { return token === clan.token && state.viewMode === 'clan'; }
+    function soft(p) { return p.then(function (x) { return x; }, function () { return null; }); }
+    clan.busy = true; clan.err = ''; clan.def = []; clan.cap = []; clan.checked = { def: 0, cap: 0 };
+    clan.progress = { done: 0, total: 0, label: 'Loading ' + c.tag + ' from BeatLeader…' };
+    clanApply(); renderClanBar(); setStatus('Loading clan maps…', 'busy');
+    var pre = Promise.resolve();
+    if (clanNeedsResync()) { clan.progress.label = 'Refreshing your scores so Studio can tell your no-mod runs apart…'; renderClanBar(); pre = syncScores(false); }
+    pre.then(function () {
+      if (!live()) return null;
+      clan.model = clanModel(''); clan.modelSS = clanModel('SS');
+      clan.progress.label = 'Reading ' + c.tag + '\'s maps…'; renderClanBar();
+      var gapStop = Math.max(250, clanTopPp() * 1.6);
+      return Promise.all([
+        soft(blGet('/clan/id/' + cid + '?count=1&primary=true', function (j) { return j && j.container; })),
+        soft(blGet('/clans?page=1&count=1&sortBy=captures&order=desc', DATA_VALID)),
+        soft(blGet('/clan/' + cid + '/history?count=8', function (j) { return Array.isArray(j); })),
+        soft(blGet('/clans/globalmap', function (j) { return j && Array.isArray(j.points); })),
+        clanPages('/clan/id/' + cid + '/maps?sortBy=tohold', function (last) { return !last || last.pp > CLAN_LEAD_MAX; }, 15, live),
+        clanPages('/clan/id/' + cid + '/maps?sortBy=toconquer', function (last) { return !last || -last.pp > gapStop; }, 12, live)
+      ]);
+    }).then(function (r) {
+      if (!r || !live()) return;
+      clan.info = (r[0] && r[0].container) || null;
+      clan.primaryCount = r[0] && r[0].metadata ? r[0].metadata.total : null;
+      clan.top = (r[1] && r[1].data && r[1].data[0]) || null;
+      clan.hist = Array.isArray(r[2]) ? r[2].slice().sort(function (a, b) { return a.timestamp - b.timestamp; }) : null;
+      clan.gm = r[3] ? clanIndexMap(r[3]) : null;
+      clan.since = clan.gm ? clanSince(cid) : null;
+      var cands = clanCandidates(r[4], r[5]);
+      return clanExact(cands, cid, me, live);
+    }).then(function () {
+      if (!live()) return;
+      return clanEnrich(live);
+    }).then(function () {
+      if (!live()) return;
+      clan.busy = false; clan.progress = null; clan.t = Date.now();
+      clanApply(); renderClanBar();
+      setStatus(c.tag + ': ' + clan.def.length + ' to defend, ' + clanInReach() + ' to capture', 'on');
+      track('clan-scan');
+    }).catch(function (e) {
+      if (token !== clan.token) return;
+      clan.busy = false; clan.progress = null;
+      clan.err = 'Couldn\'t load ' + c.tag + ' from BeatLeader' + (e && e.message ? ' (' + e.message + ')' : '') + '. Try Re-check in a moment.';
+      clanApply(); renderClanBar(); setStatus('Clan maps failed', 'err'); track('clan-fail');
+    });
+  }
+  function clanIndexMap(gm) {
+    var tags = {}, pts = {};
+    (gm.clans || []).forEach(function (c) { tags[c.id] = { tag: c.tag, color: c.color }; });
+    (gm.points || []).forEach(function (p) { if (p && p.leaderboardId) pts[p.leaderboardId] = { clans: p.clans || [], tie: !!p.tie }; });
+    return { tags: tags, pts: pts };
+  }
+  function clanRival(lbId, cid) {
+    var p = clan.gm && clan.gm.pts[lbId]; if (!p) return null;
+    for (var i = 0; i < p.clans.length; i++) { var x = p.clans[i]; if (x && x.id != null && x.id !== cid) return clan.gm.tags[x.id] || null; }
+    return null;
+  }
+  // "Since your last visit": the clan's held maps now vs the snapshot from the previous visit
+  // (a visit's snapshot becomes the baseline once it is 6 hours old, so re-checks keep the same baseline).
+  function clanSince(cid) {
+    var held = [], ids = {}, all = {};
+    Object.keys(clan.gm.pts).forEach(function (id) { var p = clan.gm.pts[id]; if (!p.tie && p.clans[0] && p.clans[0].id === cid) { held.push(id); ids[id] = 1; } });
+    try { all = JSON.parse(localStorage.getItem(CLAN_SNAP_KEY) || '{}') || {}; } catch (e) { all = {}; }
+    var rec = all[cid] || {}, now = Date.now();
+    if (rec.cur && now - rec.cur.t > 6 * 3600 * 1000) rec.prev = rec.cur;
+    rec.cur = { t: now, held: held };
+    all[cid] = rec;
+    var keep = Object.keys(all).sort(function (a, b) { return ((all[b].cur || {}).t || 0) - ((all[a].cur || {}).t || 0); }).slice(0, 3), trimmed = {};
+    keep.forEach(function (k) { trimmed[k] = all[k]; });
+    try { localStorage.setItem(CLAN_SNAP_KEY, JSON.stringify(trimmed)); } catch (e) {}
+    if (!rec.prev) return { first: true };
+    var old = {}, gained = 0, lost = 0, lostPlayed = 0, mine = {};
+    rec.prev.held.forEach(function (id) { old[id] = 1; });
+    Object.keys(state.scores || {}).forEach(function (k) { var sc = state.scores[k]; if (sc && sc.lb) mine[sc.lb] = 1; });
+    held.forEach(function (id) { if (!old[id]) gained++; });
+    rec.prev.held.forEach(function (id) { if (!ids[id]) { lost++; if (mine[id]) lostPlayed++; } });
+    return { prevT: rec.prev.t, gained: gained, lost: lost, lostPlayed: lostPlayed };
+  }
+  // First pass, from the clan's own map lists: keep what the player could realistically move.
+  function clanCandidates(hold, conq) {
+    var M = clan.model, def = [], cap = [], above = [], seen = {};
+    (hold || []).forEach(function (it) {
+      if (!it || !it.leaderboard || !(it.pp <= CLAN_LEAD_MAX) || seen['d' + it.leaderboardId]) return;
+      seen['d' + it.leaderboardId] = 1;
+      var e = normalize(it.leaderboard); e.leaderboardId = it.leaderboardId || e.leaderboardId;
+      if (!PP.isRanked(e)) return;
+      var a = M.acc(e.stars); if (a == null) return;
+      var est = PP.ppFor(e, a * 100, ''); if (est == null) return;
+      var my = clanMine(e); if (my && my.pp >= est) return;
+      var mx = it.leaderboard.difficulty && it.leaderboard.difficulty.maxScore;
+      var depth = (mx && it.averageAccuracy > 0) ? it.totalScore / (it.averageAccuracy * mx) : 99;
+      clan.checked.def++;
+      // Shallow lists first (one run moves them most), then razor-thin leads, then the rest of the shallow half.
+      var tier = depth <= 20 ? 0 : it.pp <= 10 ? 1 : depth <= 32 ? 2 : 3;
+      if (tier < 3) def.push({ kind: 'def', e: e, lead: Math.max(0, it.pp), depth: depth, tier: tier, a: a, est: est });
+    });
+    def.sort(function (x, y) { return (x.tier - y.tier) || (x.depth - y.depth) || (x.lead - y.lead); });
+    (conq || []).forEach(function (it) {
+      if (!it || !it.leaderboard || seen['c' + it.leaderboardId]) return;
+      seen['c' + it.leaderboardId] = 1;
+      var e = normalize(it.leaderboard); e.leaderboardId = it.leaderboardId || e.leaderboardId;
+      if (!PP.isRanked(e)) return;
+      var gap = Math.max(0, -it.pp), a = M.acc(e.stars), cd = { kind: 'cap', e: e, gap: gap, owner: it.clan || null, a: a };
+      if (a == null) { if (M.maxStar && e.stars > M.maxStar && above.length < CLAN_CAP_ABOVE) above.push(cd); return; }
+      var est = PP.ppFor(e, a * 100, ''); if (est == null) return;
+      clan.checked.cap++;
+      if (gap < est) {
+        // Rank by the accuracy a score taking the top spot would need: gap + 20% of the clan's current
+        // total (everyone below shifts down one place). The Global Map file gives the owner's total.
+        var g = clan.gm && clan.gm.pts[e.leaderboardId], R = g && g.clans[0] ? g.clans[0].pp : null;
+        var req = accForPp(e, R != null ? gap + 0.2 * Math.max(0, R - gap) : gap, '');
+        cd.rank = req == null ? 999 : req - a * 100;
+        cap.push(cd);
+      }
+    });
+    cap.sort(function (x, y) { return x.rank - y.rank; });
+    return { def: def.slice(0, CLAN_DEF_CAP), cap: cap.slice(0, CLAN_CAP_CAP).concat(above) };
+  }
+  // Second pass: each candidate's real clan list from BeatLeader, then the exact math.
+  function clanExact(cands, cid, me, live) {
+    var q = cands.def.concat(cands.cap), idx = 0, done = 0, total = q.length, lastPaint = 0;
+    clan.progress = { done: 0, total: total, label: 'Checking ' + clan.sel.tag + '\'s scores on each map…' }; renderClanBar();
+    function one(cd) {
+      return blGet('/leaderboard/clanRankings/' + encodeURIComponent(cd.e.leaderboardId) + '/clan/' + cid + '?count=100', function (j) { return j && Array.isArray(j.associatedScores); })
+        .then(function (j) { if (live()) clanRow(cd, j, me, cid); }, function () {})
+        .then(function () {
+          done++; if (!live()) return;
+          clan.progress.done = done;
+          var now = Date.now();
+          if (now - lastPaint > 450 || done === total) { lastPaint = now; clanApply(); renderClanBar(); }
+        });
+    }
+    function worker() { if (!live() || idx >= q.length) return Promise.resolve(); var cd = q[idx++]; return one(cd).then(function () { return delay(60); }).then(worker); }
+    var ws = []; for (var w = 0; w < Math.min(4, q.length); w++) ws.push(worker());
+    return Promise.all(ws);
+  }
+  function clanRow(cd, j, me, cid) {
+    var A = (j.associatedScores || []).map(function (s) {
+      return { id: String(s.playerId), pp: +s.pp || 0, acc: +s.accuracy || 0, mods: s.modifiers || '', name: (s.player && s.player.name) || 'A clanmate' };
+    });
+    var e = cd.e, mine = null, others = [];
+    A.forEach(function (s) { if (s.id === me) mine = s; else others.push(s.pp); });
+    var Sv = clanSolver(others), C = clanSolver(A.map(function (s) { return s.pp; })).base;
+    if (cd.kind === 'def') {
+      var gain = Sv.total(Math.max(cd.est, mine ? mine.pp : 0)) - C;
+      if (!(gain >= 0.25 * cd.lead || gain >= 3) || !(gain > 0.005)) return;
+      e._clan = { kind: 'def', lead: cd.lead, gain: gain, depth: A.length, est: cd.est, a: cd.a, rival: clanRival(e.leaderboardId, cid) };
+      e.clanRank = -(gain / Math.max(cd.lead, 0.05));
+      clan.def.push(e);
+      return;
+    }
+    var R = (+j.pp > 0 ? +j.pp : C) + cd.gap;
+    var need = Sv.need(R); if (need == null) return;
+    var reqNo = accForPp(e, need, ''); if (reqNo == null) return;
+    var reqSS = PP.hasModifier(e, 'ss') ? accForPp(e, need, 'ss') : null;
+    var slot = 1; others.forEach(function (p) { if (p > need) slot++; });
+    var mate = null;
+    A.forEach(function (s, i) {
+      if (s.id === me) return;
+      var rest = []; A.forEach(function (x, k) { if (k !== i) rest.push(x.pp); });
+      var ni = clanSolver(rest).need(R); if (ni == null) return;
+      var ri = accForPp(e, ni, ''); if (ri == null) return;
+      var d = ri - s.acc * 100;
+      if (!mate || d < mate.d) mate = { name: s.name, has: s.acc * 100, mods: s.mods, req: ri, d: d };
+    });
+    var owner = cd.owner ? { tag: cd.owner.tag, color: cd.owner.color } : null;
+    e._clan = { kind: 'cap', owner: owner, gap: cd.gap, need: need, slot: slot, depth: A.length, reqNo: reqNo, reqSS: reqSS,
+      a: cd.a, aSS: clan.modelSS ? clan.modelSS.acc(e.stars) : null, mate: mate };
+    clan.cap.push(e);
+  }
+  // BeatLeader's clan lists leave out NPS, NJS and length: fill them from BeatSaver, 50 maps per call.
+  function clanEnrich(live) {
+    var rows = clan.def.concat(clan.cap).filter(function (e) { return e.hash && !e._bsDone; });
+    var hs = [], seen = {};
+    rows.forEach(function (e) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; hs.push(h); } });
+    if (!hs.length) return Promise.resolve();
+    clan.progress = { done: 0, total: 0, label: 'Adding NPS and NJS from BeatSaver…' }; renderClanBar();
+    var chunks = []; for (var i = 0; i < hs.length; i += 50) chunks.push(hs.slice(i, i + 50));
+    return chunks.reduce(function (p, ch) {
+      return p.then(function () {
+        if (!live()) return;
+        return fetchTimeout(BS_API + '/maps/hash/' + ch.join(','), 10000)
+          .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+          .then(function (j) {
+            var by = {};
+            if (j && j.versions) by[ch[0]] = j;
+            else if (j) Object.keys(j).forEach(function (k) { by[k.toLowerCase()] = j[k]; });
+            rows.forEach(function (e) {
+              var h = e.hash.toLowerCase(), m = by[h]; if (!m) return;
+              e._bsDone = true;
+              var vs = m.versions || [], v = vs.filter(function (x) { return x && x.hash && x.hash.toLowerCase() === h; })[0] || vs[0] || {}, md = m.metadata || {};
+              if (!e.duration && md.duration) e.duration = md.duration;
+              if (!e.bpm && md.bpm) e.bpm = md.bpm;
+              var d = (v.diffs || []).filter(function (x) { return x.difficulty === e.difficultyName && x.characteristic === e.modeName; })[0];
+              if (d) { if (!e.nps) e.nps = d.nps || 0; if (!e.njs) e.njs = d.njs || 0; if (!e.notes) e.notes = d.notes || 0; }
+            });
+          }, function () {});
+      });
+    }, Promise.resolve());
+  }
+  // Needed accuracy and verdict for the modifier picked on the Capture tab.
+  function clanCapView(e) {
+    var c = e._clan, ss = clan.mod === 'ss', req = ss ? c.reqSS : c.reqNo, a = ss ? c.aSS : c.a;
+    return { req: req, a: a, short: (req != null && a != null) ? req - a * 100 : null, ss: ss };
+  }
+  function clanInReach() { var n = 0; clan.cap.forEach(function (e) { var v = clanCapView(e); if (v.short != null && v.short <= 0) n++; }); return n; }
+  function clanApply() {
+    if (state.viewMode !== 'clan') return;
+    clan.cap.forEach(function (e) { var v = clanCapView(e); e.clanRank = v.short != null ? v.short : (v.req != null ? 50 + v.req : 999); });
+    state.raw = (clan.tab === 'def' ? clan.def : clan.cap).slice();
+    state.fetched = true;
+    applyClientFilters();
+  }
+  function clanMateText(m) {
+    var mods = String(m.mods || ''), ss = /(^|,)SS(,|$)/.test(mods);
+    if (mods && m.req <= m.has) return '<span class="lever">Replay without ' + esc(ss ? 'SS' : mods) + '</span><span>has ' + m.has.toFixed(2) + '% with ' + esc(mods) + '. A no-mod ' + m.req.toFixed(2) + '% flips it.</span>';
+    if (m.req <= m.has) return '<span>has ' + m.has.toFixed(2) + '%. A run at ' + m.req.toFixed(2) + '% flips it.</span>';
+    if (ss) return '<span>has ' + m.has.toFixed(2) + '% with SS. Needs ' + m.req.toFixed(2) + '% without it (+' + (m.req - m.has).toFixed(2) + ').</span>';
+    return '<span>has ' + m.has.toFixed(2) + '%' + (mods ? ' with ' + esc(mods) : '') + '. Needs ' + m.req.toFixed(2) + '% no mods (+' + Math.max(0, m.req - m.has).toFixed(2) + ').</span>';
+  }
+  function clanBlock(e) {
+    var c = e._clan, tag = esc(clan.sel ? clan.sel.tag : '');
+    if (c.kind === 'def') {
+      var after = c.lead + c.gain, leadPct = Math.max(4, after > 0 ? c.lead / after * 100 : 50);
+      return '<div class="clan-row"><span class="rb rb-clan-lead" title="' + tag + '\'s lead over the next clan, and what it becomes with your realistic run">Lead ' + clanFmt(c.lead, 1) + ' → ' + clanFmt(after, 1) + (c.rival ? ' vs ' + clanTagHtml(c.rival) : '') + '</span>' +
+        '<span class="rb rb-clan-gain" title="How much ' + tag + '\'s lead grows with your realistic run">+' + clanFmt(c.gain, 2) + ' your run</span>' +
+        '<span class="rb" title="Scores counting for ' + tag + ' on this map">' + c.depth + ' ' + tag + ' scores</span>' +
+        '<span class="rb rb-pred" title="Your realistic run: 75th percentile of your no-mod accuracy near these stars">≈' + (c.a * 100).toFixed(1) + '% · ' + Math.round(c.est) + ' pp</span></div>' +
+        '<div class="clan-meter" role="img" aria-label="' + tag + ' lead ' + clanFmt(c.lead, 1) + ' grows to ' + clanFmt(after, 1) + ' with your run"><span class="cm-lead" style="width:' + leadPct.toFixed(1) + '%"></span><span class="cm-gain"></span></div>';
+    }
+    var v = clanCapView(e);
+    var h = '<div class="clan-row"><span class="rb rb-clan-own">' + (c.owner ? clanTagHtml(c.owner) + ' owns' : 'Tied') + ' · ' + tag + ' ' + clanFmt(c.gap, 1) + ' behind</span>';
+    if (v.req != null) h += '<span class="rb rb-clan-need" title="Accuracy you\'d need ' + (v.ss ? 'with Slower Song' : 'with no modifiers') + ' to capture this map for ' + tag + '">Need ' + v.req.toFixed(2) + '%' + (v.ss ? ' SS' : '') + '</span>';
+    else h += '<span class="rb rb-clan-out">' + (v.ss ? 'No SS rating' : 'Needs over 100%') + '</span>';
+    h += '<span class="rb" title="The score you\'d need, and where it would land in ' + tag + '\'s list">' + Math.round(c.need) + ' pp · #' + c.slot + ' in ' + tag + '</span>';
+    if (v.req != null) {
+      if (v.a == null) h += '<span class="rb rb-clan-out" title="You don\'t have enough ' + (v.ss ? 'Slower Song' : 'no-mod') + ' ranked plays near these stars to judge">' + (v.ss ? 'Not enough SS plays to judge' : 'Above your modeled range') + '</span>';
+      else if (v.short <= 0) h += '<span class="rb rb-clan-ok">In reach at your ' + (v.a * 100).toFixed(2) + '%</span>';
+      else h += '<span class="rb ' + (v.short <= 2 ? 'rb-clan-stretch' : 'rb-clan-far') + '">' + v.short.toFixed(2) + ' short of your ' + (v.a * 100).toFixed(2) + '%</span>';
+    }
+    h += '</div>';
+    if (c.mate) h += '<div class="clan-mate">' + CLAN_SVG.mate + '<span class="lbl">Closest clanmate</span><b>' + esc(c.mate.name) + '</b>' + clanMateText(c.mate) + '</div>';
+    return h;
+  }
+  function clanEmptyMsg() {
+    var tag = esc(clan.sel ? clan.sel.tag : 'your clan');
+    if (clan.busy) return '<p><b>Checking ' + tag + '\'s maps…</b></p><p>Rows show up here as each map is checked.</p>';
+    if (clan.err) return '<p><b>Couldn\'t load clan maps.</b></p><p>' + esc(clan.err) + '</p>';
+    if (clan.model && !clan.model.maxStar) return '<p><b>Not enough no-mod ranked scores yet.</b></p><p>Studio needs at least 8 no-mod ranked scores near a star level to estimate your runs. Play a few more ranked maps without modifiers, then hit Re-check.</p>';
+    if (state.raw.length) return '<p><b>No matches.</b></p><p>Your filters hide every map here. Loosen them to see these maps.</p>';
+    if (clan.tab === 'def') return '<p><b>Nothing to defend right now.</b></p><p>None of ' + tag + '\'s thin leads in your range moves much with one run of yours. Maps where ' + tag + ' has few scores are where single runs count.</p>';
+    return '<p><b>No capture targets in range.</b></p><p>Every map another clan owns needs more than one realistic run from you.</p>';
+  }
+  function clanSinceHtml(color) {
+    var hs = clan.hist, s = clan.since, out = '';
+    if (hs && hs.length >= 2) {
+      var last = hs[hs.length - 1], prev = hs[hs.length - 2], net = (last.captureLeaderboardsCount || 0) - (prev.captureLeaderboardsCount || 0);
+      var vals = hs.map(function (x) { return x.captureLeaderboardsCount || 0; }), mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), span = (mx - mn) || 1;
+      var pts = vals.map(function (v, i) { return (i * 118 / (vals.length - 1) + 1).toFixed(1) + ',' + (31 - (v - mn) / span * 27).toFixed(1); }).join(' ');
+      out += '<div class="cb-since"><span><b class="' + (net < 0 ? 'neg' : '') + '">' + (net > 0 ? '+' : '') + net + '</b> maps since ' + esc(clanDay(prev.timestamp)) + '</span>' +
+        '<svg viewBox="0 0 120 34" role="img" aria-label="Maps held over the last ' + vals.length + ' days, from ' + vals[0] + ' to ' + vals[vals.length - 1] + '"><polyline points="' + pts + '" fill="none" stroke="' + esc(color) + '" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg></div>';
+    }
+    if (s && s.first) out += '<div class="cb-since-diff">Map-by-map gains and losses show from your next visit.</div>';
+    else if (s) out += '<div class="cb-since-diff">Since your last visit (' + esc(clanDay(s.prevT / 1000)) + '): <b>+' + s.gained + '</b> gained, <b>' + s.lost + '</b> lost' + (s.lostPlayed ? ' (' + s.lostPlayed + ' you\'ve played)' : '') + '</div>';
+    return out ? '<div class="cb-sincewrap">' + out + '</div>' : '';
+  }
+  function renderClanBar() {
+    var bar = document.getElementById('clanBar'); if (!bar) return;
+    var on = state.viewMode === 'clan' && clan.open && !!clan.sel;
+    bar.hidden = !on; if (!on) { bar.innerHTML = ''; return; }
+    var c = clan.sel, info = clan.info || {}, color = info.color || c.color || '#45adde', M = clan.model;
+    var h = '<div class="cb-head">';
+    if (info.icon) h += '<img class="cb-ic" src="' + esc(info.icon) + '" alt="' + esc(c.tag) + ' clan icon" style="--cb:' + esc(color) + '" onerror="this.remove()">';
+    var sub = [];
+    if (info.rank) sub.push('Rank ' + info.rank);
+    if (info.captureLeaderboardsCount != null) sub.push(info.captureLeaderboardsCount.toLocaleString('en-US') + ' maps' + (info.rankedPoolPercentCaptured != null ? ' (' + (info.rankedPoolPercentCaptured * 100).toFixed(1) + '%)' : ''));
+    if (clan.primaryCount != null && info.playersCount) sub.push(clan.primaryCount + ' of ' + info.playersCount + ' members count here');
+    if (clan.top && clan.top.id !== c.id && clan.top.tag) sub.push('Rank 1: ' + esc(clan.top.tag) + ' ' + (clan.top.captureLeaderboardsCount || 0).toLocaleString('en-US'));
+    h += '<div class="cb-who"><div class="cb-kick">Clan maps · Global Map</div><div class="cb-name" style="color:' + esc(color) + '">' + esc(c.tag) + '</div>' +
+      (sub.length ? '<div class="cb-sub">' + sub.join(' · ') + '</div>' : '') + '</div>';
+    if (clan.clans.length > 1) h += '<label class="cb-pick"><select id="cbClanSel" aria-label="Clan">' + clan.clans.map(function (x, i) { return '<option value="' + i + '"' + (x.id === c.id ? ' selected' : '') + '>' + esc(x.tag) + (i === 0 ? ' (your scores count here)' : ' (what-if)') + '</option>'; }).join('') + '</select></label>';
+    h += clanSinceHtml(color);
+    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="cbRecheck"' + (clan.busy ? ' disabled' : '') + ' title="Load the latest leads from BeatLeader, for example after a session">⟳ Re-check</button><button type="button" class="ghost sm" id="cbExit">← Back to search</button></div></div>';
+    var first = clan.clans[0];
+    h += (first && first.id === c.id)
+      ? '<div class="cb-note ok">' + CLAN_SVG.check + '<span>Your scores count for ' + esc(c.tag) + '. It\'s your first clan on BeatLeader.</span></div>'
+      : '<div class="cb-note warn">' + CLAN_SVG.warn + '<span><b>Your scores count for ' + esc(first ? first.tag : '?') + ', not ' + esc(c.tag) + '.</b> Only your first clan gets your scores on the Global Map, so this is a what-if. You can change clan order on BeatLeader once every 7 days, and switching moves every map you\'ve played at once.</span></div>';
+    var inReach = clanInReach();
+    h += '<div class="cb-tabs" role="tablist" aria-label="Clan map lists">' +
+      '<button type="button" class="cb-tab" role="tab" data-ct="def" aria-selected="' + (clan.tab === 'def') + '">' + CLAN_SVG.shield + 'Defend <span class="cb-n">' + clan.def.length + '</span></button>' +
+      '<button type="button" class="cb-tab" role="tab" data-ct="cap" aria-selected="' + (clan.tab === 'cap') + '">' + CLAN_SVG.flag + 'Capture <span class="cb-n">' + inReach + ' in reach</span></button>';
+    if (clan.tab === 'cap') h += '<span class="cb-mods"><span class="lbl">Needed acc for</span><button type="button" class="ghost sm" data-cm="" aria-pressed="' + (clan.mod !== 'ss') + '">No mods</button><button type="button" class="ghost sm" data-cm="ss" aria-pressed="' + (clan.mod === 'ss') + '">Slower Song</button></span>';
+    h += '</div>';
+    h += '<p class="cb-explain">' + (clan.tab === 'def'
+      ? esc(c.tag) + ' maps with a thin lead, ranked by how much of that lead <b>your</b> realistic run would add. Maps where ' + esc(c.tag) + ' has few scores are where one run moves the number.'
+      : 'Maps another clan owns, with the exact score and accuracy <b>you</b> would need, where you\'d land in ' + esc(c.tag) + '\'s list, and the clanmate who is closest.') + '</p>';
+    if (clan.busy && clan.progress) {
+      var pr = clan.progress, pct = pr.total ? Math.round(pr.done / pr.total * 100) : 5;
+      h += '<div class="cb-progress"><div class="bar"><div class="bar-fill" style="width:' + pct + '%"></div></div><span>' + esc(pr.label) + (pr.total ? ' ' + pr.done + ' of ' + pr.total : '') + '</span></div>';
+    }
+    if (clan.err) h += '<p class="cb-err">' + esc(clan.err) + '</p>';
+    var nHid = state.raw.length - state.filtered.length;
+    h += '<p class="cb-since-diff" id="cbHidden"' + (nHid > 0 ? '' : ' hidden') + '>' + (nHid > 0 ? nHid + (nHid === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Search Scope &amp; Sort).' : '') + '</p>';
+    if (!clan.busy && !clan.err && clan.tab === 'cap' && !inReach && clan.cap.length) {
+      var best = null, bv = null;
+      clan.cap.forEach(function (e) { var v = clanCapView(e); if (v.short != null && (!bv || v.short < bv.short)) { best = e; bv = v; } });
+      h += '<div class="cb-empty">' + CLAN_SVG.info + '<div style="flex:1 1 300px;min-width:0"><div class="t">Nothing you can capture alone right now</div><p>' +
+        (best ? 'The closest is ' + esc(best.songName) + ' [' + esc(clanDiffLabel(best)) + ']: it needs ' + bv.req.toFixed(2) + '%' + (bv.ss ? ' with SS' : '') + ' and your realistic run there is ' + (bv.a * 100).toFixed(2) + '%. ' : '') +
+        (clan.def.length ? 'Your runs count most on the Defend list today.' : 'The closest clanmate on each map is listed below.') + '</p></div>' +
+        (clan.def.length ? '<button type="button" class="ghost sm" id="cbGoDef">Open Defend</button>' : '') + '</div>';
+    }
+    var grid = '';
+    if (M && M.maxStar) {
+      for (var st = Math.max(1, Math.ceil(M.minStar)); st <= Math.floor(M.maxStar); st++) { var av = M.acc(st); if (av != null) grid += '<div><span>★ ' + st + '</span><b>' + (av * 100).toFixed(1) + '%</b></div>'; }
+    }
+    h += '<details class="cb-how" id="cbHow"' + (clan.howOpen ? ' open' : '') + '><summary>How this works</summary><div class="cb-how-body">' +
+      '<p>On each ranked map, a clan\'s total is its members\' best scores sorted by pp, each worth 80% of the one above. The highest total owns the map, and only a player\'s first clan gets their scores. A new score always raises the total, but a deep list dilutes it, so shallow maps are where one run moves the most.</p>' +
+      '<p>Your realistic run is your 75th percentile accuracy on no-mod ranked scores near that map\'s stars' + (M && M.maxStar ? ', modeled up to ' + M.maxStar.toFixed(1) + '★ where you have enough plays.' : '.') + '</p>' +
+      (grid ? '<div class="cb-acc">' + grid + '</div>' : '') +
+      '<p>Checked ' + clan.checked.def + ' thin-lead maps and ' + clan.checked.cap + ' capture targets in your range' + (clan.t ? ', ' + agoStr(clan.t / 1000) : '') + '. Your filters still apply to these lists.</p></div></details>';
+    bar.innerHTML = h;
+  }
+  function setupClan() {
+    var bar = document.getElementById('clanBar'); if (!bar) return;
+    bar.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-ct]');
+      if (t) { var tab = t.getAttribute('data-ct'); if (tab !== clan.tab) { clan.tab = tab; el.fSort.value = 'clanRank'; el.fOrder.value = 'asc'; track(tab === 'def' ? 'clan-defend' : 'clan-capture'); clanApply(); renderClanBar(); } return; }
+      var m = e.target.closest('[data-cm]');
+      if (m) { var md = m.getAttribute('data-cm'); if (md !== clan.mod) { clan.mod = md; if (md === 'ss') track('clan-ss'); clanApply(); renderClanBar(); } return; }
+      if (e.target.closest('#cbRecheck')) { if (!clan.busy) { track('clan-recheck'); clanScan(); } return; }
+      if (e.target.closest('#cbExit')) { clanExit(); return; }
+      if (e.target.closest('#cbGoDef')) { clan.tab = 'def'; el.fSort.value = 'clanRank'; el.fOrder.value = 'asc'; clanApply(); renderClanBar(); return; }
+    });
+    bar.addEventListener('change', function (e) {
+      if (!e.target || e.target.id !== 'cbClanSel') return;
+      var c = clan.clans[+e.target.value];
+      if (c && clan.sel && c.id !== clan.sel.id) { clan.sel = c; clan.tab = 'def'; track('clan-switch'); clanScan(); }
+    });
+    bar.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'cbHow') clan.howOpen = e.target.open; }, true);
   }
     function buildTopPlays(n, forId, forName) {
     var id = forId || (state.player && state.player.id) || '';
@@ -6871,7 +7413,7 @@ window.PP = (function () {
     el.resultList.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-act]'); if (!btn) return;
       var row = e.target.closest('.song-row'); if (!row) return;
-      if (btn.dataset.act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) renderAll(); }
+      if (btn.dataset.act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) { if (state.viewMode === 'clan') track('clan-add'); renderAll(); } }
       else if (btn.dataset.act === 'preview') { var pe = findFiltered(row.dataset.key); if (pe) openPreview(pe); }
     });
     el.basketList.addEventListener('click', function (e) {
@@ -6936,6 +7478,7 @@ window.PP = (function () {
     el.buildPlaysBtn.addEventListener('click', buildFromPlays);
     el.disconnectBtn.addEventListener('click', disconnectPlayer);
     setupStats();
+    setupClan();
     el.topChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-top]'); if (b) buildTopPlays(parseInt(b.dataset.top, 10)); });
     el.playStatus.addEventListener('change', applyClientFilters);
     el.playRecency.addEventListener('change', applyClientFilters);
@@ -7090,6 +7633,8 @@ window.PP = (function () {
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
      undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build,
      playlistmanager-link;
+     Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
+     clan-switch, clan-add;
      Send to Quest: export-tab-quest, quest-connect, quest-auth-wait, quest-no-answer, quest-cancel,
      quest-send, quest-picker-cancel, quest-error-<not-approved|no-answer|busy|blocked|disconnected|
      no-folder|connect|send>)

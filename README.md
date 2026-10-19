@@ -86,6 +86,13 @@ Connect your profile and a **For You** card sits at the top of the results colum
 ### Player stats card
 **Stats** in the profile card opens your BeatLeader, ScoreSaber and AccSaber ranks side by side, with rank movement, the gap to the next player, recent scores with in-app replays, and a share link (`?stats=<id>`). **+ Add** on any recent score drops that map into Your Playlist, and **Build from top 50 plays** loads that player's best plays as results, which is handy on a friend's shared link. On someone else's card, **Maps [name] beats you on** compares their top 300 ranked plays with yours and loads the maps where their accuracy is higher, closest gaps first, with their accuracy shown next to yours on each row.
 
+### Clan maps (BeatLeader Global Map)
+In a BeatLeader clan? Your own Stats card gets a **Clan maps** button. On every ranked map, a clan's total is its members' best scores sorted by pp, each worth 80% of the one above, and the highest total owns the map. Only your first clan gets your scores. The view has two lists, both built from BeatLeader's live clan data:
+- **Defend**: maps your clan holds by a thin lead, ranked by how much of that lead *your* realistic run would add. Maps where your clan has few scores are where one run moves the number.
+- **Capture**: maps another clan owns, with the exact score and accuracy you'd need (no modifiers or Slower Song), where you'd land in your clan's list, and the clanmate who is closest, including "replay without SS" chances.
+
+Your realistic run is your 75th percentile accuracy on no-mod ranked scores near each map's stars, only where you have enough plays to judge. The header shows your clan's rank, maps held, how many members count for it, the net change since yesterday and, from your second visit, the maps gained and lost since your last one. In more than one clan? Pick another one to see it as a what-if. Your usual filters still apply, and rows add to Your Playlist like any other result.
+
 ### Preview before you commit
 - ▶ on any row opens an in-app preview - the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
 
