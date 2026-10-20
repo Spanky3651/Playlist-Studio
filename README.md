@@ -69,19 +69,21 @@ Already know the maps you want? Skip searching. Paste one or more **BSR codes**,
 Paste your BeatLeader profile URL or ID and Playlist Studio syncs your play history - public data, no login - so you can see and build around what you've actually played:
 - **★ Build from my plays** - one button turns *every map you've played* (ranked or unranked) into the results list, with no search or import needed. Then narrow with **Your play status** (e.g. **Played, not FC**), **Near-miss FC**, or **only my accuracy below X%**, and cherry-pick the ones you want into your playlist. Perfect for "make me a set of everything I haven't full-comboed yet." (The first time, it does a quick one-off re-sync to grab the song details.)
 - **Score badges on every map** - your accuracy with a green **FC** / blue **passed** / dashed **NEW** marker and your rank
-- **"Your plays" filter right above the results** - one-tap chips for **All / Unplayed / Played / FC'd / Not FC / Near-FC**, so "hide everything I've already played" is a single click where you're actually looking. (Not connected yet? The bar shows a one-tap link to connect.)
+- **"Your plays" filter right above the results** - one-tap chips for **All / Unplayed / Played / FC'd / Not FC / Near-FC / No Fail**, so "hide everything I've already played" is a single click where you're actually looking. (Not connected yet? The bar shows a one-tap link to connect.)
 - **More history filters** in the profile panel - "only my accuracy below X%", Last played, and one-tap smart lists
 - **Practice context on every row** - on maps you've played, the row shows how long ago, and for ranked maps how much raw pp you'd gain by reaching your target accuracy (e.g. **+44pp at 95%**)
 - **Merge your ScoreSaber plays** - **+ ScoreSaber plays** in the profile card pulls your ScoreSaber history into the same played / FC index, so the filters and Build from my plays cover both leaderboards. Charts that are on BeatLeader keep BeatLeader's data; ScoreSaber-only plays carry an **SS** tag
 - **Last played** - narrow to maps you've played within the last month / 3 months / 6 months / year, or ones you *haven't* touched in **over a year** (great for rebuilding a set worth revisiting). Reads off your synced play dates and auto-disables when you're filtering for unplayed maps
-- **One-tap smart lists** - Unplayed, Near-miss FC, Sub-90%
+- **One-tap smart lists** - Unplayed, Near-miss FC, Sub-90%, No Fail runs
 - **Sort by you** - my accuracy, my rank, date I played, or improvement potential
 - **Your best in the preview** - accuracy, misses (and the would-be FC accuracy), rank, date, and a link to watch the replay
 - **Playlist readout** - "you've FC'd 4 of 15 here, 91% avg"
 - Scores are cached in your browser; **↻ Sync** does a fast incremental refresh afterward
 
 ### For You
-Connect your profile and a **For You** card sits at the top of the results column with four one-click starts, all built on your own plays: **Top pp gains** (the PP Optimizer), **Rank-up plan** (opens the planner), **Practice set** (maps you've played but haven't FC'd) and **Revisit** (maps you haven't played in over 6 months). Not connected yet? The card offers a one-tap connect instead.
+Connect your profile and a **For You** card sits at the top of the results column with five one-click starts, all built on your own plays: **Top pp gains** (the PP Optimizer), **Rank-up plan** (opens the planner), **Practice set** (maps you've played but haven't FC'd), **Revisit** (maps you haven't played in over 6 months) and **No Fail retries** (maps you failed with No Fail on and haven't passed since). Not connected yet? The card offers a one-tap connect instead.
+
+**No Fail retries** works for ranked and unranked maps. BeatLeader only marks a score NF when No Fail actually kicked in, so a best score that still says NF is a map you haven't passed since. Rows show an **NF** badge with that run's accuracy. Pair it with **Last played: over 6 months ago** to find the ones you couldn't pass back then, or **Show: Ranked / Unranked** to split them.
 
 ### Player stats card
 **Stats** in the profile card opens your BeatLeader, ScoreSaber and AccSaber ranks side by side, with rank movement, the gap to the next player, recent scores with in-app replays, and a share link (`?stats=<id>`). **+ Add** on any recent score drops that map into Your Playlist, and **Build from top 50 plays** loads that player's best plays as results, which is handy on a friend's shared link. On someone else's card, **Maps [name] beats you on** compares their top 300 ranked plays with yours and loads the maps where their accuracy is higher, closest gaps first, with their accuracy shown next to yours on each row.

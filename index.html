@@ -730,9 +730,9 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 .lvl-chips button:hover{border-color:var(--blue);color:#fff;}
 .lvl-chips button.on{background:rgba(47,140,255,.18);border-color:var(--blue);color:#fff;box-shadow:0 0 9px rgba(47,140,255,.22);}
 .lvl-chips button[hidden]{display:none;}
-.fy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.fy-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
 .fy-grid[hidden],.fy-cta[hidden]{display:none;}
-@media(max-width:1180px){.fy-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:1180px){.fy-grid{grid-template-columns:repeat(2,1fr);}.fy-grid>.fy-btn:last-child:nth-child(odd){grid-column:1/-1;}}
 .fy-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:4px;text-align:left;padding:13px 14px;border-radius:11px;background:linear-gradient(180deg,#0d1726,#0a111c);border:1px solid var(--border-2);color:var(--text);cursor:pointer;transition:.15s;white-space:normal;height:auto;}
 .fy-btn b{font-size:15px;color:#fff;font-weight:800;}
 .fy-btn span{font-size:12.5px;color:var(--muted);line-height:1.4;font-weight:500;}
@@ -1065,6 +1065,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asm-num{font:600 13px var(--mono);color:#e9edf5;}
 .asm-you{font-size:13px;color:#aab4c6;line-height:1.45;} .asm-you b{color:#fff;}
 .asm-reset{margin:0;font-size:13px;color:#aab4c6;}
+.rb-nf{color:#ffc2cf !important;border-color:rgba(255,45,85,.55) !important;background:rgba(255,45,85,.1) !important;}
 .cb-link{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;font:600 13.5px var(--sans);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;white-space:nowrap;transition:all .14s ease;}
 .cb-link:hover{border-color:var(--blue);box-shadow:0 0 0 1px var(--border-glow),0 0 14px var(--border-glow);color:#fff;}
 .asc-acc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
@@ -1239,6 +1240,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
               <option value="fc">Full-combo'd</option>
               <option value="nofc">Played, not FC</option>
               <option value="nearfc">Near-miss FC</option>
+              <option value="nf">No Fail runs</option>
             </select></div>
           <div class="field"><label class="field-label">Last played <span class="info" data-tip="Filter by how recently you played each map, using your synced scores. 'Played within' keeps maps you've played inside that window; 'Not played in over' finds ones you haven't touched in a while, handy for rebuilding a set to revisit. Only affects maps you've played.">i</span></label>
             <select id="playRecency">
@@ -1264,6 +1266,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
             <button class="ghost sm" type="button" data-quick="unplayed">Unplayed</button>
             <button class="ghost sm" type="button" data-quick="nearfc">Near-miss FC</button>
             <button class="ghost sm" type="button" data-quick="sub90">Sub-90%</button>
+            <button class="ghost sm" type="button" data-quick="nf" title="Maps you failed with No Fail on and haven't passed since">No Fail runs</button>
             <button class="ghost sm" type="button" data-quick="clear">Clear</button>
           </div>
         </div>
@@ -1602,6 +1605,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <button type="button" class="fy-btn" data-fy="plan"><b>Rank-up plan</b><span>The fewest maps to reach your next pp or rank goal</span></button>
           <button type="button" class="fy-btn" data-fy="practice"><b>Practice set</b><span>Maps you've played but haven't full-combo'd</span></button>
           <button type="button" class="fy-btn" data-fy="revisit"><b>Revisit</b><span>Maps you haven't played in over 6 months</span></button>
+          <button type="button" class="fy-btn" data-fy="nofail"><b>No Fail retries</b><span>Maps you failed with No Fail on and haven't passed since</span></button>
         </div>
       </div>
     </section>
@@ -1647,6 +1651,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
           <button type="button" class="play-chip" data-ps="fc" title="Only maps you've full-combo'd">FC'd</button>
           <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
           <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
+          <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
         </div>
         <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
       </div>
@@ -1982,7 +1987,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-20T12:28:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-20T23:07:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2988,8 +2993,9 @@ window.PP = (function () {
       if (!s.hasOwnProperty(k)) continue;
       var h = k.slice(0, k.indexOf('|')), v = s[k];
       var e = idx[h];
-      if (!e) { e = idx[h] = { played: true, fc: false, near: false, best: v, latestT: v.t || 0 }; }
+      if (!e) { e = idx[h] = { played: true, fc: false, near: false, nf: false, best: v, latestT: v.t || 0 }; }
       if (v.fc) e.fc = true;
+      if (isNF(v)) e.nf = true;
       if (!v.fc && v.m <= 3 && (v.fa || 0) >= 0.90) e.near = true;
       if ((v.a || 0) > (e.best.a || 0)) e.best = v;
       if ((v.t || 0) > e.latestT) e.latestT = v.t || 0;
@@ -2997,16 +3003,27 @@ window.PP = (function () {
     return idx;
   }
   function scoreHashIdx() { if (!state._scoreHashIdx) state._scoreHashIdx = buildScoreHashIndex(); return state._scoreHashIdx; }
+  // A No Fail run: BeatLeader only lists NF on a score when the player failed and No Fail kept them going
+  // (the score is halved), so a best score that still carries NF is a map they haven't passed since.
+  function isNF(sc) { return !!(sc && sc.src !== 'ss' && /(^|,)NF(,|$)/.test(String(sc.md || ''))); }
+  function nfCount() { var n = 0, s = state.scores || {}; for (var k in s) if (s.hasOwnProperty(k) && isNF(s[k])) n++; return n; }
+  // Scores synced before Studio kept modifiers can't tell No Fail runs apart; one full re-sync fixes that.
+  function needsModifierSync() { return clanNeedsResync(); }
+  function nfNeedsSync() {
+    if (!state.player || state.syncing || !needsModifierSync()) return false;
+    toast('Refreshing your scores so Studio can spot your No Fail runs - one-time re-sync…', 'ok');
+    syncScores(false); return true;
+  }
   // Unified play info for an entry. Diff-specific entries (BeatLeader) match the exact score;
   // diff-agnostic entries (BeatSaver one-per-map) aggregate across every difficulty of the map.
   function playInfo(e) {
     if (!e || !e.hash) return null;
     if (e.difficultyName) {
       var sc = state.scores[e.hash.toLowerCase() + '|' + e.difficultyName + '|' + e.modeName];
-      return sc ? { played: true, fc: !!sc.fc, near: (!sc.fc && sc.m <= 3 && (sc.fa || 0) >= 0.90), acc: sc.a || 0, t: sc.t || 0, sc: sc } : null;
+      return sc ? { played: true, fc: !!sc.fc, near: (!sc.fc && sc.m <= 3 && (sc.fa || 0) >= 0.90), nf: isNF(sc), acc: sc.a || 0, t: sc.t || 0, sc: sc } : null;
     }
     var mi = scoreHashIdx()[e.hash.toLowerCase()];
-    return mi ? { played: true, fc: mi.fc, near: mi.near, acc: (mi.best.a || 0), t: mi.latestT || 0, sc: mi.best } : null;
+    return mi ? { played: true, fc: mi.fc, near: mi.near, nf: mi.nf, acc: (mi.best.a || 0), t: mi.latestT || 0, sc: mi.best } : null;
   }
   function scoreFor(e) { var pi = playInfo(e); return pi ? pi.sc : null; }
   function myVal(sc, key) { if (!sc) return null; if (key === 'myAcc') return sc.a; if (key === 'myRank') return sc.rk; if (key === 'myDate') return sc.t; return (sc.fa || 0) - sc.a; }
@@ -3847,6 +3864,7 @@ window.PP = (function () {
         if (f.playStatus === 'fc' && !(pi && pi.fc)) return false;
         if (f.playStatus === 'nofc' && (!played || pi.fc)) return false;
         if (f.playStatus === 'nearfc' && (!played || !pi.near || pi.fc)) return false;
+        if (f.playStatus === 'nf' && !(pi && pi.nf)) return false;
         if (f.accMax != null) { if (!played) return false; if (pi.acc * 100 >= f.accMax) return false; }
         if (f.recency !== 'any') {
           if (!played || !pi.t) return false;
@@ -4318,6 +4336,7 @@ window.PP = (function () {
       if (sc) {
         var ssTag = sc.src === 'ss' ? 'SS ' : '', acc = sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'played';
         if (sc.fc) b.push('<span class="rb rb-you fc" title="Full combo' + (sc.rk ? ' · rank #' + sc.rk : '') + (ssTag ? ' · from ScoreSaber' : '') + '">' + ssTag + 'FC ' + acc + '</span>');
+        else if (isNF(sc)) b.push('<span class="rb rb-you rb-nf" title="No Fail run: you failed and No Fail carried you to the end' + (sc.m ? ' · ' + sc.m + ' miss' : '') + '">NF ' + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
         else b.push('<span class="rb rb-you" title="' + (sc.rk ? 'rank #' + sc.rk : 'your best') + (sc.m ? ' · ' + sc.m + ' miss' : '') + (ssTag ? ' · from ScoreSaber' : '') + '">' + ssTag + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
         if (sc.t) b.push('<span class="rb rb-ago" title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
         if (sc.src !== 'ss' && sc.pp > 0 && PP.isRanked(e)) {
@@ -4374,6 +4393,13 @@ window.PP = (function () {
         } else {
           msg = '<p><b>BeatLeader returned no maps.</b></p><p>Nothing matched this query. Try a different mapper or keyword, loosen your filters, or raise <b>Maps to scan</b>.</p>';
         }
+      } else if (state.player && el.playStatus.value === 'nf' && (state.syncing || needsModifierSync())) {
+        msg = '<p><b>Refreshing your scores…</b></p><p>Studio is re-reading your BeatLeader scores so it can tell which ones are No Fail runs. They show up here when it finishes.</p>';
+      } else if (state.player && el.playStatus.value === 'nf' && (state.viewMode === 'plays' || !nfCount())) {
+        var nfn = nfCount();
+        msg = nfn
+          ? '<p><b>Your other filters hide your ' + nfn + ' No Fail run' + (nfn === 1 ? '' : 's') + '.</b></p><p>Check <b>Last played</b>, <b>Show</b> (ranked or unranked) and the Mode chips in Search Scope &amp; Sort.</p>'
+          : '<p><b>Nothing to retry yet.</b></p><p>None of your best BeatLeader scores is a No Fail run. When you fail a map with No Fail on, it shows up here until you pass it.</p>';
       } else {
         var why = [];
         if (state.player && el.playStatus.value !== 'any') why.push('your <b>“' + playStatusLabel(el.playStatus.value) + '”</b> play filter');
@@ -5859,6 +5885,12 @@ window.PP = (function () {
       openPanel(el.plannerPanel);
       setTimeout(function () { try { if (el.plannerGoal) el.plannerGoal.focus(); } catch (e) {} }, 400);
       toast('Set a pp or rank goal, then hit Plan my rank-up.', 'ok');
+    } else if (kind === 'nofail') {
+      el.playStatus.value = 'nf'; el.playRecency.value = 'any';
+      if (el.accMax) el.accMax.value = '';
+      syncRecencyControl();
+      if (needsModifierSync()) { toast('Refreshing your scores so Studio can spot your No Fail runs - one-time re-sync…', 'ok'); state._buildAfterSync = true; syncScores(false); return; }
+      buildFromPlays();
     } else if (kind === 'practice' || kind === 'revisit') {
       el.playStatus.value = kind === 'practice' ? 'nofc' : 'played';
       el.playRecency.value = kind === 'revisit' ? 'o6m' : 'any';
@@ -6328,7 +6360,7 @@ window.PP = (function () {
     el.scanHint.classList.toggle('warn', big);
   }
   function playStatusLabel(v) {
-    return { any: 'Any', unplayed: 'Unplayed', played: 'Played', fc: "Full-combo'd", nofc: 'Played, not FC', nearfc: 'Near-miss FC' }[v] || v;
+    return { any: 'Any', unplayed: 'Unplayed', played: 'Played', fc: "Full-combo'd", nofc: 'Played, not FC', nearfc: 'Near-miss FC', nf: 'No Fail runs' }[v] || v;
   }
   function focusProfileConnect() {
     if (el.profilePanel && el.profilePanel.scrollIntoView) el.profilePanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -6492,7 +6524,11 @@ window.PP = (function () {
     if (el.fOrder) el.fOrder.value = 'desc';
     applyClientFilters();
     setStatus('Loaded ' + list.length + ' of your plays', 'on'); track('build-from-plays');
-    toast('Loaded your ' + list.length + ' played maps. Set “Your play status” to “Played, not FC” (or use Near-miss FC / accuracy) to narrow, then add the ones you want.', 'ok');
+    if (el.playStatus.value === 'nf') {
+      var nfAll = nfCount(), nfShown = state.filtered.length;
+      setStatus('Loaded ' + nfShown + ' No Fail run' + (nfShown === 1 ? '' : 's'), 'on');
+      toast(nfAll ? 'Loaded ' + nfShown + ' No Fail run' + (nfShown === 1 ? '' : 's') + ' to retry' + (nfAll > nfShown ? ' (' + (nfAll - nfShown) + ' more hidden by your filters, like the Mode chips)' : '') + '. Narrow with Last played or Show, then add the ones you want.' : 'None of your best BeatLeader scores is a No Fail run.', 'ok');
+    } else toast('Loaded your ' + list.length + ' played maps. Set “Your play status” to “Played, not FC” (or use Near-miss FC / accuracy) to narrow, then add the ones you want.', 'ok');
     if (isMobileView()) setMobileView('results');
   }
 
@@ -7488,6 +7524,7 @@ window.PP = (function () {
     if (q === 'unplayed') { el.playStatus.value = 'unplayed'; el.accMax.value = ''; }
     else if (q === 'nearfc') { el.playStatus.value = 'nearfc'; el.accMax.value = ''; }
     else if (q === 'sub90') { el.playStatus.value = 'played'; el.accMax.value = '90'; }
+    else if (q === 'nf') { track('nofail-quick'); runForYou('nofail'); return; }
     else { el.playStatus.value = 'any'; el.accMax.value = ''; }
     applyClientFilters();
   }
@@ -7833,6 +7870,7 @@ window.PP = (function () {
       var b = e.target.closest('.play-chip'); if (!b) return;
       if (!state.player) { focusProfileConnect(); return; }
       el.playStatus.value = b.dataset.ps; if (b.dataset.ps !== 'played') el.accMax.value = '';
+      if (b.dataset.ps === 'nf') { track('nofail-chip'); nfNeedsSync(); }
       applyClientFilters();
     });
     el.playConnectJump.addEventListener('click', focusProfileConnect);
@@ -7978,6 +8016,7 @@ window.PP = (function () {
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
+     No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
      asclan-pick-<scores|cat|card|plays|xp|grind>, asclan-add;
      Send to Quest: export-tab-quest, quest-connect, quest-auth-wait, quest-no-answer, quest-cancel,
