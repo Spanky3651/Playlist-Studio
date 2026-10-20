@@ -1068,7 +1068,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .cb-link{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;font:600 13.5px var(--sans);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;white-space:nowrap;transition:all .14s ease;}
 .cb-link:hover{border-color:var(--blue);box-shadow:0 0 0 1px var(--border-glow),0 0 14px var(--border-glow);color:#fff;}
 .asc-acc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
-.cb-note.info{background:rgba(47,140,255,.07);border:1px solid rgba(47,140,255,.4);color:#cfe0ff;}
+.cb-note.soon{background:rgba(47,140,255,.07);border:1px solid rgba(47,140,255,.4);color:#cfe0ff;}
+.cb-note.soon svg{color:#8fbaff;}
 #svClanBtn .new-tag{font:700 11px var(--mono);padding:1px 5px;border-radius:4px;background:var(--red);color:#fff;margin-left:2px;}
 .feat-proj{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2f8cff55;background:radial-gradient(130% 160% at 0% 0%,#10233f,#070b12 65%);}
 .feat-proj .big{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.3px;}
@@ -1981,7 +1982,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-20T12:07:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-20T12:28:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7396,7 +7397,7 @@ window.PP = (function () {
     var se = asc.season, now = Date.now();
     if (se) {
       var live = new Date(se.startsAt).getTime() <= now;
-      h += '<div class="cb-note ' + (live ? 'ok' : 'info') + '">' + (live ? CLAN_SVG.check : CLAN_SVG.info) + '<span>' + (live
+      h += '<div class="cb-note ' + (live ? 'ok' : 'soon') + '" id="ascSeason">' + (live ? CLAN_SVG.check : CLAN_SVG.info) + '<span>' + (live
         ? esc(se.name) + ' is live until ' + esc(ascDay(se.endsAt)) + '. Each finished clan mission also adds 100 standing.'
         : esc(se.name) + ' starts ' + esc(ascWhen(se.startsAt)) + '. From then on, each finished clan mission also adds 100 standing.') + '</span></div>';
     }
