@@ -1051,6 +1051,24 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .clan-mate .lbl{font:600 12px var(--mono);letter-spacing:.6px;text-transform:uppercase;color:var(--muted);}
 .clan-mate b{color:#fff;}
 .clan-mate .lever{font:700 12px var(--mono);padding:1px 7px;border-radius:5px;border:1px solid rgba(34,224,161,.5);background:rgba(34,224,161,.08);color:#7ff0c6;}
+.asm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;}
+.asm-card{display:flex;flex-direction:column;align-items:stretch;gap:7px;text-align:left;padding:12px 14px;border-radius:11px;background:var(--panel-2);border:1px solid var(--border-2);color:#c3cbd9;font:inherit;cursor:pointer;min-width:0;}
+.asm-card:hover{border-color:#4a5570;}
+.asm-card[aria-selected="true"]{border-color:var(--asc,#e8335a);box-shadow:0 0 0 1px var(--asc,#e8335a) inset,0 0 16px rgba(232,51,90,.16);background:#0b0d15;}
+.asm-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.asm-name{font-size:16px;font-weight:800;color:#fff;overflow-wrap:anywhere;}
+.asm-state{font:700 12px var(--mono);letter-spacing:.4px;color:#ffd56b;white-space:nowrap;}
+.asm-card.done .asm-state{color:#7ff0c6;}
+.asm-bar{display:block;height:7px;border-radius:4px;background:#0c1220;border:1px solid var(--border);overflow:hidden;}
+.asm-bar span{display:block;height:100%;background:var(--asc,#e8335a);}
+.asm-card.done .asm-bar span{background:var(--green);}
+.asm-num{font:600 13px var(--mono);color:#e9edf5;}
+.asm-you{font-size:13px;color:#aab4c6;line-height:1.45;} .asm-you b{color:#fff;}
+.asm-reset{margin:0;font-size:13px;color:#aab4c6;}
+.cb-link{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;font:600 13.5px var(--sans);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;white-space:nowrap;transition:all .14s ease;}
+.cb-link:hover{border-color:var(--blue);box-shadow:0 0 0 1px var(--border-glow),0 0 14px var(--border-glow);color:#fff;}
+.asc-acc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+.cb-note.info{background:rgba(47,140,255,.07);border:1px solid rgba(47,140,255,.4);color:#cfe0ff;}
 #svClanBtn .new-tag{font:700 11px var(--mono);padding:1px 5px;border-radius:4px;background:var(--red);color:#fff;margin-left:2px;}
 .feat-proj{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2f8cff55;background:radial-gradient(130% 160% at 0% 0%,#10233f,#070b12 65%);}
 .feat-proj .big{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.3px;}
@@ -1963,7 +1981,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=cross-link">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=cross-link">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-19T14:15:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-20T12:07:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3263,6 +3281,7 @@ window.PP = (function () {
       '<div class="sv-who"><div class="sv-kick">BEAT SABER STATS</div><div class="sv-name">' + esc(p.name) + '</div><div class="sv-pills">' + pills.join('') + '</div>' +
       '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button>' + (state.player && String(state.player.id) !== String(p.id) ? '<button type="button" class="ghost sm" id="svVsBtn">&#9876; Maps ' + esc(p.name) + ' beats you on</button>' : '') +
       (state.player && String(state.player.id) === String(p.id) && (p.clans || []).length ? '<button type="button" class="ghost sm" id="svClanBtn" title="Maps your clan could defend or capture on the BeatLeader Global Map">&#9873; Clan maps · ' + esc(p.clans[0].tag) + '<span class="new-tag">NEW</span></button>' : '') +
+      (state.player && String(state.player.id) === String(p.id) && D.asu && D.asu.clan && D.asu.clan.id ? '<button type="button" class="ghost sm" id="svAsClanBtn" title="Your AccSaber clan\'s missions this week, with maps that help you count toward them">&#9873; AccSaber clan · ' + esc(D.asu.clan.tag || '?') + '</button>' : '') +
       '</div></div></div></section>';
 
     // BeatLeader card
@@ -3447,7 +3466,12 @@ window.PP = (function () {
       }
       if (e.target.closest('#svClanBtn')) {
         var pc = sv.data && sv.data.bl;
-        if (pc) { svClose(); track('stats-clan'); openClanView(pc.clans || []); }
+        if (pc) { svClose(); track('stats-clan'); openClanView(pc.clans || [], ascLinkFrom(sv.data)); }
+        return;
+      }
+      if (e.target.closest('#svAsClanBtn')) {
+        var dd = sv.data, al = ascLinkFrom(dd);
+        if (al) { svClose(); track('stats-asclan'); openAsClanView(al, dd.bl && dd.bl.clans); }
         return;
       }
       if (e.target.closest('#svTopBtn')) {
@@ -3808,7 +3832,7 @@ window.PP = (function () {
       }
       if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan')) && (s.stars < f.starMin || s.stars > f.starMax)) return false;
       if (state.viewMode === 'accsaber' && state.asCat && state.asCat !== 'all' && s.asCat !== state.asCat) return false;
-      if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all') {
+      if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all' && !(state.viewMode === 'clan' && clan.kind === 'as')) {
         var isRanked = s.stars > 0;
         if (f.rankView === 'ranked' && !isRanked) return false;
         if (f.rankView === 'unranked' && isRanked) return false;
@@ -4315,7 +4339,7 @@ window.PP = (function () {
   function infoBlock(e, inResults) {
     return '<div class="song-info"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
       '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + '</div>' +
-      (inResults && e._clan && state.viewMode === 'clan' ? clanBlock(e) : '') + '</div>';
+      (inResults && state.viewMode === 'clan' ? (e._clan ? clanBlock(e) : e._asc ? ascBlock(e) : '') : '') + '</div>';
   }
   // The ≈pp estimate only means something once you know pp: show it with a profile connected,
   // the PP Filter open or in use, or when sorting by pp.
@@ -4402,7 +4426,9 @@ window.PP = (function () {
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
     if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
-    else if (!entries) el.counterMeta.textContent = state.viewMode === 'clan'
+    else if (!entries) el.counterMeta.textContent = state.viewMode === 'clan' && clan.kind === 'as'
+      ? matched + ' picks for ' + ascMissionName() + '. Add the ones you want to play.'
+      : state.viewMode === 'clan'
       ? matched + (clan.tab === 'def' ? ' maps where your run adds the most to ' : ' capture targets for ') + (clan.sel ? clan.sel.tag : 'your clan') + '. Add the ones you want to play.'
       : state.viewMode === 'versus'
       ? matched + ' maps where ' + ((state.raw[0] && state.raw[0].vsName) || 'they') + ' beats you, closest gaps first. Add the ones you want to chase.'
@@ -5497,8 +5523,20 @@ window.PP = (function () {
     var btn = document.getElementById('accLoadBtn');
     state.fetching = true; if (btn) btn.disabled = true;
     setStatus('Loading AccSaber ranked maps…', 'busy');
+    asPool().then(function () {
+      state.fetching = false; if (btn) btn.disabled = false; showAccSaber();
+    }, function () {
+      state.fetching = false; if (btn) btn.disabled = false;
+      setStatus('AccSaber unavailable', 'warn'); toast('Couldn\'t reach AccSaber right now. Try again in a moment.', 'warn');
+    });
+  }
+  // The ranked AccSaber pool, loaded once and shared by AccSaber Pools and the AccSaber clan view.
+  var asPoolP = null;
+  function asPool() {
+    if (state.asCache && state.asCache.length) return Promise.resolve(state.asCache);
+    if (asPoolP) return asPoolP;
     var cats = {};
-    asGet('/categories').then(function (list) {
+    asPoolP = asGet('/categories').then(function (list) {
       (Array.isArray(list) ? list : (list && list.content) || []).forEach(function (c) { if (c && c.id) cats[c.id] = String(c.code || '').replace(/_acc$/, ''); });
     }, function () {}).then(function () {
       Object.keys(AS_CAT).forEach(function (k) { if (!cats[k]) cats[k] = AS_CAT[k]; });
@@ -5520,12 +5558,8 @@ window.PP = (function () {
         });
       }
       return step().then(function () { if (!out.length) throw new Error('empty'); state.asCache = out; });
-    }).then(function () {
-      state.fetching = false; if (btn) btn.disabled = false; showAccSaber();
-    }, function () {
-      state.fetching = false; if (btn) btn.disabled = false;
-      setStatus('AccSaber unavailable', 'warn'); toast('Couldn\'t reach AccSaber right now. Try again in a moment.', 'warn');
-    });
+    }).then(function () { asPoolP = null; return state.asCache; }, function (err) { asPoolP = null; throw err; });
+    return asPoolP;
   }
   function setupAccSaber() {
     var box = document.getElementById('accCats'); if (!box) return;
@@ -6369,7 +6403,7 @@ window.PP = (function () {
   }
   function disconnectPlayer() {
     state.player = null; state.scores = {}; state._scoreHashIdx = null; state.playIndex = {};
-    if (state.viewMode === 'clan') { clan.token++; clan.open = false; clan.busy = false; }
+    if (state.viewMode === 'clan') { clan.token++; asc.token++; clan.open = false; clan.busy = false; asc.busy = false; }
     if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
     try { localStorage.removeItem(PLAYER_KEY); localStorage.removeItem(PLAYS_KEY); } catch (e) {}
     el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
@@ -6647,8 +6681,11 @@ window.PP = (function () {
     flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>',
     mate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg>'
   };
+  // kind: 'bl' (BeatLeader Global Map) or 'as' (AccSaber clan missions, see the asc module below).
+  // asLink remembers the player's AccSaber clan so either view can switch to the other.
   var clan = { open: false, busy: false, token: 0, tab: 'def', mod: '', sel: null, clans: [], info: null, top: null, primaryCount: null,
-    hist: null, since: null, gm: null, model: null, modelSS: null, def: [], cap: [], checked: { def: 0, cap: 0 }, progress: null, err: '', t: 0, howOpen: false };
+    hist: null, since: null, gm: null, model: null, modelSS: null, def: [], cap: [], checked: { def: 0, cap: 0 }, progress: null, err: '', t: 0, howOpen: false,
+    kind: 'bl', asLink: null };
 
   // Clan total for a list of pp values, and the smallest new score that lifts it past a target.
   function clanSolver(pps) {
@@ -6709,11 +6746,12 @@ window.PP = (function () {
   function clanTagHtml(c) { return '<i class="cb-dot" style="background:' + esc(c.color || '#8792a6') + '"></i>' + esc(c.tag || '?'); }
   function clanDiffLabel(e) { return (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) + (e.modeName && e.modeName !== 'Standard' ? ' ' + e.modeName : ''); }
 
-  function openClanView(clans) {
+  function openClanView(clans, asLink) {
     if (!state.player) { focusProfileConnect(); return; }
     var list = (clans || []).filter(function (c) { return c && c.id != null && c.tag; });
     if (!list.length) { toast('Join a clan on BeatLeader to see clan maps.', 'warn'); return; }
-    clan.clans = list;
+    if (asLink !== undefined) clan.asLink = asLink;
+    clan.clans = list; clan.kind = 'bl'; asc.token++; asc.busy = false;
     if (!clan.sel || !list.some(function (c) { return c.id === clan.sel.id; })) clan.sel = list[0];
     clan.open = true; clan.tab = 'def'; clan.mod = '';
     ensureBL();
@@ -6726,7 +6764,7 @@ window.PP = (function () {
     clanScan();
   }
   function clanExit() {
-    clan.token++; clan.open = false; clan.busy = false; clan.progress = null;
+    clan.token++; asc.token++; clan.open = false; clan.busy = false; clan.progress = null; asc.busy = false;
     state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
     if (el.fSort.value === 'clanRank') el.fSort.value = 'stars';
     renderClanBar(); applyClientFilters(); setStatus('Ready', '');
@@ -6747,7 +6785,7 @@ window.PP = (function () {
   function clanScan() {
     var c = clan.sel; if (!c || !state.player) return;
     var token = ++clan.token, me = String(state.player.id), cid = c.id;
-    function live() { return token === clan.token && state.viewMode === 'clan'; }
+    function live() { return token === clan.token && state.viewMode === 'clan' && clan.kind === 'bl'; }
     function soft(p) { return p.then(function (x) { return x; }, function () { return null; }); }
     clan.busy = true; clan.err = ''; clan.def = []; clan.cap = []; clan.checked = { def: 0, cap: 0 };
     clan.progress = { done: 0, total: 0, label: 'Loading ' + c.tag + ' from BeatLeader…' };
@@ -6955,6 +6993,7 @@ window.PP = (function () {
   function clanInReach() { var n = 0; clan.cap.forEach(function (e) { var v = clanCapView(e); if (v.short != null && v.short <= 0) n++; }); return n; }
   function clanApply() {
     if (state.viewMode !== 'clan') return;
+    if (clan.kind === 'as') { ascApply(); return; }
     clan.cap.forEach(function (e) { var v = clanCapView(e); e.clanRank = v.short != null ? v.short : (v.req != null ? 50 + v.req : 999); });
     state.raw = (clan.tab === 'def' ? clan.def : clan.cap).slice();
     state.fetched = true;
@@ -6992,6 +7031,7 @@ window.PP = (function () {
     return h;
   }
   function clanEmptyMsg() {
+    if (clan.kind === 'as') return ascEmptyMsg();
     var tag = esc(clan.sel ? clan.sel.tag : 'your clan');
     if (clan.busy) return '<p><b>Checking ' + tag + '\'s maps…</b></p><p>Rows show up here as each map is checked.</p>';
     if (clan.err) return '<p><b>Couldn\'t load clan maps.</b></p><p>' + esc(clan.err) + '</p>';
@@ -7015,6 +7055,7 @@ window.PP = (function () {
   }
   function renderClanBar() {
     var bar = document.getElementById('clanBar'); if (!bar) return;
+    if (clan.kind === 'as') { ascRenderBar(bar); return; }
     var on = state.viewMode === 'clan' && clan.open && !!clan.sel;
     bar.hidden = !on; if (!on) { bar.innerHTML = ''; return; }
     var c = clan.sel, info = clan.info || {}, color = info.color || c.color || '#45adde', M = clan.model;
@@ -7029,7 +7070,9 @@ window.PP = (function () {
       (sub.length ? '<div class="cb-sub">' + sub.join(' · ') + '</div>' : '') + '</div>';
     if (clan.clans.length > 1) h += '<label class="cb-pick"><select id="cbClanSel" aria-label="Clan">' + clan.clans.map(function (x, i) { return '<option value="' + i + '"' + (x.id === c.id ? ' selected' : '') + '>' + esc(x.tag) + (i === 0 ? ' (your scores count here)' : ' (what-if)') + '</option>'; }).join('') + '</select></label>';
     h += clanSinceHtml(color);
-    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="cbRecheck"' + (clan.busy ? ' disabled' : '') + ' title="Load the latest leads from BeatLeader, for example after a session">⟳ Re-check</button><button type="button" class="ghost sm" id="cbExit">← Back to search</button></div></div>';
+    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="cbRecheck"' + (clan.busy ? ' disabled' : '') + ' title="Load the latest leads from BeatLeader, for example after a session">⟳ Re-check</button>' +
+      (clan.asLink ? '<button type="button" class="ghost sm" id="cbToAs" title="Your AccSaber clan\'s missions this week">&#9873; AccSaber clan · ' + esc(clan.asLink.clan.tag || '?') + '</button>' : '') +
+      '<button type="button" class="ghost sm" id="cbExit">← Back to search</button></div></div>';
     var first = clan.clans[0];
     h += (first && first.id === c.id)
       ? '<div class="cb-note ok">' + CLAN_SVG.check + '<span>Your scores count for ' + esc(c.tag) + '. It\'s your first clan on BeatLeader.</span></div>'
@@ -7072,6 +7115,8 @@ window.PP = (function () {
   function setupClan() {
     var bar = document.getElementById('clanBar'); if (!bar) return;
     bar.addEventListener('click', function (e) {
+      if (clan.kind === 'as') { ascClick(e); return; }
+      if (e.target.closest('#cbToAs')) { if (clan.asLink) { track('asclan-switch'); openAsClanView(clan.asLink, clan.clans); } return; }
       var t = e.target.closest('[data-ct]');
       if (t) { var tab = t.getAttribute('data-ct'); if (tab !== clan.tab) { clan.tab = tab; el.fSort.value = 'clanRank'; el.fOrder.value = 'asc'; track(tab === 'def' ? 'clan-defend' : 'clan-capture'); clanApply(); renderClanBar(); } return; }
       var m = e.target.closest('[data-cm]');
@@ -7085,7 +7130,313 @@ window.PP = (function () {
       var c = clan.clans[+e.target.value];
       if (c && clan.sel && c.id !== clan.sel.id) { clan.sel = c; clan.tab = 'def'; track('clan-switch'); clanScan(); }
     });
-    bar.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'cbHow') clan.howOpen = e.target.open; }, true);
+    bar.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'cbHow') clan.howOpen = e.target.open; if (e.target && e.target.id === 'ascHow') asc.howOpen = e.target.open; }, true);
+  }
+
+  // ---- AccSaber clan: this week's clan missions --------------------------------
+  // AccSaber clans don't own maps. They earn standing from weekly clan missions and, during a season,
+  // from wars. Most missions count new scores, plays or XP, so the help here is map picks: AccSaber
+  // maps the player hasn't cleared yet near their usual complexity (a first clear always counts as a
+  // new score and pays the full XP bonus), and old scores below their usual accuracy there.
+  // "Usual" comes from the player's own AccSaber scores in that category. Wars aren't covered yet.
+  var ASC_HELP = { scores: '2 new scores', cat: '1 new score', plays: '4 plays', xp: '1,500 XP', grind: '2 of your own missions' };
+  var ASC_UNIT = { scores: 'scores', cat: 'scores', card: 'members', plays: 'plays', xp: 'XP', grind: 'missions' };
+  var asc = { busy: false, token: 0, link: null, info: null, missions: [], season: null, me: null, scores: null, nScores: 0, model: null,
+    sel: 0, picks: [], progress: '', err: '', t: 0, howOpen: false };
+
+  function ascLinkFrom(D) {
+    var c = D && D.asu && D.asu.clan;
+    if (!c || !c.id || !state.player || !D.bl || String(D.bl.id) !== String(state.player.id)) return null;
+    return { clan: c, aid: String((D.as && D.as.id) || state.player.id) };
+  }
+  function ascColor(c) { var x = c && (c.tagColor || c.primaryColor); return /^#[0-9a-fA-F]{3,8}$/.test(x || '') ? x : '#e8335a'; }
+  function ascKind(m) {
+    var t = String((m && m.type) || '').toUpperCase();
+    if (t === 'SCORES_N') return m.perMember ? 'card' : (m.categoryCode || m.categoryId) ? 'cat' : 'scores';
+    if (t === 'PLAY_N_MAPS') return 'plays';
+    if (t === 'XP_IN_WINDOW') return 'xp';
+    if (t === 'MISSIONS_COMPLETE_N') return 'grind';
+    return 'other';
+  }
+  function ascPickable(k) { return k === 'scores' || k === 'cat' || k === 'card' || k === 'plays' || k === 'xp'; }
+  function ascCatOf(m) { var c = String(m.categoryCode || '').replace(/_acc$/, ''); if (!c && m.categoryId) c = AS_CAT[m.categoryId] || ''; return AS_LABEL[c] ? c : ''; }
+  function ascTarget(m) { return +(m.targetXp || m.targetValue || m.targetCount) || 0; }
+  function ascValue(m) { return +(m.progressValue != null ? m.progressValue : m.progressCount) || 0; }
+  function ascDone(m) { return String(m.status || '').toLowerCase() === 'completed' || (ascTarget(m) > 0 && ascValue(m) >= ascTarget(m)); }
+  function ascMissionName() { var m = asc.missions[asc.sel]; return m ? m.name || 'this mission' : 'your clan'; }
+  function ascLeft(ts) {
+    var ms = new Date(ts).getTime() - Date.now(); if (!(ms > 0)) return '';
+    var d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000), mi = Math.floor(ms % 3600000 / 60000);
+    return d ? d + 'd ' + h + 'h' : h ? h + 'h ' + mi + 'm' : mi + 'm';
+  }
+  function ascWhen(ts) { try { return new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
+  function ascDay(ts) { try { return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch (e) { return ''; } }
+  function ascQuant(sorted, q) { if (!sorted.length) return null; return sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))]; }
+  function ascMedian(arr) { return ascQuant(arr.slice().sort(function (a, b) { return a - b; }), 0.5); }
+  function ascKeyOfScore(s) { var dn = AS_DIFF[String(s.difficulty || '').toUpperCase()]; return s.songHash && dn ? String(s.songHash).toLowerCase() + '|' + dn + '|' + (s.characteristic || 'Standard') : null; }
+
+  // The player's usual level per category from their AccSaber scores: the middle of their complexity
+  // range (mid), how far up they've cleared (hi, 85th percentile), median accuracy near a complexity,
+  // and median XP of their first clears near it. Needs 6 scores in a category.
+  function ascBuildModel(list) {
+    var by = {}, firstXp = [];
+    list.forEach(function (s) {
+      var k = AS_CAT[s.categoryId]; if (!k || !(s.complexity > 0) || !(s.accuracy > 0)) return;
+      var p = { c: +s.complexity, a: +s.accuracy, first: +s.playCount === 1, xp: (+s.baseXp || 0) + (+s.bonusXp || 0) };
+      (by[k] = by[k] || []).push(p); if (p.first && p.xp > 0) firstXp.push(p.xp);
+    });
+    var memo = {};
+    function cat(k) {
+      if (memo[k] !== undefined) return memo[k];
+      var pts = by[k] || [];
+      if (pts.length < 6) { memo[k] = null; return null; }
+      var cs = pts.map(function (p) { return p.c; }).sort(function (a, b) { return a - b; }), am = {}, xm = {};
+      function widen(c, min, f) {
+        var w = 0.75, o;
+        do { o = []; for (var i = 0; i < pts.length; i++) if (Math.abs(pts[i].c - c) <= w && (!f || f(pts[i]))) o.push(pts[i]); w += 0.5; } while (o.length < min && w <= 3.25);
+        return o.length >= min ? o : null;
+      }
+      memo[k] = { n: pts.length, mid: ascQuant(cs, 0.5), hi: ascQuant(cs, 0.85), top: cs[cs.length - 1],
+        acc: function (c) { var q = Math.round(c * 10); if (am[q] === undefined) { var o = widen(c, 5); am[q] = o ? ascMedian(o.map(function (p) { return p.a; })) : null; } return am[q]; },
+        xp: function (c) { var q = Math.round(c * 10); if (xm[q] === undefined) { var o = widen(c, 3, function (p) { return p.first && p.xp > 0; }); xm[q] = o ? ascMedian(o.map(function (p) { return p.xp; })) : null; } return xm[q]; } };
+      return memo[k];
+    }
+    return { cat: cat, n: list.length, firstXp: firstXp.length >= 3 ? ascMedian(firstXp) : null };
+  }
+
+  function ascEntry(e, x, r) {
+    var o = {}; for (var k in e) if (Object.prototype.hasOwnProperty.call(e, k)) o[k] = e[k];
+    o._asc = x; o.clanRank = Math.round(r * 1000) / 1000; return o;
+  }
+  function ascByRank(a, b) { return a.clanRank - b.clanRank; }
+  // Map picks for one mission. Score missions: first clears near the player's usual complexity, plus up
+  // to a third old scores below their usual accuracy. Plays: short maps near their level, played or not.
+  // XP: short first clears (a first clear pays the full bonus, a better score only a little).
+  function ascPicks(m) {
+    var kind = ascKind(m), want = kind === 'cat' ? ascCatOf(m) : '', pool = state.asCache || [], mine = asc.scores || {}, fb = {};
+    var limit = kind === 'plays' || kind === 'xp' ? 12 : 15, firsts = [], olds = [];
+    function fallback(k) {
+      if (fb[k] !== undefined) return fb[k];
+      var cs = pool.filter(function (e) { return e.asCat === k && e.complexity > 0; }).map(function (e) { return +e.complexity; }).sort(function (a, b) { return a - b; });
+      fb[k] = cs.length ? { mid: ascQuant(cs, 0.2), hi: ascQuant(cs, 0.35), acc: function () { return null; }, xp: function () { return null; }, fallback: true } : null;
+      return fb[k];
+    }
+    pool.forEach(function (e) {
+      if (want && e.asCat !== want) return;
+      var c = +e.complexity; if (!(c > 0) || !AS_LABEL[e.asCat]) return;
+      var M = (asc.model && asc.model.cat(e.asCat)) || fallback(e.asCat); if (!M) return;
+      var k = keyOf(e), s = mine[k], d = c <= M.mid ? (M.mid - c) * 0.8 : 1.6 * (c - M.mid), mins = (e.duration || 150) / 60, r;
+      if (!s) {
+        if (c > M.hi + 0.25) return;
+        var bl = state.scores && state.scores[k], ssOnly = !!(bl && bl.src !== 'ss' && /(^|,)SS(,|$)/.test(String(bl.md || '')));
+        r = d + (ssOnly ? 1.2 : 0) + (M.fallback ? 0.5 : 0);
+        if (kind === 'plays' || kind === 'xp') r = r * 0.6 + mins * 0.45;
+        firsts.push(ascEntry(e, { kind: 'first', usual: M.acc(c), xp: M.xp(c), ssOnly: ssOnly, newCat: !!M.fallback }, r));
+      } else if (kind === 'plays') {
+        if (c > M.mid + 0.75) return;
+        olds.push(ascEntry(e, { kind: 'play', has: +s.accuracy, usual: M.acc(c), set: s.timeSet }, d * 0.6 + mins * 0.45 + 0.4));
+      } else if (kind !== 'xp') {
+        var u = M.acc(c), gap = u != null ? u - s.accuracy : 0;
+        if (u == null || gap < 0.006 || c > M.hi + 0.25) return;
+        olds.push(ascEntry(e, { kind: 'best', has: +s.accuracy, usual: u, set: s.timeSet }, d + 0.6 - Math.min(1.5, gap * 100 * 0.35)));
+      }
+    });
+    firsts.sort(ascByRank); olds.sort(ascByRank);
+    var nOld = kind === 'xp' ? 0 : Math.min(olds.length, kind === 'plays' ? Math.ceil(limit / 2) : Math.floor(limit / 3));
+    var out = firsts.slice(0, limit - nOld);
+    out = out.concat(olds.slice(0, limit - out.length));
+    return out.sort(ascByRank);
+  }
+  function ascApply() {
+    if (state.viewMode !== 'clan' || clan.kind !== 'as') return;
+    state.raw = asc.picks.slice(); state.fetched = true;
+    applyClientFilters();
+  }
+  function ascRebuild() {
+    var m = asc.missions[asc.sel];
+    asc.picks = m && asc.model && state.asCache && ascPickable(ascKind(m)) ? ascPicks(m) : [];
+    ascApply(); renderClanBar();
+  }
+  function openAsClanView(link, blClans) {
+    if (!state.player) { focusProfileConnect(); return; }
+    if (!link || !link.clan || !link.clan.id) { toast('Join a clan on AccSaber to see its missions.', 'warn'); return; }
+    var bl = (blClans || []).filter(function (c) { return c && c.id != null && c.tag; });
+    if (bl.length) clan.clans = bl;
+    clan.asLink = link; clan.kind = 'as'; clan.open = true; clan.token++; clan.busy = false;
+    if (!asc.link || asc.link.clan.id !== link.clan.id) { asc.info = null; asc.missions = []; asc.sel = 0; }
+    asc.link = link;
+    ensureBL();
+    state.viewMode = 'clan'; state.raw = []; state.filtered = []; state.fetched = true; state.lastSig = 'clan';
+    el.fSort.value = 'clanRank'; el.fOrder.value = 'asc';
+    track('asclan-open');
+    applyClientFilters(); renderClanBar();
+    if (isMobileView()) setMobileView('results');
+    else { var bar = document.getElementById('clanBar'); if (bar && bar.scrollIntoView) bar.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    ascScan();
+  }
+  function ascUserScores(aid, live) {
+    var out = [];
+    function page(p) {
+      if (!live()) return Promise.resolve(out);
+      return asGet('/users/' + encodeURIComponent(aid) + '/scores?page=' + p + '&size=100&sort=timeSet,desc').then(function (j) {
+        var items = (j && j.content) || []; out = out.concat(items);
+        if (!items.length || j.last !== false || p >= 19) return out;
+        return delay(100).then(function () { return page(p + 1); });
+      });
+    }
+    return page(0);
+  }
+  function ascDefaultSel(list) {
+    var i;
+    for (i = 0; i < list.length; i++) if (ascPickable(ascKind(list[i])) && !ascDone(list[i])) return i;
+    for (i = 0; i < list.length; i++) if (ascPickable(ascKind(list[i]))) return i;
+    return 0;
+  }
+  function ascScan() {
+    var link = asc.link; if (!link || !state.player) return;
+    var token = ++asc.token, cid = encodeURIComponent(link.clan.id), aid = link.aid;
+    function live() { return token === asc.token && state.viewMode === 'clan' && clan.kind === 'as'; }
+    function soft(p) { return p.then(function (x) { return x; }, function () { return null; }); }
+    asc.busy = true; asc.err = ''; asc.picks = []; asc.progress = 'Loading ' + (link.clan.tag || 'your clan') + ' from AccSaber…';
+    ascApply(); renderClanBar(); setStatus('Loading clan missions…', 'busy');
+    track('asclan-scan');
+    Promise.all([asGet('/clans/' + cid), asGet('/clans/' + cid + '/missions?size=20'), soft(asGet('/clans/' + cid + '/members?size=50')), soft(asGet('/clans/seasons'))]).then(function (r) {
+      if (!live()) return null;
+      var keep = asc.missions[asc.sel] && asc.missions[asc.sel].id;
+      asc.info = r[0] || null;
+      asc.missions = ((r[1] && r[1].content) || []).filter(function (m) { return m && m.name; });
+      asc.me = null;
+      ((r[2] && r[2].content) || []).forEach(function (x) { if (x && String(x.id) === String(aid)) asc.me = x.membership || null; });
+      var now = Date.now(), seasons = (r[3] && r[3].content) || [];
+      asc.season = null;
+      seasons.forEach(function (s) { var a = new Date(s.startsAt).getTime(), b = new Date(s.endsAt).getTime(); if (b > now && (!asc.season || a < new Date(asc.season.startsAt).getTime())) asc.season = s; });
+      var at = -1; asc.missions.forEach(function (m, i) { if (keep && m.id === keep) at = i; });
+      asc.sel = at >= 0 ? at : ascDefaultSel(asc.missions);
+      asc.progress = 'Loading your AccSaber scores and the ranked AccSaber maps…'; renderClanBar();
+      return Promise.all([ascUserScores(aid, live), asPool()]);
+    }).then(function (r) {
+      if (!r || !live()) return;
+      var map = {};
+      r[0].forEach(function (s) { var k = ascKeyOfScore(s); if (k && (!map[k] || s.accuracy > map[k].accuracy)) map[k] = s; });
+      asc.scores = map; asc.nScores = r[0].length; asc.model = ascBuildModel(r[0]);
+      asc.busy = false; asc.progress = ''; asc.t = Date.now();
+      ascRebuild();
+      setStatus(asc.missions.length + ' clan missions this week', 'on');
+    }).catch(function () {
+      if (!live()) return;
+      asc.busy = false; asc.progress = ''; asc.err = 'AccSaber didn\'t respond. Try Re-check in a moment.';
+      track('asclan-fail'); ascApply(); renderClanBar(); setStatus('AccSaber unavailable', 'warn');
+    });
+  }
+  function ascBlock(e) {
+    var x = e._asc, cat = AS_LABEL[e.asCat] || '', kind = ascKind(asc.missions[asc.sel] || {}), h = '<div class="clan-row">';
+    if (x.kind === 'first') h += '<span class="rb rb-clan-ok" title="You have no AccSaber score here, so any clear counts as a new score">First clear</span>';
+    else if (x.kind === 'best') h += '<span class="rb rb-clan-stretch" title="Your AccSaber score here is below your usual accuracy on ' + esc(cat) + ' maps near this complexity">Beat your ' + (x.has * 100).toFixed(2) + '%</span>';
+    else h += '<span class="rb" title="Your AccSaber score here">Your best ' + (x.has * 100).toFixed(2) + '%</span>';
+    if (x.usual != null) h += '<span class="rb rb-pred" title="Your median AccSaber accuracy on ' + esc(cat) + ' maps near this complexity">≈' + (x.usual * 100).toFixed(1) + '% your usual here</span>';
+    if (kind === 'xp' && x.kind === 'first' && x.xp) h += '<span class="rb rb-clan-gain" title="Median XP of your first clears near this complexity">≈' + Math.round(x.xp) + ' XP</span>';
+    if (x.set && x.kind === 'best') h += '<span class="rb" title="When you set that score">Set ' + esc(ascDay(x.set)) + '</span>';
+    if (x.ssOnly) h += '<span class="rb rb-clan-out" title="Your BeatLeader score here used Slower Song, which AccSaber doesn\'t count">Only played with SS so far</span>';
+    if (x.newCat) h += '<span class="rb rb-clan-out" title="You have fewer than 6 ' + esc(cat) + ' scores on AccSaber, so these come from the easier end of the pool">Easier end of the ' + esc(cat) + ' pool</span>';
+    return h + '</div>';
+  }
+  function ascEmptyMsg() {
+    var tag = esc(asc.link ? asc.link.clan.tag : 'your clan'), m = asc.missions[asc.sel], k = ascKind(m || {});
+    if (asc.busy) return '<p><b>Loading ' + tag + '\'s missions…</b></p><p>Picks show up here once your AccSaber scores are in.</p>';
+    if (asc.err) return '<p><b>Couldn\'t load clan missions.</b></p><p>' + esc(asc.err) + '</p>';
+    if (!asc.missions.length) return '<p><b>No clan missions right now.</b></p><p>' + tag + ' gets 3 new missions every Monday at 04:00 UTC.</p>';
+    if (k === 'grind') return '<p><b>No map picks for ' + esc(m.name) + '.</b></p><p>It counts your own daily and weekly missions. You\'ll find yours in the Missions menu on accsaber.com after you log in.</p>';
+    if (!ascPickable(k)) return '<p><b>No map picks for this one.</b></p><p>Studio doesn\'t know this mission type yet.</p>';
+    if (state.raw.length) return '<p><b>No matches.</b></p><p>Your filters hide every pick here. Loosen them to see these maps.</p>';
+    return '<p><b>No picks in your range.</b></p><p>You\'ve cleared every ranked AccSaber map near your usual level' + (k === 'cat' ? ' in this category' : '') + '.</p>';
+  }
+  function ascExplain(m, k) {
+    var cat = AS_LABEL[ascCatOf(m)] || '', help = ASC_HELP[k], M = asc.model, fx = M && M.firstXp, cm = cat && M ? M.cat(ascCatOf(m)) : null;
+    var s = '';
+    if (k === 'cat') s = '<b>' + esc(cat) + ' Acc</b> maps you haven\'t cleared on AccSaber' + (cm ? ', near your usual complexity there (' + cm.mid.toFixed(1) + ')' : '') + ', plus old scores below your usual accuracy. A first clear or a better score counts as a new score.';
+    else if (k === 'scores') s = 'Maps from all three categories you haven\'t cleared on AccSaber, near your usual level in each, plus old scores below your usual accuracy. A first clear or a better score counts.';
+    else if (k === 'card') s = 'Everyone gets their own card asking for 3 to 6 new scores, and the clan clears this once enough members finish theirs. Your card is on accsaber.com. These picks are first clears near your level, plus old scores below your usual accuracy.';
+    else if (k === 'plays') s = 'Every finished play counts, even on maps you\'ve already cleared, so these are short maps near your level.';
+    else if (k === 'xp') s = 'A first clear pays the full XP bonus' + (fx ? ' (about ' + Math.round(fx) + ' XP for you)' : '') + ' while a better score pays only a little, so these are short first clears near your level.';
+    else if (k === 'grind') s = 'This one counts your own daily and weekly missions, so there are no map picks. Find yours in the Missions menu on accsaber.com after you log in.';
+    else s = esc(m.description || '');
+    if (help) s += ' You count as helping with <b>' + help + '</b>' + (k === 'xp' && fx ? ', about ' + Math.ceil(1500 / fx) + ' first clears' : '') + '.';
+    if (ascDone(m) && ascPickable(k)) s += ' Done this week, and new scores still count for your own missions and XP.';
+    return s;
+  }
+  function ascCard(m, i, sel) {
+    var k = ascKind(m), tgt = ascTarget(m), val = ascValue(m), done = ascDone(m), unit = ASC_UNIT[k] || '';
+    var pct = tgt > 0 ? Math.min(100, val / tgt * 100) : (done ? 100 : 0), left = Math.max(0, tgt - val);
+    var you = k === 'card' ? 'Your card asks for <b>3 to 6</b> new scores' : ASC_HELP[k] ? 'You help with <b>' + ASC_HELP[k] + '</b>' : esc(m.description || '');
+    return '<button type="button" class="asm-card' + (done ? ' done' : '') + '" role="tab" data-asm="' + i + '" aria-selected="' + sel + '" title="' + esc(m.description || '') + '">' +
+      '<span class="asm-top"><span class="asm-name">' + esc(m.name) + '</span><span class="asm-state">' + (done ? '&#10003; Done' : tgt ? left.toLocaleString('en-US') + ' to go' : '') + '</span></span>' +
+      '<span class="asm-bar" role="img" aria-label="' + val + ' of ' + tgt + ' ' + unit + '"><span style="width:' + pct.toFixed(1) + '%"></span></span>' +
+      '<span class="asm-num">' + val.toLocaleString('en-US') + ' / ' + tgt.toLocaleString('en-US') + ' ' + unit + '</span>' +
+      '<span class="asm-you">' + you + '</span></button>';
+  }
+  function ascRenderBar(bar) {
+    var link = asc.link, on = state.viewMode === 'clan' && clan.open && !!link;
+    bar.hidden = !on; if (!on) { bar.innerHTML = ''; return; }
+    var c = link.clan, info = asc.info || {}, ic = info.clan || {}, color = ascColor(ic.tag ? ic : c), tag = esc(c.tag || '?');
+    var h = '<div class="cb-head">';
+    var icon = ic.iconUrl || c.iconUrl;
+    if (icon) h += '<img class="cb-ic" src="' + esc(icon) + '" alt="' + tag + ' clan icon" style="--cb:' + esc(color) + '" onerror="this.remove()">';
+    var sub = [];
+    if (c.name || ic.name) sub.push(esc(ic.name || c.name));
+    if (info.level && info.level.level != null) sub.push('Level ' + info.level.level);
+    if (info.standing != null) sub.push(Math.round(info.standing).toLocaleString('en-US') + ' standing');
+    if (info.memberCount != null) sub.push(info.memberCount + (info.memberCap ? ' of ' + info.memberCap : '') + ' members');
+    var me = asc.me, mine = me ? (me.role ? me.role.charAt(0).toUpperCase() + me.role.slice(1) : '') + (me.strengthShare > 0 ? (me.role ? ' · ' : '') + (me.strengthShare * 100).toFixed(1) + '% of the clan\'s strength' : '') : '';
+    h += '<div class="cb-who"><div class="cb-kick">AccSaber clan · Missions</div><div class="cb-name" style="color:' + esc(color) + '">' + tag + '</div>' +
+      (sub.length ? '<div class="cb-sub">' + sub.join(' · ') + '</div>' : '') + (mine ? '<div class="cb-sub">You: ' + esc(mine) + '</div>' : '') + '</div>';
+    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="ascRecheck"' + (asc.busy ? ' disabled' : '') + ' title="Load the latest mission progress and your scores from AccSaber">⟳ Re-check</button>' +
+      (clan.clans && clan.clans.length ? '<button type="button" class="ghost sm" id="ascToBl" title="Maps your BeatLeader clan could defend or capture">&#9873; BeatLeader clan maps · ' + esc(clan.clans[0].tag) + '</button>' : '') +
+      '<a class="cb-link" href="https://accsaber.com/clans/' + encodeURIComponent(ic.slug || c.slug || '') + '" target="_blank" rel="noopener">' + tag + ' on AccSaber ↗</a>' +
+      '<button type="button" class="ghost sm" id="cbExit">← Back to search</button></div></div>';
+    var se = asc.season, now = Date.now();
+    if (se) {
+      var live = new Date(se.startsAt).getTime() <= now;
+      h += '<div class="cb-note ' + (live ? 'ok' : 'info') + '">' + (live ? CLAN_SVG.check : CLAN_SVG.info) + '<span>' + (live
+        ? esc(se.name) + ' is live until ' + esc(ascDay(se.endsAt)) + '. Each finished clan mission also adds 100 standing.'
+        : esc(se.name) + ' starts ' + esc(ascWhen(se.startsAt)) + '. From then on, each finished clan mission also adds 100 standing.') + '</span></div>';
+    }
+    if (asc.missions.length) {
+      h += '<div class="asm-grid" role="tablist" aria-label="This week\'s clan missions" style="--asc:' + esc(color) + '">' + asc.missions.map(function (m, i) { return ascCard(m, i, i === asc.sel); }).join('') + '</div>';
+      var exp = asc.missions[0].expiresAt, left = exp ? ascLeft(exp) : '';
+      if (left) h += '<p class="asm-reset">New missions in ' + esc(left) + ' (Monday 04:00 UTC).</p>';
+      var m = asc.missions[asc.sel], k = ascKind(m);
+      if (m) h += '<p class="cb-explain">' + ascExplain(m, k) + '</p>';
+      if (m && ascPickable(k)) h += '<div class="cb-note warn">' + CLAN_SVG.warn + '<span>Play these without Slower Song, No Obstacles, No Bombs or Small Notes. AccSaber doesn\'t count those runs, and No Fail halves the score.</span></div>';
+    }
+    if (asc.busy && asc.progress) h += '<div class="cb-progress"><div class="bar"><div class="bar-fill" style="width:' + (asc.info ? 55 : 15) + '%"></div></div><span>' + esc(asc.progress) + '</span></div>';
+    if (asc.err) h += '<p class="cb-err">' + esc(asc.err) + '</p>';
+    var nHid = state.raw.length - state.filtered.length;
+    h += '<p class="cb-since-diff" id="cbHidden"' + (nHid > 0 ? '' : ' hidden') + '>' + (nHid > 0 ? nHid + (nHid === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Search Scope &amp; Sort).' : '') + '</p>';
+    var grid = '', M = asc.model;
+    if (M) ['true', 'standard', 'tech'].forEach(function (k2) {
+      var cm = M.cat(k2); if (!cm) return;
+      var ua = cm.acc(cm.mid);
+      grid += '<div><span>' + AS_LABEL[k2] + '</span><b>' + cm.mid.toFixed(1) + '</b><span>up to ' + cm.hi.toFixed(1) + (ua != null ? ' · ' + (ua * 100).toFixed(1) + '% acc' : '') + '</span></div>';
+    });
+    h += '<details class="cb-how" id="ascHow"' + (asc.howOpen ? ' open' : '') + '><summary>How this works</summary><div class="cb-how-body">' +
+      '<p>AccSaber clans don\'t own maps. They earn standing from weekly clan missions and, during a season, from wars. Every Monday at 04:00 UTC the clan gets 3 missions. A finished one gives the clan 70 clan XP, plus 100 standing during a season, and 150 XP to everyone who helped.</p>' +
+      '<p>Your usual level comes from your own AccSaber scores in each category. The big number is the middle of your complexity range. Under it is how far up you\'ve cleared, with your median accuracy at your usual complexity. Picks stay at or below the top of that range.</p>' +
+      (grid ? '<div class="cb-acc asc-acc">' + grid + '</div>' : '') +
+      '<p>On Quest, only finished plays reach AccSaber. The AccSaber plugin that also sends quits and fails is PC only. Clan wars aren\'t covered here yet.</p>' +
+      (asc.t ? '<p>Checked ' + asc.nScores + ' of your AccSaber scores against ' + (state.asCache ? state.asCache.length : 0) + ' ranked AccSaber maps, ' + agoStr(asc.t / 1000) + '. Your filters still apply to these picks.</p>' : '') +
+      '</div></details>';
+    bar.innerHTML = h;
+  }
+  function ascClick(e) {
+    var t = e.target.closest('[data-asm]');
+    if (t) {
+      var i = +t.getAttribute('data-asm');
+      if (i !== asc.sel && asc.missions[i]) { asc.sel = i; el.fSort.value = 'clanRank'; el.fOrder.value = 'asc'; track('asclan-pick-' + ascKind(asc.missions[i])); ascRebuild(); }
+      return;
+    }
+    if (e.target.closest('#ascRecheck')) { if (!asc.busy) { track('asclan-recheck'); ascScan(); } return; }
+    if (e.target.closest('#ascToBl')) { if (clan.clans && clan.clans.length) { track('clan-switch-bl'); openClanView(clan.clans, clan.asLink); } return; }
+    if (e.target.closest('#cbExit')) { clanExit(); return; }
   }
     function buildTopPlays(n, forId, forName) {
     var id = forId || (state.player && state.player.id) || '';
@@ -7404,7 +7755,7 @@ window.PP = (function () {
     el.resultList.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-act]'); if (!btn) return;
       var row = e.target.closest('.song-row'); if (!row) return;
-      if (btn.dataset.act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) { if (state.viewMode === 'clan') track('clan-add'); renderAll(); } }
+      if (btn.dataset.act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) { if (state.viewMode === 'clan') track(clan.kind === 'as' ? 'asclan-add' : 'clan-add'); renderAll(); } }
       else if (btn.dataset.act === 'preview') { var pe = findFiltered(row.dataset.key); if (pe) openPreview(pe); }
     });
     el.basketList.addEventListener('click', function (e) {
@@ -7625,7 +7976,9 @@ window.PP = (function () {
      undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build,
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
-     clan-switch, clan-add;
+     clan-switch, clan-add, clan-switch-bl;
+     AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
+     asclan-pick-<scores|cat|card|plays|xp|grind>, asclan-add;
      Send to Quest: export-tab-quest, quest-connect, quest-auth-wait, quest-no-answer, quest-cancel,
      quest-send, quest-picker-cancel, quest-error-<not-approved|no-answer|busy|blocked|disconnected|
      no-folder|connect|send>)

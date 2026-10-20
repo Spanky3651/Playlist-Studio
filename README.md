@@ -93,6 +93,14 @@ In a BeatLeader clan? Your own Stats card gets a **Clan maps** button. On every 
 
 Your realistic run is your 75th percentile accuracy on no-mod ranked scores near each map's stars, only where you have enough plays to judge. The header shows your clan's rank, maps held, how many members count for it, the net change since yesterday and, from your second visit, the maps gained and lost since your last one. In more than one clan? Pick another one to see it as a what-if. Your usual filters still apply, and rows add to Your Playlist like any other result.
 
+### AccSaber clan missions
+In an AccSaber clan? Your own Stats card also gets an **AccSaber clan** button. AccSaber clans don't own maps. They earn standing from three weekly clan missions (and, during a season, from wars), so this view shows your clan's missions for the week with live progress, what you need to do to count as helping, and map picks that move each one:
+- **New scores** (Clan scores, Everyone sets scores, and the Standard, Tech and True Acc pushes): ranked AccSaber maps you haven't cleared near your usual complexity, plus old scores below your usual accuracy. A first clear or a better score both count.
+- **Clan playtime**: short maps near your level, played or not, since every finished play counts.
+- **Clan XP drive**: short first clears, because a first clear pays the full XP bonus. It shows about how much XP each one pays you.
+
+Your usual level comes from your own AccSaber scores in each category. Picks stay at or below the top of the range you've cleared, and maps you've only played with Slower Song are pushed down because AccSaber doesn't count SS runs. Switch between the BeatLeader and AccSaber clan views from either header. Wars aren't covered yet.
+
 ### Preview before you commit
 - ▶ on any row opens an in-app preview - the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
 
