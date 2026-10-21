@@ -4,6 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Playlist Studio // Beat Saber Playlist Builder &amp; Tool</title>
+<script>
+/* GoatCounter helpers (no cookies): a click on any [data-gc] element counts as an event (used for links that
+   leave the site), and the first script error from this page per visit counts as js-error (or js-error-promise).
+   Errors from browser extensions and other sites are skipped. No error text is sent, only the event name. Events wait for count.js, which loads at the end of the page. */
+(function(){
+  var q=[],t=null,sent={},here=location.origin+location.pathname;
+  function send(n){try{window.goatcounter.count({path:'app/'+n,title:n,event:true});}catch(e){}}
+  function gc(n){if(!n)return;if(window.goatcounter&&window.goatcounter.count){send(n);return;}if(q.length<20)q.push(n);
+    if(!t){var k=0;t=setInterval(function(){if(window.goatcounter&&window.goatcounter.count){while(q.length)send(q.shift());clearInterval(t);t=null;}else if(++k>60){clearInterval(t);t=null;q=[];}},500);}}
+  function once(n){if(sent[n])return;sent[n]=1;gc(n);}
+  window.addEventListener('error',function(e){if(!e||(e.target&&e.target!==window))return;var f=String(e.filename||''),m=String(e.message||'');
+    if(f&&f.indexOf(here)!==0)return;if(!f&&/^Script error\.?$/.test(m))return;once('js-error');});
+  window.addEventListener('unhandledrejection',function(){once('js-error-promise');});
+  document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('[data-gc]');if(a)gc(a.getAttribute('data-gc'));},true);
+})();
+</script>
 <link rel="canonical" href="https://spanky3651.github.io/Playlist-Studio/" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3CclipPath%20id%3D%22cc%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%2F%3E%3C%2FclipPath%3E%3Cg%20clip-path%3D%22url%28%23cc%29%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23ff2740%22%2F%3E%3Cpath%20d%3D%22M0%2C64%20L64%2C0%20L64%2C64%20Z%22%20fill%3D%22%232f7bff%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M25%2021%20L46%2032%20L25%2043%20Z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
   <meta name="color-scheme" content="dark" />
@@ -1974,7 +1990,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
   <div class="foot-right">
     <div class="foot-count" id="footCount" hidden></div>
     <div class="footlinks">
-      <a class="src-badge" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" style="vertical-align:-2px;margin-right:6px;flex:none"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a>
+      <a class="src-badge" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" style="vertical-align:-2px;margin-right:6px;flex:none"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a>
     </div>
     
       <a class="credit" href="https://beatleader.com/u/msploit" target="_blank" rel="noopener" title="MSploit on BeatLeader" onclick="try{window.goatcounter&amp;&amp;window.goatcounter.count({path:'profile-playliststudio',title:'BeatLeader profile',event:true})}catch(e){}">
@@ -1987,7 +2003,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-21T00:43:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-21T00:54:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3447,7 +3463,7 @@ window.PP = (function () {
   }
   function svShareUrl() {
     var id = (sv.data && sv.data.bl && sv.data.bl.id) || sv.id;
-    return location.origin + location.pathname + '?stats=' + encodeURIComponent(id);
+    return location.origin + location.pathname + '?stats=' + encodeURIComponent(id) + '&utm_source=share-link&utm_campaign=stats-share';
   }
   function setupStats() {
     var btn = svEl('fullStatsBtn');
@@ -4564,7 +4580,7 @@ window.PP = (function () {
     var payload = { v: 1, t: (el.metaTitle.value || '').slice(0, 120), a: (el.metaAuthor.value || '').slice(0, 80), s: arr };
     return b64enc(JSON.stringify(payload));
   }
-  function buildShareLink() { return location.origin + location.pathname + '#p=' + buildShareStr(); }
+  function buildShareLink() { return location.origin + location.pathname + '?utm_source=share-link&utm_campaign=playlist-share#p=' + buildShareStr(); }
   function renderShare() {
     if (!el.shareLink) return;
     var seen = {}, n = 0; state.basket.forEach(function (e) { var h = (e.hash || '').toLowerCase(); if (h && !seen[h]) { seen[h] = 1; n++; } });
@@ -8017,6 +8033,8 @@ window.PP = (function () {
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
+     Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
+     Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
      asclan-pick-<scores|cat|card|plays|xp|grind>, asclan-add;
      Send to Quest: export-tab-quest, quest-connect, quest-auth-wait, quest-no-answer, quest-cancel,
