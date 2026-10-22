@@ -494,6 +494,62 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-more summary{cursor:pointer;}
 .lq-more p{margin:8px 0;line-height:1.5;}
 .lq-more[hidden]{display:none;}
+.lq-now{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:12px 14px;margin-bottom:16px;border:1px solid #23406b;border-radius:12px;background:linear-gradient(180deg,#0b1a30,#081222);}
+.lq-now[hidden]{display:none;}
+.lq-nowl{flex:1 1 260px;min-width:0;}
+.lq-now .lq-k{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.8px;text-transform:uppercase;color:#7fb0ff;margin-bottom:2px;}
+.lq-now .lq-k.warn{color:#ffd08a;}
+.lq-nowt{display:block;font-size:16px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lq-now .lq-m{display:block;font-size:13px;color:var(--muted);line-height:1.5;margin-top:2px;}
+.lq-nowa{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.lq-now.wide .lq-nowa{flex-basis:100%;}
+.lq-now button svg,.lq-pl button svg,.lq-confirm button svg{width:15px;height:15px;flex:none;}
+.lq-ok{color:#7ee2a8;}
+.lq-wait{color:#ffd08a;}
+.lq-new{color:#9cc2ff;}
+.lq-edn{color:#7fb0ff;}
+.lq-sec{display:flex;align-items:center;gap:10px;margin:0 0 8px;}
+.lq-sec .lq-h{margin:0;color:#cdd8e6;}
+.lq-cnt{font-family:var(--mono);font-size:11.5px;color:var(--muted);border:1px solid var(--border-2);border-radius:20px;padding:1px 8px;}
+.lq-sync{margin-left:auto;font-size:12.5px;color:var(--muted);}
+.lq-ib{width:36px;height:36px;padding:0;justify-content:center;flex:none;border-radius:9px;}
+.lq-ib svg{width:17px;height:17px;}
+.lq-ib.on{border-color:var(--blue);color:#fff;}
+.lq-ib-sp{width:36px;flex:none;}
+.lq-list{border:1px solid #1f3456;border-radius:12px;background:#060c16;margin-bottom:10px;}
+.lq-pl{position:relative;display:flex;align-items:center;gap:8px;padding:9px 10px 9px 14px;border-top:1px solid #142540;}
+.lq-list>:first-child{border-top:0;}
+.lq-pl .lq-t{flex:1;min-width:0;}
+.lq-pl .lq-n{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lq-pl .lq-m{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;font-size:13px;color:var(--muted);margin-top:1px;}
+.lq-st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.lq-dot2{width:7px;height:7px;border-radius:50%;background:#ffb84d;flex:none;}
+.lq-dot2.new{background:#5b9bff;}
+.lq-pl.ed{background:linear-gradient(90deg,rgba(30,107,255,.14),rgba(30,107,255,0) 70%);}
+.lq-pl.ed::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:3px;background:var(--blue);box-shadow:0 0 10px var(--blue);}
+.lq-pl.gone .lq-n{color:#c9d4e3;}
+.lq-pill{font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:20px;border:1px solid #1c4f8f;color:#9cc2ff;background:rgba(30,107,255,.12);white-space:nowrap;flex:none;}
+.lq-menu{position:absolute;right:8px;top:calc(100% - 4px);z-index:20;width:290px;max-width:calc(100% - 16px);padding:6px;border:1px solid #2a4a7a;border-radius:12px;background:#0c1626;box-shadow:0 16px 40px rgba(0,0,0,.6);}
+.lq-ph{font-family:var(--mono);font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);padding:6px 10px 4px;}
+.lq-mi{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:8px;background:transparent;font-size:14px;color:#e6edf6;font-weight:500;text-align:left;white-space:normal;}
+.lq-mi:hover{background:#13233b;box-shadow:none;border:0;}
+.lq-mi svg{width:16px;height:16px;color:var(--muted);flex:none;}
+.lq-mi .lq-m{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap;}
+.lq-mi.danger,.lq-mi.danger svg{color:#ff8597;}
+.lq-hr{height:1px;background:#1f3456;margin:5px 4px;}
+.lq-confirm{padding:10px 14px;border-top:1px solid #3a1a22;background:#140b10;font-size:13.5px;color:#f0c4c4;line-height:1.5;}
+.lq-confirm .lq-row{margin-top:8px;}
+.lq-fold{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;padding:9px 12px;border:1px dashed #2a3a55;border-radius:10px;background:transparent;font-size:13.5px;color:var(--muted);font-weight:500;box-shadow:none;}
+.lq-fold:hover{color:#fff;}
+.lq-fold svg{width:15px;height:15px;margin-left:auto;transition:transform .18s;}
+.lq-fold.open svg{transform:rotate(90deg);}
+.lq-devs2{padding-top:10px;border-top:1px solid var(--border);}
+.lq-dev{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;padding:5px 0;font-size:14px;color:#e6edf6;}
+.lq-dev .lq-m{flex:1;min-width:0;font-size:13px;color:var(--muted);}
+.lq-devacts{display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px;}
+.lq-a{background:none;border:0;padding:0;color:#5b9bff;font-size:13.5px;font-weight:500;box-shadow:none;}
+.lq-a:hover{box-shadow:none;border:0;text-decoration:underline;color:#8fb8ff;}
+@media(max-width:720px){.lq-sync{display:none;}.lq-sec .lq-ib{margin-left:auto;}.lq-nowa{flex-basis:100%;}.lq-nowa button{flex:1;justify-content:center;}.lq-dev .lq-m{flex-basis:100%;order:3;}.lq-dev .lq-a{margin-left:auto;}}
 .ss-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid #23406b;color:#9cc2ff;background:rgba(47,140,255,.10);white-space:nowrap;text-transform:uppercase;letter-spacing:.6px;flex:none;}
 .lq-status{margin:0 0 12px;}
 .lq-status.warn{color:#ffd08a;}
@@ -2140,7 +2196,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T17:50:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T18:15:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6025,6 +6081,55 @@ window.PP = (function () {
     if (state.lq.savedAt) return '<span class="lq-badge">saved ' + esc(agoStr(Math.floor(state.lq.savedAt / 1000))) + '</span>';
     return '';
   }
+  var LQ_ICO = {
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+    hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><path d="M12 7v5l3 2"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>',
+    refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+    chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+    undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+    send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+  };
+  function lqIco(n) { return LQ_ICO[n] || ''; }
+  // The file name only adds something when it isn't just the title.
+  function lqSameName(title, file) { var k = function (x) { return String(x || '').replace(/\.bplist$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, ''); }; return k(title) === k(file); }
+  function lqSaveNote() {
+    if (state.lq.busy || state.pubBusy) return '<span class="lq-wait">saving…</span>';
+    if (state.lq.dirty) return '<span class="lq-wait">unsaved changes</span>';
+    if (state.lq.savedAt) return '<span class="lq-ok">saved ' + esc(agoStr(Math.floor(state.lq.savedAt / 1000))) + '</span>';
+    return 'edits save and send themselves';
+  }
+  function lqMi(label, attrs, cls) { return '<button type="button" role="menuitem" class="lq-mi' + (cls ? ' ' + cls : '') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
+  // One playlist on a headset: name, a status line, Edit, and a "..." menu for the rest.
+  function lqRow(d, it) {
+    var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
+    var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
+    var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [];
+    if (it.count >= 0) meta.push(it.count + ' song' + (it.count === 1 ? '' : 's'));
+    if (!lqSameName(name, it.file)) meta.push(esc(it.file));
+    var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new, arrives next sync</span>'
+      : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting on next sync</span>'
+      : pw && pw.restore ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>restore arrives next sync</span>'
+      : pw ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>edit arrives next sync</span>'
+      : editing ? '<span class="lq-edn">editing now</span>'
+      : baks.length ? baks.length + ' backup' + (baks.length === 1 ? '' : 's') : '';
+    if (st) meta.push(st);
+    var mi = '';
+    if (pw && (pw.restore || it.waiting)) mi += lqMi(lqIco('undo') + (it.waiting ? 'Cancel sending' : 'Undo the restore'), 'data-lq-cancel="' + id + '"');
+    if (!removing && baks.length) mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Restore a backup</div>' + baks.map(function (b) {
+      return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + (b.count >= 0 ? '<span class="lq-m">' + b.count + ' song' + (b.count === 1 ? '' : 's') + '</span>' : ''), 'data-lq-restore="' + id + '|' + b.t + '"');
+    }).join('');
+    if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
+    var open = !!mi && lq.menuOpen === key;
+    var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + 'Edit', 'data-lq-edit="' + id + '"');
+    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + '"><div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' + act +
+      (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
+      (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
+    if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.<div class="lq-row">' +
+      lqBtn(lqIco('trash') + 'Delete', 'data-lq-delete="' + id + '"', 'ghost sm danger') + lqBtn('Keep it', 'data-lq-delask=""') + '</div></div>';
+    return row;
+  }
   function lqBtn(label, attrs, cls) { return '<button type="button" class="' + (cls || 'ghost sm') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
   function lqRender() {
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
@@ -6054,31 +6159,37 @@ window.PP = (function () {
     document.getElementById('ssHide').hidden = !!lib;
     document.getElementById('ssHmd').hidden = !LQ_QUEST_UA;
 
-    // This playlist
+    // This playlist: one compact card with a single action
     var card = document.getElementById('lqThisBox');
     card.hidden = !linked;
     if (linked) {
-      var title = esc(lqCurrentTitle()), n = state.basket.length, h = '';
+      var title = esc(lqCurrentTitle()), n = state.basket.length, h = '', songs = n + ' song' + (n === 1 ? '' : 's'), wide = false;
+      var nowCard = function (kick, name, meta, acts, cls) {
+        return '<div class="lq-nowl"><span class="lq-k' + (cls ? ' ' + cls : '') + '">' + kick + '</span><b class="lq-nowt">' + name + '</b><span class="lq-m">' + meta + '</span></div>' + (acts ? '<div class="lq-nowa">' + acts + '</div>' : '');
+      };
       if (ed) {
-        h = '<p class="lq-title"><b>' + (n ? title : esc(ed.title)) + '</b> on ' + esc(lqEdWhere(ed)) + (lqEdPending(ed) ? '<span class="lq-badge wait">waiting for headset</span>' : '<span class="lq-badge">on your Quest</span>') + '</p>' +
-          '<p class="lq-sub">' + (n ? n + ' song' + (n === 1 ? '' : 's') + (lq.openName ? ', also in Playlist Library as “' + esc(lq.openName) + '”' : '') + '. ' : '') + 'Edits save and send themselves; the headset updates on its next sync and keeps a backup. ' + lqSaveState() + '</p>' +
-          '<div class="lq-row">' + lqBtn('Done editing', 'data-lq-stopedit') + '</div>';
+        h = nowCard('Editing on ' + esc(lqEdWhere(ed)), n ? title : esc(ed.title),
+          (n ? songs + (lq.openName ? ' &middot; in Playlist Library as “' + esc(lq.openName) + '”' : '') + ' &middot; ' : '') + lqSaveNote() +
+          (lqEdPending(ed) ? ' &middot; <span class="lq-wait">sent, waiting for the headset</span>' : ', the headset updates on its next sync and keeps a backup'),
+          lqBtn('Done editing', 'data-lq-stopedit'));
       } else if (!n) {
-        h = '<p class="lq-title">This playlist</p><p class="lq-sub">Build a playlist in Your Playlist to send it to your Quest, or edit one already on it below.</p>';
+        h = nowCard('This playlist', 'Nothing to send yet', 'Build a playlist in Your Playlist to send it, or edit one already on your Quest below.', '');
       } else if (lq.dup) {
         var all = lq.dup.hits.length === lq.dup.devs.length;
         var onWhere = all ? (lq.dup.devs.length > 1 ? 'all ' + lq.dup.devs.length + ' headsets' : lqDevName(lq.dup.hits[0])) : lq.dup.hits.map(lqDevName).join(', ');
-        h = '<p class="lq-title">“' + esc(lq.dup.title) + '” is already on ' + esc(onWhere) + '</p><p class="lq-sub">Replace it with this one, or send this as a second playlist with the same name. Replacing keeps the old version as a backup you can restore from the list below.' +
-          (all ? '' : ' Headsets without it get it as a new playlist either way.') + '</p>' +
-          '<div class="lq-row">' + lqBtn('Replace it', 'data-lq-dupreplace', 'primary') + lqBtn('Send as new', 'data-lq-dupnew') + lqBtn('Cancel', 'data-lq-dupcancel') + '</div>';
+        h = nowCard('Already on ' + esc(onWhere), '“' + esc(lq.dup.title) + '”', 'Replace it with this one, or send this as a second playlist with the same name. Replacing keeps the old version as a backup you can restore from the list below.' +
+          (all ? '' : ' Headsets without it get it as a new playlist either way.'),
+          lqBtn('Replace it', 'data-lq-dupreplace', 'primary') + lqBtn('Send as new', 'data-lq-dupnew') + lqBtn('Cancel', 'data-lq-dupcancel'), 'warn');
+        wide = true;
       } else {
         var multi = lq.devices.length > 1, to = lqSendDevs(), toAll = multi && lq.sendTo === 'all';
         var pick = multi ? '<select id="lqSendTo" class="lq-sel" aria-label="Send to">' + lq.devices.map(function (d) {
           return '<option value="' + esc(d.id) + '"' + (!toAll && to[0] === d.id ? ' selected' : '') + '>' + esc(lqDevName(d.id)) + '</option>';
         }).join('') + '<option value="all"' + (toAll ? ' selected' : '') + '>All ' + lq.devices.length + ' headsets</option></select>' : '';
-        h = '<p class="lq-title">' + title + '</p><p class="lq-sub">' + n + ' song' + (n === 1 ? '' : 's') + '. Send it and it becomes a playlist on your headset' + (multi ? 's you pick' : '') + ' (next sync). After that your edits save and send themselves.</p>' +
-          '<div class="lq-row">' + pick + lqBtn(lq.busy ? 'Sending…' : (toAll ? 'Send to all headsets' : 'Send to Quest'), 'data-lq-send', 'primary') + '</div>';
+        h = nowCard('This playlist', title, songs + ' &middot; send it and it becomes a playlist on your headset' + (multi ? 's you pick' : '') + ' on the next sync. After that your edits save and send themselves.',
+          pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : (toAll ? 'Send to all headsets' : 'Send to Quest')), 'data-lq-send', 'primary'));
       }
+      card.className = 'lq-now' + (wide ? ' wide' : '');
       card.innerHTML = h;
     }
 
@@ -6086,51 +6197,40 @@ window.PP = (function () {
     document.getElementById('lqItems').innerHTML = linked && lq.items.length ? '<div class="lq-card"><p class="lq-title">' + lq.items.length + ' playlist' + (lq.items.length === 1 ? '' : 's') + ' linked the old way</p><p class="lq-sub">' +
       lq.items.map(function (it) { return esc(it.title || it.id); }).join(', ') + '. Move ' + (lq.items.length === 1 ? 'it' : 'them') + ' onto the headset so ' + (lq.items.length === 1 ? 'it shows' : 'they show') + ' up below and edit like the rest. The old copies are removed on the same sync.</p><div class="lq-row">' + lqBtn('Move to headset', 'data-lq-migrate', 'primary') + '</div></div>' : '';
 
-    // On your Quest
+    // On your Quest: one quiet row per playlist, Edit plus a "..." menu
     var qh = '';
     if (linked) {
       lq.devices.forEach(function (d) {
         var q = lq.quest[d.id], items = lqQuestItems(d.id);
-        qh += '<div class="lq-hrow"><div class="lq-h">On ' + esc(lqDevName(d.id)) + (items.length ? ' (' + items.length + ')' : '') + '</div>' + lqBtn('↻ Refresh', 'data-lq-refresh') + '</div>';
+        qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(lqDevName(d.id)) + '</span>' + (items.length ? '<span class="lq-cnt">' + items.length + '</span>' : '') +
+          '<span class="lq-sync">' + (q && q.updated ? 'synced ' + esc(agoStr(q.updated)) : '') + '</span>' + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
         if ((!q || !q.updated) && !items.length) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
         else if (!items.length) qh += '<p class="lq-steps">No playlists on the headset yet.</p>';
-        else qh += '<div class="lq-scroll">' + items.map(function (it) {
-          var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), id = esc(d.id) + '|' + esc(it.k);
-          var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], open = lq.restoreOpen === d.id + '|' + it.k;
-          var removing = !!(pw && pw.remove), ask = lq.delAsk === d.id + '|' + it.k;
-          var badge = it.waiting ? 'new, waiting for headset' : pw ? (pw.remove ? 'delete pending' : pw.restore ? 'restore pending' : 'edit pending') : '';
-          var row = '<div class="lq-li' + (removing ? ' gone' : '') + '"><span class="lq-name">' + esc(it.title || it.file) + (badge ? '<span class="lq-badge wait">' + badge + '</span>' : '') +
-            '<span class="lq-sub">' + (it.count >= 0 ? it.count + ' song' + (it.count === 1 ? '' : 's') + ' &middot; ' : '') + esc(it.file) + '</span></span><span class="lq-acts">' +
-            (pw && (pw.remove || pw.restore || it.waiting) ? lqBtn('Undo', 'data-lq-cancel="' + id + '"') : '') +
-            (!removing && baks.length ? lqBtn(open ? 'Close' : 'Restore…', 'data-lq-restoreopen="' + id + '"') : '') +
-            (!removing && !it.waiting && lqCan(d.id, 'delete') ? lqBtn('Delete', 'data-lq-delask="' + id + '"', 'ghost sm danger') : '') +
-            (removing ? '' : editing ? '<span class="lq-badge">editing</span>' : lqBtn('Edit', 'data-lq-edit="' + id + '"')) + '</span></div>';
-          if (ask && !removing) row += '<div class="lq-restore warn">Delete “' + esc(it.title || it.file) + '” from ' + esc(lqDevName(d.id)) + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.<div class="lq-row">' +
-            lqBtn('Delete', 'data-lq-delete="' + id + '"', 'ghost sm danger') + lqBtn('Keep it', 'data-lq-delask=""') + '</div></div>';
-          if (open && baks.length) row += '<div class="lq-restore">Put back the version from before an edit. The one on the headset now is kept as a backup, so this can be undone.<div class="lq-row">' +
-            baks.map(function (b) { return lqBtn(esc(lqWhen(b.t)) + (b.count >= 0 ? ' &middot; ' + b.count + ' song' + (b.count === 1 ? '' : 's') : ''), 'data-lq-restore="' + id + '|' + b.t + '"'); }).join('') + '</div></div>';
-          return row;
-        }).join('') + '</div>';
+        else qh += '<div class="lq-list">' + items.map(function (it) { return lqRow(d, it); }).join('') + '</div>';
         // Recently deleted: playlists the headset still holds as backups.
         var gone = q && Array.isArray(q.deleted) ? q.deleted : [], delOpen = !!(lq.delOpen && lq.delOpen[d.id]);
         if (gone.length) {
-          qh += '<div class="lq-hrow lq-delhead"><div class="lq-h">Recently deleted (' + gone.length + ')</div>' + lqBtn(delOpen ? 'Hide' : 'Show', 'data-lq-delopen="' + esc(d.id) + '"') + '</div>';
-          if (delOpen) qh += gone.map(function (g) {
-            var pw = lqPendingFor(d.id, g.k), b = g.backups[0], id = esc(d.id) + '|' + esc(g.k);
-            return '<div class="lq-li gone"><span class="lq-name">' + esc(g.title || g.file) + (pw && pw.restore ? '<span class="lq-badge wait">coming back</span>' : '') +
-              '<span class="lq-sub">deleted ' + esc(lqWhen(b.t)) + (b.count >= 0 ? ' &middot; ' + b.count + ' song' + (b.count === 1 ? '' : 's') : '') + ' &middot; ' + esc(g.file) + '</span></span><span class="lq-acts">' +
-              (pw ? lqBtn('Undo', 'data-lq-cancel="' + id + '"') : lqBtn('Restore', 'data-lq-restore="' + id + '|' + b.t + '"')) + '</span></div>';
-          }).join('');
+          qh += '<button type="button" class="lq-fold' + (delOpen ? ' open' : '') + '" data-lq-delopen="' + esc(d.id) + '" aria-expanded="' + delOpen + '">Recently deleted (' + gone.length + ')' + lqIco('chev') + '</button>';
+          if (delOpen) qh += '<div class="lq-list">' + gone.map(function (g) {
+            var pw = lqPendingFor(d.id, g.k), b = g.backups[0], id = esc(d.id) + '|' + esc(g.k), nm = g.title || g.file, meta = ['deleted ' + esc(lqWhen(b.t))];
+            if (b.count >= 0) meta.push(b.count + ' song' + (b.count === 1 ? '' : 's'));
+            if (!lqSameName(nm, g.file)) meta.push(esc(g.file));
+            if (pw && pw.restore) meta.push('<span class="lq-st lq-wait"><span class="lq-dot2"></span>coming back next sync</span>');
+            return '<div class="lq-pl gone"><div class="lq-t"><span class="lq-n">' + esc(nm) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
+              (pw ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : lqBtn(lqIco('hist') + 'Restore', 'data-lq-restore="' + id + '|' + b.t + '"')) + '</div>';
+          }).join('') + '</div>';
         }
       });
     }
     document.getElementById('lqQuest').innerHTML = qh;
 
-    // Headsets
-    document.getElementById('lqDevs').innerHTML = lq.devices.length ? '<div class="lq-hrow"><div class="lq-h">Headsets</div>' + (lq.showLink ? '' : lqBtn('+ Link another', 'data-lq-showlink')) + '</div>' + lq.devices.map(function (d) {
+    // Headsets: one line each; Manage shows Unlink and Link another
+    var dOpen = !!lq.devsOpen;
+    document.getElementById('lqDevs').innerHTML = lq.devices.length ? '<div class="lq-devs2">' + lq.devices.map(function (d, i) {
       var fresh = d.seen && (Date.now() / 1000 - d.seen) < 86400 * 2;
-      return '<div class="lq-li"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><span class="lq-name">' + esc(lqDevName(d.id)) + '<span class="lq-sub">linked ' + esc(lqAgo(d.added)) + ' &middot; last sync ' + esc(lqAgo(d.seen)) + '</span></span>' + lqBtn('Unlink', 'data-lq-unlink="' + esc(d.id) + '"', 'ghost sm danger') + '</div>';
-    }).join('') : '';
+      return '<div class="lq-dev"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><span class="lq-devn">' + esc(lqDevName(d.id)) + '</span><span class="lq-m">linked ' + esc(lqAgo(d.added)) + ' &middot; last sync ' + esc(lqAgo(d.seen)) + '</span>' +
+        (dOpen ? lqBtn('Unlink', 'data-lq-unlink="' + esc(d.id) + '"', 'ghost sm danger') : (i === 0 ? '<button type="button" class="lq-a" data-lq-devsopen>Manage headsets</button>' : '')) + '</div>';
+    }).join('') + (dOpen ? '<div class="lq-devacts">' + (lq.showLink ? '' : lqBtn('+ Link another headset', 'data-lq-showlink')) + '<button type="button" class="lq-a" data-lq-devsopen>Done</button></div>' : '') + '</div>' : '';
 
     document.getElementById('lqMore').hidden = !lib;
     if (lib) document.getElementById('lqKeyOut').value = lib.id + '.' + lib.key;
@@ -6222,7 +6322,10 @@ window.PP = (function () {
     });
     var onClick = function (e) {
       var t = e.target.closest('button'); if (!t || t.disabled) return;
-      if (t.hasAttribute('data-lq-unlink')) lqUnlink(t.getAttribute('data-lq-unlink'));
+      if (t.closest('.lq-menu')) state.lq.menuOpen = null;   // picking anything in a menu closes it
+      if (t.hasAttribute('data-lq-menu')) { var mk = t.getAttribute('data-lq-menu'); state.lq.menuOpen = state.lq.menuOpen === mk ? null : mk; state.lq.delAsk = null; lqRender(); }
+      else if (t.hasAttribute('data-lq-devsopen')) { state.lq.devsOpen = !state.lq.devsOpen; if (!state.lq.devsOpen) state.lq.showLink = false; lqRender(); }
+      else if (t.hasAttribute('data-lq-unlink')) lqUnlink(t.getAttribute('data-lq-unlink'));
       else if (t.hasAttribute('data-lq-remove')) lqRemove(t.getAttribute('data-lq-remove'));
       else if (t.hasAttribute('data-lq-send')) lqSendThis();
       else if (t.hasAttribute('data-lq-dupreplace')) lqSendThis('replace');
@@ -6242,6 +6345,9 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-edit')) { var p = t.getAttribute('data-lq-edit').split('|'); lqEdit(p[0], p[1]); }
     };
     document.getElementById('lqPanel').addEventListener('click', onClick);
+    // A click anywhere else, or Esc, closes an open "..." menu.
+    document.addEventListener('click', function (e) { if (!state.lq.menuOpen || (e.target.closest && e.target.closest('.lq-menu, [data-lq-menu]'))) return; state.lq.menuOpen = null; lqRender(); }, true);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && state.lq.menuOpen) { state.lq.menuOpen = null; lqRender(); } });
     document.getElementById('lqPanel').addEventListener('change', function (e) {
       if (e.target && e.target.id === 'lqSendTo') { state.lq.sendTo = e.target.value; state.lq.dup = null; if (e.target.value !== 'all') state.lq.lastDev = e.target.value; lqRender(); }
     });
