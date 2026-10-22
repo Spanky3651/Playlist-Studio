@@ -368,7 +368,10 @@ async function linked(request, env, ctx, url) {
   }
 
   // ---- Studio side ----
-  if (!originOk(request)) return json({ error: "Only Playlist Studio can manage libraries" }, 403, cors);
+  // A script on the owner's own computer (no browser, so no Origin header) may manage an existing library with its key.
+  // Browsers always send Origin on these cross-site calls, so another web page still can't. New libraries stay Studio-only.
+  const scripted = !request.headers.get("Origin") && path !== "/lib";
+  if (!originOk(request) && !scripted) return json({ error: "Only Playlist Studio can manage libraries" }, 403, cors);
 
   if (path === "/lib" && request.method === "POST") {
     if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
@@ -377,7 +380,7 @@ async function linked(request, env, ctx, url) {
     return json({ id, key }, 201, cors);
   }
 
-  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
+  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
   const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
   if (!lib) return json({ error: "Not found" }, 404, cors);
@@ -500,6 +503,16 @@ async function linked(request, env, ctx, url) {
     lib.items = items;
     await putLib(env, id, lib);
     return json({ items, devices: publicDevices(lib) }, 200, cors);
+  }
+
+  // A new key for the library. Headsets keep working (they use their own tokens); every browser or script holding
+  // the old key stops. Only Studio itself can do this, so a key copied into a script can't lock the owner out.
+  if (m[2] === "/rekey" && request.method === "POST") {
+    if (scripted) return json({ error: "Make a new key in Playlist Studio" }, 403, cors);
+    const nk = randomHex(24);
+    lib.hk = await sha256(nk);
+    await putLib(env, id, lib);
+    return json({ id, key: nk }, 200, cors);
   }
 
   if (m[2] === "/claim" && request.method === "POST") {

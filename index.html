@@ -2104,6 +2104,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <summary>Manage from another browser</summary>
           <p>This browser holds the key for your linked library. Paste this into Studio on another computer to manage the same headsets. Treat it like a password.</p>
           <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
+          <p>Key shared somewhere it shouldn't be? Make a new one. Your headsets stay linked; other browsers and scripts using the old key stop working until you give them the new one.</p>
+          <div class="lq-row"><button type="button" class="ghost sm" id="lqRekey">Make a new key</button></div>
         </details>
         <details class="lq-more" id="lqImport">
           <summary>Already linked on another browser?</summary>
@@ -6189,11 +6191,27 @@ window.PP = (function () {
       toast('That key didn\'t work.', 'warn');
     }, function () { toast('Couldn\'t reach the sync service.', 'warn'); }).then(lqRender);
   }
+  function lqRekey() {
+    var lib = libGet(), b = document.getElementById('lqRekey'); if (!lib || !b) return;
+    if (b.getAttribute('data-armed') !== '1') {
+      b.setAttribute('data-armed', '1'); b.textContent = 'Tap again to replace the key';
+      setTimeout(function () { b.removeAttribute('data-armed'); b.textContent = 'Make a new key'; }, 4000);
+      return;
+    }
+    b.removeAttribute('data-armed'); b.textContent = 'Make a new key'; b.disabled = true;
+    libFetch('POST', libPath('/rekey'), {}).then(function (res) {
+      if (res.ok && res.j && /^[0-9a-f]{48}$/.test(res.j.key || '')) {
+        libSet({ id: lib.id, key: res.j.key }); lqRender();
+        toast('New library key made. The old one no longer works.', 'ok'); track('lq-rekey');
+      } else toast((res.j && res.j.error) || 'Couldn\'t make a new key.', 'warn');
+    }, function () { toast('Couldn\'t reach the sync service.', 'warn'); }).then(function () { b.disabled = false; });
+  }
   function setupLinkedQuest() {
     if (!document.getElementById('lqPanel')) return;
     document.getElementById('lqLinkBtn').addEventListener('click', lqLink);
     document.getElementById('lqCode').addEventListener('keydown', function (e) { if (e.key === 'Enter') lqLink(); });
     document.getElementById('lqKeyUse').addEventListener('click', lqUseKey);
+    document.getElementById('lqRekey').addEventListener('click', lqRekey);
     document.getElementById('lqKeyCopy').addEventListener('click', function () {
       var v = document.getElementById('lqKeyOut').value;
       (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function () { toast('Library key copied.', 'ok'); }, function () { document.getElementById('lqKeyOut').select(); });
