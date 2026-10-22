@@ -204,8 +204,10 @@ It stays out of the way for PC players. The **Studio Sync** panel shows up in th
 
 From then on:
 - The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
-- **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file.
+- **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file. With more than one headset linked, pick one or **All headsets**.
+- If a headset already has a playlist with the same name, Studio asks first: **Replace it** (the headset keeps the old version as a backup) or **Send as new**. A new playlist never overwrites a file; if the name is taken on the headset it's saved as "Name (2)" and Studio follows it there.
 - **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
+- **Restore...** on a headset playlist lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
 - Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Unlink** stops syncing a headset.
 
 The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
