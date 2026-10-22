@@ -1090,7 +1090,9 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 /* ---- Easter eggs ---- */
 body.egg-slice,body.egg-slice *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%23ff2740' stroke-width='6' stroke-linecap='round' opacity='.45'/%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='21' y1='21' x2='28' y2='28' stroke='%239aa3b2' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") 3 3,crosshair !important;}
 body.egg-slice.egg-blue,body.egg-slice.egg-blue *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%232f7bff' stroke-width='6' stroke-linecap='round' opacity='.45'/%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='21' y1='21' x2='28' y2='28' stroke='%239aa3b2' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") 3 3,crosshair !important;}
-body.egg-slice .song-row{touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+body.egg-slice .col-right,body.egg-slice .col-right #resultList{touch-action:none;}
+body.egg-slice .song-row{user-select:none;-webkit-user-select:none;}
+.brand .logo{touch-action:manipulation;}
 .egg-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9997;}
 .song-row.egg-cut{position:relative;overflow:hidden;animation:egg-jolt .3s ease-out;}
 .song-row.egg-cut::after{content:'';position:absolute;left:calc(var(--egg-x,50%) - 75%);width:150%;top:50%;height:3px;margin-top:-1.5px;background:linear-gradient(90deg,transparent,var(--egg-c,#fff) 18%,#fff 50%,var(--egg-c,#fff) 82%,transparent);box-shadow:0 0 14px var(--egg-c,#fff);transform:rotate(var(--egg-a,90deg)) scaleX(0);animation:egg-slash .38s ease-out forwards;pointer-events:none;z-index:3;}
@@ -2040,7 +2042,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T00:29:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T01:14:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5967,7 +5969,7 @@ window.PP = (function () {
   var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {}, egg115Sent = false, eggKeys = '', eggKeyT = 0;
   var EGG_BOMB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="#4a505c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="6.4" fill="#15171c" stroke="#4a505c" stroke-width="1"/><circle cx="10" cy="10" r="1.6" fill="#6b7280" opacity=".7"/></svg>';
   var EGG_PUMPKIN = '<svg class="egg-pumpkin" viewBox="0 0 64 64" aria-hidden="true"><path d="M30 15c0-5 2-8 7-10l2 3c-3 2-4 4-4 7z" fill="#4caf50"/><ellipse cx="20" cy="38" rx="13" ry="18" fill="#d9590b"/><ellipse cx="44" cy="38" rx="13" ry="18" fill="#d9590b"/><ellipse cx="32" cy="38" rx="14" ry="20" fill="#ff7a1a"/><path d="M17 36l6-8 6 8zM35 36l6-8 6 8z" fill="#ffd23d"/><path d="M16 43h32l-4 8-4-4-4 5-4-5-4 5-4-5-4 4z" fill="#ffd23d"/></svg>';
-  var slice = { on: false, taps: [], combo: 0, best: 0, n115: 0, pts: [], cur: null, raf: 0, cv: null, ctx: null, hud: null, blue: false, perfectSent: false };
+  var slice = { on: false, taps: [], combo: 0, best: 0, n115: 0, pts: [], cur: null, raf: 0, cv: null, ctx: null, hud: null, blue: false, perfectSent: false, touches: {}, scrolling: false, scroller: null };
 
   // count.js loads at the end of the page; events fired during start-up wait for it.
   function trackSoon(name) { var n = 0; (function go() { if (window.goatcounter && window.goatcounter.count) track(name); else if (++n < 30) setTimeout(go, 500); })(); }
@@ -6016,9 +6018,10 @@ window.PP = (function () {
     document.body.classList.add('egg-halloween'); trackSoon('egg-halloween');
   }
 
-  // Slice mode. A cut is a fast swing that crosses a result row (most of its height, or most of its width on a
-  // phone swipe). Scored like a Beat Saber cut: up to 70 for the swing into the row, 30 for the follow-through
-  // and 15 for a straight line, so 115 is a fast, clean swing.
+  // Slice mode. A cut is a fast swing that crosses a result row (most of its height or most of its width).
+  // Scored like a Beat Saber cut: up to 70 for the swing into the row, 30 for the follow-through and 15 for a
+  // straight line, so 115 is a fast, clean swing. On touch screens the result list stops scrolling while it's on
+  // (one finger slices in any direction) and two fingers scroll it instead.
   function sliceTap() {
     var now = Date.now();
     slice.taps = slice.taps.filter(function (t) { return now - t < 3000; }); slice.taps.push(now);
@@ -6033,11 +6036,12 @@ window.PP = (function () {
     var hud = document.createElement('div'); hud.className = 'egg-hud'; hud.setAttribute('role', 'status'); document.body.appendChild(hud); slice.hud = hud;
     hud.addEventListener('click', function (e) { if (e.target.closest('[data-egg-exit]')) sliceOff(); });
     sliceHud();
-    toast('Slice mode. Swing fast through the songs. Esc, × or 7 more logo taps to stop.', 'ok');
+    var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    toast(coarse ? 'Slice mode. Swipe through the songs with one finger, scroll with two. Tap × to stop.' : 'Slice mode. Swing fast through the songs. Esc, × or 7 more logo taps to stop.', 'ok');
     track('egg-slice');
   }
   function sliceOff() {
-    slice.on = false; slice.pts = []; slice.cur = null;
+    slice.on = false; slice.pts = []; slice.cur = null; slice.touches = {}; slice.scrolling = false; slice.scroller = null;
     document.body.classList.remove('egg-slice', 'egg-blue');
     if (slice.raf) cancelAnimationFrame(slice.raf); slice.raf = 0;
     if (slice.cv) slice.cv.remove(); if (slice.hud) slice.hud.remove();
@@ -6055,18 +6059,62 @@ window.PP = (function () {
     var d = 0; for (var k = j + 1; k <= i; k++) d += Math.hypot(p[k].x - p[k - 1].x, p[k].y - p[k - 1].y);
     var dt = p[i].t - p[j].t; return dt > 0 ? d / dt : 0;
   }
+  function sliceDown(e) {
+    if (!slice.on) return;
+    slice.pts = []; slice.cur = null;
+    if (e.pointerType !== 'touch') return;
+    slice.touches[e.pointerId] = { x: e.clientX, y: e.clientY };
+    if (Object.keys(slice.touches).length > 1) { if (!slice.scrolling) slice.scroller = sliceScroller(e.clientX, e.clientY); slice.scrolling = true; }
+    else if (!slice.scrolling) {
+      var hit = document.elementFromPoint(e.clientX, e.clientY), row = hit && hit.closest ? hit.closest('#resultList .song-row') : null;
+      if (row) slice.cur = { row: row, x: e.clientX, y: e.clientY, t: sliceTime(e), vPre: 0 };
+    }
+  }
+  // The nearest scrollable box under the fingers (the result list scrolls on its own on phones), else the page.
+  function sliceScroller(x, y) {
+    for (var n = document.elementFromPoint(x, y); n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      var oy = getComputedStyle(n).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return n;
+    }
+    return null;
+  }
+  function sliceLift(e) {
+    if (e.pointerType !== 'touch') return;
+    delete slice.touches[e.pointerId];
+    if (!Object.keys(slice.touches).length) { slice.scrolling = false; slice.scroller = null; }
+  }
+  // Event time for speed: the browser's own timestamp (coalesced points carry theirs), else now.
+  function sliceTime(ev) { var n = performance.now(), ts = ev && ev.timeStamp; return ts > 0 && Math.abs(n - ts) < 5000 ? ts : n; }
   function sliceMove(e) {
     if (!slice.on) return;
-    var x = e.clientX, y = e.clientY, t = performance.now();
+    if (e.pointerType === 'touch' && slice.touches[e.pointerId]) {
+      var tp = slice.touches[e.pointerId], n = Object.keys(slice.touches).length;
+      if (slice.scrolling) {
+        if (n > 1) { var dyS = -(e.clientY - tp.y) / n; if (slice.scroller) slice.scroller.scrollTop += dyS; else window.scrollBy({ top: dyS, behavior: 'instant' }); }
+        tp.x = e.clientX; tp.y = e.clientY; slice.cur = null; slice.pts = []; return;
+      }
+      tp.x = e.clientX; tp.y = e.clientY;
+    }
+    // Phones and fast mice batch several moves into one event; walk every point so fast swipes don't skip rows.
+    var list = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
+    if (!list.length) list = [e];
+    for (var i = 0; i < list.length; i++) slicePoint(list[i].clientX, list[i].clientY, sliceTime(list[i]));
+    if (!slice.raf) slice.raf = requestAnimationFrame(sliceDraw);
+  }
+  function slicePoint(x, y, t) {
     slice.pts.push({ x: x, y: y, t: t });
     while (slice.pts.length && t - slice.pts[0].t > 400) slice.pts.shift();
     var blue = x > innerWidth / 2; if (blue !== slice.blue) { slice.blue = blue; document.body.classList.toggle('egg-blue', blue); }
     var hit = document.elementFromPoint(x, y), row = hit && hit.closest ? hit.closest('#resultList .song-row') : null;
     if (slice.cur && slice.cur.row !== row) { sliceCut(slice.cur, x, y, t); slice.cur = null; }
+    else if (slice.cur && sliceSpeed(t, 60) < 0.25) { slice.cur.x = x; slice.cur.y = y; slice.cur.t = t; slice.cur.vPre = 0; }   // resting: the swing starts from here
     if (row && !slice.cur) slice.cur = { row: row, x: x, y: y, t: t, vPre: sliceSpeed(t, 100) };
-    if (!slice.raf) slice.raf = requestAnimationFrame(sliceDraw);
   }
-  function sliceUp(e) { if (!slice.on) return; if (slice.cur) sliceCut(slice.cur, e.clientX, e.clientY, performance.now()); slice.cur = null; slice.pts = []; }
+  function sliceUp(e) {
+    if (!slice.on) return;
+    if (slice.cur && !slice.scrolling) sliceCut(slice.cur, e.clientX, e.clientY, sliceTime(e));
+    slice.cur = null; slice.pts = []; sliceLift(e);
+  }
   function sliceCut(cur, x, y, t) {
     var row = cur.row; if (!row.isConnected) return;
     var r = row.getBoundingClientRect(), dx = x - cur.x, dy = y - cur.y, dt = t - cur.t;
@@ -6110,9 +6158,10 @@ window.PP = (function () {
   }
   function setupEggs() {
     var lg = document.querySelector('.brand .logo'); if (lg) lg.addEventListener('click', sliceTap);
+    document.addEventListener('pointerdown', sliceDown, { passive: true });
     document.addEventListener('pointermove', sliceMove, { passive: true });
     document.addEventListener('pointerup', sliceUp, { passive: true });
-    document.addEventListener('pointercancel', function () { slice.cur = null; slice.pts = []; }, { passive: true });
+    document.addEventListener('pointercancel', function (e) { slice.cur = null; slice.pts = []; sliceLift(e); }, { passive: true });
     window.addEventListener('resize', sliceSize);
     document.addEventListener('keydown', eggKey);
     if (el.resultList) el.resultList.addEventListener('click', function (e) { var b = e.target.closest('.egg-bomb'); if (b) { e.stopPropagation(); eggBoom(b); } });
