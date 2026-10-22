@@ -522,6 +522,22 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-pl .lq-t{flex:1;min-width:0;}
 .lq-pl .lq-n{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .lq-pl .lq-m{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;font-size:13px;color:var(--muted);margin-top:1px;}
+.lq-cov{width:40px;height:40px;border-radius:8px;flex:none;object-fit:cover;background:#0d1620;border:1px solid #1f3456;}
+.lq-cov.ph{display:flex;align-items:center;justify-content:center;color:#4f6789;font-size:18px;}
+.lq-cov.ld{background:linear-gradient(110deg,#0d1620 30%,#16243a 50%,#0d1620 70%);background-size:200% 100%;animation:lqshim 1.4s linear infinite;}
+@keyframes lqshim{from{background-position:100% 0}to{background-position:-100% 0}}
+.lq-pl.gone .lq-cov{opacity:.6;}
+.lq-addbtn{flex:none;}
+.lq-addbtn svg{width:15px;height:15px;}
+.lq-dropzone{border-radius:12px;transition:box-shadow .15s;}
+.lq-dropzone.lq-over{box-shadow:0 0 0 2px var(--blue),0 0 24px rgba(30,107,255,.35);}
+.lq-dropzone .lq-list{margin-bottom:0;}
+.lq-drophint{margin:6px 2px 12px;font-size:12.5px;color:var(--muted-2);}
+.lq-drophint code{font-size:12px;}
+.lq-ask{margin:0 0 10px;padding:10px 14px;border:1px solid #6b4d1c;border-radius:12px;background:#171106;font-size:13.5px;color:#f2e0a8;line-height:1.5;}
+.lq-ask .lq-row{margin-top:8px;}
+@media (hover:none){.lq-drophint{display:none;}.lq-dropzone{margin-bottom:10px;}}
+@media(max-width:720px){.lq-cov{width:36px;height:36px;}.lq-pl{padding-left:10px;}.lq-pl .lq-lbl{display:none;}.lq-pl [data-lq-edit]{width:36px;height:36px;padding:0;justify-content:center;}}
 .lq-st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
 .lq-dot2{width:7px;height:7px;border-radius:50%;background:#ffb84d;flex:none;}
 .lq-dot2.new{background:#5b9bff;}
@@ -2196,7 +2212,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T18:15:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T18:51:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6082,6 +6098,7 @@ window.PP = (function () {
     return '';
   }
   var LQ_ICO = {
+    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
     more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
     hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><path d="M12 7v5l3 2"/></svg>',
@@ -6102,6 +6119,142 @@ window.PP = (function () {
   }
   function lqMi(label, attrs, cls) { return '<button type="button" role="menuitem" class="lq-mi' + (cls ? ' ' + cls : '') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
   // One playlist on a headset: name, a status line, Edit, and a "..." menu for the rest.
+  // ---- playlist covers: fetched once per playlist version, shrunk, kept in this browser ----
+  // A headset's list carries no images, but Studio can read each playlist the headset uploaded (the same
+  // file Edit opens). The cover is cut to a small square and cached by playlist + upload time, so a
+  // playlist is only downloaded again after it changes. A mod that sends its own "thumb" is used as is.
+  var LQ_THUMB_KEY = 'playlistStudio.lqThumbs.v1', LQ_THUMB_MAX = 300, lqThumbs = null, lqThumbQ = [], lqThumbBusy = 0, lqThumbTried = {};
+  function lqThumbStore() {
+    if (!lqThumbs) { try { lqThumbs = JSON.parse(localStorage.getItem(LQ_THUMB_KEY) || '{}') || {}; } catch (e) { lqThumbs = {}; } }
+    return lqThumbs;
+  }
+  function lqThumbSave() {
+    var o = lqThumbStore(), ks = Object.keys(o);
+    if (ks.length > LQ_THUMB_MAX) ks.sort(function (a, b) { return (o[a].u || 0) - (o[b].u || 0); }).slice(0, ks.length - LQ_THUMB_MAX).forEach(function (k) { delete o[k]; });
+    try { localStorage.setItem(LQ_THUMB_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  // Returns a data URL, '' (no cover), or null (still loading).
+  function lqThumbFor(d, it) {
+    if (typeof it.thumb === 'string' && /^data:image\//i.test(it.thumb)) return it.thumb;
+    var key = d.id + '|' + it.k, c = lqThumbStore()[key];
+    if (c && (c.at === it.at || it.waiting || c.at === 'w')) {
+      if (c.at === 'w' && it.at && !it.waiting) { c.at = it.at; lqThumbSave(); }   // what Studio sent is what the headset wrote
+      return c.src;
+    }
+    if (!it.ready || it.waiting || !it.at) return '';                 // nothing uploaded to read yet
+    var tk = key + '|' + it.at;
+    if (lqThumbTried[tk] === 'x') return '';                           // couldn't be read; the note tile stays
+    if (!lqThumbTried[tk]) { lqThumbTried[tk] = 'q'; lqThumbQ.push({ dev: d.id, k: it.k, at: it.at }); setTimeout(lqThumbPump, 0); }
+    return null;
+  }
+  function lqThumbHtml(key, src) {
+    return src ? '<img class="lq-cov" data-lq-thumb="' + esc(key) + '" src="' + esc(src) + '" alt="">' : '<span class="lq-cov ph' + (src === null ? ' ld' : '') + '" data-lq-thumb="' + esc(key) + '">&#9834;</span>';
+  }
+  function lqThumbPump() {
+    while (lqThumbBusy < 2 && lqThumbQ.length && libGet()) (function (job) {
+      lqThumbBusy++;
+      libFetch('GET', libPath('/devices/' + encodeURIComponent(job.dev) + '/playlists/' + job.k), null, null, true).then(function (res) {
+        if (!res.ok) { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; lqThumbPut(job.dev, job.k, null, '', true); return; }
+        var pl = null; try { pl = JSON.parse(res.text); } catch (e) {}
+        return lqMakeThumb(pl && pl.image).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src); });
+      }, function () {}).then(function () { lqThumbBusy--; lqThumbPump(); });
+    })(lqThumbQ.shift());
+  }
+  function lqMakeThumb(img) {
+    return new Promise(function (resolve) {
+      var src = typeof img === 'string' ? img.trim() : '';
+      if (!src) return resolve('');
+      if (!/^data:image\//i.test(src)) {
+        if (!/^[A-Za-z0-9+/=\s]+$/.test(src) || src.length < 100) return resolve('');
+        src = 'data:image/png;base64,' + src.replace(/\s+/g, '');
+      }
+      var im = new Image();
+      im.onload = function () {
+        try {
+          var N = 96, c = document.createElement('canvas'), w = im.naturalWidth, h = im.naturalHeight, m = Math.min(w, h);
+          if (!m) return resolve('');
+          c.width = c.height = N; c.getContext('2d').drawImage(im, (w - m) / 2, (h - m) / 2, m, m, 0, 0, N, N);
+          resolve(c.toDataURL('image/jpeg', 0.82));
+        } catch (e) { resolve(''); }
+      };
+      im.onerror = function () { resolve(''); };
+      im.src = src;
+    });
+  }
+  function lqThumbPut(dev, k, at, src, screenOnly) {
+    var key = dev + '|' + k;
+    if (!screenOnly) { lqThumbStore()[key] = { at: at, src: src, u: Date.now() }; lqThumbSave(); }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-lq-thumb]'), function (x) { if (x.getAttribute('data-lq-thumb') === key) x.outerHTML = lqThumbHtml(key, src); });
+  }
+  // ---- Add playlist: send .bplist files from this computer straight to a headset ----
+  function lqUploadFiles(devId, files, how) {
+    if (!libGet() || !state.lq.devices.some(function (d) { return d.id === devId; }) || !files || !files.length) return Promise.resolve();
+    return Promise.all(files.map(function (f) {
+      return new Promise(function (res) {
+        if (!validPlaylistFile(f)) return res({ bad: f.name, why: 'not a playlist file' });
+        var rd = new FileReader();
+        rd.onerror = function () { res({ bad: f.name, why: 'couldn’t be read' }); };
+        rd.onload = function () {
+          var text = String(rd.result).replace(/^﻿/, ''), pl = null; try { pl = JSON.parse(text); } catch (e) {}
+          if (!pl || !Array.isArray(pl.songs) || !pl.songs.length) return res({ bad: f.name, why: 'not a playlist with songs' });
+          if (text.length > 1950000) return res({ bad: f.name, why: 'too big (2 MB max; a smaller cover usually fixes it)' });
+          res({ dev: devId, file: f.name, title: String(pl.playlistTitle || f.name.replace(/\.(bplist|json)$/i, '')), text: text, image: pl.image });
+        };
+        rd.readAsText(f);
+      });
+    })).then(function (rs) {
+      var bad = rs.filter(function (r) { return r.bad; }), good = rs.filter(function (r) { return !r.bad; });
+      if (bad.length) toast('Skipped ' + bad.map(function (r) { return r.bad + ' (' + r.why + ')'; }).join(', ') + '.', 'warn');
+      if (!good.length) return;
+      track('lq-upload-' + (how || 'button'));
+      good.forEach(function (r) { r.hit = lqSameTitle(devId, r.title); });
+      // Same name already on the headset: ask, one at a time. The rest go now.
+      state.lq.upAsk = (state.lq.upAsk || []).concat(good.filter(function (r) { return r.hit; }));
+      lqRender();
+      return lqUploadSend(good.filter(function (r) { return !r.hit; }), false);
+    });
+  }
+  function lqUploadSend(list, replace) {
+    if (!list.length) return Promise.resolve();
+    lqBusy(true);
+    var done = [], failed = 0, lastErr = '', chain = Promise.resolve();
+    list.forEach(function (r) {
+      chain = chain.then(function () {
+        var hit = replace ? r.hit : null;
+        return libFetch('POST', libPath('/devices/' + encodeURIComponent(r.dev) + '/playlists/' + (hit ? hit.k + '/send' : 'new')), r.text).then(function (res) {
+          var k = (res.j && res.j.k) || (res.ok && hit ? hit.k : '');
+          if (!res.ok || !k) { failed++; lastErr = (res.j && res.j.error) || ''; return; }
+          var q = state.lq.quest[r.dev] || (state.lq.quest[r.dev] = { items: [], pending: [], updated: 0 });
+          q.pending = (res.j && res.j.pending) || q.pending;
+          done.push(r);
+          return lqMakeThumb(r.image).then(function (src) { lqThumbPut(r.dev, k, 'w', src); });
+        }, function () { failed++; });
+      });
+    });
+    return chain.then(function () {
+      state.lq.busy = false; lqRender();
+      var where = lqDevName(list[0].dev), one1 = done.length === 1 ? '“' + done[0].title + '”' : done.length + ' playlists';
+      var msg = !done.length ? (lastErr || 'Couldn’t send ' + (list.length === 1 ? 'it' : 'them') + ' to the headset.')
+        : replace ? 'Replacing ' + one1 + ' on ' + where + ' on the next sync. The old version is kept as a backup.'
+        : 'Sending ' + one1 + ' to ' + where + '. ' + (done.length === 1 ? 'It shows' : 'They show') + ' up on the next sync.';
+      if (done.length && failed) msg += ' ' + failed + ' couldn’t be sent' + (lastErr ? ': ' + lastErr : '.');
+      toast(msg, done.length && !failed ? 'ok' : 'warn');
+    });
+  }
+  function lqAskHtml(devId) {
+    var asks = (state.lq.upAsk || []).filter(function (r) { return r.dev === devId; }); if (!asks.length) return '';
+    var a = asks[0], dv = esc(devId);
+    return '<div class="lq-ask">“' + esc(a.title) + '” is already on ' + esc(lqDevName(devId)) + '. Replace it (the old version is kept as a backup), or add this as a second playlist?' +
+      (asks.length > 1 ? ' <span class="lq-m">' + (asks.length - 1) + ' more after this.</span>' : '') +
+      '<div class="lq-row">' + lqBtn('Replace it', 'data-lq-upreplace="' + dv + '"', 'primary') + lqBtn('Add as a second one', 'data-lq-upnew="' + dv + '"') + lqBtn('Skip', 'data-lq-upskip="' + dv + '"') + '</div></div>';
+  }
+  function lqAskAnswer(devId, how) {
+    var q = state.lq.upAsk || [], i = q.findIndex(function (r) { return r.dev === devId; }); if (i < 0) return;
+    var r = q.splice(i, 1)[0]; lqRender();
+    if (how === 'skip') return;
+    track(how === 'replace' ? 'lq-upload-replace' : 'lq-upload-second');
+    lqUploadSend([r], how === 'replace');
+  }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
@@ -6122,8 +6275,8 @@ window.PP = (function () {
     }).join('');
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
     var open = !!mi && lq.menuOpen === key;
-    var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + 'Edit', 'data-lq-edit="' + id + '"');
-    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + '"><div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' + act +
+    var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
+    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + '">' + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' + act +
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
     if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.<div class="lq-row">' +
@@ -6203,10 +6356,12 @@ window.PP = (function () {
       lq.devices.forEach(function (d) {
         var q = lq.quest[d.id], items = lqQuestItems(d.id);
         qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(lqDevName(d.id)) + '</span>' + (items.length ? '<span class="lq-cnt">' + items.length + '</span>' : '') +
-          '<span class="lq-sync">' + (q && q.updated ? 'synced ' + esc(agoStr(q.updated)) : '') + '</span>' + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
+          '<span class="lq-sync">' + (q && q.updated ? 'synced ' + esc(agoStr(q.updated)) : '') + '</span>' + lqBtn(lqIco('up') + 'Add playlist', 'data-lq-add="' + esc(d.id) + '" title="Send a .bplist file from this computer to ' + esc(lqDevName(d.id)) + '"', 'ghost sm lq-addbtn') + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
+        qh += lqAskHtml(d.id) + '<div class="lq-dropzone" data-lq-drop="' + esc(d.id) + '">';
         if ((!q || !q.updated) && !items.length) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
-        else if (!items.length) qh += '<p class="lq-steps">No playlists on the headset yet.</p>';
+        else if (!items.length) qh += '<p class="lq-steps">No playlists on the headset yet. Add one, or drop a <code>.bplist</code> here.</p>';
         else qh += '<div class="lq-list">' + items.map(function (it) { return lqRow(d, it); }).join('') + '</div>';
+        qh += '</div><p class="lq-drophint">Drop <code>.bplist</code> files on this list to add them to ' + esc(lqDevName(d.id)) + '.</p>';
         // Recently deleted: playlists the headset still holds as backups.
         var gone = q && Array.isArray(q.deleted) ? q.deleted : [], delOpen = !!(lq.delOpen && lq.delOpen[d.id]);
         if (gone.length) {
@@ -6216,7 +6371,8 @@ window.PP = (function () {
             if (b.count >= 0) meta.push(b.count + ' song' + (b.count === 1 ? '' : 's'));
             if (!lqSameName(nm, g.file)) meta.push(esc(g.file));
             if (pw && pw.restore) meta.push('<span class="lq-st lq-wait"><span class="lq-dot2"></span>coming back next sync</span>');
-            return '<div class="lq-pl gone"><div class="lq-t"><span class="lq-n">' + esc(nm) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
+            var oldCov = lqThumbStore()[d.id + '|' + g.k];
+            return '<div class="lq-pl gone">' + lqThumbHtml(d.id + '|' + g.k, oldCov ? oldCov.src : '') + '<div class="lq-t"><span class="lq-n">' + esc(nm) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
               (pw ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : lqBtn(lqIco('hist') + 'Restore', 'data-lq-restore="' + id + '|' + b.t + '"')) + '</div>';
           }).join('') + '</div>';
         }
@@ -6324,6 +6480,10 @@ window.PP = (function () {
       var t = e.target.closest('button'); if (!t || t.disabled) return;
       if (t.closest('.lq-menu')) state.lq.menuOpen = null;   // picking anything in a menu closes it
       if (t.hasAttribute('data-lq-menu')) { var mk = t.getAttribute('data-lq-menu'); state.lq.menuOpen = state.lq.menuOpen === mk ? null : mk; state.lq.delAsk = null; lqRender(); }
+      else if (t.hasAttribute('data-lq-add')) { state.lq.addDev = t.getAttribute('data-lq-add'); var fi = document.getElementById('lqAddFile'); if (fi) fi.click(); }
+      else if (t.hasAttribute('data-lq-upreplace')) lqAskAnswer(t.getAttribute('data-lq-upreplace'), 'replace');
+      else if (t.hasAttribute('data-lq-upnew')) lqAskAnswer(t.getAttribute('data-lq-upnew'), 'new');
+      else if (t.hasAttribute('data-lq-upskip')) lqAskAnswer(t.getAttribute('data-lq-upskip'), 'skip');
       else if (t.hasAttribute('data-lq-devsopen')) { state.lq.devsOpen = !state.lq.devsOpen; if (!state.lq.devsOpen) state.lq.showLink = false; lqRender(); }
       else if (t.hasAttribute('data-lq-unlink')) lqUnlink(t.getAttribute('data-lq-unlink'));
       else if (t.hasAttribute('data-lq-remove')) lqRemove(t.getAttribute('data-lq-remove'));
@@ -6345,6 +6505,33 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-edit')) { var p = t.getAttribute('data-lq-edit').split('|'); lqEdit(p[0], p[1]); }
     };
     document.getElementById('lqPanel').addEventListener('click', onClick);
+    // Add playlist: one hidden picker, aimed at whichever headset's button was pressed.
+    var addIn = document.createElement('input'); addIn.type = 'file'; addIn.id = 'lqAddFile'; addIn.accept = '.bplist,application/json'; addIn.multiple = true; addIn.hidden = true;
+    document.getElementById('lqPanel').appendChild(addIn);
+    addIn.addEventListener('change', function () { var fl = addIn.files; if (fl && fl.length && state.lq.addDev) lqUploadFiles(state.lq.addDev, Array.prototype.slice.call(fl), 'button'); addIn.value = ''; });
+    // Dropping .bplist files on a headset's list sends them there (ahead of the page-wide import drop).
+    var lqDropAt = function (e) { var t = e.target && e.target.closest && e.target.closest('[data-lq-drop]'); return t && lqActive() ? t : null; };
+    var lqDropUI = function (t) {
+      var z = document.getElementById('dropZone'), want = t ? t.getAttribute('data-lq-drop') : '';
+      Array.prototype.forEach.call(document.querySelectorAll('.lq-dropzone.lq-over'), function (x) { if (x !== t) x.classList.remove('lq-over'); });
+      if (t) t.classList.add('lq-over');
+      if (!z || (z.getAttribute('data-lq') || '') === want) return;
+      var tt = z.querySelector('.dz-t'), dd = z.querySelector('.dz-d'); if (!tt || !dd) return;
+      if (!z.getAttribute('data-def')) z.setAttribute('data-def', JSON.stringify([tt.textContent, dd.textContent]));
+      var def = JSON.parse(z.getAttribute('data-def'));
+      z.setAttribute('data-lq', want);
+      tt.textContent = want ? 'Drop to add to ' + lqDevName(want) : def[0];
+      dd.textContent = want ? 'It shows up on the headset on the next sync.' : def[1];
+    };
+    window.addEventListener('dragover', function (e) { lqDropUI(lqDropAt(e)); }, true);
+    window.addEventListener('dragend', function () { lqDropUI(null); }, true);
+    window.addEventListener('drop', function (e) {
+      var t = lqDropAt(e); lqDropUI(null);
+      var fl = e.dataTransfer && e.dataTransfer.files;
+      if (!t || !fl || !fl.length) return;
+      e.preventDefault(); e.stopPropagation(); hideDropZone();
+      lqUploadFiles(t.getAttribute('data-lq-drop'), Array.prototype.slice.call(fl), 'drop');
+    }, true);
     // A click anywhere else, or Esc, closes an open "..." menu.
     document.addEventListener('click', function (e) { if (!state.lq.menuOpen || (e.target.closest && e.target.closest('.lq-menu, [data-lq-menu]'))) return; state.lq.menuOpen = null; lqRender(); }, true);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && state.lq.menuOpen) { state.lq.menuOpen = null; lqRender(); } });
@@ -9110,7 +9297,7 @@ window.PP = (function () {
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,

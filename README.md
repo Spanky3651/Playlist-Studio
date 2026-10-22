@@ -161,15 +161,18 @@ It stays out of the way for PC players. The **Studio Sync** panel shows up in th
 3. **Send playlists.** Build one and press **Send to Quest** in the panel. On the next sync the mod also downloads any songs you don't have (Studio Sync 0.6.0 and later; you can turn this off in its tab).
 
 From then on:
-- The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
+- The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list). Each row shows the playlist's cover, its song count and any status; **Edit** is on the row and everything else is under its **•••** menu.
 - **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file. With more than one headset linked, pick one or **All headsets**.
+- **Add playlist** (next to each headset's name) sends `.bplist` files from your computer straight to that headset, or drop the files on its list. If one with the same name is already there, Studio asks: **Replace it** (the old version is kept as a backup), **Add as a second one**, or **Skip**.
 - If a headset already has a playlist with the same name, Studio asks first: **Replace it** (the headset keeps the old version as a backup) or **Send as new**. A new playlist never overwrites a file; if the name is taken on the headset it's saved as "Name (2)" and Studio follows it there.
 - **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
-- **Restore...** on a headset playlist lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
-- **Delete** removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
-- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Unlink** stops syncing a headset.
+- **Restore a backup** in a playlist's **•••** menu lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
+- **Delete** (also in the **•••** menu) removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
+- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Manage headsets** shows **Unlink**, which stops syncing a headset, and **+ Link another headset**.
 
 The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
+
+Covers come from the playlists the headset shares: Studio reads each one once, keeps a small copy in your browser, and only reads it again after the playlist changes.
 
 ### Save, reload & import
 - **Filter presets** - save filter combos you reuse (e.g. "6★ tech warmup")
