@@ -194,7 +194,12 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 No website? Turn on **In-Game Sync** and hit **Host this playlist**. Studio stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
 
 #### Linked Quest (Studio Sync mod)
-On Quest, install the **Studio Sync** mod and hosted playlists reach your headset with no file to load at all. In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into Studio's **Linked Quest** panel. After that, tick **Sync to my linked Quest** on any hosted playlist: new ones appear in game, updates come down on their own, and ones you remove from the panel disappear from the headset. Only playlists Studio put there are ever touched. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
+On Quest, the **Studio Sync** mod links your headset to Studio. In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into Studio's **Linked Quest** panel. From then on:
+- **Send to Quest** puts the playlist you're building on the headset and keeps it in Playlist Library. After that it saves itself: edits are stored in the library and sent to the headset a couple of seconds after you stop changing things.
+- **On your Quest** lists the playlists already on the headset. **Edit** opens one in Your Playlist; your changes are sent back automatically and the headset replaces its copy on the next sync, keeping a backup.
+- **Remove** takes a Studio-sent playlist off the headset; **Unlink** stops syncing a headset.
+
+The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
 
 ### Share by link
 

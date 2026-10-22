@@ -42,6 +42,15 @@
  *    GET    /link/status?code=X      -> { status: waiting | linked | expired }
  *    GET    /link/manifest           -> { playlists: [{ id, title, updated, url }] }, 401 when unlinked
  *    POST   /link/unlink             forget this headset
+ *    POST   /link/inventory          body { items: [{ file, title, count, sha }] } -> { need: [file] }
+ *    POST   /link/inventory/body?file=F   raw .bplist the Worker asked for
+ *    GET    /link/outbox/<id>        an edit Studio sent back (listed as manifest "writes")
+ *    POST   /link/outbox/<id>/ack    the headset wrote it
+ *
+ *    Studio, for a linked headset's own playlists:
+ *    GET    /lib/<id>/devices/<dev>/playlists            -> { items, pending }
+ *    GET    /lib/<id>/devices/<dev>/playlists/<k>        the .bplist as the headset has it
+ *    POST   /lib/<id>/devices/<dev>/playlists/<k>/send   queue an edited copy for the headset
  *
  *    The token never leaves the headset except in that header, and the Worker only
  *    stores its SHA-256. Codes are 6 characters, live 10 minutes, and claims are
@@ -68,6 +77,7 @@ const LIB_TTL = 60 * 60 * 24 * 365;          // a library or device nobody touch
 const CODE_TTL = 600;                        // pairing codes live 10 minutes
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const MAX_LIB_ITEMS = 60, MAX_DEVICES = 8;
+const MAX_INVENTORY = 400, MAX_HEADSET_BYTES = 2500000;
 
 export default {
   async fetch(request, env, ctx) {
@@ -270,6 +280,14 @@ function randomCode() {
 }
 function cleanName(v) { return (typeof v === "string" ? v : "").replace(/[^\w .'()-]/g, "").trim().slice(0, 40) || "Quest"; }
 function putLib(env, id, lib) { return env.PLAYLISTS.put("lib:" + id, JSON.stringify(lib), { expirationTtl: LIB_TTL }); }
+async function fileKey(file) { return (await sha256("f:" + file)).slice(0, 16); }
+function validFile(f) { return typeof f === "string" && f.length > 0 && f.length <= 200 && !/[\\/\u0000]/.test(f) && f !== "." && f !== ".." && /\.(bplist|json)$/i.test(f); }
+function invKey(lib, dev) { return "inv:" + lib + ":" + dev; }
+function outKey(lib, dev) { return "out:" + lib + ":" + dev; }
+function putTtl(env, k, v) { return env.PLAYLISTS.put(k, typeof v === "string" ? v : JSON.stringify(v), { expirationTtl: LIB_TTL }); }
+function looksLikePlaylist(text) {
+  try { const p = JSON.parse(text); return !!(p && typeof p === "object" && Array.isArray(p.songs)); } catch (e) { return false; }
+}
 function publicDevices(lib) { return (lib.devices || []).map((d) => ({ id: d.id, name: d.name, added: d.added, seen: d.seen || 0 })); }
 
 async function linked(request, env, ctx, url) {
@@ -322,7 +340,67 @@ async function linked(request, env, ctx, url) {
         const w = Promise.all([putLib(env, dev.lib, lib), env.PLAYLISTS.put("dev:" + th, JSON.stringify(dev), { expirationTtl: LIB_TTL })]);
         if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
       }
-      return json({ library: dev.lib, device: me.name, playlists }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+      const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
+      const writes = out.items.map((w) => ({ id: w.id, file: w.file, url: url.origin + "/link/outbox/" + w.id }));
+      return json({ library: dev.lib, device: me.name, playlists, writes }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+    }
+
+    if (path === "/link/inventory" && request.method === "POST") {
+      const body = await readJson(request, 200000);
+      if (!body || !Array.isArray(body.items)) return json({ error: "Expected { items: [] }" }, 400, cors);
+      const old = (await env.PLAYLISTS.get(invKey(dev.lib, me.id), "json")) || { items: [] };
+      const byFile = new Map(old.items.map((it) => [it.file, it]));
+      const items = [], need = [];
+      for (const it of body.items.slice(0, MAX_INVENTORY)) {
+        if (!it || !validFile(it.file) || typeof it.sha !== "string" || it.sha.length > 64) continue;
+        const prev = byFile.get(it.file);
+        const have = !!(prev && prev.sha === it.sha && prev.have);
+        if (!have) need.push(it.file);
+        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), sha: it.sha, have, at: have ? prev.at : nowSec() });
+      }
+      // Drop stored copies of playlists that are gone from the headset.
+      const keep = new Set(items.map((it) => it.file));
+      const gone = old.items.filter((it) => !keep.has(it.file));
+      const changed = gone.length || need.length || items.length !== old.items.length;
+      if (changed) {
+        await Promise.all(gone.map((it) => env.PLAYLISTS.delete("invb:" + dev.lib + ":" + me.id + ":" + it.k)));
+        await putTtl(env, invKey(dev.lib, me.id), { items, updated: nowSec() });
+      }
+      return json({ need }, 200, cors);
+    }
+
+    if (path === "/link/inventory/body" && request.method === "POST") {
+      const file = url.searchParams.get("file") || "";
+      if (!validFile(file)) return json({ error: "Bad file name" }, 400, cors);
+      const text = await request.text();
+      if (text.length > MAX_HEADSET_BYTES || !looksLikePlaylist(text)) return json({ error: "Not a playlist or too large" }, 400, cors);
+      const inv = (await env.PLAYLISTS.get(invKey(dev.lib, me.id), "json")) || { items: [] };
+      const it = inv.items.find((x) => x.file === file);
+      if (!it) return json({ error: "Not in the inventory" }, 404, cors);
+      await putTtl(env, "invb:" + dev.lib + ":" + me.id + ":" + it.k, text);
+      it.have = true; it.at = nowSec();
+      await putTtl(env, invKey(dev.lib, me.id), inv);
+      return json({ ok: true }, 200, cors);
+    }
+
+    const ob = path.match(/^\/link\/outbox\/([A-Za-z0-9]{6,16})(\/ack)?$/);
+    if (ob) {
+      const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
+      const w = out.items.find((x) => x.id === ob[1]);
+      if (!w) return json({ error: "Not found" }, 404, cors);
+      const bk = "outb:" + dev.lib + ":" + me.id + ":" + w.id;
+      if (!ob[2] && request.method === "GET") {
+        const text = await env.PLAYLISTS.get(bk);
+        if (!text) return json({ error: "Not found" }, 404, cors);
+        return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
+      }
+      if (ob[2] && request.method === "POST") {
+        out.items = out.items.filter((x) => x.id !== w.id);
+        await putTtl(env, outKey(dev.lib, me.id), out);
+        await env.PLAYLISTS.delete(bk);
+        return json({ ok: true }, 200, cors);
+      }
+      return json({ error: "Method not allowed" }, 405, cors);
     }
 
     if (path === "/link/unlink" && request.method === "POST") {
@@ -344,12 +422,45 @@ async function linked(request, env, ctx, url) {
     return json({ id, key }, 201, cors);
   }
 
-  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16}))?$/);
+  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/([0-9a-f]{16})(\/send)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
   const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
   if (!lib) return json({ error: "Not found" }, 404, cors);
   const key = request.headers.get("X-Lib-Key") || "";
   if (!key || !safeEqual(await sha256(key), lib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+
+  // A headset's own playlists, as it last reported them.
+  if (m[4]) {
+    const dv = (lib.devices || []).find((x) => x.id === m[3]);
+    if (!dv) return json({ error: "Not found" }, 404, cors);
+    const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
+    const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
+    if (!m[5] && request.method === "GET") {
+      const items = inv.items.map((it) => ({ k: it.k, file: it.file, title: it.title, count: it.count, ready: !!it.have, at: it.at }));
+      return json({ items, pending: out.items.map((w) => ({ id: w.id, k: w.k, file: w.file, at: w.at })), updated: inv.updated || 0 }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+    }
+    const it = m[5] && inv.items.find((x) => x.k === m[5]);
+    if (!it) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
+    if (!m[6] && request.method === "GET") {
+      const text = await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k);
+      if (!text) return json({ error: "The headset hasn't uploaded this one yet" }, 404, cors);
+      return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
+    }
+    if (m[6] && request.method === "POST") {
+      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      const pl = await readPlaylist(request);
+      if (pl.error) return json({ error: pl.error }, 400, cors);
+      // One pending edit per playlist: a newer send replaces the older one.
+      for (const w of out.items.filter((x) => x.file === it.file)) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
+      out.items = out.items.filter((x) => x.file !== it.file);
+      const w = { id: randomId(10), k: it.k, file: it.file, at: nowSec() };
+      await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(pl.value));
+      out.items.push(w);
+      await putTtl(env, outKey(id, dv.id), out);
+      return json({ pending: out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, at: x.at })) }, 200, cors);
+    }
+    return json({ error: "Method not allowed" }, 405, cors);
+  }
 
   if (!m[2] && request.method === "GET") {
     return json({ items: lib.items || [], devices: publicDevices(lib) }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
@@ -388,7 +499,7 @@ async function linked(request, env, ctx, url) {
     return json({ device: { id: dev.id, name: dev.name, added: dev.added, seen: 0 }, devices: publicDevices(lib) }, 200, cors);
   }
 
-  if (m[3] && request.method === "DELETE") {
+  if (m[3] && !m[4] && request.method === "DELETE") {
     const d = (lib.devices || []).find((x) => x.id === m[3]);
     if (d) {
       lib.devices = lib.devices.filter((x) => x.id !== m[3]);
