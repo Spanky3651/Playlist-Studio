@@ -619,6 +619,28 @@ a.ss-btn svg{width:16px;height:16px;flex:none;}
 .filebtn svg{width:15px;height:15px;}
 .import-row{align-items:center;}
 .import-hint{font-size:13px;font-family:var(--mono);}
+.cmb-intro{margin:0 0 14px;font-size:14.5px;line-height:1.55;color:var(--muted);}
+.cmb-add{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.cmb-h{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 6px;}
+.cmb-libs{display:grid;gap:2px;max-height:190px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:6px 10px;background:#060c16;}
+.cmb-libs label{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text);padding:4px 0;cursor:pointer;min-width:0;}
+.cmb-libs label span:first-of-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmb-libs .cmb-c{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;}
+.cmb-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;}
+.cmb-empty{font-size:14px;color:var(--muted);padding:10px 12px;border:1px dashed var(--border-2);border-radius:10px;}
+.cmb-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #1f3456;border-radius:10px;background:#060c16;font-size:14px;color:#fff;}
+.cmb-n{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:16px;text-align:right;flex:none;}
+.cmb-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmb-sub{display:block;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;}
+.cmb-item button{padding:4px 9px;flex:none;}
+.cmb-opt{display:flex;gap:9px;align-items:flex-start;margin-top:14px;font-size:14px;color:var(--text);line-height:1.45;cursor:pointer;}
+.cmb-opt input{margin-top:3px;flex:none;}
+.cmb-target{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:12px;font-size:14px;color:var(--text);}
+.cmb-target label{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.cmb-target[hidden]{display:none;}
+.cmb-sum{margin-top:14px;padding:10px 12px;border:1px solid #23406b;border-radius:10px;background:#081426;font-size:14px;color:#dce8ff;line-height:1.55;}
+.cmb-sum b{color:#fff;}
+@media (hover:none){.cmb-drop{display:none;}}
 
 /* ---------- Summary (matches → playlist) ---------- */
 .summary-panel{display:flex;align-items:stretch;flex-wrap:wrap;padding:0;overflow:hidden;}
@@ -1839,8 +1861,12 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         </div>
         <div class="preset-row import-row">
           <label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label>
-          <input type="file" id="importBplist" accept=".bplist,application/json" hidden />
+          <input type="file" id="importBplist" accept=".bplist,application/json" multiple hidden />
           <span class="muted import-hint">Merges its songs into your current playlist</span>
+        </div>
+        <div class="preset-row import-row">
+          <button class="ghost sm" id="combineBtn" type="button" title="Merge several .bplist files or saved playlists into one, duplicates removed">&#10697; Combine playlists</button>
+          <span class="muted import-hint">Several into one, duplicates removed</span>
         </div>
         <div class="preset-row"><button class="ghost sm" id="galleryBtn" type="button">&#9638; Browse the gallery</button><span class="muted import-hint">Ready-made playlists you can load in one click</span></div>
         <div class="lib-sub">Smart playlists <span class="info" data-tip="A smart playlist remembers how you built a list, not the songs: the view (a search, your plays, top plays, PP gains or an AccSaber pool), filters and sort. Rebuild refills Your Playlist from fresh results.">i</span></div>
@@ -2122,7 +2148,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer">Studio Sync for Quest</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T15:05:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T15:06:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2140,8 +2166,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 <div id="dropZone" aria-hidden="true">
   <div class="dz-card">
     <div class="dz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-    <p class="dz-t">Drop a .bplist to load it</p>
-    <p class="dz-d">Loads into Your Playlist</p>
+    <p class="dz-t">Drop .bplist files</p>
+    <p class="dz-d">One loads into Your Playlist. Several open Combine playlists.</p>
   </div>
 </div>
 
@@ -2159,6 +2185,37 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <button class="ghost" id="dropCancelBtn">Cancel</button>
       <button class="cyan" id="dropReplaceBtn">Replace</button>
       <button class="primary" id="dropMergeBtn">Merge</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COMBINE PLAYLISTS ============ -->
+<div class="modal-back" id="combineModal" aria-hidden="true">
+  <div class="modal" style="width:min(620px,100%);">
+    <div class="modal-head"><span class="modal-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="13" height="13" rx="2"/><path d="M8 21h11a2 2 0 0 0 2-2V8"/></svg></span><h3>Combine playlists</h3><button class="ghost sm" id="cmbClose" type="button" title="Close (Esc)">&#10005;</button></div>
+    <div class="modal-body">
+      <p class="cmb-intro">Merge several playlists into one. A song that shows up more than once is kept once, where it first appears. Afterwards it's a normal playlist: give it a title and cover, then export or send it.</p>
+      <div class="cmb-add">
+        <label class="filebtn" for="cmbFiles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Add .bplist files</label>
+        <input type="file" id="cmbFiles" accept=".bplist,application/json" multiple hidden />
+        <span class="muted import-hint cmb-drop">or drop them here</span>
+      </div>
+      <div id="cmbLibWrap" hidden>
+        <div class="cmb-h">From your Playlist Library</div>
+        <div class="cmb-libs" id="cmbLib"></div>
+      </div>
+      <div class="cmb-h">Combining, in this order</div>
+      <ol class="cmb-list" id="cmbList"></ol>
+      <label class="cmb-opt"><input type="checkbox" id="cmbAnyDiff" /><span>Same song on another difficulty counts as a duplicate (keeps the first one)</span></label>
+      <div class="cmb-target" id="cmbTarget" hidden>
+        <label><input type="radio" name="cmbTo" value="new" checked /> Start a new playlist</label>
+        <label><input type="radio" name="cmbTo" value="add" /> Add to Your Playlist (<span id="cmbCur">0</span>)</label>
+      </div>
+      <div class="cmb-sum" id="cmbSum"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost" id="cmbCancel" type="button">Cancel</button>
+      <button class="primary" id="cmbGo" type="button" disabled>Combine</button>
     </div>
   </div>
 </div>
@@ -6938,7 +6995,10 @@ window.PP = (function () {
       dropTag = 'drop';
       if (!dragHasFiles(e)) return;
       e.preventDefault(); hideDropZone();
-      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      var fl = e.dataTransfer && e.dataTransfer.files;
+      if (cmbIsOpen()) { if (fl && fl.length) cmbAddFiles(Array.prototype.slice.call(fl)); return; }
+      if (fl && fl.length > 1) { openCombine('drop', Array.prototype.slice.call(fl)); return; }
+      var f = fl && fl[0];
       if (f) handleDroppedPlaylist(f);
     });
     if (el.dropCancelBtn) el.dropCancelBtn.addEventListener('click', closeDropChoice);
@@ -6946,6 +7006,178 @@ window.PP = (function () {
     if (el.dropReplaceBtn) el.dropReplaceBtn.addEventListener('click', dropReplace);
     if (el.dropChoiceModal) el.dropChoiceModal.addEventListener('click', function (e) { if (e.target === el.dropChoiceModal) closeDropChoice(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && el.dropChoiceModal && el.dropChoiceModal.classList.contains('show')) closeDropChoice(); });
+  }
+
+  // ---- combine playlists ----------------------------------------------------
+  // Several .bplist files and/or saved Library playlists become one list. A map that shows up again
+  // (same song, difficulty and mode) is kept once, where it first appears. A song listed without a
+  // difficulty is the same song as any listing of it. Optionally any difficulty of a song counts.
+  // The result is a normal playlist, so naming, covers, export and Send to Quest work as usual.
+  var CMB = { src: [], seq: 0 };
+  function cmbEl(id) { return document.getElementById(id); }
+  function cmbIsOpen() { var m = cmbEl('combineModal'); return !!(m && m.classList.contains('show')); }
+  function cmbEntriesFromBplist(pl) {
+    var out = [];
+    pl.songs.forEach(function (sng) {
+      var hash = ((sng && (sng.hash || sng.songHash)) || '').toString(); if (!hash) return;
+      var name = sng.songName || sng.name || 'Unknown', mapper = sng.levelAuthorName || sng.mapper || '';
+      var diffs = (Array.isArray(sng.difficulties) && sng.difficulties.length) ? sng.difficulties : [null];
+      diffs.forEach(function (d) {
+        out.push({ leaderboardId: '', hash: hash, songName: name, subName: '', mapper: mapper, author: mapper,
+          bpm: 0, duration: 0, cover: '', stars: 0,
+          difficultyName: d ? BplistExporter.mapDifficultyName(d.name) : '', modeName: d ? (d.characteristic || 'Standard') : 'Standard',
+          nps: 0, notes: 0, techRating: 0, accRating: 0, passRating: 0 });
+      });
+    });
+    return out;
+  }
+  function cmbMerge(lists, anyDiff) {
+    var out = [], firstAt = {}, seen = {}, dupes = 0;
+    lists.forEach(function (list) {
+      list.forEach(function (e) {
+        var h = String(e.hash).toLowerCase(), at = firstAt[h];
+        if (at === undefined) { firstAt[h] = out.length; seen[keyOf(e)] = 1; out.push(e); return; }
+        var first = out[at];
+        if (!first.difficultyName) {            // in already without a difficulty: a real one takes its place
+          if (e.difficultyName) { out[at] = e; seen[keyOf(e)] = 1; }
+          dupes++; return;
+        }
+        if (!e.difficultyName || anyDiff || seen[keyOf(e)]) { dupes++; return; }
+        seen[keyOf(e)] = 1; out.push(e);
+      });
+    });
+    return { list: out, dupes: dupes };
+  }
+  function cmbTo() { var r = document.querySelector('input[name="cmbTo"]:checked'); return r ? r.value : 'new'; }
+  function cmbN(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+  function cmbRender() {
+    var list = cmbEl('cmbList'), n = CMB.src.length;
+    list.innerHTML = n ? CMB.src.map(function (x, i) {
+      return '<li class="cmb-item"><span class="cmb-n">' + (i + 1) + '</span><span class="cmb-name">' + esc(x.name) + '<span class="cmb-sub">' + cmbN(x.entries.length, 'song') + ' &middot; ' + esc(x.sub) + '</span></span>' +
+        '<button type="button" class="ghost sm" data-cmb-up="' + x.id + '" title="Move up"' + (i ? '' : ' disabled') + '>&#8593;</button>' +
+        '<button type="button" class="ghost sm" data-cmb-del="' + x.id + '" title="Remove">&#10005;</button></li>';
+    }).join('') : '<li class="cmb-empty">Add .bplist files or tick playlists from your library.</li>';
+    Array.prototype.forEach.call(document.querySelectorAll('#cmbLib input[data-cmb-lib]'), function (cb) {
+      cb.checked = CMB.src.some(function (x) { return x.kind === 'lib' && x.lib === cb.getAttribute('data-cmb-lib'); });
+    });
+    var cur = state.basket.length, add = !!cur && cmbTo() === 'add';
+    cmbEl('cmbTarget').hidden = !cur; cmbEl('cmbCur').textContent = cmbN(cur, 'song');
+    var sum = cmbEl('cmbSum'), go = cmbEl('cmbGo');
+    go.disabled = !n;
+    if (!n) { sum.innerHTML = 'Nothing to combine yet.'; return; }
+    var srcTotal = CMB.src.reduce(function (a, x) { return a + x.entries.length; }, 0);
+    var r = cmbMerge((add ? [state.basket] : []).concat(CMB.src.map(function (x) { return x.entries; })), cmbEl('cmbAnyDiff').checked);
+    var gained = r.list.length - (add ? cur : 0), dup = srcTotal - gained;
+    go.textContent = add ? 'Add ' + cmbN(gained, 'song') : 'Combine into ' + cmbN(r.list.length, 'song');
+    sum.innerHTML = '<b>' + cmbN(n, 'playlist') + '</b>, ' + cmbN(srcTotal, 'song') + ' in total. ' +
+      (add ? '<b>' + cmbN(gained, 'new song') + '</b> ' + (gained === 1 ? 'goes' : 'go') + ' into Your Playlist (' + cmbN(r.list.length, 'song') + ' after), ' + dup + ' already there or repeated.'
+        : '<b>' + cmbN(dup, 'duplicate') + '</b> removed, so the combined playlist has <b>' + cmbN(r.list.length, 'song') + '</b>.' +
+          (cur ? ' Your current playlist goes to <b>Undo clear</b>.' : ''));
+  }
+  function cmbReadFile(f) {
+    return new Promise(function (res) {
+      if (!validPlaylistFile(f)) { res({ bad: f.name }); return; }
+      var rd = new FileReader();
+      rd.onerror = function () { res({ bad: f.name }); };
+      rd.onload = function () {
+        var pl = null; try { pl = JSON.parse(String(rd.result).replace(/^﻿/, '')); } catch (e) {}
+        if (!pl || !Array.isArray(pl.songs)) { res({ bad: f.name }); return; }
+        res({ name: String(pl.playlistTitle || f.name.replace(/\.(bplist|json)$/i, '')), sub: f.name, entries: cmbEntriesFromBplist(pl) });
+      };
+      rd.readAsText(f);
+    });
+  }
+  function cmbAddFiles(files) {
+    return Promise.all(files.map(cmbReadFile)).then(function (rs) {
+      var bad = [];
+      rs.forEach(function (r) { if (r.bad) bad.push(r.bad); else CMB.src.push({ id: ++CMB.seq, kind: 'file', name: r.name, sub: r.sub, entries: r.entries }); });
+      if (bad.length) toast('Skipped ' + bad.join(', ') + ': not a playlist file.', 'warn');
+      cmbRender();
+    });
+  }
+  function cmbLibToggle(name, on) {
+    CMB.src = CMB.src.filter(function (x) { return !(x.kind === 'lib' && x.lib === name); });
+    if (on) {
+      var p = lsGetPl()[name];
+      if (p && Array.isArray(p.entries)) CMB.src.push({ id: ++CMB.seq, kind: 'lib', lib: name, name: (p.meta && p.meta.title) || name, sub: 'Library: ' + name, entries: p.entries.map(function (e) { return Object.assign({}, e); }) });
+    }
+    cmbRender();
+  }
+  function openCombine(from, files) {
+    var m = cmbEl('combineModal'); if (!m) return;
+    CMB.src = [];
+    var o = lsGetPl(), names = Object.keys(o).sort();
+    cmbEl('cmbLibWrap').hidden = !names.length;
+    cmbEl('cmbLib').innerHTML = names.map(function (nm) {
+      return '<label><input type="checkbox" data-cmb-lib="' + esc(nm) + '" /><span>' + esc(nm) + '</span><span class="cmb-c">' + ((o[nm].entries || []).length) + '</span></label>';
+    }).join('');
+    cmbEl('cmbAnyDiff').checked = false;
+    var nw = document.querySelector('input[name="cmbTo"][value="new"]'); if (nw) nw.checked = true;
+    m.classList.add('show'); m.setAttribute('aria-hidden', 'false');
+    cmbRender();
+    track('combine-open-' + from);
+    if (files && files.length) cmbAddFiles(files);
+  }
+  function closeCombine() { var m = cmbEl('combineModal'); if (m) { m.classList.remove('show'); m.setAttribute('aria-hidden', 'true'); } CMB.src = []; }
+  function cmbRun() {
+    if (!CMB.src.length) return;
+    var add = !!state.basket.length && cmbTo() === 'add', n = CMB.src.length;
+    var srcTotal = CMB.src.reduce(function (a, x) { return a + x.entries.length; }, 0);
+    var r = cmbMerge((add ? [state.basket] : []).concat(CMB.src.map(function (x) { return x.entries; })), cmbEl('cmbAnyDiff').checked);
+    var before = add ? state.basket.length : 0, msg;
+    if (add) {
+      state.basket = r.list; state.clearUndo = null;
+      msg = 'Added ' + cmbN(r.list.length - before, 'song') + ' from ' + cmbN(n, 'playlist') + ' (' + cmbN(srcTotal - (r.list.length - before), 'duplicate') + ' skipped).';
+    } else {
+      var snap = state.basket.length ? snapshotPlaylist() : null;
+      state.basket = [];
+      resetPlaylistIdentity();
+      if (el.playlistName) el.playlistName.value = '';
+      if (el.savedPlaylists) el.savedPlaylists.value = '';
+      state.basket = r.list; state.clearUndo = snap;
+      msg = 'Combined ' + cmbN(n, 'playlist') + ' into ' + cmbN(r.list.length, 'song') + ' (' + cmbN(r.dupes, 'duplicate') + ' removed). Give it a title and cover, then export.';
+    }
+    closeCombine();
+    renderAll();
+    track(add ? 'combine-add' : 'combine-new');
+    toast(msg, 'ok');
+    var missing = needsEnrich();
+    if (missing.length) setTimeout(function () { runEnrich(needsEnrich(), { startMsg: msg + ' Filling in song details from BeatLeader…' }); }, 50);
+    if (!add) {
+      // New playlist: open Playlist Info and Cover so it can be named, and bring Info into view.
+      var info = cmbEl('infoPanel'), cover = cmbEl('coverPanel');
+      if (isMobileView()) setMobileView('playlist');
+      [info, cover].forEach(function (pn) { if (pn && pn.classList.contains('collapsed')) openPanel(pn); });
+      setTimeout(function () {
+        if (!info) return;
+        var tb = document.querySelector('.topbar'), pos = tb ? getComputedStyle(tb).position : '';
+        var off = ((pos === 'sticky' || pos === 'fixed') ? tb.getBoundingClientRect().height : 0) + 10, y = 0, nd = info;
+        while (nd) { y += nd.offsetTop; nd = nd.offsetParent; }
+        try { window.scrollTo({ top: Math.max(0, y - off), behavior: 'smooth' }); } catch (e) {}
+        if (!isMobileView() && el.metaTitle) { try { el.metaTitle.focus({ preventScroll: true }); el.metaTitle.select(); } catch (e) {} }
+      }, 80);
+    }
+  }
+  function setupCombine() {
+    var m = cmbEl('combineModal'), b = cmbEl('combineBtn'); if (!m || !b) return;
+    b.addEventListener('click', function () { openCombine('library'); });
+    cmbEl('cmbFiles').addEventListener('change', function (e) { var fl = e.target.files; if (fl && fl.length) cmbAddFiles(Array.prototype.slice.call(fl)); e.target.value = ''; });
+    cmbEl('cmbClose').addEventListener('click', closeCombine);
+    cmbEl('cmbCancel').addEventListener('click', closeCombine);
+    cmbEl('cmbGo').addEventListener('click', cmbRun);
+    cmbEl('cmbAnyDiff').addEventListener('change', cmbRender);
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="cmbTo"]'), function (x) { x.addEventListener('change', cmbRender); });
+    cmbEl('cmbLib').addEventListener('change', function (e) { var cb = e.target.closest('input[data-cmb-lib]'); if (cb) cmbLibToggle(cb.getAttribute('data-cmb-lib'), cb.checked); });
+    cmbEl('cmbList').addEventListener('click', function (e) {
+      var t = e.target.closest('button'); if (!t) return;
+      var id = +(t.getAttribute('data-cmb-del') || t.getAttribute('data-cmb-up')), i = CMB.src.findIndex(function (x) { return x.id === id; });
+      if (i < 0) return;
+      if (t.hasAttribute('data-cmb-del')) CMB.src.splice(i, 1);
+      else if (i > 0) { var x = CMB.src[i]; CMB.src[i] = CMB.src[i - 1]; CMB.src[i - 1] = x; }
+      cmbRender();
+    });
+    m.addEventListener('click', function (e) { if (e.target === m) closeCombine(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && cmbIsOpen()) closeCombine(); });
   }
 
   // ---- BeatLeader enrichment (backfill stars / NPS / duration / cover) ------
@@ -8687,8 +8919,13 @@ window.PP = (function () {
     el.loadPlaylistBtn.addEventListener('click', loadPlaylist);
     el.deletePlaylistBtn.addEventListener('click', deletePlaylist);
     el.playlistName.addEventListener('keydown', function (e) { if (e.key === 'Enter') savePlaylist(); });
-    el.importBplist.addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; if (f) { track('import'); importBplistFile(f); } e.target.value = ''; });
-    setupDropImport();
+    el.importBplist.addEventListener('change', function (e) {
+      var fl = e.target.files;
+      if (fl && fl.length > 1) openCombine('import', Array.prototype.slice.call(fl));
+      else if (fl && fl[0]) { track('import'); importBplistFile(fl[0]); }
+      e.target.value = '';
+    });
+    setupDropImport(); setupCombine();
 
     // BeatLeader profile
     el.connectBtn.addEventListener('click', connectPlayer);
@@ -8857,6 +9094,7 @@ window.PP = (function () {
      clan-switch, clan-add, clan-switch-bl;
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
      Extras: egg-115, egg-bomb, egg-halloween;
+     Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
      lq-autosave; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);

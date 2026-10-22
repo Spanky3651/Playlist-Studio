@@ -157,6 +157,7 @@ The **AccSaber Pools** panel loads every ranked AccSaber chart straight from Acc
 - **Library backup** - **Back up library** downloads every saved playlist, preset, smart playlist and saved icon as one file; **Restore backup** merges it back on any computer without overwriting anything
 - **Session autosave** - an accidental refresh won't lose your work in progress
 - **Import `.bplist`** - open an existing playlist to edit it; covers stored as either a data URI *or* raw base64 both load, for broad compatibility with community playlists
+- **Combine playlists** - merge several `.bplist` files and/or saved playlists into one. A song that shows up more than once is kept once, where it first appears (same song and difficulty, or any difficulty if you tick that option), and a live summary shows how many duplicates go. Start a new playlist or add to the one you have, then name it, pick a cover and export like any playlist. Pick several files in **Import .bplist** or drop several on the page to open it with them
 - **BeatLeader enrichment** - `↻ Fill data` fills in stars / NPS / duration / cover for imported songs by hash; `★ Re-check` re-checks every song in the playlist to catch rating recalcs
 
 ### Refine an imported (or built) playlist
