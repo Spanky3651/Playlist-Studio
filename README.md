@@ -168,7 +168,7 @@ From then on:
 - **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
 - **Restore a backup** in a playlist's **•••** menu lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
 - **Delete** (also in the **•••** menu) removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
-- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Manage headsets** shows **Unlink**, which stops syncing a headset, and **+ Link another headset**.
+- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Manage headsets** shows **Unlink**, which stops syncing a headset, and **+ Link another headset**. The pencil next to a headset's name renames it (a new headset starts out as "Quest"), so two Quests are easy to tell apart.
 
 The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
 

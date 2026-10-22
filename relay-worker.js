@@ -531,6 +531,17 @@ async function linked(request, env, ctx, url) {
     return json({ device: { id: dev.id, name: dev.name, added: dev.added, seen: 0 }, devices: publicDevices(lib) }, 200, cors);
   }
 
+  // Rename a headset. Studio shows the new name, and so does anything that reads the device record.
+  if (m[3] && !m[4] && request.method === "POST") {
+    if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    const body = (await readJson(request, 2000)) || {};
+    const d = (lib.devices || []).find((x) => x.id === m[3]);
+    if (!d) return json({ error: "That headset isn't linked anymore" }, 404, cors);
+    d.name = cleanName(body.name);
+    await putLib(env, id, lib);
+    return json({ device: { id: d.id, name: d.name }, devices: publicDevices(lib) }, 200, cors);
+  }
+
   if (m[3] && !m[4] && request.method === "DELETE") {
     const d = (lib.devices || []).find((x) => x.id === m[3]);
     if (d) {

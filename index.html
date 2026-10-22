@@ -559,6 +559,12 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-fold:hover{color:#fff;}
 .lq-fold svg{width:15px;height:15px;margin-left:auto;transition:transform .18s;}
 .lq-fold.open svg{transform:rotate(90deg);}
+.lq-pen{display:inline-flex;align-items:center;gap:5px;padding:3px 6px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;box-shadow:none;}
+.lq-pen:hover{color:#fff;background:#13233b;box-shadow:none;border:0;}
+.lq-pen svg{width:14px;height:14px;}
+.lq-pen.nudge{color:#7fb0ff;}
+.lq-dev.lq-renaming{gap:8px;}
+.lq-rn{flex:1 1 180px;min-width:0;max-width:300px;font-size:14px;padding:7px 10px;}
 .lq-devs2{padding-top:10px;border-top:1px solid var(--border);}
 .lq-dev{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;padding:5px 0;font-size:14px;color:#e6edf6;}
 .lq-dev .lq-m{flex:1;min-width:0;font-size:13px;color:var(--muted);}
@@ -2212,7 +2218,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T18:51:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T19:19:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6255,6 +6261,22 @@ window.PP = (function () {
     track(how === 'replace' ? 'lq-upload-replace' : 'lq-upload-second');
     lqUploadSend([r], how === 'replace');
   }
+  // ---- naming headsets: every new one starts as "Quest" ----
+  function lqRename(devId, raw) {
+    var name = String(raw || '').replace(/[\u2018\u2019]/g, "'").replace(/[^\w .'()-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) { toast('Type a name. Letters, numbers, spaces and . \' ( ) - work.', 'warn'); return; }
+    var d = state.lq.devices.find(function (x) { return x.id === devId; }); if (!d || state.lq.busy) return;
+    if (name === d.name) { state.lq.renaming = null; state.lq.renameDraft = null; lqRender(); return; }
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId)), { name: name }).then(function (res) {
+      if (res.ok && res.j && Array.isArray(res.j.devices)) {
+        lqApply(res.j); state.lq.renaming = null; state.lq.renameDraft = null;
+        toast('Renamed to “' + ((res.j.device && res.j.device.name) || name) + '”.', 'ok'); track('lq-rename');
+      } else if (res.status === 405) toast('Renaming needs the latest sync service. Try again in a little while.', 'warn');
+      else if (res.status === 403) lqLost();
+      else toast((res.j && res.j.error) || 'Couldn’t rename it.', 'warn');
+    }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
@@ -6381,12 +6403,17 @@ window.PP = (function () {
     document.getElementById('lqQuest').innerHTML = qh;
 
     // Headsets: one line each; Manage shows Unlink and Link another
-    var dOpen = !!lq.devsOpen;
+    var dOpen = !!lq.devsOpen, rnAt = document.activeElement && document.activeElement.id === 'lqRenameIn' ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
     document.getElementById('lqDevs').innerHTML = lq.devices.length ? '<div class="lq-devs2">' + lq.devices.map(function (d, i) {
-      var fresh = d.seen && (Date.now() / 1000 - d.seen) < 86400 * 2;
-      return '<div class="lq-dev"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><span class="lq-devn">' + esc(lqDevName(d.id)) + '</span><span class="lq-m">linked ' + esc(lqAgo(d.added)) + ' &middot; last sync ' + esc(lqAgo(d.seen)) + '</span>' +
+      var fresh = d.seen && (Date.now() / 1000 - d.seen) < 86400 * 2, nm = esc(lqDevName(d.id)), dflt = d.name === 'Quest';
+      if (lq.renaming === d.id) return '<div class="lq-dev lq-renaming"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><input type="text" id="lqRenameIn" class="lq-rn" maxlength="40" value="' + esc(lq.renameDraft != null ? lq.renameDraft : (dflt ? '' : d.name)) + '" placeholder="e.g. Living room Quest" aria-label="Headset name" spellcheck="false" autocomplete="off" />' +
+        lqBtn('Save', 'data-lq-rnsave="' + esc(d.id) + '"', 'primary sm') + lqBtn('Cancel', 'data-lq-rncancel') + '</div>';
+      return '<div class="lq-dev"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><span class="lq-devn">' + nm + '</span>' +
+        '<button type="button" class="lq-pen' + (dflt ? ' nudge' : '') + '" data-lq-rename="' + esc(d.id) + '" title="Rename this headset" aria-label="Rename ' + nm + '">' + lqIco('edit') + (dflt ? '<span>Name it</span>' : '') + '</button><span class="lq-m">linked ' + esc(lqAgo(d.added)) + ' &middot; last sync ' + esc(lqAgo(d.seen)) + '</span>' +
         (dOpen ? lqBtn('Unlink', 'data-lq-unlink="' + esc(d.id) + '"', 'ghost sm danger') : (i === 0 ? '<button type="button" class="lq-a" data-lq-devsopen>Manage headsets</button>' : '')) + '</div>';
     }).join('') + (dOpen ? '<div class="lq-devacts">' + (lq.showLink ? '' : lqBtn('+ Link another headset', 'data-lq-showlink')) + '<button type="button" class="lq-a" data-lq-devsopen>Done</button></div>' : '') + '</div>' : '';
+
+    if (rnAt) { var rin = document.getElementById('lqRenameIn'); if (rin) { rin.focus(); try { rin.setSelectionRange(rnAt[0], rnAt[1]); } catch (e) {} } }
 
     document.getElementById('lqMore').hidden = !lib;
     if (lib) document.getElementById('lqKeyOut').value = lib.id + '.' + lib.key;
@@ -6484,6 +6511,9 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-upreplace')) lqAskAnswer(t.getAttribute('data-lq-upreplace'), 'replace');
       else if (t.hasAttribute('data-lq-upnew')) lqAskAnswer(t.getAttribute('data-lq-upnew'), 'new');
       else if (t.hasAttribute('data-lq-upskip')) lqAskAnswer(t.getAttribute('data-lq-upskip'), 'skip');
+      else if (t.hasAttribute('data-lq-rename')) { state.lq.renaming = t.getAttribute('data-lq-rename'); state.lq.renameDraft = null; lqRender(); var ri = document.getElementById('lqRenameIn'); if (ri) { ri.focus(); ri.select(); } }
+      else if (t.hasAttribute('data-lq-rnsave')) { var rv = document.getElementById('lqRenameIn'); lqRename(t.getAttribute('data-lq-rnsave'), rv ? rv.value : ''); }
+      else if (t.hasAttribute('data-lq-rncancel')) { state.lq.renaming = null; state.lq.renameDraft = null; lqRender(); }
       else if (t.hasAttribute('data-lq-devsopen')) { state.lq.devsOpen = !state.lq.devsOpen; if (!state.lq.devsOpen) state.lq.showLink = false; lqRender(); }
       else if (t.hasAttribute('data-lq-unlink')) lqUnlink(t.getAttribute('data-lq-unlink'));
       else if (t.hasAttribute('data-lq-remove')) lqRemove(t.getAttribute('data-lq-remove'));
@@ -6505,6 +6535,12 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-edit')) { var p = t.getAttribute('data-lq-edit').split('|'); lqEdit(p[0], p[1]); }
     };
     document.getElementById('lqPanel').addEventListener('click', onClick);
+    document.getElementById('lqPanel').addEventListener('input', function (e) { if (e.target && e.target.id === 'lqRenameIn') state.lq.renameDraft = e.target.value; });
+    document.getElementById('lqPanel').addEventListener('keydown', function (e) {
+      if (!e.target || e.target.id !== 'lqRenameIn') return;
+      if (e.key === 'Enter') { e.preventDefault(); lqRename(state.lq.renaming, e.target.value); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); state.lq.renaming = null; state.lq.renameDraft = null; lqRender(); }
+    });
     // Add playlist: one hidden picker, aimed at whichever headset's button was pressed.
     var addIn = document.createElement('input'); addIn.type = 'file'; addIn.id = 'lqAddFile'; addIn.accept = '.bplist,application/json'; addIn.multiple = true; addIn.hidden = true;
     document.getElementById('lqPanel').appendChild(addIn);
@@ -9297,7 +9333,7 @@ window.PP = (function () {
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
