@@ -594,6 +594,17 @@ body.anim .lq-added{animation:lqfade 4s ease-out both;}
 .lq-a{background:none;border:0;padding:0;color:#5b9bff;font-size:13.5px;font-weight:500;box-shadow:none;}
 .lq-a:hover{box-shadow:none;border:0;text-decoration:underline;color:#8fb8ff;}
 @media(max-width:720px){.lq-sync{display:none;}.lq-sec .lq-ib{margin-left:auto;}.lq-nowa{flex-basis:100%;}.lq-nowa button{flex:1;justify-content:center;}.lq-dev .lq-m{flex-basis:100%;order:3;}.lq-dev .lq-a{margin-left:auto;}}
+.tb-ss{display:none;}
+@media(max-width:720px){
+  .tb-ss:not([hidden]){display:inline-flex;align-items:center;justify-content:center;position:relative;margin-left:auto;width:42px;height:42px;min-height:42px;padding:0;border-radius:11px;flex:none;color:#8fbaff;}
+  .tb-ss:not([hidden]) + .spacer{display:none;}
+  .tb-ss svg{width:22px;height:22px;margin:0;}
+  .tb-ss-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 2px #06090e;}
+  .tb-ss.idle .tb-ss-dot{background:#5a6b85;}
+  .tb-ss.wait .tb-ss-dot{display:none;}
+  .tb-ss-n{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#5b9bff;color:#04070d;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #06090e;}
+  .tb-ss-n:empty{display:none;}
+}
 .lq-hs{display:inline-flex;align-items:center;gap:7px;min-width:0;margin-right:2px;padding:4px 10px;border:1px solid #1c5c37;border-radius:20px;background:rgba(61,220,132,.08);font-size:12.5px;color:#9fe6bd;white-space:nowrap;}
 .lq-hs[hidden]{display:none;}
 .lq-hs b{color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;}
@@ -1371,6 +1382,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="sub"><span id="srcLabel">BEATLEADER</span> SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
     </div>
   </div>
+  <button type="button" class="ghost tb-ss" id="tbSS" data-ss-open="topbar" hidden title="Studio Sync" aria-label="Open Studio Sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg><span class="tb-ss-dot"></span><span class="tb-ss-n"></span></button>
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
@@ -2249,7 +2261,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T19:55:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T20:50:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6176,6 +6188,7 @@ window.PP = (function () {
   function lqThumbFor(d, it) {
     if (typeof it.thumb === 'string' && /^data:image\//i.test(it.thumb)) return it.thumb;
     var key = d.id + '|' + it.k, c = lqThumbStore()[key];
+    if (c && !c.src && c.v !== 2) c = null;
     if (c && (c.at === it.at || it.waiting || c.at === 'w')) {
       if (c.at === 'w' && it.at && !it.waiting) { c.at = it.at; lqThumbSave(); }   // what Studio sent is what the headset wrote
       return c.src;
@@ -6195,9 +6208,16 @@ window.PP = (function () {
       libFetch('GET', libPath('/devices/' + encodeURIComponent(job.dev) + '/playlists/' + job.k), null, null, true).then(function (res) {
         if (!res.ok) { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; lqThumbPut(job.dev, job.k, null, '', true); return; }
         var pl = null; try { pl = JSON.parse(res.text); } catch (e) {}
-        return lqMakeThumb(pl && pl.image).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src); });
-      }, function () {}).then(function () { lqThumbBusy--; lqThumbPump(); });
+        return lqMakeThumb(plImage(pl)).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src); });
+      }, function () { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; lqThumbPut(job.dev, job.k, null, '', true); }).then(function () { lqThumbBusy--; lqThumbPump(); });
     })(lqThumbQ.shift());
+  }
+  // The cover in a playlist file. PlaylistManager on Quest saves it as "imageString" and shows that one
+  // in game when a file has both, so Studio reads it first too.
+  function plImage(pl) {
+    if (!pl || typeof pl !== 'object') return '';
+    var a = typeof pl.imageString === 'string' ? pl.imageString.trim() : '';
+    return a || (typeof pl.image === 'string' ? pl.image.trim() : '');
   }
   function lqMakeThumb(img) {
     return new Promise(function (resolve) {
@@ -6222,7 +6242,7 @@ window.PP = (function () {
   }
   function lqThumbPut(dev, k, at, src, screenOnly) {
     var key = dev + '|' + k;
-    if (!screenOnly) { lqThumbStore()[key] = { at: at, src: src, u: Date.now() }; lqThumbSave(); }
+    if (!screenOnly) { lqThumbStore()[key] = { at: at, src: src, u: Date.now(), v: 2 }; lqThumbSave(); }
     Array.prototype.forEach.call(document.querySelectorAll('[data-lq-thumb]'), function (x) { if (x.getAttribute('data-lq-thumb') === key) x.outerHTML = lqThumbHtml(key, src); });
   }
   // ---- Add playlist: send .bplist files from this computer straight to a headset ----
@@ -6237,7 +6257,7 @@ window.PP = (function () {
           var text = String(rd.result).replace(/^﻿/, ''), pl = null; try { pl = JSON.parse(text); } catch (e) {}
           if (!pl || !Array.isArray(pl.songs) || !pl.songs.length) return res({ bad: f.name, why: 'not a playlist with songs' });
           if (text.length > 1950000) return res({ bad: f.name, why: 'too big (2 MB max; a smaller cover usually fixes it)' });
-          res({ dev: devId, file: f.name, title: String(pl.playlistTitle || f.name.replace(/\.(bplist|json)$/i, '')), text: text, image: pl.image });
+          res({ dev: devId, file: f.name, title: String(pl.playlistTitle || f.name.replace(/\.(bplist|json)$/i, '')), text: text, image: plImage(pl) });
         };
         rd.readAsText(f);
       });
@@ -6382,6 +6402,19 @@ window.PP = (function () {
         hs.innerHTML = '<span class="lq-dot' + (hsk ? ' ' + hsk : '') + '"></span><b>' + esc(lq.devices.length > 1 ? lq.devices.length + ' headsets' : lqDevName(lq.devices[0].id)) + '</b><span class="lq-hs-t">' +
           (waiting ? waiting + ' waiting' : seen ? 'synced ' + esc(agoStr(seen)) : 'not synced yet') + '</span>';
         hs.title = lq.devices.map(function (d) { return lqDevName(d.id) + ': last sync ' + lqAgo(d.seen); }).join('\n') + (waiting ? '\n' + waiting + ' change' + (waiting === 1 ? '' : 's') + ' waiting for the next sync' : '');
+      }
+    }
+    // Phones: a Studio Sync button in the top bar once a headset is linked, with the same status as the chip.
+    var tbs = document.getElementById('tbSS');
+    if (tbs) {
+      tbs.hidden = !lib;
+      if (lib) {
+        var tw = 0, tseen = 0;
+        lq.devices.forEach(function (d) { if (d.seen > tseen) tseen = d.seen; var q = lq.quest[d.id]; tw += q && Array.isArray(q.pending) ? q.pending.length : 0; });
+        var tk = !linked ? 'idle' : tw ? 'wait' : tseen && (Date.now() / 1000 - tseen) < 86400 * 2 ? '' : 'idle';
+        tbs.className = 'ghost tb-ss' + (tk ? ' ' + tk : '');
+        tbs.querySelector('.tb-ss-n').textContent = tw ? (tw > 9 ? '9+' : String(tw)) : '';
+        tbs.setAttribute('aria-label', 'Open Studio Sync' + (tw ? ', ' + tw + ' change' + (tw === 1 ? '' : 's') + ' waiting' : ''));
       }
     }
     ssRenderTips(linked);
@@ -7277,8 +7310,8 @@ window.PP = (function () {
         el.metaDescription.value = pl.playlistDescription || ''; state.descAuto = isAutoDesc(pl.playlistDescription || '');
         var importedSync = pl.customData && typeof pl.customData.syncURL === 'string' ? pl.customData.syncURL.trim() : '';
         if (importedSync) { el.syncEnable.checked = true; el.syncUrl.value = importedSync; updateSyncUI(); }
-        if (typeof pl.image === 'string' && pl.image.trim()) {
-          var img = pl.image.trim();
+        if (plImage(pl)) {
+          var img = plImage(pl);
           if (/^data:image\//i.test(img)) setCoverFromDataUrl(img);
           else if (/^[A-Za-z0-9+/=\s]+$/.test(img) && img.replace(/\s+/g, '').length > 100) setCoverFromDataUrl('data:image/png;base64,' + img.replace(/\s+/g, '')); // raw base64 cover (common in community .bplists)
         }
