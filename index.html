@@ -485,6 +485,9 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-sel{width:auto;max-width:240px;font-size:14px;padding:7px 9px;}
 .lq-restore{margin:-2px 0 8px 12px;padding:8px 10px;border-left:2px solid #23406b;font-size:13px;color:var(--muted);line-height:1.5;}
 .lq-restore .lq-row{margin-top:6px;}
+.lq-restore.warn{border-left-color:#8a3a3a;color:#f0c4c4;}
+.lq-delhead{margin:4px 0 6px;}
+.lq-li.gone{opacity:.85;border-style:dashed;}
 .lq-dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;flex:none;}
 .lq-dot.idle{background:#5a6b85;}
 .lq-more{margin-top:14px;font-size:13.5px;color:var(--muted);}
@@ -2119,7 +2122,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer">Studio Sync for Quest</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T14:45:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T15:05:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6016,11 +6019,50 @@ window.PP = (function () {
       if (!res.ok) { toast((res.j && res.j.error) || 'Couldn’t restore it.', 'warn'); return; }
       var q = state.lq.quest[devId]; if (q && res.j) q.pending = res.j.pending || q.pending;
       state.lq.restoreOpen = null;
-      var mine = lqIsEditing(devId, k);
-      // An open copy would autosave right over the restore, so stop editing it.
-      if (mine) { state.lq.editing = null; state.lq.savedAt = 0; state.lq.dirty = false; }
-      toast('Restoring on ' + lqDevName(devId) + ' on its next sync. The version there now is kept as a backup.' + (mine ? ' Editing stopped so your open copy doesn’t overwrite it. Press Edit after the headset syncs.' : ''), 'ok');
+      // An open copy would autosave right over the restore, so stop editing it there.
+      var mine = lqDropTarget(devId, k), gone = lqDeletedItem(devId, k);
+      toast(gone ? 'Bringing back “' + (gone.title || gone.file) + '” on ' + lqDevName(devId) + ' on its next sync.'
+        : 'Restoring on ' + lqDevName(devId) + ' on its next sync. The version there now is kept as a backup.' + (mine ? ' Editing stopped so your open copy doesn’t overwrite it. Press Edit after the headset syncs.' : ''), 'ok');
       track('lq-restore');
+    }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  function lqDeletedItem(devId, k) { var q = state.lq.quest[devId]; return q && (q.deleted || []).find(function (d) { return d.k === k; }) || null; }
+  function lqCan(devId, f) { var q = state.lq.quest[devId]; return !!(q && (q.features || []).indexOf(f) >= 0); }
+  // Stop sending edits to one headset's copy; the rest of the targets keep autosaving.
+  function lqDropTarget(devId, k) {
+    var ed = state.lq.editing; if (!ed) return false;
+    var all = lqTargets(ed), keep = all.filter(function (t) { return !(t.dev === devId && t.k === k); });
+    if (keep.length === all.length) return false;
+    if (!keep.length) { state.lq.editing = null; state.lq.savedAt = 0; state.lq.dirty = false; }
+    else { ed.dev = keep[0].dev; ed.k = keep[0].k; ed.file = keep[0].file; ed.also = keep.slice(1); }
+    lqSaveOpenQuest();
+    return true;
+  }
+  // Deleting moves the playlist into the headset's backups, so it can be brought back for 30 days.
+  function lqDelete(devId, k) {
+    var it = lqQuestItems(devId).find(function (x) { return x.k === k; }); if (!it || state.lq.busy) return;
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/playlists/' + k + '/delete'), {}).then(function (res) {
+      if (!res.ok) { toast((res.j && res.j.error) || 'Couldn’t delete it.', 'warn'); return; }
+      var q = state.lq.quest[devId]; if (q && res.j) q.pending = res.j.pending || q.pending;
+      state.lq.delAsk = null;
+      lqDropTarget(devId, k);
+      toast('“' + (it.title || it.file) + '” is deleted from ' + lqDevName(devId) + ' on its next sync. Undo is right there until then, and after that it waits in Recently deleted for 30 days.', 'ok');
+      track('lq-delete');
+    }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  // Take back a send, restore or delete the headset hasn't picked up yet.
+  function lqCancel(devId, k) {
+    if (state.lq.busy) return;
+    var pw = lqPendingFor(devId, k);
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/playlists/' + k + '/cancel'), {}).then(function (res) {
+      if (!res.ok) { toast((res.j && res.j.error) || 'Too late, the headset already has it. Refresh to see.', 'warn'); return; }
+      var q = state.lq.quest[devId]; if (q && res.j) q.pending = res.j.pending || q.pending;
+      // A new playlist that never reached the headset no longer exists, so nothing to edit there.
+      if (pw && pw.create) lqDropTarget(devId, k);
+      toast(pw && pw.remove ? 'Delete undone.' : pw && pw.restore ? 'Restore cancelled.' : pw && pw.create ? 'Cancelled. It won’t be added to the headset.' : 'Cancelled. The headset keeps its current version.', 'ok');
+      track('lq-cancel');
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
   function lqWhen(t) { try { return new Date(t * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
@@ -6104,14 +6146,31 @@ window.PP = (function () {
         else qh += '<div class="lq-scroll">' + items.map(function (it) {
           var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), id = esc(d.id) + '|' + esc(it.k);
           var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], open = lq.restoreOpen === d.id + '|' + it.k;
-          var row = '<div class="lq-li"><span class="lq-name">' + esc(it.title || it.file) + (it.waiting ? '<span class="lq-badge wait">new, waiting for headset</span>' : (pw ? '<span class="lq-badge wait">' + (pw.restore ? 'restore pending' : 'edit pending') + '</span>' : '')) +
+          var removing = !!(pw && pw.remove), ask = lq.delAsk === d.id + '|' + it.k;
+          var badge = it.waiting ? 'new, waiting for headset' : pw ? (pw.remove ? 'delete pending' : pw.restore ? 'restore pending' : 'edit pending') : '';
+          var row = '<div class="lq-li' + (removing ? ' gone' : '') + '"><span class="lq-name">' + esc(it.title || it.file) + (badge ? '<span class="lq-badge wait">' + badge + '</span>' : '') +
             '<span class="lq-sub">' + (it.count >= 0 ? it.count + ' song' + (it.count === 1 ? '' : 's') + ' &middot; ' : '') + esc(it.file) + '</span></span><span class="lq-acts">' +
-            (baks.length ? lqBtn(open ? 'Close' : 'Restore…', 'data-lq-restoreopen="' + id + '"') : '') +
-            (editing ? '<span class="lq-badge">editing</span>' : lqBtn('Edit', 'data-lq-edit="' + id + '"')) + '</span></div>';
+            (pw && (pw.remove || pw.restore || it.waiting) ? lqBtn('Undo', 'data-lq-cancel="' + id + '"') : '') +
+            (!removing && baks.length ? lqBtn(open ? 'Close' : 'Restore…', 'data-lq-restoreopen="' + id + '"') : '') +
+            (!removing && !it.waiting && lqCan(d.id, 'delete') ? lqBtn('Delete', 'data-lq-delask="' + id + '"', 'ghost sm danger') : '') +
+            (removing ? '' : editing ? '<span class="lq-badge">editing</span>' : lqBtn('Edit', 'data-lq-edit="' + id + '"')) + '</span></div>';
+          if (ask && !removing) row += '<div class="lq-restore warn">Delete “' + esc(it.title || it.file) + '” from ' + esc(lqDevName(d.id)) + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.<div class="lq-row">' +
+            lqBtn('Delete', 'data-lq-delete="' + id + '"', 'ghost sm danger') + lqBtn('Keep it', 'data-lq-delask=""') + '</div></div>';
           if (open && baks.length) row += '<div class="lq-restore">Put back the version from before an edit. The one on the headset now is kept as a backup, so this can be undone.<div class="lq-row">' +
             baks.map(function (b) { return lqBtn(esc(lqWhen(b.t)) + (b.count >= 0 ? ' &middot; ' + b.count + ' song' + (b.count === 1 ? '' : 's') : ''), 'data-lq-restore="' + id + '|' + b.t + '"'); }).join('') + '</div></div>';
           return row;
         }).join('') + '</div>';
+        // Recently deleted: playlists the headset still holds as backups.
+        var gone = q && Array.isArray(q.deleted) ? q.deleted : [], delOpen = !!(lq.delOpen && lq.delOpen[d.id]);
+        if (gone.length) {
+          qh += '<div class="lq-hrow lq-delhead"><div class="lq-h">Recently deleted (' + gone.length + ')</div>' + lqBtn(delOpen ? 'Hide' : 'Show', 'data-lq-delopen="' + esc(d.id) + '"') + '</div>';
+          if (delOpen) qh += gone.map(function (g) {
+            var pw = lqPendingFor(d.id, g.k), b = g.backups[0], id = esc(d.id) + '|' + esc(g.k);
+            return '<div class="lq-li gone"><span class="lq-name">' + esc(g.title || g.file) + (pw && pw.restore ? '<span class="lq-badge wait">coming back</span>' : '') +
+              '<span class="lq-sub">deleted ' + esc(lqWhen(b.t)) + (b.count >= 0 ? ' &middot; ' + b.count + ' song' + (b.count === 1 ? '' : 's') : '') + ' &middot; ' + esc(g.file) + '</span></span><span class="lq-acts">' +
+              (pw ? lqBtn('Undo', 'data-lq-cancel="' + id + '"') : lqBtn('Restore', 'data-lq-restore="' + id + '|' + b.t + '"')) + '</span></div>';
+          }).join('');
+        }
       });
     }
     document.getElementById('lqQuest').innerHTML = qh;
@@ -6203,6 +6262,10 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-dupnew')) lqSendThis('new');
       else if (t.hasAttribute('data-lq-dupcancel')) { state.lq.dup = null; lqRender(); }
       else if (t.hasAttribute('data-lq-restoreopen')) { var r = t.getAttribute('data-lq-restoreopen'); state.lq.restoreOpen = state.lq.restoreOpen === r ? null : r; lqRender(); }
+      else if (t.hasAttribute('data-lq-delask')) { state.lq.delAsk = t.getAttribute('data-lq-delask') || null; lqRender(); }
+      else if (t.hasAttribute('data-lq-delete')) { var dp = t.getAttribute('data-lq-delete').split('|'); lqDelete(dp[0], dp[1]); }
+      else if (t.hasAttribute('data-lq-cancel')) { var cp = t.getAttribute('data-lq-cancel').split('|'); lqCancel(cp[0], cp[1]); }
+      else if (t.hasAttribute('data-lq-delopen')) { var dv = t.getAttribute('data-lq-delopen'); state.lq.delOpen = state.lq.delOpen || {}; state.lq.delOpen[dv] = !state.lq.delOpen[dv]; lqRender(); }
       else if (t.hasAttribute('data-lq-restore')) { var rp = t.getAttribute('data-lq-restore').split('|'); lqRestore(rp[0], rp[1], rp[2]); }
       else if (t.hasAttribute('data-lq-migrate')) lqMigrate();
       else if (t.hasAttribute('data-lq-sendback')) lqSendBack();

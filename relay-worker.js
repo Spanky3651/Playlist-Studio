@@ -221,7 +221,7 @@ function putTtl(env, k, v) { return env.PLAYLISTS.put(k, typeof v === "string" ?
 function looksLikePlaylist(text) {
   try { const p = JSON.parse(text); return !!(p && typeof p === "object" && Array.isArray(p.songs)); } catch (e) { return false; }
 }
-const MAX_MOVED = 30;
+const MAX_MOVED = 30, MAX_DELETED = 30;
 // Backups the headset reports for one playlist: [{ t: unix seconds, count: songs or -1 }], newest first.
 function cleanBackups(v) {
   if (!Array.isArray(v)) return [];
@@ -280,7 +280,7 @@ async function linked(request, env, ctx, url) {
         if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
       }
       const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
-      const writes = out.items.map((w) => Object.assign({ id: w.id, file: w.file, create: !!w.create, url: url.origin + "/link/outbox/" + w.id }, w.restore ? { restore: w.restore } : {}));
+      const writes = out.items.map((w) => Object.assign({ id: w.id, file: w.file, create: !!w.create, url: url.origin + "/link/outbox/" + w.id }, w.restore ? { restore: w.restore } : {}, w.remove ? { remove: true } : {}));
       return json({ library: dev.lib, device: me.name, playlists, writes }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
 
@@ -301,10 +301,19 @@ async function linked(request, env, ctx, url) {
       const keep = new Set(items.map((it) => it.file));
       const gone = old.items.filter((it) => !keep.has(it.file));
       const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []); });
-      const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged;
+      // Playlists deleted on the headset that it can still bring back, and what this mod version can do.
+      const deleted = [];
+      for (const d of (Array.isArray(body.deleted) ? body.deleted : []).slice(0, MAX_DELETED)) {
+        if (!d || !validFile(d.file)) continue;
+        const backups = cleanBackups(d.backups);
+        if (backups.length) deleted.push({ k: await fileKey(d.file), file: d.file, title: String(d.title || "").slice(0, 200), backups });
+      }
+      const features = (Array.isArray(body.features) ? body.features : []).filter((f) => f === "restore" || f === "delete");
+      const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged ||
+        JSON.stringify(deleted) !== JSON.stringify(old.deleted || []) || JSON.stringify(features) !== JSON.stringify(old.features || []);
       if (changed) {
         await Promise.all(gone.map((it) => env.PLAYLISTS.delete("invb:" + dev.lib + ":" + me.id + ":" + it.k)));
-        await putTtl(env, invKey(dev.lib, me.id), { items, updated: nowSec() });
+        await putTtl(env, invKey(dev.lib, me.id), { items, deleted, features, updated: nowSec() });
       }
       return json({ need }, 200, cors);
     }
@@ -368,7 +377,7 @@ async function linked(request, env, ctx, url) {
     return json({ id, key }, 201, cors);
   }
 
-  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|[0-9a-f]{16})(\/send|\/restore)?)?)?)?$/);
+  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
   const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
   if (!lib) return json({ error: "Not found" }, 404, cors);
@@ -381,15 +390,18 @@ async function linked(request, env, ctx, url) {
     if (!dv) return json({ error: "Not found" }, 404, cors);
     const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
     const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
-    const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, at: x.at }));
+    const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, at: x.at }));
     const movedList = () => (out.moved || []).map((x) => ({ k: x.k, nk: x.nk, file: x.file }));
-    const queue = async (k, file, title, create, body, restore) => {
+    // opts: { restore: backup time } or { remove: true }; neither carries a body.
+    const queue = async (k, file, title, create, body, opts) => {
+      opts = opts || {};
       // One pending write per playlist: a newer send replaces the older one (a create stays a create).
       const prev = out.items.filter((x) => x.file === file);
       for (const w of prev) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
       out.items = out.items.filter((x) => x.file !== file);
       const w = { id: randomId(10), k, file, title: String(title || "").slice(0, 200), create: create || prev.some((x) => x.create), at: nowSec() };
-      if (restore) w.restore = restore;
+      if (opts.restore) w.restore = opts.restore;
+      else if (opts.remove) w.remove = true;
       else await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body));
       out.items.push(w);
       await putTtl(env, outKey(id, dv.id), out);
@@ -397,7 +409,8 @@ async function linked(request, env, ctx, url) {
     };
     if (!m[5] && request.method === "GET") {
       const items = inv.items.map((it) => ({ k: it.k, file: it.file, title: it.title, count: it.count, ready: !!it.have, at: it.at, backups: it.backups || [] }));
-      return json({ items, pending: pendingList(), moved: movedList(), updated: inv.updated || 0 }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+      const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
+      return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0 }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
     if (m[5] === "new" && !m[6] && request.method === "POST") {
       if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
@@ -417,7 +430,32 @@ async function linked(request, env, ctx, url) {
     if (mv) k = mv.nk;
     const it = k && inv.items.find((x) => x.k === k);
     const waiting = k && !it && out.items.find((x) => x.k === k && x.create);
+    const del = k && !it && (inv.deleted || []).find((x) => x.k === k);
+    // Undo a send, restore or delete the headset hasn't picked up yet.
+    if (m[6] === "/cancel" && request.method === "POST") {
+      const prev = out.items.filter((x) => x.k === k);
+      if (!prev.length) return json({ error: "Nothing is waiting for that playlist" }, 404, cors);
+      for (const w of prev) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
+      out.items = out.items.filter((x) => x.k !== k);
+      await putTtl(env, outKey(id, dv.id), out);
+      return json({ pending: pendingList() }, 200, cors);
+    }
+    if (m[6] === "/restore" && request.method === "POST" && del) {
+      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      const body = (await readJson(request, 2000)) || {};
+      const t = Number(body.t);
+      if (!del.backups.some((b) => b.t === t)) return json({ error: "That backup isn't on the headset anymore" }, 404, cors);
+      await queue(del.k, del.file, del.title, false, null, { restore: t });
+      return json({ pending: pendingList() }, 200, cors);
+    }
     if (!it && !waiting) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
+    if (m[6] === "/delete" && request.method === "POST") {
+      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!it) return json({ error: "The headset hasn't written that playlist yet" }, 409, cors);
+      if (!(inv.features || []).includes("delete")) return json({ error: "Update Studio Sync on the headset to delete from here" }, 409, cors);
+      await queue(it.k, it.file, it.title, false, null, { remove: true });
+      return json({ pending: pendingList() }, 200, cors);
+    }
     if (!m[6] && request.method === "GET") {
       const text = it ? await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k) : await env.PLAYLISTS.get("outb:" + id + ":" + dv.id + ":" + waiting.id);
       if (!text) return json({ error: "The headset hasn't uploaded this one yet" }, 404, cors);
@@ -429,7 +467,7 @@ async function linked(request, env, ctx, url) {
       const body = (await readJson(request, 2000)) || {};
       const t = Number(body.t);
       if (!(it.backups || []).some((b) => b.t === t)) return json({ error: "That backup isn't on the headset anymore" }, 404, cors);
-      await queue(it.k, it.file, it.title, false, null, t);
+      await queue(it.k, it.file, it.title, false, null, { restore: t });
       return json({ pending: pendingList() }, 200, cors);
     }
     if (m[6] === "/send" && request.method === "POST") {

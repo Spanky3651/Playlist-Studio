@@ -208,6 +208,7 @@ From then on:
 - If a headset already has a playlist with the same name, Studio asks first: **Replace it** (the headset keeps the old version as a backup) or **Send as new**. A new playlist never overwrites a file; if the name is taken on the headset it's saved as "Name (2)" and Studio follows it there.
 - **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
 - **Restore...** on a headset playlist lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
+- **Delete** removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
 - Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Unlink** stops syncing a headset.
 
 The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
