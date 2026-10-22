@@ -497,6 +497,9 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-now{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:12px 14px;margin-bottom:16px;border:1px solid #23406b;border-radius:12px;background:linear-gradient(180deg,#0b1a30,#081222);}
 .lq-now[hidden]{display:none;}
 .lq-nowl{flex:1 1 260px;min-width:0;}
+.lq-nowc{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #2a4a7a;flex:none;box-shadow:0 0 18px rgba(30,107,255,.25);}
+.lq-now.hascov .lq-nowl{flex:1 1 200px;}
+@media(max-width:720px){.lq-nowc{width:52px;height:52px;}.lq-now.hascov .lq-nowl{flex:1 1 0;}}
 .lq-now .lq-k{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.8px;text-transform:uppercase;color:#7fb0ff;margin-bottom:2px;}
 .lq-now .lq-k.warn{color:#ffd08a;}
 .lq-nowt{display:block;font-size:16px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -526,7 +529,20 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-cov.ph{display:flex;align-items:center;justify-content:center;color:#4f6789;font-size:18px;}
 .lq-cov.ld{background:linear-gradient(110deg,#0d1620 30%,#16243a 50%,#0d1620 70%);background-size:200% 100%;animation:lqshim 1.4s linear infinite;}
 @keyframes lqshim{from{background-position:100% 0}to{background-position:-100% 0}}
-.lq-pl.gone .lq-cov{opacity:.6;}
+.lq-pl.gone .lq-cov{filter:grayscale(1);opacity:.55;}
+@media (hover:hover){.lq-pl[data-lq-row]{cursor:pointer;}.lq-pl[data-lq-row]:hover{background-color:#0d1a2e;}.lq-pl[data-lq-row]:hover .lq-n{color:#cfe4ff;}}
+.lq-waitbar{display:flex;align-items:center;gap:12px;margin:0 0 10px;padding:10px 14px 10px 10px;border:1px solid #1f3456;border-radius:12px;background:linear-gradient(90deg,rgba(30,107,255,.11),rgba(30,107,255,0) 85%),#060c16;}
+.lq-wb-ic{position:relative;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:rgba(47,123,255,.15);color:#8fbaff;flex:none;}
+.lq-wb-ic svg{width:15px;height:15px;}
+body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50%;animation:lqping 2.8s ease-out infinite;}
+@keyframes lqping{0%{box-shadow:0 0 0 0 rgba(91,155,255,.45);}70%,100%{box-shadow:0 0 0 10px rgba(91,155,255,0);}}
+.lq-wb-t{min-width:0;font-size:13px;color:var(--muted);line-height:1.5;}
+.lq-wb-t b{display:block;font-size:14.5px;color:#e6edf6;font-weight:600;}
+.lq-kbd{font-family:var(--mono);font-size:11.5px;padding:1px 6px;border:1px solid #2a4a7a;border-radius:5px;color:#cfe0ff;background:#0c1626;white-space:nowrap;}
+.lq-filter{display:flex;gap:8px;margin:0 0 10px;}
+.lq-filter input[type=text]{flex:1 1 auto;min-width:0;font-size:14px;padding:8px 11px;}
+.lq-filter select{width:auto;flex:none;font-size:14px;padding:8px 30px 8px 10px;}
+.lq-nomatch .lq-a{margin-left:4px;}
 .lq-addbtn{flex:none;}
 .lq-addbtn svg{width:15px;height:15px;}
 .lq-dropzone{border-radius:12px;transition:box-shadow .15s;}
@@ -544,6 +560,12 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-pl.ed{background:linear-gradient(90deg,rgba(30,107,255,.14),rgba(30,107,255,0) 70%);}
 .lq-pl.ed::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:3px;background:var(--blue);box-shadow:0 0 10px var(--blue);}
 .lq-pl.gone .lq-n{color:#c9d4e3;}
+.lq-pl.glow{z-index:1;background-color:rgba(30,107,255,.14);box-shadow:inset 0 0 0 1px rgba(91,155,255,.6);}
+body.anim .lq-pl.glow{animation:lqglow 4s ease-out both;}
+@keyframes lqglow{0%{background-color:rgba(30,107,255,.26);box-shadow:inset 0 0 0 1px rgba(91,155,255,.95),0 0 24px rgba(30,107,255,.5);}60%{background-color:rgba(30,107,255,.16);box-shadow:inset 0 0 0 1px rgba(91,155,255,.7),0 0 14px rgba(30,107,255,.3);}100%{background-color:rgba(30,107,255,0);box-shadow:inset 0 0 0 1px rgba(91,155,255,0),0 0 0 rgba(30,107,255,0);}}
+.lq-added{font-family:var(--mono);font-size:11.5px;padding:3px 9px;border-radius:20px;border:1px solid #1c5c37;color:#7ee2a8;background:rgba(61,220,132,.1);white-space:nowrap;flex:none;}
+body.anim .lq-added{animation:lqfade 4s ease-out both;}
+@keyframes lqfade{0%,75%{opacity:1;}100%{opacity:0;}}
 .lq-pill{font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:20px;border:1px solid #1c4f8f;color:#9cc2ff;background:rgba(30,107,255,.12);white-space:nowrap;flex:none;}
 .lq-menu{position:absolute;right:8px;top:calc(100% - 4px);z-index:20;width:290px;max-width:calc(100% - 16px);padding:6px;border:1px solid #2a4a7a;border-radius:12px;background:#0c1626;box-shadow:0 16px 40px rgba(0,0,0,.6);}
 .lq-ph{font-family:var(--mono);font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);padding:6px 10px 4px;}
@@ -572,6 +594,15 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-a{background:none;border:0;padding:0;color:#5b9bff;font-size:13.5px;font-weight:500;box-shadow:none;}
 .lq-a:hover{box-shadow:none;border:0;text-decoration:underline;color:#8fb8ff;}
 @media(max-width:720px){.lq-sync{display:none;}.lq-sec .lq-ib{margin-left:auto;}.lq-nowa{flex-basis:100%;}.lq-nowa button{flex:1;justify-content:center;}.lq-dev .lq-m{flex-basis:100%;order:3;}.lq-dev .lq-a{margin-left:auto;}}
+.lq-hs{display:inline-flex;align-items:center;gap:7px;min-width:0;margin-right:2px;padding:4px 10px;border:1px solid #1c5c37;border-radius:20px;background:rgba(61,220,132,.08);font-size:12.5px;color:#9fe6bd;white-space:nowrap;}
+.lq-hs[hidden]{display:none;}
+.lq-hs b{color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.lq-hs.wait{border-color:#23406b;background:rgba(47,123,255,.10);color:#9cc2ff;}
+.lq-hs.idle{border-color:var(--border-2);background:transparent;color:var(--muted);}
+.lq-hs .lq-hs-t{flex:none;}
+.lq-dot.wait{background:#5b9bff;}
+#lqPanel.lq-linked .ss-tag{display:none;}
+@media(max-width:520px){.lq-hs:not(.wait) .lq-hs-t{display:none;}}
 .ss-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid #23406b;color:#9cc2ff;background:rgba(47,140,255,.10);white-space:nowrap;text-transform:uppercase;letter-spacing:.6px;flex:none;}
 .lq-status{margin:0 0 12px;}
 .lq-status.warn{color:#ffd08a;}
@@ -2158,7 +2189,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 
     <!-- Studio Sync (Quest mod). Shown to Quest players and anyone who opens it; see lqShown(). -->
     <section class="panel" id="lqPanel" data-collapsible hidden>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Studio Sync</h2><span class="ss-tag">Quest mod</span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Studio Sync</h2><span class="lq-hs" id="lqHs" hidden></span><span class="ss-tag">Quest mod</span></div>
       <div class="panel-sub" id="lqSub">A free mod for Beat Saber on Quest. Playlists you build here go straight onto the headset with no cable or file copying, and you can edit the ones already on it from here.</div>
       <div class="panel-body">
         <p class="lq-steps lq-status" id="lqStatus" hidden></p>
@@ -2218,7 +2249,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T19:19:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T19:55:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5073,6 +5104,7 @@ window.PP = (function () {
     return base + (n ? '  ·  ' + n + ' songs' : '');
   }
   function updateCover(force) {
+    setTimeout(function () { if (typeof lqCovSync === 'function') lqCovSync(); }, 0);
     var title = el.coverText.value.trim() || el.metaTitle.value.trim() || 'Playlist Studio';
     var subtitle = el.coverSubtitle.value.trim() || coverSubtitle();
     var pos = state.coverTextPos, color = state.coverTextColor;
@@ -5884,6 +5916,7 @@ window.PP = (function () {
           var q = state.lq.quest[dev] || (state.lq.quest[dev] = { items: [], pending: [], updated: 0 });
           q.pending = res.j.pending || q.pending;
           done.push({ dev: dev, k: k, file: file, replaced: !!hit });
+          lqGlow(dev, k, hit ? 'Replaced' : 'Added');
         }, function () { failed++; });
       });
     });
@@ -6233,6 +6266,7 @@ window.PP = (function () {
           var q = state.lq.quest[r.dev] || (state.lq.quest[r.dev] = { items: [], pending: [], updated: 0 });
           q.pending = (res.j && res.j.pending) || q.pending;
           done.push(r);
+          lqGlow(r.dev, k, hit ? 'Replaced' : 'Added');
           return lqMakeThumb(r.image).then(function (src) { lqThumbPut(r.dev, k, 'w', src); });
         }, function () { failed++; });
       });
@@ -6277,16 +6311,39 @@ window.PP = (function () {
       else toast((res.j && res.j.error) || 'Couldn’t rename it.', 'warn');
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
+  // A playlist that just landed in the list glows for a few seconds so it's easy to spot.
+  function lqGlow(dev, k, label) { if (!dev || !k) return; state.lq.glow = state.lq.glow || {}; state.lq.glow[dev + '|' + k] = { label: label, t: Date.now() }; setTimeout(lqRender, 4050); }
+  function lqGlowFor(key) {
+    var g = state.lq.glow && state.lq.glow[key]; if (!g) return null;
+    var ms = Date.now() - g.t; if (ms >= 4000) { delete state.lq.glow[key]; return null; }
+    return { label: g.label, ms: Math.max(0, Math.round(ms)) };
+  }
+  // Long lists get a filter box and a sort choice (the sort is remembered).
+  var LQ_SORT = 'playlistStudio.lqSort.v1';
+  function lqSortGet() { var v = ''; try { v = localStorage.getItem(LQ_SORT) || ''; } catch (e) {} return v === 'recent' || v === 'songs' ? v : 'az'; }
+  function lqSortList(all, fl) {
+    var srt = lqSortGet(), f = String(fl || '').trim().toLowerCase(), list = all.slice();
+    if (f) list = list.filter(function (it) { return ((it.title || '') + ' ' + (it.file || '')).toLowerCase().indexOf(f) >= 0; });
+    if (srt === 'recent') list.sort(function (a, b) { return (b.waiting ? 9e12 : b.at || 0) - (a.waiting ? 9e12 : a.at || 0); });
+    else if (srt === 'songs') list.sort(function (a, b) { return (b.count >= 0 ? b.count : -1) - (a.count >= 0 ? a.count : -1); });
+    return list;
+  }
+  function lqFilterHtml(devId, fl, nm) {
+    var srt = lqSortGet(), dv = esc(devId), o = function (v, t) { return '<option value="' + v + '"' + (srt === v ? ' selected' : '') + '>' + t + '</option>'; };
+    return '<div class="lq-filter"><input type="text" id="lqFilter-' + dv + '" data-lq-filter="' + dv + '" value="' + esc(fl) + '" placeholder="Filter playlists" aria-label="Filter playlists on ' + esc(nm) + '" autocomplete="off" spellcheck="false" />' +
+      '<select data-lq-sort aria-label="Sort playlists">' + o('az', 'A to Z') + o('recent', 'Last changed') + o('songs', 'Most songs') + '</select></div>';
+  }
+  function lqCovSync() { var ci = lqRender.cov; if (ci && ci.isConnected && state.coverDataUrl && ci.getAttribute('src') !== state.coverDataUrl) ci.src = state.coverDataUrl; }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
     var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [];
     if (it.count >= 0) meta.push(it.count + ' song' + (it.count === 1 ? '' : 's'));
     if (!lqSameName(name, it.file)) meta.push(esc(it.file));
-    var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new, arrives next sync</span>'
-      : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting on next sync</span>'
-      : pw && pw.restore ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>restore arrives next sync</span>'
-      : pw ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>edit arrives next sync</span>'
+    var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new</span>'
+      : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting</span>'
+      : pw && pw.restore ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>restoring</span>'
+      : pw ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>waiting</span>'
       : editing ? '<span class="lq-edn">editing now</span>'
       : baks.length ? baks.length + ' backup' + (baks.length === 1 ? '' : 's') : '';
     if (st) meta.push(st);
@@ -6298,7 +6355,9 @@ window.PP = (function () {
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
     var open = !!mi && lq.menuOpen === key;
     var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
-    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + '">' + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' + act +
+    var gl = lqGlowFor(key), gd = gl ? ' style="animation-delay:-' + gl.ms + 'ms"' : '';
+    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + '>' + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
+      (gl && !editing ? '<span class="lq-added"' + gd + '>' + gl.label + '</span>' : '') + act +
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
     if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.<div class="lq-row">' +
@@ -6311,6 +6370,20 @@ window.PP = (function () {
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
     panel.hidden = !lqShown();
+    // Header: which headset and when it last synced, readable even with the panel folded.
+    var hs = document.getElementById('lqHs');
+    if (hs) {
+      hs.hidden = !linked; panel.classList.toggle('lq-linked', linked);
+      if (linked) {
+        var seen = 0, waiting = 0;
+        lq.devices.forEach(function (d) { if (d.seen > seen) seen = d.seen; var q = lq.quest[d.id]; waiting += q && Array.isArray(q.pending) ? q.pending.length : 0; });
+        var hsk = waiting ? 'wait' : seen && (Date.now() / 1000 - seen) < 86400 * 2 ? '' : 'idle';
+        hs.className = 'lq-hs' + (hsk ? ' ' + hsk : '');
+        hs.innerHTML = '<span class="lq-dot' + (hsk ? ' ' + hsk : '') + '"></span><b>' + esc(lq.devices.length > 1 ? lq.devices.length + ' headsets' : lqDevName(lq.devices[0].id)) + '</b><span class="lq-hs-t">' +
+          (waiting ? waiting + ' waiting' : seen ? 'synced ' + esc(agoStr(seen)) : 'not synced yet') + '</span>';
+        hs.title = lq.devices.map(function (d) { return lqDevName(d.id) + ': last sync ' + lqAgo(d.seen); }).join('\n') + (waiting ? '\n' + waiting + ' change' + (waiting === 1 ? '' : 's') + ' waiting for the next sync' : '');
+      }
+    }
     ssRenderTips(linked);
     var bar = document.getElementById('lqEditBar');
     // Editing bar inside Your Playlist, only while editing a headset playlist.
@@ -6364,8 +6437,15 @@ window.PP = (function () {
         h = nowCard('This playlist', title, songs + ' &middot; send it and it becomes a playlist on your headset' + (multi ? 's you pick' : '') + ' on the next sync. After that your edits save and send themselves.',
           pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : (toAll ? 'Send to all headsets' : 'Send to Quest')), 'data-lq-send', 'primary'));
       }
-      card.className = 'lq-now' + (wide ? ' wide' : '');
+      var hasCov = !!(n && state.coverDataUrl);
+      card.className = 'lq-now' + (wide ? ' wide' : '') + (hasCov ? ' hascov' : '');
       card.innerHTML = h;
+      if (hasCov) {
+        var ci = lqRender.cov || (lqRender.cov = document.createElement('img'));
+        ci.className = 'lq-nowc'; ci.alt = '';
+        if (ci.getAttribute('src') !== state.coverDataUrl) ci.src = state.coverDataUrl;
+        card.insertBefore(ci, card.firstChild);
+      }
     }
 
     // Playlists linked the older way (through a hosted copy) can be moved onto the headset.
@@ -6376,12 +6456,18 @@ window.PP = (function () {
     var qh = '';
     if (linked) {
       lq.devices.forEach(function (d) {
-        var q = lq.quest[d.id], items = lqQuestItems(d.id);
-        qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(lqDevName(d.id)) + '</span>' + (items.length ? '<span class="lq-cnt">' + items.length + '</span>' : '') +
+        var q = lq.quest[d.id], all = lqQuestItems(d.id), fl = (lq.filter && lq.filter[d.id]) || '', items = lqSortList(all, fl);
+        var pn = q && Array.isArray(q.pending) ? q.pending.length : 0, dnm = lqDevName(d.id);
+        qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(dnm) + '</span>' + (all.length ? '<span class="lq-cnt">' + all.length + '</span>' : '') +
           '<span class="lq-sync">' + (q && q.updated ? 'synced ' + esc(agoStr(q.updated)) : '') + '</span>' + lqBtn(lqIco('up') + 'Add playlist', 'data-lq-add="' + esc(d.id) + '" title="Send a .bplist file from this computer to ' + esc(lqDevName(d.id)) + '"', 'ghost sm lq-addbtn') + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
-        qh += lqAskHtml(d.id) + '<div class="lq-dropzone" data-lq-drop="' + esc(d.id) + '">';
-        if ((!q || !q.updated) && !items.length) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
-        else if (!items.length) qh += '<p class="lq-steps">No playlists on the headset yet. Add one, or drop a <code>.bplist</code> here.</p>';
+        qh += lqAskHtml(d.id);
+        if (pn) qh += '<div class="lq-waitbar" role="status"><span class="lq-wb-ic">' + lqIco('send') + '</span><span class="lq-wb-t"><b>' + pn + ' change' + (pn === 1 ? '' : 's') + ' on ' + (pn === 1 ? 'its' : 'their') + ' way to ' + esc(dnm) + '</b>' +
+          (pn === 1 ? 'It arrives' : 'They arrive') + ' on the next sync. Press <span class="lq-kbd">Sync now</span> in the Studio Sync tab to get ' + (pn === 1 ? 'it' : 'them') + ' sooner.</span></div>';
+        if (all.length >= 8 || fl) qh += lqFilterHtml(d.id, fl, dnm);
+        qh += '<div class="lq-dropzone" data-lq-drop="' + esc(d.id) + '">';
+        if ((!q || !q.updated) && !all.length) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
+        else if (!all.length) qh += '<p class="lq-steps">No playlists on the headset yet. Add one, or drop a <code>.bplist</code> here.</p>';
+        else if (!items.length) qh += '<p class="lq-steps lq-nomatch">No playlists match “' + esc(fl.trim()) + '”. <button type="button" class="lq-a" data-lq-fclear="' + esc(d.id) + '">Clear the filter</button></p>';
         else qh += '<div class="lq-list">' + items.map(function (it) { return lqRow(d, it); }).join('') + '</div>';
         qh += '</div><p class="lq-drophint">Drop <code>.bplist</code> files on this list to add them to ' + esc(lqDevName(d.id)) + '.</p>';
         // Recently deleted: playlists the headset still holds as backups.
@@ -6392,7 +6478,7 @@ window.PP = (function () {
             var pw = lqPendingFor(d.id, g.k), b = g.backups[0], id = esc(d.id) + '|' + esc(g.k), nm = g.title || g.file, meta = ['deleted ' + esc(lqWhen(b.t))];
             if (b.count >= 0) meta.push(b.count + ' song' + (b.count === 1 ? '' : 's'));
             if (!lqSameName(nm, g.file)) meta.push(esc(g.file));
-            if (pw && pw.restore) meta.push('<span class="lq-st lq-wait"><span class="lq-dot2"></span>coming back next sync</span>');
+            if (pw && pw.restore) meta.push('<span class="lq-st lq-new"><span class="lq-dot2 new"></span>coming back</span>');
             var oldCov = lqThumbStore()[d.id + '|' + g.k];
             return '<div class="lq-pl gone">' + lqThumbHtml(d.id + '|' + g.k, oldCov ? oldCov.src : '') + '<div class="lq-t"><span class="lq-n">' + esc(nm) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
               (pw ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : lqBtn(lqIco('hist') + 'Restore', 'data-lq-restore="' + id + '|' + b.t + '"')) + '</div>';
@@ -6400,7 +6486,9 @@ window.PP = (function () {
         }
       });
     }
+    var fae = document.activeElement, fKeep = fae && fae.id && fae.id.indexOf('lqFilter-') === 0 ? [fae.id, fae.selectionStart, fae.selectionEnd] : null;
     document.getElementById('lqQuest').innerHTML = qh;
+    if (fKeep) { var fin = document.getElementById(fKeep[0]); if (fin) { fin.focus(); try { fin.setSelectionRange(fKeep[1], fKeep[2]); } catch (e) {} } }
 
     // Headsets: one line each; Manage shows Unlink and Link another
     var dOpen = !!lq.devsOpen, rnAt = document.activeElement && document.activeElement.id === 'lqRenameIn' ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
@@ -6504,7 +6592,13 @@ window.PP = (function () {
       (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function () { toast('Library key copied.', 'ok'); }, function () { document.getElementById('lqKeyOut').select(); });
     });
     var onClick = function (e) {
-      var t = e.target.closest('button'); if (!t || t.disabled) return;
+      var t = e.target.closest('button');
+      if (!t) {
+        var rw = e.target.closest('[data-lq-row]'), sel = window.getSelection ? String(window.getSelection()) : '';
+        if (!rw || e.lqMenuClosed || state.lq.busy || state.pubBusy || sel || e.target.closest('.lq-menu, .lq-confirm, input, select, a')) return;
+        var rp0 = rw.getAttribute('data-lq-row').split('|'); track('lq-row-edit'); lqEdit(rp0[0], rp0[1]); return;
+      }
+      if (t.disabled) return;
       if (t.closest('.lq-menu')) state.lq.menuOpen = null;   // picking anything in a menu closes it
       if (t.hasAttribute('data-lq-menu')) { var mk = t.getAttribute('data-lq-menu'); state.lq.menuOpen = state.lq.menuOpen === mk ? null : mk; state.lq.delAsk = null; lqRender(); }
       else if (t.hasAttribute('data-lq-add')) { state.lq.addDev = t.getAttribute('data-lq-add'); var fi = document.getElementById('lqAddFile'); if (fi) fi.click(); }
@@ -6533,10 +6627,17 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-refresh')) { t.disabled = true; lqRefresh(); }
       else if (t.hasAttribute('data-lq-showlink')) { state.lq.showLink = true; lqRender(); }
       else if (t.hasAttribute('data-lq-edit')) { var p = t.getAttribute('data-lq-edit').split('|'); lqEdit(p[0], p[1]); }
+      else if (t.hasAttribute('data-lq-fclear')) { state.lq.filter = state.lq.filter || {}; state.lq.filter[t.getAttribute('data-lq-fclear')] = ''; lqRender(); var fc = document.getElementById('lqFilter-' + t.getAttribute('data-lq-fclear')); if (fc) fc.focus(); }
     };
     document.getElementById('lqPanel').addEventListener('click', onClick);
-    document.getElementById('lqPanel').addEventListener('input', function (e) { if (e.target && e.target.id === 'lqRenameIn') state.lq.renameDraft = e.target.value; });
+    document.getElementById('lqPanel').addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'lqRenameIn') state.lq.renameDraft = e.target.value;
+      else if (e.target && e.target.hasAttribute('data-lq-filter')) { state.lq.filter = state.lq.filter || {}; state.lq.filter[e.target.getAttribute('data-lq-filter')] = e.target.value; lqRender(); }
+    });
     document.getElementById('lqPanel').addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && e.target && e.target.hasAttribute && e.target.hasAttribute('data-lq-filter') && e.target.value) {
+        e.preventDefault(); e.stopPropagation(); state.lq.filter[e.target.getAttribute('data-lq-filter')] = ''; lqRender(); return;
+      }
       if (!e.target || e.target.id !== 'lqRenameIn') return;
       if (e.key === 'Enter') { e.preventDefault(); lqRename(state.lq.renaming, e.target.value); }
       else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); state.lq.renaming = null; state.lq.renameDraft = null; lqRender(); }
@@ -6569,9 +6670,10 @@ window.PP = (function () {
       lqUploadFiles(t.getAttribute('data-lq-drop'), Array.prototype.slice.call(fl), 'drop');
     }, true);
     // A click anywhere else, or Esc, closes an open "..." menu.
-    document.addEventListener('click', function (e) { if (!state.lq.menuOpen || (e.target.closest && e.target.closest('.lq-menu, [data-lq-menu]'))) return; state.lq.menuOpen = null; lqRender(); }, true);
+    document.addEventListener('click', function (e) { if (!state.lq.menuOpen || (e.target.closest && e.target.closest('.lq-menu, [data-lq-menu]'))) return; state.lq.menuOpen = null; e.lqMenuClosed = true; lqRender(); }, true);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && state.lq.menuOpen) { state.lq.menuOpen = null; lqRender(); } });
     document.getElementById('lqPanel').addEventListener('change', function (e) {
+      if (e.target && e.target.hasAttribute('data-lq-sort')) { try { localStorage.setItem(LQ_SORT, e.target.value); } catch (x) {} track('lq-sort-' + e.target.value); lqRender(); return; }
       if (e.target && e.target.id === 'lqSendTo') { state.lq.sendTo = e.target.value; state.lq.dup = null; if (e.target.value !== 'all') state.lq.lastDev = e.target.value; lqRender(); }
     });
     var bar = document.getElementById('lqEditBar'); if (bar) bar.addEventListener('click', onClick);
@@ -9333,7 +9435,7 @@ window.PP = (function () {
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<az|recent|songs>; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
