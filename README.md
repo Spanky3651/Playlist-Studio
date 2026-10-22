@@ -3,6 +3,8 @@
 **A Beat Saber playlist tool and builder that searches [BeatLeader](https://beatleader.xyz) and [BeatSaver](https://beatsaver.com).**
 Filter the ranked catalog by star rating, mapper, NPS and more - or flip to the BeatSaver catalog and build by **tags** (tech, speed, genres) including unranked maps. Curate the maps you actually want, preview them in-app, see your own scores on every map, and export a ready-to-play `.bplist` - all from a single self-contained HTML file.
 
+**On Quest?** The free [Studio Sync](https://github.com/Spanky3651/Studio-Sync) mod sends playlists from Studio straight to your headset, no cable or file copying, and lets you edit the ones already on it. [Set it up](https://spanky3651.github.io/Playlist-Studio/?utm_source=github&utm_campaign=readme-playlist-studio#studio-sync) or see *[Studio Sync](#studio-sync-quest-mod)* below.
+
 ![Playlist Studio interface](screenshot.png)
 
 ---
@@ -149,12 +151,31 @@ The **AccSaber Pools** panel loads every ranked AccSaber chart straight from Acc
 - **Covers travel with playlists** - save a playlist and its cover comes back with it on load, whether it's a procedural design or your own uploaded image.
 - Exports a spec-compliant `.bplist`: PascalCase difficulty names, embedded Base64 cover, difficulties merged per song, and your play order preserved.
 
+### Studio Sync (Quest mod)
+[Studio Sync](https://github.com/Spanky3651/Studio-Sync) is a free mod for Beat Saber on Quest that links your headset to Studio, so playlists go straight onto it with no cable or file copying.
+
+It stays out of the way for PC players. The **Studio Sync** panel shows up in the right column when you're on the Quest browser, when you pick **Quest** in the Export panel, or when you open it from **How it works**, the Quest tab tip, the *Playing on Quest?* note, the In-Game Sync panel or **Studio Sync for Quest** in the footer. *Not on Quest? Hide Studio Sync* tucks it away again. Link straight to it with [`#studio-sync`](https://spanky3651.github.io/Playlist-Studio/?utm_source=github&utm_campaign=readme-playlist-studio#studio-sync).
+
+1. **Install the mod.** Download the `.qmod` from the panel (it always points at the [latest release](https://github.com/Spanky3651/Studio-Sync/releases)). On a PC or Android phone, open [ModsBeforeFriday](https://lauriethefish.github.io/ModsBeforeFriday/) in Chrome or Edge and plug in your Quest, choose **Upload Files** and pick the file. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.
+2. **Link your headset.** In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into the panel.
+3. **Send playlists.** Build one and press **Send to Quest** in the panel. Missing songs download in game with PlaylistManager, like any playlist.
+
+From then on:
+- The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
+- **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file. With more than one headset linked, pick one or **All headsets**.
+- If a headset already has a playlist with the same name, Studio asks first: **Replace it** (the headset keeps the old version as a backup) or **Send as new**. A new playlist never overwrites a file; if the name is taken on the headset it's saved as "Name (2)" and Studio follows it there.
+- **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
+- **Restore...** on a headset playlist lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
+- **Delete** removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
+- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Unlink** stops syncing a headset.
+
+The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
+
 ### Save, reload & import
 - **Filter presets** - save filter combos you reuse (e.g. "6★ tech warmup")
 - **Playlist Library** - save and reload whole playlists (cover included)
-- **Smart playlists** - save the results you built (a search, your plays, top plays, PP gains or an AccSaber pool) as a recipe. **Rebuild** refills Your Playlist from fresh results with the same filters and sort, and if the playlist is hosted it pushes the update so your headset's Sync picks it up
 - **Gallery** - **Browse the gallery** loads ready-made playlists in one click: three starter lists for new players (BeatSaver's best-rated maps, each set to an easy, medium or harder difficulty) and the official AccSaber pools, all pulled live so they're never stale. New players also get a link to it from the empty results
-- **Library backup** - **Back up library** downloads every saved playlist, preset, smart playlist and saved icon as one file; **Restore backup** merges it back on any computer without overwriting anything
+- **Library backup** - **Back up library** downloads every saved playlist, preset and saved icon as one file; **Restore backup** merges it back on any computer without overwriting anything
 - **Session autosave** - an accidental refresh won't lose your work in progress
 - **Import `.bplist`** - open an existing playlist to edit it; covers stored as either a data URI *or* raw base64 both load, for broad compatibility with community playlists
 - **Combine playlists** - merge several `.bplist` files and/or saved playlists into one. A song that shows up more than once is kept once, where it first appears (same song and difficulty, or any difficulty if you tick that option), and a live summary shows how many duplicates go. Start a new playlist or add to the one you have, then name it, pick a cover and export like any playlist. Pick several files in **Import .bplist** or drop several on the page to open it with them
@@ -193,26 +214,6 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 
 #### Hosted sync
 No website? Turn on **In-Game Sync** and hit **Host this playlist**. Studio stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
-
-#### Studio Sync (Quest mod)
-[Studio Sync](https://github.com/Spanky3651/Studio-Sync) is a free mod for Beat Saber on Quest that links your headset to Studio, so playlists go straight onto it with no cable or file copying.
-
-It stays out of the way for PC players. The **Studio Sync** panel shows up in the right column when you're on the Quest browser, when you pick **Quest** in the Export panel, or when you open it from **How it works**, the Quest tab tip, the *Playing on Quest?* note, the In-Game Sync panel or **Studio Sync for Quest** in the footer. *Not on Quest? Hide Studio Sync* tucks it away again. Link straight to it with [`#studio-sync`](https://spanky3651.github.io/Playlist-Studio/?utm_source=github&utm_campaign=readme-playlist-studio#studio-sync).
-
-1. **Install the mod.** Download the `.qmod` from the panel (it always points at the [latest release](https://github.com/Spanky3651/Studio-Sync/releases)). On a PC or Android phone, open [ModsBeforeFriday](https://lauriethefish.github.io/ModsBeforeFriday/) in Chrome or Edge and plug in your Quest, choose **Upload Files** and pick the file. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.
-2. **Link your headset.** In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into the panel.
-3. **Send playlists.** Build one and press **Send to Quest** in the panel. Missing songs download in game with PlaylistManager, like any playlist.
-
-From then on:
-- The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
-- **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file. With more than one headset linked, pick one or **All headsets**.
-- If a headset already has a playlist with the same name, Studio asks first: **Replace it** (the headset keeps the old version as a backup) or **Send as new**. A new playlist never overwrites a file; if the name is taken on the headset it's saved as "Name (2)" and Studio follows it there.
-- **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
-- **Restore...** on a headset playlist lists its backups (the last 3 versions before an edit). Pick one and the headset puts it back on the next sync, backing up the version it replaces so a restore can be undone.
-- **Delete** removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
-- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Unlink** stops syncing a headset.
-
-The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
 
 ### Share by link
 
@@ -272,7 +273,7 @@ No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 ## Privacy
 
 - No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter that stores no personal data.
-- Presets, saved playlists, smart playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage. Nothing is uploaded unless you choose **Host this playlist**, which stores that one playlist (songs, title, cover) on the Playlist Studio relay until you hit **Stop hosting** or it expires.
+- Presets, saved playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage. Nothing is uploaded unless you choose **Host this playlist**, which stores that one playlist (songs, title, cover) on the Playlist Studio relay until you hit **Stop hosting** or it expires.
 - API requests hit BeatLeader, BeatSaver, ScoreSaber and AccSaber (public data), with BeatLeader and ScoreSaber going through the relay. Only anonymous, read-only requests are sent, apart from hosting a playlist when you ask for it.
 - **Send to Quest** in the Export panel talks to your headset over USB straight from your browser; the playlist never leaves your computer.
 - **Studio Sync** sends the playlists you choose to the relay for your linked headset to pick up. Linking uses a one-time code, not an account. When its panel is showing, Studio asks GitHub once per visit for the latest mod release so the download link stays current.

@@ -553,17 +553,6 @@ a.ss-btn svg{width:16px;height:16px;flex:none;}
 .rb-ss{color:#ffd56b;border-color:rgba(255,194,61,.45);background:rgba(255,194,61,.10);}
 .ss-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;}
 .ss-state{font-size:12.5px;font-family:var(--mono);}
-.lib-fold{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--border);}
-.lib-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2);user-select:none;padding:2px 0;}
-.lib-fold>summary::-webkit-details-marker{display:none;}
-.lib-fold>summary:hover,.lib-fold>summary:hover .lib-caret{color:#cdd8e6;}
-.lib-fold[open]>summary{margin-bottom:8px;}
-.lib-fold .lib-count{margin-left:auto;text-transform:none;letter-spacing:0;color:var(--muted);}
-.lib-fold .lib-caret{width:16px;height:16px;flex:none;color:var(--muted-2);transition:transform .18s;transform:rotate(-90deg);}
-.lib-fold[open] .lib-caret{transform:none;}
-.lib-fold>summary .info{text-transform:none;}
-.lib-sub{font-family:var(--mono);font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2);margin:14px 0 6px;padding-top:12px;border-top:1px solid var(--border);}
-#recipeN{width:72px;flex:none;}
 .sv-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
 .sv-acts{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
 
@@ -1878,22 +1867,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <span class="muted import-hint">Several into one, duplicates removed</span>
         </div>
         <div class="preset-row"><button class="ghost sm" id="galleryBtn" type="button">&#9638; Browse the gallery</button><span class="muted import-hint">Ready-made playlists you can load in one click</span></div>
-        <details class="lib-fold" id="smartFold">
-          <summary>Smart playlists <span class="info" data-tip="A smart playlist remembers how you built a list, not the songs: the view (a search, your plays, top plays, PP gains or an AccSaber pool), filters and sort. Rebuild refills Your Playlist from fresh results.">i</span><span class="lib-count" id="smartCount"></span><svg class="lib-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="preset-row">
-            <input type="text" id="recipeName" placeholder="Save these results as a smart playlist…" />
-            <input type="number" id="recipeN" min="5" max="250" step="1" value="20" title="How many maps it takes from the top of the results" />
-            <button class="ghost sm" id="recipeSaveBtn" type="button">Save</button>
-          </div>
-          <div class="preset-row">
-            <select id="recipeSelect"><option value="">- smart playlists -</option></select>
-            <button class="ghost sm" id="recipeRunBtn" type="button">Rebuild</button>
-            <button class="ghost sm danger" id="recipeDelBtn" type="button">Delete</button>
-          </div>
-          <p class="muted lib-note">Rebuild replaces Your Playlist with fresh picks. Undo clear brings the old list back.</p>
-        </details>
         <div class="preset-row lib-backup">
-          <button class="ghost sm" id="libBackupBtn" type="button" title="Download every saved playlist, filter preset, smart playlist and saved icon as one file">&#8615; Back up library</button>
+          <button class="ghost sm" id="libBackupBtn" type="button" title="Download every saved playlist, filter preset and saved icon as one file">&#8615; Back up library</button>
           <label class="filebtn" for="libRestoreFile" title="Restore a library backup file. Nothing you have now is overwritten.">&#8613; Restore backup</label>
           <input type="file" id="libRestoreFile" accept=".json,application/json" hidden />
         </div>
@@ -2159,7 +2134,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer">Studio Sync for Quest</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T15:19:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T15:36:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4333,7 +4308,6 @@ window.PP = (function () {
   // identity, the same across every playlist you make. The basket itself is handled
   // by the caller. Safe to call before elements are wired (guards each group).
   function resetPlaylistIdentity() {
-    state.activeRecipe = null;
     // Metadata written into the .bplist
     if (el.metaTitle) el.metaTitle.value = DEFAULT_TITLE;
     if (el.metaDescription) el.metaDescription.value = ''; state.descAuto = true;
@@ -5558,114 +5532,6 @@ window.PP = (function () {
     }).then(function (r) { state.ssSyncing = false; if (r !== 'failed') ssUI(); });
   }
 
-  // ---- smart playlists (saved recipes) --------------------------------------
-  function renderRecipes() {
-    var sel = document.getElementById('recipeSelect'); if (!sel) return;
-    var o = lsGetRecipes(), names = Object.keys(o).sort(), cur = sel.value;
-    sel.innerHTML = '<option value="">- smart playlists -</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + ' (' + (o[n].n || 20) + ')</option>'; }).join('');
-    if (cur && o[cur]) sel.value = cur;
-    var cnt = document.getElementById('smartCount'); if (cnt) cnt.textContent = names.length ? names.length + ' saved' : '';
-  }
-  function recipeKind() {
-    var sig = String(state.lastSig || ''), vm = state.viewMode;
-    if (vm === 'recommend') return 'recommend';
-    if (vm === 'accsaber') return 'accsaber';
-    if (vm === 'plays') return /^top:/.test(sig) ? 'top' : 'plays';
-    if (vm === 'search' && sig && !/^(sim:|bs$)/.test(sig)) return 'search';
-    return '';
-  }
-  function saveRecipe() {
-    var name = (document.getElementById('recipeName').value || '').trim();
-    if (!name) { toast('Name the smart playlist first.', 'warn'); return; }
-    if (state.source !== 'beatleader' || !state.fetched) { toast('Run a BeatLeader search, load your plays, PP gains or an AccSaber pool first, then save it.', 'warn'); return; }
-    var kind = recipeKind();
-    if (!kind) { toast('These results can\'t be rebuilt automatically. Smart playlists work with searches, your plays, top plays, PP gains and AccSaber pools.', 'warn'); return; }
-    if (!displayResults().length) { toast('Nothing in the results right now. Adjust the filters until the list shows the maps you want, then save.', 'warn'); return; }
-    var sig = String(state.lastSig || '').split(':');
-    var r = { v: 1, kind: kind, n: clamp(num(document.getElementById('recipeN'), 20), 5, 250), filters: captureFilters(), bandAuto: state.bandAuto !== false,
-      play: { status: el.playStatus.value, recency: el.playRecency.value, accMax: el.accMax ? el.accMax.value : '' },
-      rankView: el.rankInline ? el.rankInline.value : 'all', collapse: !!el.collapseSongs.checked, asCat: state.asCat || 'all', title: name };
-    if (kind === 'top') { r.topN = +sig[2] || 50; if (!(state.player && String(state.player.id) === sig[1])) r.topId = sig[1]; }
-    var o = lsGetRecipes(), prev = o[name]; if (prev && prev.pub) r.pub = prev.pub;
-    o[name] = r;
-    if (!lsSetRecipes(o)) { toast('Could not save - browser storage is full or unavailable.', 'err'); return; }
-    document.getElementById('recipeName').value = ''; renderRecipes(); document.getElementById('recipeSelect').value = name;
-    toast('Saved smart playlist "' + name + '". Rebuild it any time from the Library.', 'ok'); track('recipe-save');
-  }
-  function waitIdle(maxMs) {
-    var t0 = Date.now(), calm = 0;
-    return new Promise(function (resolve) {
-      (function tick() {
-        if (!state.fetching && !state.syncing && !state.ssSyncing) calm++; else calm = 0;
-        if (calm >= 3 || Date.now() - t0 > (maxMs || 120000)) return resolve();
-        setTimeout(tick, 150);
-      })();
-    });
-  }
-  function rebuildRecipe() {
-    var name = document.getElementById('recipeSelect').value, r = lsGetRecipes()[name];
-    if (!r) { toast('Pick a smart playlist first.', 'warn'); return; }
-    if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
-    if (/^(plays|top|recommend)$/.test(r.kind) && !state.player && !r.topId) { toast('Connect your BeatLeader profile first - this one is built from your plays.', 'warn'); focusProfileConnect(); return; }
-    ensureBL();
-    applyPreset(r.filters);
-    state.bandAuto = !!r.bandAuto; markLvl(null);
-    el.playStatus.value = r.play.status || 'any'; el.playRecency.value = r.play.recency || 'any'; if (el.accMax) el.accMax.value = r.play.accMax || '';
-    syncRecencyControl();
-    if (el.rankInline) el.rankInline.value = r.rankView || 'all';
-    el.collapseSongs.checked = !!r.collapse;
-    state.asCat = r.asCat || 'all';
-    track('recipe-run');
-    if (r.kind === 'search') runFetch();
-    else if (r.kind === 'plays') buildFromPlays();
-    else if (r.kind === 'top') buildTopPlays(r.topN || 50, r.topId, r.topId ? r.title : '');
-    else if (r.kind === 'recommend') runFetchRecommend();
-    else if (r.kind === 'accsaber') loadAccSaber(r.asCat || 'all');
-    setTimeout(function () {
-      waitIdle().then(function () {
-        el.fSort.value = r.filters.sort || 'stars'; el.fOrder.value = r.filters.order || 'desc';
-        applyClientFilters();
-        var list = displayResults().slice(0, r.n || 20);
-        if (!list.length) { toast('Rebuilt "' + name + '" but nothing matched. Check its filters.', 'warn'); return; }
-        var snap = state.basket.length ? snapshotPlaylist() : null;
-        state.basket = []; resetPlaylistIdentity();
-        el.metaTitle.value = r.title || name;
-        list.forEach(addEntryStrict);
-        if (snap) state.clearUndo = snap;
-        state.activeRecipe = name;
-        if (r.pub) { state.publish = r.pub; if (typeof applyPublishToSync === 'function') applyPublishToSync(); }
-        renderAll();
-        toast('Rebuilt "' + name + '" with ' + state.basket.length + ' maps.' + (snap ? ' Undo clear brings back your old list.' : ''), 'ok');
-        if (r.pub && typeof publishHosted === 'function' && state.pubAvailable) publishHosted(true);
-      });
-    }, 60);
-  }
-  function deleteRecipe() {
-    var name = document.getElementById('recipeSelect').value; if (!name) { toast('Pick a smart playlist to delete.', 'warn'); return; }
-    var o = lsGetRecipes(); delete o[name]; lsSetRecipes(o); renderRecipes(); toast('Deleted "' + name + '".', 'ok');
-  }
-  function setupRecipes() {
-    var s = document.getElementById('recipeSaveBtn'); if (!s) return;
-    s.addEventListener('click', saveRecipe);
-    document.getElementById('recipeRunBtn').addEventListener('click', rebuildRecipe);
-    document.getElementById('recipeDelBtn').addEventListener('click', deleteRecipe);
-    document.getElementById('recipeName').addEventListener('keydown', function (e) { if (e.key === 'Enter') saveRecipe(); });
-    // Folded by default; opening or closing it is remembered in this browser.
-    var fold = document.getElementById('smartFold'), FOLD_KEY = 'playlistStudio.smartFold.v1';
-    if (fold) {
-      try { fold.open = localStorage.getItem(FOLD_KEY) === 'open'; } catch (e) {}
-      var byUser = false;
-      fold.querySelector('summary').addEventListener('click', function (e) { if (e.target.closest('.info')) e.preventDefault(); else byUser = true; });   // the (i) shows its tip, it doesn't toggle
-      fold.addEventListener('toggle', function () {
-        if (!byUser) return; byUser = false;
-        try { localStorage.setItem(FOLD_KEY, fold.open ? 'open' : 'closed'); } catch (e) {}
-        if (fold.open) track('smart-open');
-      });
-    }
-    renderRecipes();
-  }
-
-
   // ---- hosted sync (needs the PLAYLISTS KV binding on the relay Worker) ------
   // The box stays hidden until the Worker says hosting is set up, so nothing changes
   // for players before it is deployed.
@@ -5709,7 +5575,6 @@ window.PP = (function () {
       if (res.ok && (pub || (res.j && res.j.id && res.j.key && res.j.url))) {
         state.publish = pub ? { id: pub.id, key: pub.key, url: pub.url, at: Date.now() } : { id: res.j.id, key: res.j.key, url: res.j.url, at: Date.now() };
         applyPublishToSync();
-        if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { o[state.activeRecipe].pub = state.publish; lsSetRecipes(o); } }
         var forQuest = !!(state.lq && (state.lq.pending || lqHas(state.publish.id)));
         saveSession(); lqAfterPublish(state.publish, auto);
         if (!forQuest) toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : (window.QUEST_USB ? 'Hosted! Download or send the file once more' : 'Hosted! Download the file and load it once more') + ' - after that, in-game Sync keeps it current.', 'ok');
@@ -5729,7 +5594,6 @@ window.PP = (function () {
       if (res.ok || res.status === 404) {
         state.publish = null; lqRemove(pub.id);
         if (el.syncUrl.value.trim() === pub.url) { el.syncEnable.checked = false; el.syncUrl.value = ''; updateSyncUI(); }
-        if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { delete o[state.activeRecipe].pub; lsSetRecipes(o); } }
         saveSession(); toast('Stopped hosting. Copies on headsets keep working but won\'t sync anymore.', 'ok'); track('pub-delete');
       } else toast('Couldn\'t stop hosting right now.', 'warn');
     }, function () { toast('Couldn\'t reach the hosting service.', 'warn'); })
@@ -6531,21 +6395,18 @@ window.PP = (function () {
   }
 
   // ---- library backup / restore --------------------------------------------
-  var RECIPE_KEY = 'playlistStudio.recipes.v1';
-  function lsGetRecipes() { try { var o = JSON.parse(localStorage.getItem(RECIPE_KEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
-  function lsSetRecipes(o) { try { localStorage.setItem(RECIPE_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
   function backupLibrary() {
     var sync = null; try { sync = JSON.parse(localStorage.getItem(SYNC_KEY) || 'null'); } catch (e) {}
-    var data = { playlists: lsGetPl(), presets: lsGet(), recipes: lsGetRecipes(), icons: lsGetIcons(), sync: sync };
-    var nPl = Object.keys(data.playlists).length, nPr = Object.keys(data.presets).length, nRe = Object.keys(data.recipes).length;
-    if (!nPl && !nPr && !nRe && !data.icons.length) { toast('Nothing saved yet - save a playlist or preset first.', 'warn'); return; }
+    var data = { playlists: lsGetPl(), presets: lsGet(), icons: lsGetIcons(), sync: sync };
+    var nPl = Object.keys(data.playlists).length, nPr = Object.keys(data.presets).length;
+    if (!nPl && !nPr && !data.icons.length) { toast('Nothing saved yet - save a playlist or preset first.', 'warn'); return; }
     var out = { app: 'playlist-studio', kind: 'library-backup', version: 1, exportedAt: new Date().toISOString(), data: data };
     var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob), a = document.createElement('a');
     a.href = url; a.download = 'playlist-studio-library-' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
-    toast('Backed up ' + nPl + ' playlist' + (nPl === 1 ? '' : 's') + ', ' + nPr + ' preset' + (nPr === 1 ? '' : 's') + ' and ' + nRe + ' smart playlist' + (nRe === 1 ? '' : 's') + '.', 'ok');
+    toast('Backed up ' + nPl + ' playlist' + (nPl === 1 ? '' : 's') + ' and ' + nPr + ' preset' + (nPr === 1 ? '' : 's') + '.', 'ok');
     track('library-backup');
   }
   // Merge a backup in. Nothing existing is overwritten: a name clash keeps both, and the
@@ -6568,17 +6429,17 @@ window.PP = (function () {
       var j; try { j = JSON.parse(reader.result); } catch (e) { toast('That file is not a library backup.', 'err'); return; }
       if (!j || j.kind !== 'library-backup' || !j.data) { toast('That file is not a Playlist Studio library backup.', 'err'); return; }
       var D = j.data;
-      var pl = lsGetPl(), pr = lsGet(), re = lsGetRecipes();
-      var aPl = mergeNamed(pl, D.playlists), aPr = mergeNamed(pr, D.presets), aRe = mergeNamed(re, D.recipes);
-      var okPl = lsSetPl(pl), okPr = lsSet(pr), okRe = lsSetRecipes(re);
+      var pl = lsGetPl(), pr = lsGet();
+      var aPl = mergeNamed(pl, D.playlists), aPr = mergeNamed(pr, D.presets);
+      var okPl = lsSetPl(pl), okPr = lsSet(pr);
       if (Array.isArray(D.icons) && D.icons.length) {
         var ic = lsGetIcons(); D.icons.forEach(function (u) { if (typeof u === 'string' && ic.indexOf(u) === -1) ic.push(u); });
         lsSetIcons(ic.slice(0, 24)); if (typeof renderIconLibrary === 'function') renderIconLibrary();
       }
       if (D.sync && D.sync.url && !el.syncUrl.value.trim()) { el.syncEnable.checked = !!D.sync.enabled; el.syncUrl.value = D.sync.url; updateSyncUI(); }
-      populatePlaylists(); populatePresets(); if (typeof renderRecipes === 'function') renderRecipes();
-      if (!okPl || !okPr || !okRe) toast('Restored part of the backup - browser storage is full.', 'warn');
-      else toast('Restored ' + aPl + ' playlist' + (aPl === 1 ? '' : 's') + ', ' + aPr + ' preset' + (aPr === 1 ? '' : 's') + ' and ' + aRe + ' smart playlist' + (aRe === 1 ? '' : 's') + '.', 'ok');
+      populatePlaylists(); populatePresets();
+      if (!okPl || !okPr) toast('Restored part of the backup - browser storage is full.', 'warn');
+      else toast('Restored ' + aPl + ' playlist' + (aPl === 1 ? '' : 's') + ' and ' + aPr + ' preset' + (aPr === 1 ? '' : 's') + '.', 'ok');
       track('library-restore');
     };
     reader.readAsText(file);
@@ -9013,7 +8874,7 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
@@ -9119,7 +8980,6 @@ window.PP = (function () {
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
      Extras: egg-115, egg-bomb, egg-halloween;
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
-     Smart playlists fold (Playlist Library): smart-open;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
      lq-autosave; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
