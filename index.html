@@ -2074,7 +2074,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T12:31:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T12:52:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5732,31 +5732,75 @@ window.PP = (function () {
     }
   }
   // Hosting is what the headset pulls from, so sending = host (or update) + add to the headset's list.
+  // Send to Quest writes a real playlist file onto the headset; from then on this list edits that file.
+  function lqPickDevice() {
+    var devs = state.lq.devices; if (!devs.length) return null;
+    var last = devs.find(function (d) { return d.id === state.lq.lastDev; });
+    return (last || devs[0]).id;
+  }
   function lqSendThis() {
     if (!state.basket.length) { toast('Add songs to Your Playlist first.', 'warn'); return; }
-    if (!(state.publish && lqHas(state.publish.id))) state.lq.pending = true;
-    publishHosted(false);
-    lqKeepInLibrary();
+    var dev = lqPickDevice(); if (!dev || state.lq.busy) return;
+    var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
+    if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return; }
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(dev) + '/playlists/new'), body).then(function (res) {
+      if (!res.ok || !res.j || !res.j.k) { toast((res.j && res.j.error) || 'Couldn’t send it to the headset.', 'warn'); return; }
+      var q = state.lq.quest[dev] || (state.lq.quest[dev] = { items: [], pending: [], updated: 0 });
+      q.pending = res.j.pending || q.pending;
+      state.lq.editing = { dev: dev, k: res.j.k, file: res.j.file, title: x.meta.title };
+      state.lq.lastDev = dev;
+      lqKeepInLibrary();
+      lqMarkSaved();
+      toast('On its way to ' + lqDevName(dev) + ' as “' + res.j.file.replace(/\.bplist$/i, '') + '”. From now on your changes save and send themselves.', 'ok');
+      track('lq-create');
+    }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
   // A playlist on your Quest also lives in Playlist Library, so it can be reopened and keeps autosaving.
   function lqKeepInLibrary() {
-    if (state.lq.openName || state.lq.editing || !state.basket.length) return;
-    var o = lsGetPl(), base = (lqCurrentTitle() || 'Playlist').trim(), name = base, i = 2;
-    while (o[name]) name = base + ' (' + (i++) + ')';
-    // Store after hosting finishes so the entry carries the hosted id.
-    var tries = 0, wait = setInterval(function () {
-      if (state.pubBusy && tries++ < 40) return;
-      clearInterval(wait);
-      var cur = lsGetPl(); cur[name] = libraryEntry();
-      if (lsSetPl(cur)) { state.lq.openName = name; populatePlaylists(); if (el.savedPlaylists) el.savedPlaylists.value = name; lqRender(); }
-    }, 500);
+    if (!state.basket.length) return;
+    var o = lsGetPl(), name = state.lq.openName;
+    if (!name) { var base = (lqCurrentTitle() || 'Playlist').trim(), i = 2; name = base; while (o[name]) name = base + ' (' + (i++) + ')'; }
+    o[name] = libraryEntry();
+    if (lsSetPl(o)) { state.lq.openName = name; populatePlaylists(); if (el.savedPlaylists) el.savedPlaylists.value = name; lqRender(); }
+  }
+  // Older playlists were linked through a hosted copy. Moving one writes it onto the headset instead.
+  function lqMigrate() {
+    var dev = lqPickDevice(), old = state.lq.items.slice(); if (!dev || !old.length || state.lq.busy) return;
+    lqBusy(true);
+    var moved = 0, chain = Promise.resolve();
+    old.forEach(function (it) {
+      chain = chain.then(function () {
+        return fetchTimeout(PUB_BASE + '/p/' + encodeURIComponent(it.id) + '.bplist', 15000).then(function (r) { return r.ok ? r.text() : null; }).then(function (text) {
+          if (!text) return;
+          return libFetch('POST', libPath('/devices/' + encodeURIComponent(dev) + '/playlists/new'), text).then(function (res) {
+            if (!res.ok || !res.j) return;
+            moved++;
+            var q = state.lq.quest[dev] || (state.lq.quest[dev] = { items: [], pending: [], updated: 0 });
+            q.pending = res.j.pending || q.pending;
+            // The open playlist follows its move, and so does its library entry.
+            if (state.publish && state.publish.id === it.id) {
+              state.lq.editing = { dev: dev, k: res.j.k, file: res.j.file, title: it.title || res.j.file };
+              if (state.lq.openName) lqKeepInLibrary();
+            }
+          });
+        }, function () {});
+      });
+    });
+    chain.then(function () {
+      state.lq.busy = false;
+      // Dropping them from the old list makes the headset delete its old copies on the same sync.
+      return lqSaveItems([]);
+    }).then(function () {
+      toast(moved ? 'Moved ' + moved + ' playlist' + (moved === 1 ? '' : 's') + ' onto the headset. They switch over on its next sync.' : 'Nothing could be moved. Try again in a moment.', moved ? 'ok' : 'warn');
+      track('lq-migrate');
+    }).then(function () { lqBusy(false); });
   }
   // ---- autosave while linked: whatever is on the Quest keeps itself up to date ----
   var lqAuto = { key: null, base: null, last: null };
   function lqAutoKey() {
     var lq = state.lq, parts = [];
     if (lq.editing) parts.push('edit:' + lq.editing.dev + ':' + lq.editing.k);
-    else if (state.publish && lqHas(state.publish.id)) parts.push('pub:' + state.publish.id);
     if (lq.openName && parts.length) parts.push('lib:' + lq.openName);
     return parts.join('|');
   }
@@ -5777,14 +5821,22 @@ window.PP = (function () {
     lqAuto.base = sig;
     if (state.lq.openName) { var o = lsGetPl(); o[state.lq.openName] = libraryEntry(); lsSetPl(o); populatePlaylists(); if (el.savedPlaylists) el.savedPlaylists.value = state.lq.openName; }
     if (state.lq.editing) lqSendBack(true);
-    else if (state.publish && lqHas(state.publish.id)) publishHosted(true);
     track('lq-autosave');
   }
   setInterval(lqTick, 2000);
   // ---- editing a playlist that lives on the headset ----
   function lqDevName(id) { var d = state.lq.devices.find(function (x) { return x.id === id; }); return d ? d.name : 'your Quest'; }
+  // What's on a headset, plus new playlists Studio has queued for it but it hasn't written yet.
+  function lqQuestItems(devId) {
+    var q = state.lq.quest[devId]; if (!q) return [];
+    var items = q.items.slice(), have = {};
+    items.forEach(function (x) { have[x.k] = 1; });
+    (q.pending || []).forEach(function (w) { if (w.create && !have[w.k]) items.push({ k: w.k, file: w.file, title: w.title || w.file.replace(/\.bplist$/i, ''), count: -1, ready: true, waiting: true }); });
+    items.sort(function (a, b) { return (a.title || a.file).localeCompare(b.title || b.file); });
+    return items;
+  }
   function lqEdit(devId, k) {
-    var q = state.lq.quest[devId], it = q && q.items.find(function (x) { return x.k === k; });
+    var it = lqQuestItems(devId).find(function (x) { return x.k === k; });
     if (!it || state.lq.busy) return;
     if (!it.ready) { toast('The headset hasn’t shared that one yet. Press Sync now in game and try again.', 'warn'); return; }
     lqBusy(true);
@@ -5798,6 +5850,7 @@ window.PP = (function () {
       if (el.savedPlaylists) el.savedPlaylists.value = '';
       // The import resets the playlist identity first; hand the editing context through that reset.
       state.lq.editing = state.lq.keepEdit = { dev: devId, k: k, file: it.file, title: it.title || it.file };
+      state.lq.lastDev = devId;
       importBplistFile(new File([res.text], it.file, { type: 'application/json' }), snap ? { restoreUndo: snap } : {});
       track('lq-edit');
       var yp = document.querySelector('.playlist-panel'); if (yp && yp.scrollIntoView) yp.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -5817,7 +5870,7 @@ window.PP = (function () {
       } else toast((res.j && res.j.error) || 'Couldn’t send it back.', 'warn');
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
-  function lqStopEditing() { state.lq.editing = null; lqRender(); }
+  function lqStopEditing() { state.lq.editing = null; state.lq.savedAt = 0; state.lq.dirty = false; lqRender(); }
   function lqIsPending(devId, k) { var q = state.lq.quest[devId]; return !!(q && (q.pending || []).some(function (w) { return w.k === k; })); }
   // ---- render ----
   function lqAgo(t) { return t ? agoStr(t) : 'not yet'; }
@@ -5836,7 +5889,7 @@ window.PP = (function () {
     // Editing bar inside Your Playlist, only while editing a headset playlist.
     if (bar) {
       bar.hidden = !(lqActive() && ed);
-      bar.innerHTML = ed ? '<span class="lq-name">Editing <b>' + esc(ed.title) + '</b> from ' + esc(lqDevName(ed.dev)) + (lqIsPending(ed.dev, ed.k) ? '<span class="lq-badge wait">sent, waiting for headset</span>' : '') + '</span>' +
+      bar.innerHTML = ed ? '<span class="lq-name">Editing <b>' + esc(state.basket.length ? lqCurrentTitle() : ed.title) + '</b> on ' + esc(lqDevName(ed.dev)) + (lqIsPending(ed.dev, ed.k) ? '<span class="lq-badge wait">sent, waiting for headset</span>' : '') + '</span>' +
         ' ' + lqSaveState() + lqBtn('Done editing', 'data-lq-stopedit') : '';
     }
     if (panel.hidden) return;
@@ -5851,39 +5904,34 @@ window.PP = (function () {
     if (linked) {
       var title = esc(lqCurrentTitle()), n = state.basket.length, h = '';
       if (ed) {
-        h = '<p class="lq-title">Editing <b>' + esc(ed.title) + '</b> from ' + esc(lqDevName(ed.dev)) + (lqIsPending(ed.dev, ed.k) ? '<span class="lq-badge wait">sent, waiting</span>' : '') + '</p>' +
-          '<p class="lq-sub">Change it in Your Playlist. Edits send themselves a couple of seconds after you stop, and the headset replaces its copy on the next sync (keeping a backup). ' + lqSaveState() + '</p>' +
-          '<div class="lq-row">' + lqBtn('Send now', 'data-lq-sendback') + lqBtn('Done editing', 'data-lq-stopedit') + '</div>';
+        h = '<p class="lq-title"><b>' + (n ? title : esc(ed.title)) + '</b> on ' + esc(lqDevName(ed.dev)) + (lqIsPending(ed.dev, ed.k) ? '<span class="lq-badge wait">waiting for headset</span>' : '<span class="lq-badge">on your Quest</span>') + '</p>' +
+          '<p class="lq-sub">' + (n ? n + ' song' + (n === 1 ? '' : 's') + (lq.openName ? ', also in Playlist Library as “' + esc(lq.openName) + '”' : '') + '. ' : '') + 'Edits save and send themselves; the headset updates on its next sync and keeps a backup. ' + lqSaveState() + '</p>' +
+          '<div class="lq-row">' + lqBtn('Done editing', 'data-lq-stopedit') + '</div>';
       } else if (!n) {
-        h = '<p class="lq-title">This playlist</p><p class="lq-sub">Build or load a playlist in Your Playlist to send it to your Quest, or edit one already on it below.</p>';
-      } else if (state.publish && lqHas(state.publish.id)) {
-        h = '<p class="lq-title">' + title + '<span class="lq-badge">on your Quest</span></p><p class="lq-sub">' + n + ' song' + (n === 1 ? '' : 's') + (lq.openName ? ', saved in Playlist Library as “' + esc(lq.openName) + '”' : '') + '. Changes save and send themselves; the headset picks them up on its next sync. ' + lqSaveState() + '</p>' +
-          '<div class="lq-row">' + lqBtn('Remove from Quest', 'data-lq-remove="' + esc(state.publish.id) + '"', 'ghost sm danger') + '</div>';
+        h = '<p class="lq-title">This playlist</p><p class="lq-sub">Build a playlist in Your Playlist to send it to your Quest, or edit one already on it below.</p>';
       } else {
-        h = '<p class="lq-title">' + title + '</p><p class="lq-sub">' + n + ' song' + (n === 1 ? '' : 's') + '. Send it once and it shows up in game on the headset’s next sync. After that it also lives in Playlist Library and keeps itself up to date.</p>' +
-          '<div class="lq-row">' + lqBtn(state.pubBusy || lq.pending ? 'Sending…' : 'Send to Quest', 'data-lq-send', 'primary') + '</div>';
+        h = '<p class="lq-title">' + title + '</p><p class="lq-sub">' + n + ' song' + (n === 1 ? '' : 's') + '. Send it and it becomes a playlist on your headset (next sync). After that your edits save and send themselves.</p>' +
+          '<div class="lq-row">' + lqBtn(lq.busy ? 'Sending…' : 'Send to Quest', 'data-lq-send', 'primary') + '</div>';
       }
       card.innerHTML = h;
     }
 
-    // From Studio
-    document.getElementById('lqItems').innerHTML = linked && lq.items.length ? '<div class="lq-h">Sent from Studio (' + lq.items.length + ')</div>' + lq.items.map(function (it) {
-      return '<div class="lq-li"><span class="lq-name">' + esc(it.title || it.id) + '</span>' + lqBtn('Remove', 'data-lq-remove="' + esc(it.id) + '"', 'ghost sm danger') + '</div>';
-    }).join('') : '';
+    // Playlists linked the older way (through a hosted copy) can be moved onto the headset.
+    document.getElementById('lqItems').innerHTML = linked && lq.items.length ? '<div class="lq-card"><p class="lq-title">' + lq.items.length + ' playlist' + (lq.items.length === 1 ? '' : 's') + ' linked the old way</p><p class="lq-sub">' +
+      lq.items.map(function (it) { return esc(it.title || it.id); }).join(', ') + '. Move ' + (lq.items.length === 1 ? 'it' : 'them') + ' onto the headset so ' + (lq.items.length === 1 ? 'it shows' : 'they show') + ' up below and edit like the rest. The old copies are removed on the same sync.</p><div class="lq-row">' + lqBtn('Move to headset', 'data-lq-migrate', 'primary') + '</div></div>' : '';
 
     // On your Quest
     var qh = '';
     if (linked) {
       lq.devices.forEach(function (d) {
-        var q = lq.quest[d.id], items = q ? q.items.slice() : [];
-        items.sort(function (a, b) { return (a.title || a.file).localeCompare(b.title || b.file); });
+        var q = lq.quest[d.id], items = lqQuestItems(d.id);
         qh += '<div class="lq-hrow"><div class="lq-h">On ' + esc(d.name) + (items.length ? ' (' + items.length + ')' : '') + '</div>' + lqBtn('↻ Refresh', 'data-lq-refresh') + '</div>';
-        if (!q || !q.updated) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
+        if ((!q || !q.updated) && !items.length) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
         else if (!items.length) qh += '<p class="lq-steps">No playlists on the headset yet.</p>';
         else qh += '<div class="lq-scroll">' + items.map(function (it) {
           var editing = ed && ed.dev === d.id && ed.k === it.k;
-          return '<div class="lq-li"><span class="lq-name">' + esc(it.title || it.file) + (lqIsPending(d.id, it.k) ? '<span class="lq-badge wait">edit pending</span>' : '') +
-            '<span class="lq-sub">' + it.count + ' song' + (it.count === 1 ? '' : 's') + ' &middot; ' + esc(it.file) + '</span></span>' +
+          return '<div class="lq-li"><span class="lq-name">' + esc(it.title || it.file) + (it.waiting ? '<span class="lq-badge wait">new, waiting for headset</span>' : (lqIsPending(d.id, it.k) ? '<span class="lq-badge wait">edit pending</span>' : '')) +
+            '<span class="lq-sub">' + (it.count >= 0 ? it.count + ' song' + (it.count === 1 ? '' : 's') + ' &middot; ' : '') + esc(it.file) + '</span></span>' +
             (editing ? '<span class="lq-badge">editing</span>' : lqBtn('Edit', 'data-lq-edit="' + esc(d.id) + '|' + esc(it.k) + '"')) + '</div>';
         }).join('') + '</div>';
       });
@@ -5923,6 +5971,7 @@ window.PP = (function () {
       if (t.hasAttribute('data-lq-unlink')) lqUnlink(t.getAttribute('data-lq-unlink'));
       else if (t.hasAttribute('data-lq-remove')) lqRemove(t.getAttribute('data-lq-remove'));
       else if (t.hasAttribute('data-lq-send')) lqSendThis();
+      else if (t.hasAttribute('data-lq-migrate')) lqMigrate();
       else if (t.hasAttribute('data-lq-sendback')) lqSendBack();
       else if (t.hasAttribute('data-lq-stopedit')) lqStopEditing();
       else if (t.hasAttribute('data-lq-refresh')) { t.disabled = true; lqRefresh(); }
@@ -6440,7 +6489,8 @@ window.PP = (function () {
       seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
     if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
     return { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
-      sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value }, pub: state.publish || null };
+      sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value }, pub: state.publish || null,
+      quest: state.lq && state.lq.editing ? { dev: state.lq.editing.dev, k: state.lq.editing.k, file: state.lq.editing.file, title: state.lq.editing.title } : null };
   }
   function savePlaylist() {
     var name = el.playlistName.value.trim(); if (!name) { toast('Name the playlist first.', 'warn'); return; }
@@ -6479,7 +6529,7 @@ window.PP = (function () {
     if (p.sync && p.sync.enabled && p.sync.url) { el.syncEnable.checked = true; el.syncUrl.value = p.sync.url; }
     state.publish = p.pub || null; renderPubUI();
     updateSyncUI();
-    if (state.lq) state.lq.openName = name;
+    if (state.lq) { state.lq.openName = name; state.lq.savedAt = 0; state.lq.dirty = false; if (p.quest && p.quest.dev && p.quest.k) state.lq.editing = { dev: p.quest.dev, k: p.quest.k, file: p.quest.file, title: p.quest.title || p.quest.file }; }
     renderAll(); toast('Loaded "' + name + '" (' + state.basket.length + ' maps).', 'ok');
   }
   function deletePlaylist() {

@@ -51,6 +51,7 @@
  *    GET    /lib/<id>/devices/<dev>/playlists            -> { items, pending }
  *    GET    /lib/<id>/devices/<dev>/playlists/<k>        the .bplist as the headset has it
  *    POST   /lib/<id>/devices/<dev>/playlists/<k>/send   queue an edited copy for the headset
+ *    POST   /lib/<id>/devices/<dev>/playlists/new        create a new playlist on the headset -> { k, file }
  *
  *    The token never leaves the headset except in that header, and the Worker only
  *    stores its SHA-256. Codes are 6 characters, live 10 minutes, and claims are
@@ -341,7 +342,7 @@ async function linked(request, env, ctx, url) {
         if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
       }
       const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
-      const writes = out.items.map((w) => ({ id: w.id, file: w.file, url: url.origin + "/link/outbox/" + w.id }));
+      const writes = out.items.map((w) => ({ id: w.id, file: w.file, create: !!w.create, url: url.origin + "/link/outbox/" + w.id }));
       return json({ library: dev.lib, device: me.name, playlists, writes }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
 
@@ -422,27 +423,53 @@ async function linked(request, env, ctx, url) {
     return json({ id, key }, 201, cors);
   }
 
-  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/([0-9a-f]{16})(\/send)?)?)?)?$/);
+  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|[0-9a-f]{16})(\/send)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
   const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
   if (!lib) return json({ error: "Not found" }, 404, cors);
   const key = request.headers.get("X-Lib-Key") || "";
   if (!key || !safeEqual(await sha256(key), lib.hk)) return json({ error: "Wrong library key" }, 403, cors);
 
-  // A headset's own playlists, as it last reported them.
+  // A headset's own playlists, as it last reported them, plus new ones Studio is creating.
   if (m[4]) {
     const dv = (lib.devices || []).find((x) => x.id === m[3]);
     if (!dv) return json({ error: "Not found" }, 404, cors);
     const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
     const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
+    const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, at: x.at }));
+    const queue = async (k, file, title, create, body) => {
+      // One pending write per playlist: a newer send replaces the older one (a create stays a create).
+      const prev = out.items.filter((x) => x.file === file);
+      for (const w of prev) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
+      out.items = out.items.filter((x) => x.file !== file);
+      const w = { id: randomId(10), k, file, title: String(title || "").slice(0, 200), create: create || prev.some((x) => x.create), at: nowSec() };
+      await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body));
+      out.items.push(w);
+      await putTtl(env, outKey(id, dv.id), out);
+      return w;
+    };
     if (!m[5] && request.method === "GET") {
       const items = inv.items.map((it) => ({ k: it.k, file: it.file, title: it.title, count: it.count, ready: !!it.have, at: it.at }));
-      return json({ items, pending: out.items.map((w) => ({ id: w.id, k: w.k, file: w.file, at: w.at })), updated: inv.updated || 0 }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+      return json({ items, pending: pendingList(), updated: inv.updated || 0 }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
-    const it = m[5] && inv.items.find((x) => x.k === m[5]);
-    if (!it) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
+    if (m[5] === "new" && !m[6] && request.method === "POST") {
+      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      const pl = await readPlaylist(request);
+      if (pl.error) return json({ error: pl.error }, 400, cors);
+      // A file name from the title that doesn't clash with anything on the headset or queued.
+      const taken = new Set(inv.items.map((x) => x.file.toLowerCase()).concat(out.items.map((x) => x.file.toLowerCase())));
+      const base = (pl.value.playlistTitle || "Playlist").replace(/[\\/:*?"<>|\u0000-\u001f]/g, "").replace(/\s+/g, " ").replace(/^StudioSync_/i, "").replace(/^\.+/, "").trim().slice(0, 80) || "Playlist";
+      let file = base + ".bplist", n = 2;
+      while (taken.has(file.toLowerCase())) file = base + " (" + (n++) + ").bplist";
+      const w = await queue(await fileKey(file), file, pl.value.playlistTitle, true, pl.value);
+      return json({ k: w.k, file: w.file, pending: pendingList() }, 201, cors);
+    }
+    const k = m[5] && m[5] !== "new" ? m[5] : "";
+    const it = k && inv.items.find((x) => x.k === k);
+    const waiting = k && !it && out.items.find((x) => x.k === k && x.create);
+    if (!it && !waiting) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
     if (!m[6] && request.method === "GET") {
-      const text = await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k);
+      const text = it ? await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k) : await env.PLAYLISTS.get("outb:" + id + ":" + dv.id + ":" + waiting.id);
       if (!text) return json({ error: "The headset hasn't uploaded this one yet" }, 404, cors);
       return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
     }
@@ -450,14 +477,9 @@ async function linked(request, env, ctx, url) {
       if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
       const pl = await readPlaylist(request);
       if (pl.error) return json({ error: pl.error }, 400, cors);
-      // One pending edit per playlist: a newer send replaces the older one.
-      for (const w of out.items.filter((x) => x.file === it.file)) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
-      out.items = out.items.filter((x) => x.file !== it.file);
-      const w = { id: randomId(10), k: it.k, file: it.file, at: nowSec() };
-      await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(pl.value));
-      out.items.push(w);
-      await putTtl(env, outKey(id, dv.id), out);
-      return json({ pending: out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, at: x.at })) }, 200, cors);
+      const target = it || waiting;
+      await queue(target.k, target.file, pl.value.playlistTitle, false, pl.value);
+      return json({ pending: pendingList() }, 200, cors);
     }
     return json({ error: "Method not allowed" }, 405, cors);
   }

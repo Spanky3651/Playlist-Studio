@@ -195,9 +195,10 @@ No website? Turn on **In-Game Sync** and hit **Host this playlist**. Studio stor
 
 #### Linked Quest (Studio Sync mod)
 On Quest, the **Studio Sync** mod links your headset to Studio. In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into Studio's **Linked Quest** panel. From then on:
-- **Send to Quest** puts the playlist you're building on the headset and keeps it in Playlist Library. After that it saves itself: edits are stored in the library and sent to the headset a couple of seconds after you stop changing things.
-- **On your Quest** lists the playlists already on the headset. **Edit** opens one in Your Playlist; your changes are sent back automatically and the headset replaces its copy on the next sync, keeping a backup.
-- **Remove** takes a Studio-sent playlist off the headset; **Unlink** stops syncing a headset.
+- The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
+- **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file.
+- **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
+- Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Unlink** stops syncing a headset.
 
 The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
 
