@@ -193,8 +193,16 @@ Keep a playlist you host online, and refresh it inside Beat Saber with [Playlist
 #### Hosted sync
 No website? Turn on **In-Game Sync** and hit **Host this playlist**. Studio stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
 
-#### Linked Quest (Studio Sync mod)
-On Quest, the **Studio Sync** mod links your headset to Studio. In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into Studio's **Linked Quest** panel. From then on:
+#### Studio Sync (Quest mod)
+[Studio Sync](https://github.com/Spanky3651/Studio-Sync) is a free mod for Beat Saber on Quest that links your headset to Studio, so playlists go straight onto it with no cable or file copying.
+
+It stays out of the way for PC players. The **Studio Sync** panel shows up in the right column when you're on the Quest browser, when you pick **Quest** in the Export panel, or when you open it from the Quest tab tip, the *Playing on Quest?* note, the In-Game Sync panel or **Studio Sync for Quest** in the footer. *Not on Quest? Hide Studio Sync* tucks it away again. Link straight to it with [`#studio-sync`](https://spanky3651.github.io/Playlist-Studio/?utm_source=github&utm_campaign=readme-playlist-studio#studio-sync).
+
+1. **Install the mod.** Download the `.qmod` from the panel (it always points at the [latest release](https://github.com/Spanky3651/Studio-Sync/releases)). On a PC or Android phone, open [ModsBeforeFriday](https://lauriethefish.github.io/ModsBeforeFriday/) in Chrome or Edge and plug in your Quest, choose **Upload Files** and pick the file. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.
+2. **Link your headset.** In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into the panel.
+3. **Send playlists.** Build one and press **Send to Quest** in the panel. Missing songs download in game with PlaylistManager, like any playlist.
+
+From then on:
 - The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
 - **Send to Quest** writes the playlist you're building onto the headset as a normal playlist file and keeps it in Playlist Library, linked to that file.
 - **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
@@ -242,7 +250,9 @@ If you run your own CORS relay and would rather use it, point the app at it unde
 New to mods? The [BSMG wiki](https://bsmg.wiki/) walks you through installing them on PC and Quest.
 
 ### On Quest
-Switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable and use Chrome or Edge. The first time, put the headset on after you pick it and accept **Allow USB debugging?** (tick **Always allow from this computer**). The browser gets its own approval, separate from SideQuest or adb, so it shows up once even if those already work. Studio finds your PlaylistManager folder, writes the playlist there and lets go of the headset afterwards so SideQuest and adb keep working. If it says the headset hasn't answered, another tab or app that talks to the Quest (HSV Config Generator, MBF, SideQuest, adb) is holding the connection: close it, unplug and replug the cable, and try again. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
+No cable at all: install the **Studio Sync** mod and send playlists from the Studio Sync panel (see *Studio Sync (Quest mod)* above).
+
+With a cable: switch the Export panel to **Quest** and hit **Send to Quest**. Plug the headset into your computer with a USB cable and use Chrome or Edge. The first time, put the headset on after you pick it and accept **Allow USB debugging?** (tick **Always allow from this computer**). The browser gets its own approval, separate from SideQuest or adb, so it shows up once even if those already work. Studio finds your PlaylistManager folder, writes the playlist there and lets go of the headset afterwards so SideQuest and adb keep working. If it says the headset hasn't answered, another tab or app that talks to the Quest (HSV Config Generator, MBF, SideQuest, adb) is holding the connection: close it, unplug and replug the cable, and try again. Restart Beat Saber to see a new playlist. Prefer SideQuest? Download the `.bplist` and copy it to `ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists` on the headset.
 
 ### Keeping a playlist in sync
 
@@ -260,7 +270,8 @@ No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 - No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter that stores no personal data.
 - Presets, saved playlists, smart playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage. Nothing is uploaded unless you choose **Host this playlist**, which stores that one playlist (songs, title, cover) on the Playlist Studio relay until you hit **Stop hosting** or it expires.
 - API requests hit BeatLeader, BeatSaver, ScoreSaber and AccSaber (public data), with BeatLeader and ScoreSaber going through the relay. Only anonymous, read-only requests are sent, apart from hosting a playlist when you ask for it.
-- **Send to Quest** talks to your headset over USB straight from your browser; the playlist never leaves your computer.
+- **Send to Quest** in the Export panel talks to your headset over USB straight from your browser; the playlist never leaves your computer.
+- **Studio Sync** sends the playlists you choose to the relay for your linked headset to pick up. Linking uses a one-time code, not an account. When its panel is showing, Studio asks GitHub once per visit for the latest mod release so the download link stays current.
 
 ## Built with
 
@@ -282,6 +293,7 @@ Other free, single-file Beat Saber tools by MSploit:
 
 - **[ReeSaber Studio](https://spanky3651.github.io/ReeSaber-Studio/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual preset editor for the ReeSabers mod, with a live 3D preview and `.json` / `.reesaber` export.
 - **[HSV Config Generator](https://spanky3651.github.io/HSV-Config-Generator/?utm_source=github&utm_campaign=readme-playlist-studio)** - A visual editor and live simulator for HitScoreVisualizer configs, with push-to-Quest over USB.
+- **[Studio Sync](https://github.com/Spanky3651/Studio-Sync)** - A Quest mod that links your headset to Playlist Studio, so playlists you build in the browser land in Beat Saber with no cable.
 
 ## Credits
 

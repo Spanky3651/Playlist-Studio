@@ -486,6 +486,30 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-more summary{cursor:pointer;}
 .lq-more p{margin:8px 0;line-height:1.5;}
 .lq-more[hidden]{display:none;}
+.ss-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid #23406b;color:#9cc2ff;background:rgba(47,140,255,.10);white-space:nowrap;text-transform:uppercase;letter-spacing:.6px;flex:none;}
+.lq-status{margin:0 0 12px;}
+.lq-status.warn{color:#ffd08a;}
+.lq-link[hidden]{display:none;}
+.ss-steps{margin:0;padding:0;list-style:none;counter-reset:ss;}
+.ss-steps>li{position:relative;padding:0 0 16px 40px;counter-increment:ss;font-size:14px;color:var(--muted);line-height:1.55;}
+.ss-steps>li:last-child{padding-bottom:4px;}
+.ss-steps>li::before{content:counter(ss);position:absolute;left:0;top:-2px;width:26px;height:26px;border-radius:50%;border:1px solid #23406b;background:#081426;color:#9cc2ff;font-family:var(--mono);font-size:13px;display:flex;align-items:center;justify-content:center;}
+.ss-steps>li>b:first-child{display:block;color:#fff;font-size:15px;margin-bottom:6px;}
+.ss-steps p{margin:0 0 8px;}
+.ss-steps p:last-child{margin-bottom:0;}
+.ss-steps a:not(.ss-btn),.ss-tip a,[data-ss-open]{color:#5b9bff;}
+.ss-dl{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin:0 0 10px;}
+a.ss-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:8px;border:1px solid var(--blue);background:linear-gradient(180deg,#12233a,#0a1524);color:#cfe4ff;font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap;text-shadow:0 0 8px rgba(47,140,255,.3);transition:all .14s ease;}
+a.ss-btn:hover{color:#fff;box-shadow:0 0 18px rgba(47,140,255,.35);}
+a.ss-btn svg{width:16px;height:16px;flex:none;}
+.ss-ver{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;}
+.ss-ver:hover{color:#fff;text-decoration:underline;}
+.ss-hmd{color:#ffd08a;}
+.ss-hmd[hidden]{display:none;}
+.ss-hide{display:block;margin:14px 0 0 auto;background:none;border:0;padding:4px 0;box-shadow:none;color:var(--muted);font-size:12.5px;font-weight:500;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.ss-hide:hover{color:#fff;border:0;box-shadow:none;}
+.ss-hide[hidden]{display:none;}
+.ss-tip{margin:12px 0 0;padding:9px 12px;border:1px solid #23406b;border-radius:10px;background:#081426;font-size:13.5px;color:#dce8ff;line-height:1.5;}
 .gal-list{display:grid;gap:10px;}
 .gal-card{display:flex;gap:14px;align-items:center;border:1px solid var(--border-2);border-radius:12px;padding:12px 14px;background:#0a0f17;}
 .gal-card h4{margin:0 0 3px;font-size:15px;color:#fff;}
@@ -1979,7 +2003,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="panel-body" id="syncBody" hidden>
         <div class="pub-box" id="pubBox" hidden>
           <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
-          <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update.</p>
+          <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update. On Quest, the <a href="#studio-sync" data-ss-open="sync">Studio Sync mod</a> skips that first step.</p>
           <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
           <div class="pub-info" id="pubInfo"></div>
         </div>
@@ -1988,31 +2012,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
           <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.</p>
         </div>
-      </div>
-    </section>
-
-    <!-- Linked Quest (Studio Sync mod) -->
-    <section class="panel" id="lqPanel" data-collapsible hidden>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Linked Quest</h2></div>
-      <div class="panel-sub" id="lqSub">With the <b>Studio Sync</b> mod on your Quest, send playlists straight to the headset and edit the ones already on it. Changes land the next time the game syncs.</div>
-      <div class="panel-body">
-        <div class="lq-link" id="lqLinkBox">
-          <p class="lq-steps">In game, open the <b>Mods</b> tab in the panel left of song select, pick <b>Studio Sync</b> and press <b>Link</b>. Type the 6-character code it shows.</p>
-          <div class="lq-row"><input type="text" id="lqCode" maxlength="7" placeholder="ABC234" autocomplete="off" spellcheck="false" /><button type="button" class="primary" id="lqLinkBtn">Link headset</button></div>
-        </div>
-        <div class="lq-card" id="lqThisBox" hidden></div>
-        <div class="lq-items" id="lqItems"></div>
-        <div class="lq-quest" id="lqQuest"></div>
-        <div class="lq-devs" id="lqDevs"></div>
-        <details class="lq-more" id="lqMore" hidden>
-          <summary>Manage from another browser</summary>
-          <p>This browser holds the key for your linked library. Paste this into Studio on another computer to manage the same headsets. Treat it like a password.</p>
-          <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
-        </details>
-        <details class="lq-more" id="lqImport">
-          <summary>Already linked on another browser?</summary>
-          <div class="lq-row"><input type="text" id="lqKeyIn" placeholder="Paste the library key" autocomplete="off" spellcheck="false" /><button type="button" class="ghost sm" id="lqKeyUse">Use it</button></div>
-        </details>
       </div>
     </section>
 
@@ -2035,7 +2034,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <span class="export-hint" id="exportHint">Your playlist is empty.</span>
         </div>
         <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <a href="https://github.com/rithik-b/PlaylistManager" target="_blank" rel="noopener" data-track="playlistmanager-link" class="pm-link">PlaylistManager</a> mod.</p>
-        <p class="panel-sub" data-no-usb>Playing on Quest? Copy the file to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest, or turn on <b>In-Game Sync</b> so the headset pulls updates itself.</p>
+        <p class="panel-sub" data-no-usb>Playing on Quest? The free <a href="#studio-sync" data-ss-open="pcnote">Studio Sync mod</a> sends playlists from here to your headset. Or copy the file to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest, or turn on <b>In-Game Sync</b> so the headset pulls updates itself.</p>
         </div>
         <div class="plat-pane" id="platQuest" hidden>
           <div class="export-row">
@@ -2046,10 +2045,50 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           </div>
           <div class="quest-dest" id="questDestRow" hidden><label for="questDest">Folder</label><input type="text" id="questDest" spellcheck="false" /></div>
           <div class="quest-log" id="questLog" aria-live="polite"></div>
+          <p class="ss-tip" id="ssTipQuest"><b>Skip the cable:</b> the free <a href="#studio-sync" data-ss-open="export">Studio Sync mod</a> sends playlists from here to your Quest over the internet.</p>
           <p class="panel-sub" style="margin-top:12px;">Plug your Quest into this computer with a USB cable and use Chrome or Edge. Developer mode needs to be on, which modding already did. Studio finds your PlaylistManager folder on the headset and drops the playlist in. Restart Beat Saber to see a new playlist.</p>
           <p class="panel-sub"><b>First time:</b> put the headset on after you pick it. It asks <b>Allow USB debugging?</b> for this browser. Tick <b>Always allow from this computer</b> and tap <b>Allow</b>. This is separate from SideQuest or adb on this PC, so it shows up once even if those already work.</p>
           <p class="panel-sub">No cable handy? <a href="#" id="questDlLink">Download the .bplist</a> and copy it to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest. Turn on <b>In-Game Sync</b> and later updates come down with the in-game Sync button, no cable needed.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- Studio Sync (Quest mod). Shown to Quest players and anyone who opens it; see lqShown(). -->
+    <section class="panel" id="lqPanel" data-collapsible hidden>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Studio Sync</h2><span class="ss-tag">Quest mod</span></div>
+      <div class="panel-sub" id="lqSub">A free mod for Beat Saber on Quest. Playlists you build here go straight onto the headset with no cable or file copying, and you can edit the ones already on it from here.</div>
+      <div class="panel-body">
+        <p class="lq-steps lq-status" id="lqStatus" hidden></p>
+        <div class="lq-link" id="lqLinkBox">
+          <ol class="ss-steps">
+            <li><b>Install the mod</b>
+              <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.4.0/StudioSync-1.04.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.4.0 &middot; Beat Saber 1.40.8 &middot; 1.8 MB</a></div>
+              <p>On a PC or Android phone, open <a href="https://lauriethefish.github.io/ModsBeforeFriday/" target="_blank" rel="noopener" data-gc="mbf-link">ModsBeforeFriday</a> in Chrome or Edge and plug in your Quest. Choose <b>Upload Files</b> and pick the <code>.qmod</code>. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.</p>
+              <p class="ss-hmd" id="ssHmd" hidden>You're in the headset browser, so do this step from a PC or phone.</p>
+            </li>
+            <li><b>Link your headset</b>
+              <p>In game, open the <b>Mods</b> tab in the panel left of song select, pick <b>Studio Sync</b> and press <b>Link</b>. Type the 6-character code it shows.</p>
+              <div class="lq-row"><input type="text" id="lqCode" maxlength="7" placeholder="ABC234" autocomplete="off" spellcheck="false" /><button type="button" class="primary" id="lqLinkBtn">Link headset</button></div>
+            </li>
+            <li><b>Send playlists</b>
+              <p>Build one in Your Playlist and press <b>Send to Quest</b> here. It lands on the headset the next time the game syncs. Missing songs download in game with PlaylistManager, like any playlist.</p>
+            </li>
+          </ol>
+        </div>
+        <div class="lq-card" id="lqThisBox" hidden></div>
+        <div class="lq-items" id="lqItems"></div>
+        <div class="lq-quest" id="lqQuest"></div>
+        <div class="lq-devs" id="lqDevs"></div>
+        <details class="lq-more" id="lqMore" hidden>
+          <summary>Manage from another browser</summary>
+          <p>This browser holds the key for your linked library. Paste this into Studio on another computer to manage the same headsets. Treat it like a password.</p>
+          <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
+        </details>
+        <details class="lq-more" id="lqImport">
+          <summary>Already linked on another browser?</summary>
+          <div class="lq-row"><input type="text" id="lqKeyIn" placeholder="Paste the library key" autocomplete="off" spellcheck="false" /><button type="button" class="ghost sm" id="lqKeyUse">Use it</button></div>
+        </details>
+        <button type="button" class="ss-hide" id="ssHide">Not on Quest? Hide Studio Sync</button>
       </div>
     </section>
   </div>
@@ -2073,8 +2112,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </span>
     </a>
   </div>
-  <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T12:52:00Z">Last updated recently</div>
+  <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer">Studio Sync for Quest</a></div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T13:25:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5353,7 +5392,7 @@ window.PP = (function () {
   }
   function setupQuestExport() {
     var tabs = document.getElementById('platTabs'); if (!tabs) return;
-    tabs.addEventListener('click', function (e) { var b = e.target.closest('button[data-plat]'); if (b) { setPlatform(b.getAttribute('data-plat')); track('export-tab-' + b.getAttribute('data-plat')); } });
+    tabs.addEventListener('click', function (e) { var b = e.target.closest('button[data-plat]'); if (b) { setPlatform(b.getAttribute('data-plat')); track('export-tab-' + b.getAttribute('data-plat')); lqRender(); } });
     var p = 'pc'; try { p = localStorage.getItem(PLAT_KEY) || 'pc'; } catch (e) {}
     setPlatform(p);
     document.getElementById('questSendBtn').addEventListener('click', questSend);
@@ -5617,17 +5656,25 @@ window.PP = (function () {
   // A library is the list of hosted playlists a paired headset pulls. This browser
   // holds its key; the headset holds its own token. See relay-worker.js /lib and /link.
   var LIB_KEY = 'playlistStudio.lib.v1';
-  // Hidden for everyone until the Studio Sync mod is released. Open Studio once with
-  // ?studiosync=1 to turn it on in that browser (?studiosync=0 turns it back off).
-  var LQ_PUBLIC = false;
-  var lqOn = (function () {
-    try {
-      var q = new URLSearchParams(location.search).get('studiosync');
-      if (q === '1') localStorage.setItem('playlistStudio.lq.beta', '1'); else if (q === '0') localStorage.removeItem('playlistStudio.lq.beta');
-      return LQ_PUBLIC || localStorage.getItem('playlistStudio.lq.beta') === '1';
-    } catch (e) { return LQ_PUBLIC; }
+  // Studio Sync only shows to people it fits, so PC players never see it unless they go looking:
+  // a linked library, the Quest browser, the Export panel's Quest tab, or an explicit open
+  // (the Quest tab tip, the "Playing on Quest?" note, the In-Game Sync line, the footer, #studio-sync).
+  // "Not on Quest? Hide" wins over the automatic signals; an explicit open clears it.
+  var LQ_WANT = 'playlistStudio.lq.want', LQ_HIDE = 'playlistStudio.lq.hide', LQ_BETA = 'playlistStudio.lq.beta';
+  var LQ_QUEST_UA = /OculusBrowser|Quest/i.test(navigator.userAgent || '');
+  function lsFlag(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
+  function lsFlagSet(k, on) { try { if (on) localStorage.setItem(k, '1'); else localStorage.removeItem(k); } catch (e) {} }
+  (function () {
+    var q = null; try { q = new URLSearchParams(location.search).get('studiosync'); } catch (e) {}
+    if (q === '1') { lsFlagSet(LQ_WANT, true); lsFlagSet(LQ_HIDE, false); } else if (q === '0') { lsFlagSet(LQ_HIDE, true); lsFlagSet(LQ_WANT, false); lsFlagSet(LQ_BETA, false); }
   })();
-  state.lq = { items: [], devices: [], quest: {}, busy: false, pending: false, editing: null, showLink: false };
+  function lqShown() {
+    if (libGet()) return true;
+    if (lsFlag(LQ_HIDE)) return false;
+    var plat = ''; try { plat = localStorage.getItem(PLAT_KEY) || ''; } catch (e) {}
+    return lsFlag(LQ_WANT) || lsFlag(LQ_BETA) || LQ_QUEST_UA || plat === 'quest';
+  }
+  state.lq = { items: [], devices: [], quest: {}, busy: false, pending: false, editing: null, showLink: false, loaded: false };
   function libGet() { try { var v = JSON.parse(localStorage.getItem(LIB_KEY) || 'null'); return v && v.id && v.key ? v : null; } catch (e) { return null; } }
   function libSet(v) { try { if (v) localStorage.setItem(LIB_KEY, JSON.stringify({ id: v.id, key: v.key })); else localStorage.removeItem(LIB_KEY); } catch (e) {} }
   function libFetch(method, path, body, lib, raw) {
@@ -5642,7 +5689,7 @@ window.PP = (function () {
   function libPath(rest) { var lib = libGet(); return '/lib/' + encodeURIComponent(lib.id) + (rest || ''); }
   function lqApply(j) { if (!j) return; if (Array.isArray(j.items)) state.lq.items = j.items; if (Array.isArray(j.devices)) state.lq.devices = j.devices; }
   function lqLost() { libSet(null); state.lq.items = []; state.lq.devices = []; state.lq.quest = {}; toast('Your linked library is gone (unused for a year, or removed). Link your headset again.', 'warn'); }
-  function lqActive() { return lqOn && state.pubAvailable; }
+  function lqActive() { return state.pubAvailable === true && lqShown(); }
   // The headset's own playlists, as each linked headset last reported them.
   function lqLoadQuest() {
     var devs = state.lq.devices.slice();
@@ -5659,13 +5706,13 @@ window.PP = (function () {
     return libFetch('GET', libPath()).then(function (res) {
       if (res.ok) { lqApply(res.j); return lqLoadQuest(); }
       if (res.status === 404 || res.status === 403) lqLost();
-    }, function () {}).then(lqRender);
+    }, function () {}).then(function () { state.lq.loaded = true; lqRender(); });
   }
   function lqEnsureLib() {
     var lib = libGet(); if (lib) return Promise.resolve(lib);
     return libFetch('POST', '/lib', null, null).then(function (res) {
       if (!res.ok || !res.j || !res.j.id) throw new Error((res.j && res.j.error) || 'Couldn\'t set up linking.');
-      libSet(res.j); return libGet();
+      libSet(res.j); state.lq.loaded = true; return libGet();
     });
   }
   function lqBusy(on) { state.lq.busy = on; lqRender(); }
@@ -5883,9 +5930,11 @@ window.PP = (function () {
   function lqBtn(label, attrs, cls) { return '<button type="button" class="' + (cls || 'ghost sm') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
   function lqRender() {
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
-    panel.hidden = !lqActive();
+    var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
+    var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
+    panel.hidden = !lqShown();
+    ssRenderTips(linked);
     var bar = document.getElementById('lqEditBar');
-    var lib = libGet(), lq = state.lq, linked = !!(lib && lq.devices.length), ed = lq.editing;
     // Editing bar inside Your Playlist, only while editing a headset playlist.
     if (bar) {
       bar.hidden = !(lqActive() && ed);
@@ -5893,10 +5942,19 @@ window.PP = (function () {
         ' ' + lqSaveState() + lqBtn('Done editing', 'data-lq-stopedit') : '';
     }
     if (panel.hidden) return;
+    ssLoadRelease();
+    // A linked browser waits for its headsets before deciding what to show; a dead service says so.
+    var loading = !!(lib && !down && (!live || !lq.loaded));
+    var status = document.getElementById('lqStatus');
+    status.hidden = !(loading || down);
+    status.classList.toggle('warn', down);
+    status.textContent = down ? 'Can\'t reach the Studio Sync service right now. You can still install the mod; linking and sending work again once the service is back.' : 'Loading your linked headsets…';
     var linkBox = document.getElementById('lqLinkBox');
-    linkBox.hidden = linked && !lq.showLink;
-    var linkBtn = document.getElementById('lqLinkBtn'); linkBtn.disabled = !!lq.busy; linkBtn.textContent = lq.busy ? 'Working…' : (lq.devices.length ? 'Link another headset' : 'Link headset');
+    linkBox.hidden = loading || (!!lib && down) || (linked && !lq.showLink);
+    var linkBtn = document.getElementById('lqLinkBtn'); linkBtn.disabled = !!lq.busy || down; linkBtn.textContent = lq.busy ? 'Working…' : (lq.devices.length ? 'Link another headset' : 'Link headset');
     document.getElementById('lqSub').hidden = linked;
+    document.getElementById('ssHide').hidden = !!lib;
+    document.getElementById('ssHmd').hidden = !LQ_QUEST_UA;
 
     // This playlist
     var card = document.getElementById('lqThisBox');
@@ -5946,14 +6004,64 @@ window.PP = (function () {
 
     document.getElementById('lqMore').hidden = !lib;
     if (lib) document.getElementById('lqKeyOut').value = lib.id + '.' + lib.key;
-    document.getElementById('lqImport').hidden = !!lib;
+    document.getElementById('lqImport').hidden = !!lib || down;
+  }
+  // ---- getting Studio Sync in front of the people it's for -------------------
+  function ssRenderTips(linked) {
+    var t = document.getElementById('ssTipQuest'), k = linked ? 'linked' : 'pitch'; if (!t || t.getAttribute('data-k') === k) return;
+    t.setAttribute('data-k', k);
+    t.innerHTML = linked ? 'Your Quest is linked. <a href="#studio-sync" data-ss-open="export">Send to Quest in Studio Sync</a> skips the cable.'
+      : '<b>Skip the cable:</b> the free <a href="#studio-sync" data-ss-open="export">Studio Sync mod</a> sends playlists from here to your Quest over the internet.';
+  }
+  function ssOpen(src) {
+    var panel = document.getElementById('lqPanel'); if (!panel) return;
+    lsFlagSet(LQ_HIDE, false); lsFlagSet(LQ_WANT, true);
+    lqRender();
+    if (isMobileView()) setMobileView('playlist');
+    setTimeout(function () {
+      openPanel(panel);
+      // Land just below the sticky top bar (it's tall on phones) instead of under it.
+      var tb = document.querySelector('.topbar'), pos = tb ? getComputedStyle(tb).position : '';
+      var off = ((pos === 'sticky' || pos === 'fixed') ? tb.getBoundingClientRect().height : 0) + 10;
+      // offsetTop, not getBoundingClientRect: the view switch animates panels in with a transform.
+      var y = 0, n = panel; while (n) { y += n.offsetTop; n = n.offsetParent; }
+      try { window.scrollTo({ top: Math.max(0, y - off), behavior: 'smooth' }); } catch (e) {}
+    }, 60);
+    track('lq-open-' + src);
+    if (state.pubAvailable === false) toast('Studio Sync\'s service isn\'t reachable right now. You can still install the mod; linking works once it\'s back.', 'warn');
+  }
+  function ssHide() {
+    lsFlagSet(LQ_HIDE, true); lsFlagSet(LQ_WANT, false); lsFlagSet(LQ_BETA, false);
+    lqRender();
+    toast('Studio Sync hidden. "Studio Sync for Quest" in the footer brings it back.', 'ok');
+    track('lq-hide');
+  }
+  // The download follows the latest GitHub release, so a new mod version needs no Studio change.
+  var SS_REPO = 'https://github.com/Spanky3651/Studio-Sync', SS_REL_KEY = 'playlistStudio.ss.release';
+  var ssRel = { tag: 'v0.4.0', game: '1.40.8', url: SS_REPO + '/releases/download/v0.4.0/StudioSync-1.04.8.qmod', page: SS_REPO + '/releases', size: 1890673 }, ssRelTried = false;
+  function ssApplyRel() {
+    var a = document.getElementById('ssDlBtn'), v = document.getElementById('ssVer'); if (!a || !v) return;
+    a.href = ssRel.url; v.href = ssRel.page;
+    v.textContent = ssRel.tag + (ssRel.game ? ' · Beat Saber ' + ssRel.game : '') + (ssRel.size ? ' · ' + (ssRel.size / 1048576).toFixed(1) + ' MB' : '');
+  }
+  function ssLoadRelease() {
+    if (ssRelTried) return; ssRelTried = true;
+    try { var c = JSON.parse(sessionStorage.getItem(SS_REL_KEY) || 'null'); if (c && c.url) { ssRel = c; ssApplyRel(); return; } } catch (e) {}
+    fetchTimeout('https://api.github.com/repos/Spanky3651/Studio-Sync/releases/latest', 8000).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      var a = j && Array.isArray(j.assets) ? j.assets.filter(function (x) { return x && /\.qmod$/i.test(x.name || '') && String(x.browser_download_url || '').indexOf(SS_REPO + '/releases/download/') === 0; })[0] : null;
+      if (!a) return;
+      var m = String(j.body || '').match(/Beat Saber\s+v?(\d+\.\d+\.\d+)/i);
+      ssRel = { tag: String(j.tag_name || ssRel.tag).slice(0, 24), game: m ? m[1] : '', url: a.browser_download_url, page: String(j.html_url || '').indexOf(SS_REPO + '/') === 0 ? j.html_url : SS_REPO + '/releases', size: +a.size || 0 };
+      try { sessionStorage.setItem(SS_REL_KEY, JSON.stringify(ssRel)); } catch (e) {}
+      ssApplyRel();
+    }, function () {});
   }
   function lqUseKey() {
     var v = (document.getElementById('lqKeyIn').value || '').trim(), m = v.match(/^([A-Za-z0-9]{6,16})\.([0-9a-f]{48})$/);
     if (!m) { toast('That doesn\'t look like a library key.', 'warn'); return; }
     var lib = { id: m[1], key: m[2] };
     libFetch('GET', '/lib/' + encodeURIComponent(lib.id), null, lib).then(function (res) {
-      if (res.ok) { libSet(lib); lqApply(res.j); document.getElementById('lqKeyIn').value = ''; toast('This browser now manages your linked headsets.', 'ok'); return lqLoadQuest(); }
+      if (res.ok) { libSet(lib); lqApply(res.j); state.lq.loaded = true; document.getElementById('lqKeyIn').value = ''; toast('This browser now manages your linked headsets.', 'ok'); return lqLoadQuest(); }
       toast('That key didn\'t work.', 'warn');
     }, function () { toast('Couldn\'t reach the sync service.', 'warn'); }).then(lqRender);
   }
@@ -5982,6 +6090,19 @@ window.PP = (function () {
     var bar = document.getElementById('lqEditBar'); if (bar) bar.addEventListener('click', onClick);
     // Coming back to the tab is a good moment to pick up what the headset shared.
     document.addEventListener('visibilitychange', function () { if (!document.hidden && libGet() && lqActive()) lqRefresh(); });
+    // Shown on its own (not opened on purpose) it starts folded, so it's one quiet row until wanted.
+    var panel = document.getElementById('lqPanel');
+    if (!libGet() && !lsFlag(LQ_WANT) && !lsFlag(LQ_BETA) && collapseApi && !Object.prototype.hasOwnProperty.call(collapseApi.store, 'lqPanel')) panel.classList.add('collapsed');
+    document.getElementById('ssHide').addEventListener('click', ssHide);
+    document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-ss-open]'); if (!a) return; e.preventDefault(); ssOpen(a.getAttribute('data-ss-open')); });
+    var fromHash = function () {
+      if (location.hash !== '#studio-sync') return;
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+      setTimeout(function () { ssOpen('hash'); }, 500);
+    };
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+    ssApplyRel();
     lqRender();
   }
 
@@ -8544,6 +8665,9 @@ window.PP = (function () {
      clan-switch, clan-add, clan-switch-bl;
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
      Extras: egg-115, egg-bomb, egg-halloween;
+     Studio Sync (Quest mod): lq-open-<export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
+     studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
+     lq-autosave; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
