@@ -158,7 +158,7 @@ It stays out of the way for PC players. The **Studio Sync** panel shows up in th
 
 1. **Install the mod.** Download the `.qmod` from the panel (it always points at the [latest release](https://github.com/Spanky3651/Studio-Sync/releases)). On a PC or Android phone, open [ModsBeforeFriday](https://lauriethefish.github.io/ModsBeforeFriday/) in Chrome or Edge and plug in your Quest, choose **Upload Files** and pick the file. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.
 2. **Link your headset.** In game open the **Mods** tab beside song select, pick **Studio Sync** and press **Link**, then type the 6-character code into the panel.
-3. **Send playlists.** Build one and press **Send to Quest** in the panel. Missing songs download in game with PlaylistManager, like any playlist.
+3. **Send playlists.** Build one and press **Send to Quest** in the panel. On the next sync the mod also downloads any songs you don't have (Studio Sync 0.6.0 and later; you can turn this off in its tab).
 
 From then on:
 - The headset is the source of truth. **On your Quest** lists every playlist on it (the ones you choose to share in the mod's **Sharing...** list).
