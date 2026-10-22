@@ -2297,7 +2297,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T23:04:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T23:26:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4637,7 +4637,7 @@ window.PP = (function () {
   function saveSession() {
     clearTimeout(sessionTimer);
     sessionTimer = setTimeout(function () {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, pub: state.publish || null })); } catch (e) {}
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, pub: state.publish || null, lq: lqSessionLink() })); } catch (e) {}
     }, 600);
   }
   function restoreSession() {
@@ -4648,7 +4648,12 @@ window.PP = (function () {
       if (s && Array.isArray(s.entries) && s.entries.length) {
         state.basket = s.entries; state.publish = s.pub || null;
         if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; state.descAuto = (s.meta.descAuto !== undefined) ? !!s.meta.descAuto : isAutoDesc(s.meta.description || ''); }
-        toast('Restored your last playlist (' + state.basket.length + ' maps). Clear to start fresh.', 'ok');
+        var rl = s.lq && s.lq.ed && s.lq.ed.dev && s.lq.ed.k && state.lq ? s.lq : null;
+        if (rl) {
+          state.lq.editing = { dev: rl.ed.dev, k: rl.ed.k, file: rl.ed.file, title: rl.ed.title || rl.ed.file, also: Array.isArray(rl.ed.also) ? rl.ed.also.filter(function (t) { return t && t.dev && t.k; }) : [] };
+          state.lq.openName = rl.name || null; lqAuto.resume = rl.sent || '';
+        }
+        toast('Restored your last playlist (' + state.basket.length + ' maps).' + (rl ? ' Still editing it on your Quest.' : ' Clear to start fresh.'), 'ok');
       }
     } catch (e) {}
   }
@@ -6106,7 +6111,7 @@ window.PP = (function () {
     }).then(function () { lqBusy(false); });
   }
   // ---- autosave while linked: whatever is on the Quest keeps itself up to date ----
-  var lqAuto = { key: null, base: null, last: null };
+  var lqAuto = { key: null, base: null, last: null, resume: null };
   function lqAutoKey() {
     var lq = state.lq, parts = [];
     if (lq.editing) parts.push('edit:' + lqTargets(lq.editing).map(function (t) { return t.dev + ':' + t.k; }).join(','));
@@ -6117,19 +6122,30 @@ window.PP = (function () {
     try { var x = exportParts(); return JSON.stringify([x.meta.title, x.meta.author, x.meta.description, (x.meta.image || '').length, (x.meta.image || '').slice(-64), x.songs]); } catch (e) { return ''; }
   }
   function lqMarkSaved() { state.lq.dirty = false; state.lq.savedAt = Date.now(); lqRender(); }
+  // What the page remembers about an edit in progress: which headset playlist, and what was last sent.
+  function lqHash(x) { x = String(x || ''); var h = 5381; for (var i = 0; i < x.length; i++) h = ((h << 5) + h + x.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + ':' + x.length; }
+  function lqSessionLink() {
+    if (!state.lq || !state.lq.editing) return null;
+    return { ed: lqQuestEntry(), name: state.lq.openName || null, sent: lqAuto.key === lqAutoKey() && lqAuto.base != null ? lqHash(lqAuto.base) : (lqAuto.resume || '') };
+  }
   function lqTick() {
     if (!lqActive() || !libGet() || !state.lq.devices.length) return;
     var key = lqAutoKey();
     if (!key) { lqAuto.key = null; return; }
     if (state.pubBusy || state.lq.busy) return;
     var sig = lqSig();
-    if (key !== lqAuto.key) { lqAuto.key = key; lqAuto.base = lqAuto.last = sig; state.lq.savedAt = 0; state.lq.dirty = false; lqRender(); return; }
+    if (key !== lqAuto.key) {
+      lqAuto.key = key; lqAuto.base = lqAuto.last = sig; state.lq.savedAt = 0; state.lq.dirty = false;
+      // Back after a reload: send what was changed but not sent before the page went away.
+      if (lqAuto.resume != null) { if (lqAuto.resume && lqHash(sig) !== lqAuto.resume) { lqAuto.base = ''; state.lq.dirty = true; } lqAuto.resume = null; }
+      lqRender(); return;
+    }
     if (sig !== lqAuto.last) { lqAuto.last = sig; if (!state.lq.dirty) { state.lq.dirty = true; lqRender(); } return; }
     if (sig === lqAuto.base) return;
     // Two quiet seconds after the last change: save everywhere this playlist lives.
     lqAuto.base = sig;
     if (state.lq.openName) { var o = lsGetPl(); o[state.lq.openName] = libraryEntry(); lsSetPl(o); populatePlaylists(); if (el.savedPlaylists) el.savedPlaylists.value = state.lq.openName; }
-    if (state.lq.editing) lqSendBack(true);
+    if (state.lq.editing) lqSendBack(true).then(saveSession);
     track('lq-autosave');
   }
   setInterval(lqTick, 2000);
@@ -6173,10 +6189,10 @@ window.PP = (function () {
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
   function lqSendBack(quiet) {
-    var ed = state.lq.editing; if (!ed || state.lq.busy) return;
-    if (!state.basket.length) { toast('The playlist is empty. Add songs before sending it back.', 'warn'); return; }
+    var ed = state.lq.editing; if (!ed || state.lq.busy) return Promise.resolve(false);
+    if (!state.basket.length) { toast('The playlist is empty. Add songs before sending it back.', 'warn'); return Promise.resolve(false); }
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
-    if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return; }
+    if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return Promise.resolve(false); }
     lqBusy(true);
     var sent = 0, err = '', moved = false, chain = Promise.resolve();
     lqTargets(ed).forEach(function (t, i) {
@@ -6190,13 +6206,36 @@ window.PP = (function () {
         }, function () { err = 'Couldn’t reach the sync service.'; });
       });
     });
-    chain.then(function () {
+    return chain.then(function () {
       if (moved) lqSaveOpenQuest();
       if (sent) { lqMarkSaved(); if (!quiet) { toast('Sent. ' + lqEdWhere(ed) + ' replaces “' + ed.title + '” on its next sync and keeps a backup.', 'ok'); track('lq-sendback'); } }
       if (err) toast(err, 'warn');
-    }).then(function () { lqBusy(false); });
+    }).then(function () { lqBusy(false); return !!sent && !err; });
   }
-  function lqStopEditing() { state.lq.editing = null; state.lq.savedAt = 0; state.lq.dirty = false; lqRender(); }
+  // Done editing: send whatever hasn't gone yet, keep the library copy (still linked to the headset),
+  // then close the playlist so Your Playlist starts fresh. Edit on the headset's list opens it again.
+  function lqStopEditing(tries) {
+    var ed = state.lq.editing; if (!ed) return;
+    if (state.lq.busy) { if ((tries || 0) < 25) setTimeout(function () { lqStopEditing((tries || 0) + 1); }, 400); return; }
+    var n = state.basket.length, title = n ? lqCurrentTitle() : ed.title, where = lqEdWhere(ed);
+    var unsent = !!n && lqAuto.key === lqAutoKey() && lqSig() !== lqAuto.base;
+    (unsent ? lqSendBack(true) : Promise.resolve(true)).then(function (ok) {
+      if (!ok) { toast('Couldn’t send your last changes, so “' + title + '” stays open. Press Done editing again in a moment.', 'warn'); return; }
+      if (state.lq.editing !== ed) return;   // something else took over meanwhile
+      if (unsent) lqAuto.base = lqSig();
+      if (state.lq.openName && n) { var o = lsGetPl(); o[state.lq.openName] = libraryEntry(); lsSetPl(o); populatePlaylists(); }
+      var waiting = lqEdPending(ed);
+      state.lq.savedAt = 0; state.lq.dirty = false; state.lq.keepEdit = null;
+      state.basket = []; state.clearUndo = null;
+      resetPlaylistIdentity();
+      state.lq.editing = null;
+      if (el.playlistName) el.playlistName.value = '';
+      if (el.savedPlaylists) el.savedPlaylists.value = '';
+      renderAll();
+      toast('Closed “' + title + '”. ' + (waiting ? 'Your changes arrive on ' + where + ' on its next sync.' : 'Nothing changed, so nothing was sent.') + ' Press Edit on it in Studio Sync to change it again.', 'ok');
+      track('lq-done');
+    });
+  }
   function lqPendingFor(devId, k) { var q = state.lq.quest[devId]; return q && (q.pending || []).find(function (w) { return w.k === k; }) || null; }
   function lqIsPending(devId, k) { return !!lqPendingFor(devId, k); }
   function lqEdPending(ed) { return lqTargets(ed).some(function (t) { return lqIsPending(t.dev, t.k); }); }
@@ -6583,6 +6622,13 @@ window.PP = (function () {
         var pick = multi ? '<select id="lqSendTo" class="lq-sel" aria-label="Send to">' + lq.devices.map(function (d) {
           return '<option value="' + esc(d.id) + '"' + (!toAll && to[0] === d.id ? ' selected' : '') + '>' + esc(lqDevName(d.id)) + '</option>';
         }).join('') + '<option value="all"' + (toAll ? ' selected' : '') + '>All ' + lq.devices.length + ' headsets</option></select>' : '';
+        var curT = lqCurrentTitle(), there = to.filter(function (d) { return lqSameTitle(d, curT); });
+        if (there.length) {
+          var hit0 = lqSameTitle(there[0], curT), onName = there.length === 1 ? lqDevName(there[0]) : there.length + ' headsets';
+          h = nowCard('Already on ' + esc(there.map(lqDevName).join(', ')), title, songs + ' here' + (there.length === 1 && hit0.count >= 0 ? ' &middot; ' + hit0.count + ' on ' + esc(lqDevName(there[0])) : '') +
+            '. Update it with this version and your edits keep sending themselves (the headset keeps the old one as a backup), or send this as a separate playlist.' + (to.length > there.length ? ' Headsets without it get it as a new playlist.' : ''),
+            pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : 'Update on ' + esc(onName)), 'data-lq-dupreplace', 'primary') + lqBtn('Send as new', 'data-lq-dupnew'));
+        } else
         h = nowCard('This playlist', title, songs + ' &middot; send it and it becomes a playlist on your headset' + (multi ? 's you pick' : '') + ' on the next sync. After that your edits save and send themselves.',
           pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : (toAll ? 'Send to all headsets' : 'Send to Quest')), 'data-lq-send', 'primary'));
       }
@@ -9595,7 +9641,7 @@ window.PP = (function () {
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<az|recent|songs>; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<az|recent|songs>, lq-done; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
