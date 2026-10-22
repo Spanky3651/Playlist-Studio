@@ -1087,6 +1087,43 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asc-acc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
 .cb-note.soon{background:rgba(47,140,255,.07);border:1px solid rgba(47,140,255,.4);color:#cfe0ff;}
 .cb-note.soon svg{color:#8fbaff;}
+/* ---- Easter eggs ---- */
+body.egg-slice,body.egg-slice *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%23ff2740' stroke-width='6' stroke-linecap='round' opacity='.45'/%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='21' y1='21' x2='28' y2='28' stroke='%239aa3b2' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") 3 3,crosshair !important;}
+body.egg-slice.egg-blue,body.egg-slice.egg-blue *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%232f7bff' stroke-width='6' stroke-linecap='round' opacity='.45'/%3E%3Cline x1='4' y1='4' x2='21' y2='21' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='21' y1='21' x2='28' y2='28' stroke='%239aa3b2' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") 3 3,crosshair !important;}
+body.egg-slice .song-row{touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+.egg-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9997;}
+.song-row.egg-cut{position:relative;overflow:hidden;animation:egg-jolt .3s ease-out;}
+.song-row.egg-cut::after{content:'';position:absolute;left:calc(var(--egg-x,50%) - 75%);width:150%;top:50%;height:3px;margin-top:-1.5px;background:linear-gradient(90deg,transparent,var(--egg-c,#fff) 18%,#fff 50%,var(--egg-c,#fff) 82%,transparent);box-shadow:0 0 14px var(--egg-c,#fff);transform:rotate(var(--egg-a,90deg)) scaleX(0);animation:egg-slash .38s ease-out forwards;pointer-events:none;z-index:3;}
+@keyframes egg-slash{0%{transform:rotate(var(--egg-a,90deg)) scaleX(0);opacity:1}45%{transform:rotate(var(--egg-a,90deg)) scaleX(1);opacity:1}100%{transform:rotate(var(--egg-a,90deg)) scaleX(1);opacity:0}}
+@keyframes egg-jolt{0%{transform:none}30%{transform:translateX(3px)}60%{transform:translateX(-2px)}100%{transform:none}}
+.egg-score{position:fixed;z-index:9998;pointer-events:none;font:800 20px var(--mono);color:#e9edf5;text-shadow:0 0 10px rgba(0,0,0,.9),0 0 6px rgba(47,140,255,.6);transform:translate(-50%,-50%);animation:egg-rise .9s ease-out forwards;}
+.egg-score.good{color:#7ff0c6;}
+.egg-score.low{color:#8792a6;font-size:16px;}
+.egg-score.perfect{color:#ffd23d;font-size:34px;text-shadow:0 0 18px rgba(255,210,61,.85),0 0 4px #000;}
+@keyframes egg-rise{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+.egg-hud{position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;align-items:center;gap:12px;padding:9px 12px 9px 14px;border-radius:12px;background:rgba(5,7,12,.92);border:1px solid var(--border-2);box-shadow:0 8px 26px rgba(0,0,0,.6);font:600 13px var(--mono);color:#aab4c6;}
+.egg-hud b{color:#fff;font-size:18px;}
+.egg-hud .eh-k{letter-spacing:1.4px;text-transform:uppercase;color:#ff7a8c;}
+.egg-hud .eh-115 b{color:#ffd23d;}
+.egg-hud button{padding:4px 9px;font:700 13px var(--mono);}
+@media(max-width:720px){.egg-hud{bottom:84px;left:10px;right:10px;justify-content:space-between;}}
+.egg-rain{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden;}
+.egg-rain span{position:absolute;top:-8vh;font:800 20px var(--mono);color:#ffd23d;text-shadow:0 0 10px rgba(255,210,61,.7);animation:egg-fall linear forwards;}
+@keyframes egg-fall{0%{transform:translateY(0) rotate(0);opacity:0}8%{opacity:1}100%{transform:translateY(118vh) rotate(var(--egg-r,20deg));opacity:.9}}
+body.egg-115 .rb-pp,body.egg-115 .rb-you,body.egg-115 .rb-pred,body.egg-115 .rb-gain,body.egg-115 .rb-clan-ok{animation:egg-gold .55s ease-in-out 4;}
+@keyframes egg-gold{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 2px #ffd23d,0 0 16px rgba(255,210,61,.8);color:#fff2b8;}}
+.egg-bomb{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;opacity:.55;vertical-align:middle;cursor:pointer;}
+.egg-bomb:hover,.egg-bomb:focus-visible{opacity:1;box-shadow:none;}
+.egg-bomb svg{width:18px;height:18px;}
+.egg-redflash{position:fixed;inset:0;z-index:9999;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(255,39,64,.05) 30%,rgba(255,39,64,.5) 100%);animation:egg-red .6s ease-out forwards;}
+@keyframes egg-red{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.brand .logo .egg-pumpkin{display:none;}
+body.egg-halloween .brand .logo .logo-svg{display:none;}
+body.egg-halloween .brand .logo .egg-pumpkin{display:block;position:absolute;inset:0;width:100%;height:100%;}
+body.egg-halloween .fy-btn{position:relative;}
+body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;width:38px;height:38px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23cfd6e3' stroke-width='.7' stroke-linecap='round'%3E%3Cpath d='M40 0L-4.0 0.0M40 0L-0.7 16.8M40 0L8.9 31.1M40 0L23.2 40.7M40 0L40.0 44.0M31.0 0.0Q32.4 1.5 31.7 3.4Q33.5 4.3 33.6 6.4Q35.7 6.5 36.6 8.3Q38.5 7.6 40.0 9.0M22.0 0.0Q24.8 3.0 23.4 6.9Q27.1 8.6 27.3 12.7Q31.4 12.9 33.1 16.6Q37.0 15.2 40.0 18.0M13.0 0.0Q17.1 4.5 15.1 10.3Q20.6 12.9 20.9 19.1Q27.1 19.4 29.7 24.9Q35.5 22.9 40.0 27.0M4.0 0.0Q9.5 6.1 6.7 13.8Q14.2 17.3 14.5 25.5Q22.7 25.8 26.2 33.3Q33.9 30.5 40.0 36.0'/%3E%3C/svg%3E") no-repeat top right/contain;opacity:.55;pointer-events:none;border-top-right-radius:11px;}
+@media (prefers-reduced-motion:reduce){.egg-rain,.song-row.egg-cut::after{display:none;}.song-row.egg-cut,body.egg-115 .rb-pp,body.egg-115 .rb-you,body.egg-115 .rb-pred{animation:none;}.egg-score{animation:egg-fade .9s ease-out forwards;}}
+@keyframes egg-fade{0%{opacity:1}100%{opacity:0}}
 #svClanBtn .new-tag{font:700 11px var(--mono);padding:1px 5px;border-radius:4px;background:var(--red);color:#fff;margin-left:2px;}
 .feat-proj{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2f8cff55;background:radial-gradient(130% 160% at 0% 0%,#10233f,#070b12 65%);}
 .feat-proj .big{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.3px;}
@@ -2003,7 +2040,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-21T00:54:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T00:29:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4374,7 +4411,7 @@ window.PP = (function () {
   }
   function infoBlock(e, inResults) {
     return '<div class="song-info"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
-      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + '</div>' +
+      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + (inResults && eggBomb(e) ? eggBombHtml() : '') + '</div>' +
       (inResults && state.viewMode === 'clan' ? (e._clan ? clanBlock(e) : e._asc ? ascBlock(e) : '') : '') + '</div>';
   }
   // The ≈pp estimate only means something once you know pp: show it with a profile connected,
@@ -5921,6 +5958,165 @@ window.PP = (function () {
     if (cbtn) cbtn.addEventListener('click', function () { track('foryou-connect'); if (isMobileView()) setMobileView('filters'); focusProfileConnect(); });
     grid.addEventListener('click', function (ev) { var b = ev.target.closest('[data-fy]'); if (b) runForYou(b.getAttribute('data-fy')); });
     renderForYou();
+  }
+
+  // ---- Easter eggs -------------------------------------------------------------
+  // Left out of the README on purpose. Logo clicked or tapped 7 times: slice mode (swing through result rows
+  // for a cut score out of 115). "115" typed outside a text box: badges flash and 115s rain down. About 1 in
+  // 1,000 result rows hides a bomb. Oct 31 only: a jack-o'-lantern logo and cobwebs on the For You cards.
+  var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {}, egg115Sent = false, eggKeys = '', eggKeyT = 0;
+  var EGG_BOMB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="#4a505c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="6.4" fill="#15171c" stroke="#4a505c" stroke-width="1"/><circle cx="10" cy="10" r="1.6" fill="#6b7280" opacity=".7"/></svg>';
+  var EGG_PUMPKIN = '<svg class="egg-pumpkin" viewBox="0 0 64 64" aria-hidden="true"><path d="M30 15c0-5 2-8 7-10l2 3c-3 2-4 4-4 7z" fill="#4caf50"/><ellipse cx="20" cy="38" rx="13" ry="18" fill="#d9590b"/><ellipse cx="44" cy="38" rx="13" ry="18" fill="#d9590b"/><ellipse cx="32" cy="38" rx="14" ry="20" fill="#ff7a1a"/><path d="M17 36l6-8 6 8zM35 36l6-8 6 8z" fill="#ffd23d"/><path d="M16 43h32l-4 8-4-4-4 5-4-5-4 5-4-5-4 4z" fill="#ffd23d"/></svg>';
+  var slice = { on: false, taps: [], combo: 0, best: 0, n115: 0, pts: [], cur: null, raf: 0, cv: null, ctx: null, hud: null, blue: false, perfectSent: false };
+
+  // count.js loads at the end of the page; events fired during start-up wait for it.
+  function trackSoon(name) { var n = 0; (function go() { if (window.goatcounter && window.goatcounter.count) track(name); else if (++n < 30) setTimeout(go, 500); })(); }
+  function eggHash(s) { var h = 2166136261 >>> 0; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
+  function eggBomb(e) { if (!e || !e.hash) return false; var k = keyOf(e); return !eggBombHit[k] && eggHash(k + '|' + EGG_SEED) % 1000 === 0; }
+  function eggBombHtml() { return '<button type="button" class="egg-bomb" aria-label="Bomb">' + EGG_BOMB_SVG + '</button>'; }
+  function eggBoom(btn) {
+    var row = btn.closest('.song-row'); if (row && row.dataset.key) eggBombHit[row.dataset.key] = 1;
+    btn.remove();
+    var panel = (row && row.closest('.panel')) || el.resultList;
+    if (panel) { panel.classList.remove('fx-clear'); void panel.offsetWidth; panel.classList.add('fx-clear'); setTimeout(function () { panel.classList.remove('fx-clear'); }, 650); }
+    var fl = document.createElement('div'); fl.className = 'egg-redflash'; document.body.appendChild(fl); setTimeout(function () { fl.remove(); }, 700);
+    try { if (navigator.vibrate) navigator.vibrate(140); } catch (e) {}
+    if (slice.on) { slice.combo = 0; sliceHud(); }
+    toast('You hit a bomb. Combo lost.', 'err');
+    track('egg-bomb');
+  }
+  function egg115() {
+    var bd = document.body;
+    bd.classList.remove('egg-115'); void bd.offsetWidth; bd.classList.add('egg-115');
+    clearTimeout(egg115.t); egg115.t = setTimeout(function () { bd.classList.remove('egg-115'); }, 2400);
+    var box = document.createElement('div'); box.className = 'egg-rain'; box.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < 36; i++) {
+      var s = document.createElement('span'); s.textContent = '115';
+      s.style.left = (Math.random() * 96).toFixed(1) + '%';
+      s.style.fontSize = Math.round(14 + Math.random() * 16) + 'px';
+      s.style.animationDuration = (1.6 + Math.random() * 1.1).toFixed(2) + 's';
+      s.style.animationDelay = (Math.random() * 0.9).toFixed(2) + 's';
+      s.style.setProperty('--egg-r', Math.round(Math.random() * 60 - 30) + 'deg');
+      box.appendChild(s);
+    }
+    bd.appendChild(box); setTimeout(function () { box.remove(); }, 3800);
+    if (!egg115Sent) { egg115Sent = true; track('egg-115'); }
+  }
+  function eggKey(e) {
+    if (e.key === 'Escape' && slice.on) { sliceOff(); return; }
+    var tg = e.target, tag = tg && tg.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (tg && tg.isContentEditable) || e.ctrlKey || e.metaKey || e.altKey) return;
+    var now = Date.now(); if (now - eggKeyT > 1500) eggKeys = ''; eggKeyT = now;
+    if (/^[0-9]$/.test(e.key)) { eggKeys = (eggKeys + e.key).slice(-3); if (eggKeys === '115') { eggKeys = ''; egg115(); } }
+    else eggKeys = '';
+  }
+  function eggHalloween() {
+    var d = new Date(); if (d.getMonth() !== 9 || d.getDate() !== 31) return;
+    var lg = document.querySelector('.brand .logo'); if (lg && !lg.querySelector('.egg-pumpkin')) lg.insertAdjacentHTML('beforeend', EGG_PUMPKIN);
+    document.body.classList.add('egg-halloween'); trackSoon('egg-halloween');
+  }
+
+  // Slice mode. A cut is a fast swing that crosses a result row (most of its height, or most of its width on a
+  // phone swipe). Scored like a Beat Saber cut: up to 70 for the swing into the row, 30 for the follow-through
+  // and 15 for a straight line, so 115 is a fast, clean swing.
+  function sliceTap() {
+    var now = Date.now();
+    slice.taps = slice.taps.filter(function (t) { return now - t < 3000; }); slice.taps.push(now);
+    if (slice.taps.length >= 4 && slice.taps.length < 7) fxPop(document.querySelector('.brand .logo'));
+    if (slice.taps.length >= 7) { slice.taps = []; if (slice.on) sliceOff(); else sliceOn(); }
+  }
+  function sliceOn() {
+    slice.on = true; slice.combo = 0; slice.best = 0; slice.n115 = 0; slice.pts = []; slice.cur = null;
+    document.body.classList.add('egg-slice');
+    var cv = document.createElement('canvas'); cv.className = 'egg-canvas'; cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
+    slice.cv = cv; slice.ctx = cv.getContext('2d'); sliceSize();
+    var hud = document.createElement('div'); hud.className = 'egg-hud'; hud.setAttribute('role', 'status'); document.body.appendChild(hud); slice.hud = hud;
+    hud.addEventListener('click', function (e) { if (e.target.closest('[data-egg-exit]')) sliceOff(); });
+    sliceHud();
+    toast('Slice mode. Swing fast through the songs. Esc, × or 7 more logo taps to stop.', 'ok');
+    track('egg-slice');
+  }
+  function sliceOff() {
+    slice.on = false; slice.pts = []; slice.cur = null;
+    document.body.classList.remove('egg-slice', 'egg-blue');
+    if (slice.raf) cancelAnimationFrame(slice.raf); slice.raf = 0;
+    if (slice.cv) slice.cv.remove(); if (slice.hud) slice.hud.remove();
+    slice.cv = slice.ctx = slice.hud = null;
+  }
+  function sliceSize() { if (!slice.cv) return; var d = window.devicePixelRatio || 1; slice.cv.width = Math.round(innerWidth * d); slice.cv.height = Math.round(innerHeight * d); slice.ctx.setTransform(d, 0, 0, d, 0, 0); }
+  function sliceHud() {
+    if (!slice.hud) return;
+    slice.hud.innerHTML = '<span class="eh-k">Slice mode</span><span>Combo <b>' + slice.combo + '</b></span><span class="eh-115">115s <b>' + slice.n115 + '</b></span><span>Best <b>' + slice.best + '</b></span>' +
+      '<button type="button" class="ghost sm" data-egg-exit aria-label="Leave slice mode">×</button>';
+  }
+  function sliceSpeed(t, win) {
+    var p = slice.pts, i = p.length - 1; if (i < 1) return 0;
+    var j = i; while (j > 0 && t - p[j - 1].t <= win) j--;
+    var d = 0; for (var k = j + 1; k <= i; k++) d += Math.hypot(p[k].x - p[k - 1].x, p[k].y - p[k - 1].y);
+    var dt = p[i].t - p[j].t; return dt > 0 ? d / dt : 0;
+  }
+  function sliceMove(e) {
+    if (!slice.on) return;
+    var x = e.clientX, y = e.clientY, t = performance.now();
+    slice.pts.push({ x: x, y: y, t: t });
+    while (slice.pts.length && t - slice.pts[0].t > 400) slice.pts.shift();
+    var blue = x > innerWidth / 2; if (blue !== slice.blue) { slice.blue = blue; document.body.classList.toggle('egg-blue', blue); }
+    var hit = document.elementFromPoint(x, y), row = hit && hit.closest ? hit.closest('#resultList .song-row') : null;
+    if (slice.cur && slice.cur.row !== row) { sliceCut(slice.cur, x, y, t); slice.cur = null; }
+    if (row && !slice.cur) slice.cur = { row: row, x: x, y: y, t: t, vPre: sliceSpeed(t, 100) };
+    if (!slice.raf) slice.raf = requestAnimationFrame(sliceDraw);
+  }
+  function sliceUp(e) { if (!slice.on) return; if (slice.cur) sliceCut(slice.cur, e.clientX, e.clientY, performance.now()); slice.cur = null; slice.pts = []; }
+  function sliceCut(cur, x, y, t) {
+    var row = cur.row; if (!row.isConnected) return;
+    var r = row.getBoundingClientRect(), dx = x - cur.x, dy = y - cur.y, dt = t - cur.t;
+    if (dt <= 0 || dt > 450) return;
+    if (Math.abs(dy) < r.height * 0.6 && Math.abs(dx) < r.width * 0.55) return;
+    var vIn = Math.hypot(dx, dy) / dt; if (vIn < 0.6) return;
+    var a = Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI, dev = Math.min(a, 90 - a);
+    var pre = Math.round(70 * Math.min(1, Math.max(cur.vPre, vIn) / 1.5));
+    var post = Math.round(30 * Math.min(1, vIn / 1.2));
+    var acc = Math.round(15 * Math.max(0, 1 - dev / 30));
+    var s = Math.max(0, Math.min(115, pre + post + acc)), mx = (cur.x + x) / 2;
+    row.style.setProperty('--egg-a', (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(1) + 'deg');
+    row.style.setProperty('--egg-x', Math.round(mx - r.left) + 'px');
+    row.style.setProperty('--egg-c', mx > innerWidth / 2 ? '#2f7bff' : '#ff2740');
+    row.classList.remove('egg-cut'); void row.offsetWidth; row.classList.add('egg-cut');
+    clearTimeout(row._eggT); row._eggT = setTimeout(function () { row.classList.remove('egg-cut'); }, 420);
+    if (s > slice.best) slice.best = s;
+    if (s >= 60) slice.combo++; else slice.combo = 0;
+    if (s === 115) { slice.n115++; if (!slice.perfectSent) { slice.perfectSent = true; track('egg-slice-115'); } }
+    var pop = document.createElement('div'); pop.className = 'egg-score' + (s === 115 ? ' perfect' : s >= 100 ? ' good' : s < 60 ? ' low' : '');
+    pop.textContent = s === 115 ? '115!' : String(s); pop.style.left = x + 'px'; pop.style.top = y + 'px';
+    document.body.appendChild(pop); setTimeout(function () { pop.remove(); }, 950);
+    sliceHud();
+  }
+  function sliceDraw() {
+    slice.raf = 0; var c = slice.ctx; if (!c || !slice.on) return;
+    var now = performance.now(), p = slice.pts.filter(function (q) { return now - q.t < 140; });
+    c.clearRect(0, 0, innerWidth, innerHeight);
+    if (p.length > 1) {
+      var col = slice.blue ? '47,123,255' : '255,39,64';
+      c.lineCap = 'round'; c.lineJoin = 'round';
+      for (var i = 1; i < p.length; i++) {
+        var f = 1 - (now - p[i].t) / 140;
+        c.strokeStyle = 'rgba(' + col + ',' + (0.55 * f).toFixed(3) + ')'; c.lineWidth = 9 * f + 2;
+        c.beginPath(); c.moveTo(p[i - 1].x, p[i - 1].y); c.lineTo(p[i].x, p[i].y); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,' + (0.9 * f).toFixed(3) + ')'; c.lineWidth = 2.2 * f + 0.5;
+        c.beginPath(); c.moveTo(p[i - 1].x, p[i - 1].y); c.lineTo(p[i].x, p[i].y); c.stroke();
+      }
+    }
+    if (p.length) slice.raf = requestAnimationFrame(sliceDraw);
+  }
+  function setupEggs() {
+    var lg = document.querySelector('.brand .logo'); if (lg) lg.addEventListener('click', sliceTap);
+    document.addEventListener('pointermove', sliceMove, { passive: true });
+    document.addEventListener('pointerup', sliceUp, { passive: true });
+    document.addEventListener('pointercancel', function () { slice.cur = null; slice.pts = []; }, { passive: true });
+    window.addEventListener('resize', sliceSize);
+    document.addEventListener('keydown', eggKey);
+    if (el.resultList) el.resultList.addEventListener('click', function (e) { var b = e.target.closest('.egg-bomb'); if (b) { e.stopPropagation(); eggBoom(b); } });
+    eggHalloween();
   }
 
   // ---- presets (localStorage) ----------------------------------------------
@@ -7929,7 +8125,7 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
@@ -8033,6 +8229,7 @@ window.PP = (function () {
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
+     Extras: egg-slice, egg-slice-115, egg-115, egg-bomb, egg-halloween;
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
