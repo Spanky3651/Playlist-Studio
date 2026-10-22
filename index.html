@@ -313,6 +313,7 @@ select{cursor:pointer;appearance:none;
 .callout.amber{background:#1c1606;border-color:#3d3110;color:#f2e0a8;}
 .callout.amber .ci{color:var(--amber);}
 .callout b{color:#fff;}
+.callout + .callout{margin-top:8px;}
 
 /* ---------- Star sliders ---------- */
 .starband{height:8px;border-radius:6px;background:#0c1220;border:1px solid var(--border-2);position:relative;overflow:hidden;margin-bottom:14px;}
@@ -1272,6 +1273,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="step"><span class="num">4</span> Export</div>
         </div>
         <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b>, and you can add your <b>ScoreSaber</b> plays from Your Profile. BeatSaver search connects directly.</span></div>
+        <div class="callout intro-ss"><span class="ci">◈</span><span><b>On Quest?</b> The free <a href="#studio-sync" data-ss-open="intro">Studio Sync mod</a> sends playlists straight to your headset with no cable, and lets you edit the ones already on it from here.</span></div>
       </div>
     </details>
 
@@ -2015,8 +2017,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
-    <!-- Export -->
-    <section class="panel">
+    <!-- Export (folds like the others; it opens by default and remembers) -->
+    <section class="panel" id="exportPanel" data-collapsible>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
       <div class="panel-body">
         <div class="export-validation" id="exportValidation">
@@ -2113,7 +2115,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer">Studio Sync for Quest</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T13:25:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T13:53:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -8665,7 +8667,7 @@ window.PP = (function () {
      clan-switch, clan-add, clan-switch-bl;
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
      Extras: egg-115, egg-bomb, egg-halloween;
-     Studio Sync (Quest mod): lq-open-<export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
+     Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
      lq-autosave; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
