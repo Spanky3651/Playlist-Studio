@@ -25,6 +25,28 @@
  *    stored as SHA-256 hashes, a per-IP write limit, and lists expire 180 days after
  *    their last update unless a headset keeps syncing them.
  *
+ * 3) LINKED HEADSETS  (/lib, /link)  - used by the Studio Sync Quest mod
+ *    A "library" is a list of hosted playlists. Studio owns it with a private key;
+ *    each paired headset holds its own device token and pulls the list. Uses the
+ *    same PLAYLISTS KV namespace, nothing new to bind.
+ *
+ *    Studio (writes only from Studio's site):
+ *    POST   /lib                     create   -> { id, key }
+ *    GET    /lib/<id>                (X-Lib-Key) -> { items, devices }
+ *    PUT    /lib/<id>/items          (X-Lib-Key) body { items: [{ id, title }] }
+ *    POST   /lib/<id>/claim          (X-Lib-Key) body { code } -> links that headset
+ *    DELETE /lib/<id>/devices/<dev>  (X-Lib-Key) unlink one headset
+ *
+ *    Headset (Authorization: Bearer <token the mod generated itself>):
+ *    POST   /link/start              body { name } -> { code, expiresIn, interval }
+ *    GET    /link/status?code=X      -> { status: waiting | linked | expired }
+ *    GET    /link/manifest           -> { playlists: [{ id, title, updated, url }] }, 401 when unlinked
+ *    POST   /link/unlink             forget this headset
+ *
+ *    The token never leaves the headset except in that header, and the Worker only
+ *    stores its SHA-256. Codes are 6 characters, live 10 minutes, and claims are
+ *    rate limited per IP so they can't be guessed.
+ *
  * DEPLOY (dashboard, no command line):
  *   1. Workers & Pages -> KV -> Create a namespace, e.g. "playlist-studio-hosted".
  *   2. Open this Worker -> Settings -> Bindings -> Add -> KV namespace.
@@ -42,10 +64,18 @@ const TTL = 60 * 60 * 24 * 180;            // seconds a list lives after its las
 const REFRESH_AFTER = 60 * 60 * 24 * 90;   // a list still being synced gets its clock reset after this
 const WRITE_LIMIT = 30, WRITE_WINDOW = 600; // writes per IP per 10 minutes (per Worker instance)
 const writes = new Map();
+const LIB_TTL = 60 * 60 * 24 * 365;          // a library or device nobody touches for a year goes away
+const CODE_TTL = 600;                        // pairing codes live 10 minutes
+const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const MAX_LIB_ITEMS = 60, MAX_DEVICES = 8;
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === "/lib" || url.pathname.startsWith("/lib/") || url.pathname.startsWith("/link/")) {
+      try { return await linked(request, env, ctx, url); }
+      catch (e) { return json({ error: "Server error" }, 500, libCors(request)); }
+    }
     if (url.pathname === "/pub" || url.pathname.startsWith("/pub/") || url.pathname.startsWith("/p/")) {
       try { return await hosted(request, env, ctx, url); }
       catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
@@ -170,13 +200,13 @@ async function hosted(request, env, ctx, url) {
   return json({ error: "Method not allowed" }, 405, cors);
 }
 
-async function allowWrite(request, env) {
-  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+async function allowWrite(request, env, bucket, limit) {
+  const ip = (bucket ? bucket + ":" : "") + (request.headers.get("CF-Connecting-IP") || "unknown");
   if (env.WRITE_LIMITER && env.WRITE_LIMITER.limit) {
-    try { const r = await env.WRITE_LIMITER.limit({ key: ip }); return !!r.success; } catch (e) { /* fall through */ }
+    try { const r = await env.WRITE_LIMITER.limit({ key: ip }); if (!r.success) return false; if (!bucket) return true; } catch (e) { /* fall through */ }
   }
   const t = nowSec(), list = (writes.get(ip) || []).filter((x) => t - x < WRITE_WINDOW);
-  if (list.length >= WRITE_LIMIT) { writes.set(ip, list); return false; }
+  if (list.length >= (limit || WRITE_LIMIT)) { writes.set(ip, list); return false; }
   list.push(t); writes.set(ip, list);
   if (writes.size > 5000) writes.clear();
   return true;
@@ -217,6 +247,157 @@ async function readPlaylist(request) {
 function finalize(pl, origin, id) {
   pl.customData = { generator: "Playlist Studio", hosted: true, songCount: pl.songs.length, syncURL: origin + "/p/" + id + ".bplist" };
   return JSON.stringify(pl);
+}
+
+// ---------------------------------------------------------------- linked headsets
+function libCors(request) {
+  const h = writeCors(request);
+  h["Access-Control-Allow-Headers"] = "Content-Type, X-Lib-Key, Authorization";
+  return h;
+}
+function bearer(request) {
+  const m = (request.headers.get("Authorization") || "").match(/^Bearer\s+([A-Za-z0-9_-]{32,128})$/);
+  return m ? m[1] : "";
+}
+async function readJson(request, max) {
+  const text = await request.text();
+  if (text.length > (max || 20000)) return null;
+  try { const v = JSON.parse(text); return v && typeof v === "object" ? v : null; } catch (e) { return null; }
+}
+function randomCode() {
+  const b = crypto.getRandomValues(new Uint8Array(6));
+  let s = ""; for (const x of b) s += CODE_ABC[x % CODE_ABC.length]; return s;
+}
+function cleanName(v) { return (typeof v === "string" ? v : "").replace(/[^\w .'()-]/g, "").trim().slice(0, 40) || "Quest"; }
+function putLib(env, id, lib) { return env.PLAYLISTS.put("lib:" + id, JSON.stringify(lib), { expirationTtl: LIB_TTL }); }
+function publicDevices(lib) { return (lib.devices || []).map((d) => ({ id: d.id, name: d.name, added: d.added, seen: d.seen || 0 })); }
+
+async function linked(request, env, ctx, url) {
+  const path = url.pathname, cors = libCors(request);
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (!env.PLAYLISTS) return json({ error: "Hosting is not set up" }, 503, cors);
+
+  // ---- headset side (no Origin; authenticated by its own token) ----
+  if (path.startsWith("/link/")) {
+    const token = bearer(request);
+    if (!token) return json({ error: "Missing device token" }, 401, cors);
+    const th = await sha256(token);
+
+    if (path === "/link/start" && request.method === "POST") {
+      if (!(await allowWrite(request, env, "start", 10))) return json({ error: "Too many link attempts - wait a few minutes" }, 429, cors);
+      const body = (await readJson(request, 2000)) || {};
+      let code = "";
+      for (let i = 0; i < 5 && !code; i++) { const c = randomCode(); if (!(await env.PLAYLISTS.get("code:" + c))) code = c; }
+      if (!code) return json({ error: "Try again" }, 503, cors);
+      await env.PLAYLISTS.put("code:" + code, JSON.stringify({ th, name: cleanName(body.name), at: nowSec() }), { expirationTtl: CODE_TTL });
+      return json({ code, expiresIn: CODE_TTL, interval: 5 }, 200, cors);
+    }
+
+    if (path === "/link/status" && request.method === "GET") {
+      const dev = await env.PLAYLISTS.get("dev:" + th, "json");
+      if (dev) return json({ status: "linked" }, 200, cors);
+      const code = (url.searchParams.get("code") || "").toUpperCase();
+      const rec = /^[A-Z0-9]{6}$/.test(code) ? await env.PLAYLISTS.get("code:" + code, "json") : null;
+      return json({ status: rec && rec.th === th ? "waiting" : "expired" }, 200, cors);
+    }
+
+    const dev = await env.PLAYLISTS.get("dev:" + th, "json");
+    const lib = dev ? await env.PLAYLISTS.get("lib:" + dev.lib, "json") : null;
+    const me = lib && (lib.devices || []).find((d) => d.th === th);
+    if (!dev || !lib || !me) {
+      if (dev) await env.PLAYLISTS.delete("dev:" + th);
+      return json({ error: "unlinked" }, 401, cors);
+    }
+
+    if (path === "/link/manifest" && request.method === "GET") {
+      const recs = await Promise.all((lib.items || []).map((it) => env.PLAYLISTS.get("pl:" + it.id, "json")));
+      const playlists = [];
+      (lib.items || []).forEach((it, i) => {
+        const r = recs[i];
+        if (r && r.body) playlists.push({ id: it.id, title: it.title, updated: r.updated || 0, url: url.origin + "/p/" + it.id + ".bplist" });
+      });
+      // Remember when this headset last checked in (at most one write an hour) and keep the library alive.
+      if (nowSec() - (me.seen || 0) > 3600) {
+        me.seen = nowSec();
+        const w = Promise.all([putLib(env, dev.lib, lib), env.PLAYLISTS.put("dev:" + th, JSON.stringify(dev), { expirationTtl: LIB_TTL })]);
+        if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
+      }
+      return json({ library: dev.lib, device: me.name, playlists }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+    }
+
+    if (path === "/link/unlink" && request.method === "POST") {
+      lib.devices = (lib.devices || []).filter((d) => d.th !== th);
+      await putLib(env, dev.lib, lib);
+      await env.PLAYLISTS.delete("dev:" + th);
+      return new Response(null, { status: 204, headers: cors });
+    }
+    return json({ error: "Not found" }, 404, cors);
+  }
+
+  // ---- Studio side ----
+  if (!originOk(request)) return json({ error: "Only Playlist Studio can manage libraries" }, 403, cors);
+
+  if (path === "/lib" && request.method === "POST") {
+    if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    const id = randomId(10), key = randomHex(24);
+    await putLib(env, id, { hk: await sha256(key), items: [], devices: [], created: nowSec() });
+    return json({ id, key }, 201, cors);
+  }
+
+  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/devices\/([A-Za-z0-9]{6,16}))?$/);
+  if (!m) return json({ error: "Not found" }, 404, cors);
+  const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
+  if (!lib) return json({ error: "Not found" }, 404, cors);
+  const key = request.headers.get("X-Lib-Key") || "";
+  if (!key || !safeEqual(await sha256(key), lib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+
+  if (!m[2] && request.method === "GET") {
+    return json({ items: lib.items || [], devices: publicDevices(lib) }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+  }
+
+  if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+
+  if (m[2] === "/items" && request.method === "PUT") {
+    const body = await readJson(request, 40000);
+    if (!body || !Array.isArray(body.items)) return json({ error: "Expected { items: [] }" }, 400, cors);
+    if (body.items.length > MAX_LIB_ITEMS) return json({ error: "A headset can sync up to " + MAX_LIB_ITEMS + " playlists" }, 400, cors);
+    const seen = new Set(), items = [];
+    for (const it of body.items) {
+      if (!it || !/^[A-Za-z0-9]{6,16}$/.test(String(it.id || "")) || seen.has(it.id)) continue;
+      seen.add(it.id);
+      items.push({ id: String(it.id), title: (typeof it.title === "string" ? it.title : "").slice(0, 200) });
+    }
+    lib.items = items;
+    await putLib(env, id, lib);
+    return json({ items, devices: publicDevices(lib) }, 200, cors);
+  }
+
+  if (m[2] === "/claim" && request.method === "POST") {
+    if (!(await allowWrite(request, env, "claim", 10))) return json({ error: "Too many tries - wait a few minutes" }, 429, cors);
+    const body = (await readJson(request, 2000)) || {};
+    const code = String(body.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const rec = /^[A-Z0-9]{6}$/.test(code) ? await env.PLAYLISTS.get("code:" + code, "json") : null;
+    if (!rec || !rec.th) return json({ error: "That code is wrong or expired. Get a fresh one from the headset." }, 404, cors);
+    lib.devices = (lib.devices || []).filter((d) => d.th !== rec.th);
+    if (lib.devices.length >= MAX_DEVICES) return json({ error: "Unlink a headset first (" + MAX_DEVICES + " max)" }, 400, cors);
+    const dev = { id: randomId(8), th: rec.th, name: rec.name || "Quest", added: nowSec(), seen: 0 };
+    lib.devices.push(dev);
+    await putLib(env, id, lib);
+    await env.PLAYLISTS.put("dev:" + rec.th, JSON.stringify({ lib: id, id: dev.id, added: dev.added }), { expirationTtl: LIB_TTL });
+    await env.PLAYLISTS.delete("code:" + code);
+    return json({ device: { id: dev.id, name: dev.name, added: dev.added, seen: 0 }, devices: publicDevices(lib) }, 200, cors);
+  }
+
+  if (m[3] && request.method === "DELETE") {
+    const d = (lib.devices || []).find((x) => x.id === m[3]);
+    if (d) {
+      lib.devices = lib.devices.filter((x) => x.id !== m[3]);
+      await putLib(env, id, lib);
+      await env.PLAYLISTS.delete("dev:" + d.th);
+    }
+    return json({ devices: publicDevices(lib) }, 200, cors);
+  }
+  return json({ error: "Method not allowed" }, 405, cors);
 }
 
 function randomId(n) {

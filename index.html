@@ -458,6 +458,25 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .pub-or{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
 .pub-or::before,.pub-or::after{content:'';flex:1;height:1px;background:#1f3456;}
 .pub-box[hidden] + .pub-or{display:none;}
+.lq-inline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;color:#dce8ff;cursor:pointer;flex-wrap:wrap;}
+.lq-inline[hidden]{display:none;}
+.lq-inline input{width:18px;height:18px;accent-color:var(--blue);}
+.lq-steps{margin:0 0 10px;font-size:14px;color:var(--muted);line-height:1.5;}
+.lq-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.lq-row input[type=text]{flex:1;min-width:140px;}
+#lqCode{font-family:var(--mono);font-size:20px;letter-spacing:4px;text-transform:uppercase;max-width:200px;}
+.lq-devs,.lq-items{margin-top:14px;}
+.lq-devs:empty,.lq-items:empty{display:none;}
+.lq-h{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0 0 6px;}
+.lq-li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #1f3456;border-radius:10px;margin-bottom:6px;background:#060c16;font-size:14px;color:#fff;}
+.lq-li .lq-sub{display:block;font-size:12.5px;color:var(--muted);}
+.lq-li .lq-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.lq-dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;flex:none;}
+.lq-dot.idle{background:#5a6b85;}
+.lq-more{margin-top:14px;font-size:13.5px;color:var(--muted);}
+.lq-more summary{cursor:pointer;}
+.lq-more p{margin:8px 0;line-height:1.5;}
+.lq-more[hidden]{display:none;}
 .gal-list{display:grid;gap:10px;}
 .gal-card{display:flex;gap:14px;align-items:center;border:1px solid var(--border-2);border-radius:12px;padding:12px 14px;background:#0a0f17;}
 .gal-card h4{margin:0 0 3px;font-size:15px;color:#fff;}
@@ -1953,12 +1972,36 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update.</p>
           <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
           <div class="pub-info" id="pubInfo"></div>
+          <label class="lq-inline" id="lqThisRow" hidden><input type="checkbox" id="lqThis" /> Sync to my linked Quest <span class="muted">(shows up in game on its own, no file to load)</span></label>
         </div>
         <div class="pub-or" id="pubOr">or use your own host</div>
         <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
           <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
           <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- Linked Quest (Studio Sync mod) -->
+    <section class="panel" id="lqPanel" hidden>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Linked Quest</h2></div>
+      <div class="panel-sub">With the <b>Studio Sync</b> mod on your Quest, hosted playlists you pick land in game on their own. New ones appear, updates come down, and ones you remove here disappear from the headset. No file to load, no Sync button.</div>
+      <div class="panel-body">
+        <div class="lq-link" id="lqLinkBox">
+          <p class="lq-steps">In game: <b>Mod Settings &rarr; Studio Sync &rarr; Link</b>. Type the 6-character code it shows.</p>
+          <div class="lq-row"><input type="text" id="lqCode" maxlength="7" placeholder="ABC234" autocomplete="off" spellcheck="false" /><button type="button" class="primary" id="lqLinkBtn">Link headset</button></div>
+        </div>
+        <div class="lq-devs" id="lqDevs"></div>
+        <div class="lq-items" id="lqItems"></div>
+        <details class="lq-more" id="lqMore" hidden>
+          <summary>Manage from another browser</summary>
+          <p>This browser holds the key for your linked library. Paste this into Studio on another computer to manage the same headsets. Treat it like a password.</p>
+          <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
+        </details>
+        <details class="lq-more" id="lqImport">
+          <summary>Already linked on another browser?</summary>
+          <div class="lq-row"><input type="text" id="lqKeyIn" placeholder="Paste the library key" autocomplete="off" spellcheck="false" /><button type="button" class="ghost sm" id="lqKeyUse">Use it</button></div>
+        </details>
       </div>
     </section>
 
@@ -2020,7 +2063,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more">More Beat Saber tools: <a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">HSV Config Generator</a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T10:25:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-22T11:18:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5497,7 +5540,7 @@ window.PP = (function () {
   }
   function probePublish() {
     fetchTimeout(PUB_BASE + '/pub/health', 6000).then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { state.pubAvailable = !!(j && j.ok === true); renderPubUI(); }, function () { state.pubAvailable = false; renderPubUI(); });
+      .then(function (j) { state.pubAvailable = !!(j && j.ok === true); renderPubUI(); lqRefresh(); }, function () { state.pubAvailable = false; renderPubUI(); });
   }
   function renderPubUI() {
     var box = document.getElementById('pubBox'); if (!box) return;
@@ -5509,6 +5552,7 @@ window.PP = (function () {
     var or = document.getElementById('pubOr'); if (or) or.textContent = p ? 'address written into the file' : 'or use your own host';
     info.innerHTML = p ? 'Hosted at <code>' + esc(p.url) + '</code>' + (p.at ? ' &middot; updated ' + agoStr(Math.floor(p.at / 1000)) : '') +
       '<br>Loaded this playlist on your headset before hosting it? ' + (window.QUEST_USB ? 'Download or send it once more' : 'Download it and load it once more') + ' so it knows this address.' : '';
+    if (typeof lqRender === 'function') lqRender();
   }
   function applyPublishToSync() {
     if (!state.publish) return;
@@ -5526,23 +5570,23 @@ window.PP = (function () {
         state.publish = pub ? { id: pub.id, key: pub.key, url: pub.url, at: Date.now() } : { id: res.j.id, key: res.j.key, url: res.j.url, at: Date.now() };
         applyPublishToSync();
         if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { o[state.activeRecipe].pub = state.publish; lsSetRecipes(o); } }
-        saveSession();
+        saveSession(); lqAfterPublish(state.publish);
         toast(pub ? 'Hosted copy updated. Hit Sync in-game to pull it.' : (window.QUEST_USB ? 'Hosted! Download or send the file once more' : 'Hosted! Download the file and load it once more') + ' - after that, in-game Sync keeps it current.', 'ok');
         track(pub ? (auto ? 'pub-auto-update' : 'pub-update') : 'pub-create');
       } else if (res.status === 404 && pub) {
-        state.publish = null;
+        state.publish = null; state.lq.pending = false; lqRemove(pub.id);
         toast('That hosted copy expired or was removed. Hit Host to make a new one, then load it on your headset again.', 'warn');
       } else if (res.status === 429) toast('Too many updates in a short time. Wait a few minutes and try again.', 'warn');
       else toast('Hosting failed' + (res.j && res.j.error ? ': ' + res.j.error : '.'), 'warn');
     }, function () { toast('Couldn\'t reach the hosting service. Try again in a moment.', 'warn'); })
-      .then(function () { state.pubBusy = false; renderPubUI(); });
+      .then(function () { state.pubBusy = false; if (!state.publish) state.lq.pending = false; renderPubUI(); });
   }
   function stopHosting() {
     var pub = state.publish; if (!pub || state.pubBusy) return;
     state.pubBusy = true; renderPubUI();
     pubFetch('DELETE', '/pub/' + encodeURIComponent(pub.id), null, pub.key).then(function (res) {
       if (res.ok || res.status === 404) {
-        state.publish = null;
+        state.publish = null; lqRemove(pub.id);
         if (el.syncUrl.value.trim() === pub.url) { el.syncEnable.checked = false; el.syncUrl.value = ''; updateSyncUI(); }
         if (state.activeRecipe) { var o = lsGetRecipes(); if (o[state.activeRecipe]) { delete o[state.activeRecipe].pub; lsSetRecipes(o); } }
         saveSession(); toast('Stopped hosting. Copies on headsets keep working but won\'t sync anymore.', 'ok'); track('pub-delete');
@@ -5555,6 +5599,158 @@ window.PP = (function () {
     b.addEventListener('click', function () { publishHosted(false); });
     document.getElementById('pubStopBtn').addEventListener('click', stopHosting);
     renderPubUI(); probePublish();
+  }
+
+  // ---- linked Quest (Studio Sync mod) -----------------------------------------
+  // A library is the list of hosted playlists a paired headset pulls. This browser
+  // holds its key; the headset holds its own token. See relay-worker.js /lib and /link.
+  var LIB_KEY = 'playlistStudio.lib.v1';
+  // Hidden for everyone until the Studio Sync mod is released. Open Studio once with
+  // ?studiosync=1 to turn it on in that browser (?studiosync=0 turns it back off).
+  var LQ_PUBLIC = false;
+  var lqOn = (function () {
+    try {
+      var q = new URLSearchParams(location.search).get('studiosync');
+      if (q === '1') localStorage.setItem('playlistStudio.lq.beta', '1'); else if (q === '0') localStorage.removeItem('playlistStudio.lq.beta');
+      return LQ_PUBLIC || localStorage.getItem('playlistStudio.lq.beta') === '1';
+    } catch (e) { return LQ_PUBLIC; }
+  })();
+  state.lq = { items: [], devices: [], busy: false, pending: false, want: null };
+  function libGet() { try { var v = JSON.parse(localStorage.getItem(LIB_KEY) || 'null'); return v && v.id && v.key ? v : null; } catch (e) { return null; } }
+  function libSet(v) { try { if (v) localStorage.setItem(LIB_KEY, JSON.stringify({ id: v.id, key: v.key })); else localStorage.removeItem(LIB_KEY); } catch (e) {} }
+  function libFetch(method, path, body, lib) {
+    lib = lib || libGet();
+    var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 20000);
+    var h = { 'Content-Type': 'application/json' }; if (lib) h['X-Lib-Key'] = lib.key;
+    return fetch(PUB_BASE + path, { method: method, headers: h, body: body == null ? undefined : JSON.stringify(body), signal: ctrl.signal }).then(function (r) {
+      clearTimeout(t);
+      return r.text().then(function (txt) { var j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {} return { status: r.status, ok: r.ok, j: j }; });
+    }, function (e) { clearTimeout(t); throw e; });
+  }
+  function lqApply(j) { if (!j) return; if (Array.isArray(j.items)) state.lq.items = j.items; if (Array.isArray(j.devices)) state.lq.devices = j.devices; }
+  function lqLost() { libSet(null); state.lq.items = []; state.lq.devices = []; toast('Your linked library is gone (unused for a year, or removed). Link your headset again.', 'warn'); }
+  function lqRefresh() {
+    var lib = libGet(); if (!lqOn || !lib || !state.pubAvailable) { lqRender(); return Promise.resolve(); }
+    return libFetch('GET', '/lib/' + encodeURIComponent(lib.id)).then(function (res) {
+      if (res.ok) lqApply(res.j); else if (res.status === 404 || res.status === 403) lqLost();
+    }, function () {}).then(lqRender);
+  }
+  function lqEnsureLib() {
+    var lib = libGet(); if (lib) return Promise.resolve(lib);
+    return libFetch('POST', '/lib', null, null).then(function (res) {
+      if (!res.ok || !res.j || !res.j.id) throw new Error((res.j && res.j.error) || 'Couldn\'t set up linking.');
+      libSet(res.j); return libGet();
+    });
+  }
+  function lqLink() {
+    var inp = document.getElementById('lqCode'), code = (inp.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (code.length !== 6) { toast('The code on your headset is 6 characters.', 'warn'); return; }
+    if (state.lq.busy) return; state.lq.busy = true; lqRender();
+    lqEnsureLib().then(function (lib) {
+      return libFetch('POST', '/lib/' + encodeURIComponent(lib.id) + '/claim', { code: code }, lib).then(function (res) {
+        if (res.ok) {
+          lqApply(res.j); inp.value = '';
+          toast('Linked ' + ((res.j.device && res.j.device.name) || 'your Quest') + '. Now tick "Sync to my linked Quest" on any hosted playlist.', 'ok'); track('lq-link');
+        } else if (res.status === 404 && res.j && /code/i.test(res.j.error || '')) toast(res.j.error, 'warn');
+        else if (res.status === 404 || res.status === 403) lqLost();
+        else toast((res.j && res.j.error) || 'Linking failed.', 'warn');
+      });
+    }).catch(function (e) { toast(e && e.message && !/abort|fetch/i.test(e.message) ? e.message : 'Couldn\'t reach the sync service. Try again in a moment.', 'warn'); })
+      .then(function () { state.lq.busy = false; lqRender(); });
+  }
+  function lqUnlink(devId) {
+    var lib = libGet(); if (!lib || state.lq.busy) return;
+    state.lq.busy = true; lqRender();
+    libFetch('DELETE', '/lib/' + encodeURIComponent(lib.id) + '/devices/' + encodeURIComponent(devId)).then(function (res) {
+      if (res.ok) { lqApply(res.j); toast('Headset unlinked. Its synced playlists stay on it but stop updating.', 'ok'); track('lq-unlink'); }
+      else toast('Couldn\'t unlink right now.', 'warn');
+    }, function () { toast('Couldn\'t reach the sync service.', 'warn'); })
+      .then(function () { state.lq.busy = false; lqRender(); });
+  }
+  function lqSaveItems(items) {
+    var lib = libGet(); if (!lib) return Promise.resolve(false);
+    state.lq.busy = true; lqRender();
+    return libFetch('PUT', '/lib/' + encodeURIComponent(lib.id) + '/items', { items: items }).then(function (res) {
+      if (res.ok) { lqApply(res.j); return true; }
+      if (res.status === 404 || res.status === 403) lqLost(); else toast((res.j && res.j.error) || 'Couldn\'t update your headset list.', 'warn');
+      return false;
+    }, function () { toast('Couldn\'t reach the sync service.', 'warn'); return false; })
+      .then(function (ok) { state.lq.busy = false; lqRender(); return ok; });
+  }
+  function lqHas(id) { return state.lq.items.some(function (x) { return x.id === id; }); }
+  function lqUpsert(id, title) {
+    var items = state.lq.items.slice(), i = items.findIndex(function (x) { return x.id === id; });
+    if (i >= 0) { if (items[i].title === title) return Promise.resolve(true); items[i] = { id: id, title: title }; } else items.push({ id: id, title: title });
+    return lqSaveItems(items);
+  }
+  function lqRemove(id) {
+    if (!lqHas(id)) return Promise.resolve(true);
+    return lqSaveItems(state.lq.items.filter(function (x) { return x.id !== id; }));
+  }
+  function lqCurrentTitle() { try { return exportParts().meta.title; } catch (e) { return 'Playlist Studio Mix'; } }
+  // Called by publishHosted after a successful host or update.
+  function lqAfterPublish(pub) {
+    if (!libGet() || !pub) return;
+    if (state.lq.pending || lqHas(pub.id)) {
+      var added = !lqHas(pub.id); state.lq.pending = false;
+      lqUpsert(pub.id, lqCurrentTitle()).then(function (ok) { if (ok && added) { toast('On its way to your Quest. It shows up the next time the game loads playlists.', 'ok'); track('lq-add'); } });
+    }
+  }
+  function lqToggleThis(on) {
+    state.lq.want = on;
+    var done = function () { state.lq.want = null; lqRender(); };
+    if (on) {
+      if (state.publish) lqUpsert(state.publish.id, lqCurrentTitle()).then(function (ok) { if (ok) { toast('On its way to your Quest. It shows up the next time the game loads playlists.', 'ok'); track('lq-add'); } }).then(done);
+      else { state.lq.pending = true; state.lq.want = null; publishHosted(false); }
+    } else if (state.publish) { state.lq.pending = false; lqRemove(state.publish.id).then(function (ok) { if (ok) toast('Removed from your Quest. It disappears from the headset on the next sync.', 'ok'); }).then(done); }
+    else { state.lq.pending = false; done(); }
+  }
+  function lqAgo(t) { return t ? agoStr(t) : 'not yet'; }
+  function lqRender() {
+    var panel = document.getElementById('lqPanel'); if (!panel) return;
+    panel.hidden = !(lqOn && state.pubAvailable);
+    var lib = libGet(), lq = state.lq, devs = document.getElementById('lqDevs'), items = document.getElementById('lqItems');
+    var linkBtn = document.getElementById('lqLinkBtn'); linkBtn.disabled = !!lq.busy; linkBtn.textContent = lq.busy ? 'Working\u2026' : (lq.devices.length ? 'Link another headset' : 'Link headset');
+    devs.innerHTML = lq.devices.length ? '<div class="lq-h">Linked headsets</div>' + lq.devices.map(function (d) {
+      var fresh = d.seen && (Date.now() / 1000 - d.seen) < 86400 * 2;
+      return '<div class="lq-li"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><span class="lq-name">' + esc(d.name) + '<span class="lq-sub">linked ' + esc(lqAgo(d.added)) + ' &middot; last sync ' + esc(lqAgo(d.seen)) + '</span></span><button type="button" class="ghost sm danger" data-lq-unlink="' + esc(d.id) + '"' + (lq.busy ? ' disabled' : '') + '>Unlink</button></div>';
+    }).join('') : '';
+    items.innerHTML = lib && lq.devices.length ? '<div class="lq-h">Syncing to your Quest (' + lq.items.length + ')</div>' + (lq.items.length ? lq.items.map(function (it) {
+      return '<div class="lq-li"><span class="lq-name">' + esc(it.title || it.id) + '</span><button type="button" class="ghost sm danger" data-lq-remove="' + esc(it.id) + '"' + (lq.busy ? ' disabled' : '') + '>Remove</button></div>';
+    }).join('') : '<p class="lq-steps">Nothing yet. Host a playlist in In-Game Sync and tick "Sync to my linked Quest".</p>') : '';
+    var more = document.getElementById('lqMore'); more.hidden = !lib;
+    if (lib) document.getElementById('lqKeyOut').value = lib.id + '.' + lib.key;
+    document.getElementById('lqImport').hidden = !!lib;
+    var row = document.getElementById('lqThisRow'), box = document.getElementById('lqThis');
+    row.hidden = !(lqOn && lib && lq.devices.length);
+    box.checked = lq.want != null ? !!lq.want : !!(lq.pending || (state.publish && lqHas(state.publish.id)));
+    box.disabled = !!lq.busy || !!state.pubBusy || !state.basket.length;
+  }
+  function lqUseKey() {
+    var v = (document.getElementById('lqKeyIn').value || '').trim(), m = v.match(/^([A-Za-z0-9]{6,16})\.([0-9a-f]{48})$/);
+    if (!m) { toast('That doesn\'t look like a library key.', 'warn'); return; }
+    var lib = { id: m[1], key: m[2] };
+    libFetch('GET', '/lib/' + encodeURIComponent(lib.id), null, lib).then(function (res) {
+      if (res.ok) { libSet(lib); lqApply(res.j); document.getElementById('lqKeyIn').value = ''; toast('This browser now manages your linked headsets.', 'ok'); }
+      else toast('That key didn\'t work.', 'warn');
+    }, function () { toast('Couldn\'t reach the sync service.', 'warn'); }).then(lqRender);
+  }
+  function setupLinkedQuest() {
+    if (!document.getElementById('lqPanel')) return;
+    document.getElementById('lqLinkBtn').addEventListener('click', lqLink);
+    document.getElementById('lqCode').addEventListener('keydown', function (e) { if (e.key === 'Enter') lqLink(); });
+    document.getElementById('lqThis').addEventListener('change', function (e) { lqToggleThis(e.target.checked); });
+    document.getElementById('lqKeyUse').addEventListener('click', lqUseKey);
+    document.getElementById('lqKeyCopy').addEventListener('click', function () {
+      var v = document.getElementById('lqKeyOut').value;
+      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function () { toast('Library key copied.', 'ok'); }, function () { document.getElementById('lqKeyOut').select(); });
+    });
+    document.getElementById('lqPanel').addEventListener('click', function (e) {
+      var u = e.target.closest('[data-lq-unlink]'), r = e.target.closest('[data-lq-remove]');
+      if (u) lqUnlink(u.getAttribute('data-lq-unlink'));
+      if (r) lqRemove(r.getAttribute('data-lq-remove'));
+    });
+    lqRender();
   }
 
   // ---- AccSaber pools -------------------------------------------------------
@@ -8004,7 +8200,7 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupAccSaber(); setupGallery();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupRecipes(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
     initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
