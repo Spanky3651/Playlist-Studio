@@ -217,6 +217,13 @@ async function fileKey(file) { return (await sha256("f:" + file)).slice(0, 16); 
 function validFile(f) { return typeof f === "string" && f.length > 0 && f.length <= 200 && !/[\\/\u0000]/.test(f) && f !== "." && f !== ".." && /\.(bplist|json)$/i.test(f); }
 function invKey(lib, dev) { return "inv:" + lib + ":" + dev; }
 function outKey(lib, dev) { return "out:" + lib + ":" + dev; }
+// A headset's "done" for one pending write lives under its own key. KV has no transactions, so if acks
+// rewrote the shared list, two at once (or an ack and a send from Studio) could undo each other.
+function ackKey(lib, dev, id) { return "outa:" + lib + ":" + dev + ":" + id; }
+async function liveOut(env, lib, dev, items) {
+  const done = await Promise.all(items.map((w) => env.PLAYLISTS.get(ackKey(lib, dev, w.id))));
+  return items.filter((w, i) => done[i] === null);
+}
 function putTtl(env, k, v) { return env.PLAYLISTS.put(k, typeof v === "string" ? v : JSON.stringify(v), { expirationTtl: LIB_TTL }); }
 function looksLikePlaylist(text) {
   try { const p = JSON.parse(text); return !!(p && typeof p === "object" && Array.isArray(p.songs)); } catch (e) { return false; }
@@ -280,6 +287,7 @@ async function linked(request, env, ctx, url) {
         if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
       }
       const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
+      out.items = await liveOut(env, dev.lib, me.id, out.items);
       const writes = out.items.map((w) => Object.assign({ id: w.id, file: w.file, create: !!w.create, url: url.origin + "/link/outbox/" + w.id }, w.restore ? { restore: w.restore } : {}, w.remove ? { remove: true } : {}));
       return json({ library: dev.lib, device: me.name, playlists, writes }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
@@ -340,18 +348,24 @@ async function linked(request, env, ctx, url) {
       const bk = "outb:" + dev.lib + ":" + me.id + ":" + w.id;
       if (!ob[2] && request.method === "GET") {
         const text = await env.PLAYLISTS.get(bk);
-        if (!text) return json({ error: "Not found" }, 404, cors);
+        if (!text) {
+          // A send whose ack was lost under the old list rewrite: its body is gone, so it's done.
+          if (!w.remove && !w.restore && nowSec() - (w.at || 0) > 300) await putTtl(env, ackKey(dev.lib, me.id, w.id), "1");
+          return json({ error: "Not found" }, 404, cors);
+        }
         return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
       }
       if (ob[2] && request.method === "POST") {
         // A new playlist whose name was taken on the headset is saved under another one; remember the move
         // so Studio (and sends still on their way) follow it to the new file.
         const body = (await readJson(request, 2000)) || {};
+        await putTtl(env, ackKey(dev.lib, me.id, w.id), "1");
         if (validFile(body.file) && body.file !== w.file) {
+          // Rare (a new playlist saved under another name), so this one still rewrites the list.
           out.moved = (out.moved || []).filter((x) => x.k !== w.k).concat({ k: w.k, nk: await fileKey(body.file), file: body.file, at: nowSec() }).slice(-MAX_MOVED);
+          out.items = (await liveOut(env, dev.lib, me.id, out.items)).filter((x) => x.id !== w.id);
+          await putTtl(env, outKey(dev.lib, me.id), out);
         }
-        out.items = out.items.filter((x) => x.id !== w.id);
-        await putTtl(env, outKey(dev.lib, me.id), out);
         await env.PLAYLISTS.delete(bk);
         return json({ ok: true }, 200, cors);
       }
@@ -393,6 +407,7 @@ async function linked(request, env, ctx, url) {
     if (!dv) return json({ error: "Not found" }, 404, cors);
     const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
     const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
+    out.items = await liveOut(env, id, dv.id, out.items);
     const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, at: x.at }));
     const movedList = () => (out.moved || []).map((x) => ({ k: x.k, nk: x.nk, file: x.file }));
     // opts: { restore: backup time } or { remove: true }; neither carries a body.
