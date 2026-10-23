@@ -1678,11 +1678,11 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <div class="grid-2">
           <div class="field bl-only"><label class="field-label">Ranked status <span class="info" data-tip="Ranked = maps with official BeatLeader star ratings and PP. Unranked/Nominated/Qualified are in the ranking pipeline - you can build playlists from those too. All = everything. Star and rating filters only apply to maps that actually have a rating.">i</span></label>
             <select id="fType">
-              <option value="ranked" selected>Ranked</option>
+              <option value="ranked">Ranked</option>
               <option value="unranked">Unranked</option>
               <option value="nominated">Nominated</option>
               <option value="qualified">Qualified</option>
-              <option value="all">All</option>
+              <option value="all" selected>All</option>
             </select></div>
           <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Rating (the default) = up/down vote score, so the best-liked maps come first. Latest = newest uploads (best for browsing a tag). Curated = hand-picked by curators. Relevance = best text match - only use it with a mapper/keyword search, it returns junk on its own.">i</span></label>
             <select id="bsSort">
@@ -2300,7 +2300,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T12:02:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T12:08:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7358,7 +7358,7 @@ window.PP = (function () {
   }
   // Right before a BeatLeader search: never open on the full 0-15 band by accident.
   function autoBandForSearch() {
-    if (state.source !== 'beatleader' || state.bandAuto === false || el.fType.value !== 'ranked') return;
+    if (state.source !== 'beatleader' || state.bandAuto === false || (el.fType.value !== 'ranked' && el.fType.value !== 'all')) return;
     var lo = num(el.starMinNum, 0), hi = num(el.starMaxNum, 15), cb = comfortBand();
     if (cb) {
       if (Math.abs(cb.lo - lo) > 0.05 || Math.abs(cb.hi - hi) > 0.05) {
@@ -9335,7 +9335,7 @@ window.PP = (function () {
   function resetFilters(silent) {
     el.starMinNum.value = '0'; el.starMaxNum.value = '15'; el.fMapper.value = ''; el.fMapperExclude.value = ''; el.fSearch.value = '';
     ['fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
-    el.fType.value = 'ranked'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500'; state.sortTouched = false;
+    el.fType.value = 'all'; el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500'; state.sortTouched = false;
     el.bsMinRating.value = ''; el.bsAge.value = 'any';
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
