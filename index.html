@@ -2300,7 +2300,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T10:49:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T12:02:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3899,7 +3899,7 @@ window.PP = (function () {
       '</div>';
   }
   function runFetch() {
-    state.viewMode = 'search';
+    state.viewMode = 'search'; state.bsrLookup = false;
     if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
     track('search-beatleader');
@@ -4093,6 +4093,13 @@ window.PP = (function () {
     if (/^[0-9a-fA-F]{40}$/.test(q)) return { type: 'hash', val: q.toLowerCase(), explicit: true };
     var pm = q.match(/^(?:!|bsr[:\s]?)\s*([0-9a-fA-F]{1,8})$/i);
     if (pm) return { type: 'id', val: pm[1].toLowerCase(), explicit: true };
+    // "!bsr 4d995" (the in-game request form), or several codes at once ("!bsr 4d995 or 50032", "!bsr 4d995, 50032").
+    if (/^(?:!|bsr\b)/i.test(q)) {
+      var toks = q.replace(/!?\bbsr\b:?/gi, ' ').replace(/\bor\b/gi, ' ').split(/[\s,\/!]+/).filter(Boolean);
+      if (toks.length && toks.length <= 5 && toks.every(function (t) { return /^[0-9a-fA-F]{1,8}$/.test(t); }))
+        return toks.length === 1 ? { type: 'id', val: toks[0].toLowerCase(), explicit: true }
+          : { type: 'id', val: toks[0].toLowerCase(), vals: toks.map(function (t) { return t.toLowerCase(); }), explicit: true };
+    }
     if (/^[0-9a-fA-F]{1,8}$/.test(q)) return { type: 'id', val: q.toLowerCase(), explicit: false };
     return null;
   }
@@ -4132,29 +4139,34 @@ window.PP = (function () {
       });
     }
     function lookup(tok) {
-      bsrMode = true; el.fetchProgressText.textContent = 'Looking up map…';
-      return fetchBsMap(tok).then(function (map) {
-        if (map && map.versions && map.versions.length) { var e = bsSearchMapToEntry(map); if (e) { collected.push(e); mapsSeen = collected.length; } }
-      });
+      bsrMode = true; el.fetchProgressText.textContent = tok.vals ? 'Looking up maps…' : 'Looking up map…';
+      var one = function (t) {
+        return fetchBsMap(t).then(function (map) {
+          if (map && map.versions && map.versions.length) { var e = bsSearchMapToEntry(map); if (e) { collected.push(e); mapsSeen = collected.length; } }
+        });
+      };
+      if (!tok.vals) return one(tok);
+      return tok.vals.reduce(function (p, v) { return p.then(function () { return one({ type: 'id', val: v }); }); }, Promise.resolve());
     }
     var ref = detectBsrRef(f.search);
     var run = (ref && ref.explicit)
       ? lookup(ref)                                                   // explicit link/hash/!code → resolve that one map
       : step().then(function () { if (!collected.length && ref) return lookup(ref); }); // bare code → text search, fall back to code lookup
     run.then(function () {
-      state.raw = collected; state.fetched = true; state.lastSig = 'bs'; el.barFill.style.width = '100%';
+      state.raw = collected; state.fetched = true; state.lastSig = 'bs'; state.bsrLookup = bsrMode; el.barFill.style.width = '100%';
       if (rateLimited && !collected.length) { setStatus('Rate-limited', 'err'); toast('BeatSaver rate-limited the search before any maps came back - wait a moment and Search again.', 'warn'); }
       else if (!collected.length) { setStatus('No maps found', 'err'); toast(bsrMode ? 'No BeatSaver map matched that code or link - double-check it.' : 'No BeatSaver maps matched - loosen the tags, clear a filter, or try a different search.', 'warn'); }
       else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited - search again to pull the rest.', 'warn'); }
-      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast('Found “' + collected[0].songName + '” - add it below.', 'ok'); }
+      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast(collected.length === 1 ? 'Found “' + collected[0].songName + '” - add it below.' : 'Found ' + collected.length + ' maps - add the ones you want below.', 'ok'); }
       else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver - add the ones you want.', 'ok'); }
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
+      if (state.bsrAutoOpen && bsrMode && collected.length === 1) openPreview(collected[0]);
     }).catch(function (err) {
       console.error(err); setStatus('Search failed', 'err'); var msg = err.message || 'BeatSaver search failed.';
       el.counterMeta.textContent = msg; renderResults(); toast(msg, 'err');
     }).then(function () {
-      state.fetching = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; b.classList.remove('is-fetching'); });
+      state.fetching = false; state.bsrAutoOpen = false; [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.disabled = false; b.classList.remove('is-fetching'); });
       el.topLoadBar.classList.remove('on'); el.topLoadFill.style.width = '0%';
       setTimeout(function () { el.fetchProgress.hidden = true; el.barFill.style.width = '0%'; }, 800);
     });
@@ -4184,7 +4196,10 @@ window.PP = (function () {
     var overDays = { 'o3m': 90, 'o6m': 180, 'o1y': 365, 'o2y': 730 };
     var hideAuto = state.source === 'beatsaver' && el.bsNoAuto && el.bsNoAuto.checked;
     var ageCutoff = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366 }[f.bsAge];
+    // A BSR code / link lookup asked for those exact maps, so the filters don't hide them.
+    var exact = state.source === 'beatsaver' && state.bsrLookup;
     var out = state.raw.filter(function (s) {
+      if (exact) return true;
       if (hideAuto && hasAutoCredit(s.mapper)) return false;   // "Hide auto-lighting maps" toggle
       if (state.source === 'beatsaver') {
         // Min rating: BeatSaver's weighted score is 0..1. Skip maps below the floor; keep unrated maps.
@@ -5020,6 +5035,29 @@ window.PP = (function () {
     if (added) { toast('Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from a share link. Filling in details\u2026', 'ok'); if (typeof enrichImported === 'function') enrichImported(); }
     else toast('Those maps are already in your playlist.', 'warn');
     return added;
+  }
+  // A link with ?bsr=4d995 (or several: ?bsr=4d995,50032) looks those maps up on BeatSaver right away and,
+  // for a single map, opens its preview. Chester's Escape links here from its "Your turn" card.
+  // Only the bsr part leaves the address bar, so utm tags still reach GoatCounter.
+  function checkBsrLinkOnLoad() {
+    var qs; try { qs = new URLSearchParams(location.search); } catch (e) { return; }
+    var raw = qs.get('bsr'); if (!raw) return;
+    qs.delete('bsr');
+    try { var rest = qs.toString(); history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash); } catch (e) {}
+    var codes = raw.split(/[\s,]+/).map(function (c) { return c.replace(/^!?(?:bsr)?:?/i, ''); }).filter(function (c) { return /^[0-9a-f]{1,8}$/i.test(c); }).slice(0, 5);
+    if (!codes.length) return;
+    trackSoon('bsr-link');
+    if (state.source !== 'beatsaver') {
+      // Search BeatSaver for this visit without changing the source the player picked for next time.
+      var saved = null; try { saved = localStorage.getItem(SRC_KEY); } catch (e) {}
+      state.source = 'beatsaver'; state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
+      applySourceUI();
+      try { if (saved) localStorage.setItem(SRC_KEY, saved); else localStorage.removeItem(SRC_KEY); } catch (e) {}
+    }
+    el.fSearch.value = '!bsr ' + codes.join(' or ');
+    state.bsrAutoOpen = codes.length === 1;
+    runFetchBeatSaver();
+    return true;
   }
   function checkShareOnLoad() {
     var h = location.hash || ''; var m = h.match(/[#&]p=([^&]+)/); if (!m) return;
@@ -9695,7 +9733,7 @@ window.PP = (function () {
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
-    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search)) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
+    initTooltips(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
