@@ -598,15 +598,17 @@ body.anim .lq-added{animation:lqfade 4s ease-out both;}
 .lq-a:hover{box-shadow:none;border:0;text-decoration:underline;color:#8fb8ff;}
 @media(max-width:720px){.lq-sync{display:none;}.lq-sec .lq-ib{margin-left:auto;}.lq-nowa{flex-basis:100%;}.lq-nowa button{flex:1;justify-content:center;}.lq-dev .lq-m{flex-basis:100%;order:3;}.lq-dev .lq-a{margin-left:auto;}}
 .tb-ss{display:none;}
+.tb-ss:not([hidden]){display:inline-flex;align-items:center;justify-content:center;position:relative;margin-left:auto;width:37px;height:37px;padding:0;flex:none;color:#8fbaff;}
+.tb-ss:not([hidden]) + .spacer{display:none;}
+.tb-ss svg{width:20px;height:20px;margin:0;}
+.tb-ss-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 2px #06090e;}
+.tb-ss.idle .tb-ss-dot{background:#5a6b85;}
+.tb-ss.wait .tb-ss-dot{display:none;}
+.tb-ss-n{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#5b9bff;color:#04070d;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #06090e;}
+.tb-ss-n:empty{display:none;}
 @media(max-width:720px){
-  .tb-ss:not([hidden]){display:inline-flex;align-items:center;justify-content:center;position:relative;margin-left:auto;width:42px;height:42px;min-height:42px;padding:0;border-radius:11px;flex:none;color:#8fbaff;}
-  .tb-ss:not([hidden]) + .spacer{display:none;}
-  .tb-ss svg{width:22px;height:22px;margin:0;}
-  .tb-ss-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 2px #06090e;}
-  .tb-ss.idle .tb-ss-dot{background:#5a6b85;}
-  .tb-ss.wait .tb-ss-dot{display:none;}
-  .tb-ss-n{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#5b9bff;color:#04070d;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #06090e;}
-  .tb-ss-n:empty{display:none;}
+  .tb-ss:not([hidden]){width:42px;height:42px;min-height:42px;border-radius:11px;}
+  .tb-ss svg{width:22px;height:22px;}
 }
 .lq-hs{display:inline-flex;align-items:center;gap:7px;min-width:0;margin-right:2px;padding:4px 10px;border:1px solid #1c5c37;border-radius:20px;background:rgba(61,220,132,.08);font-size:12.5px;color:#9fe6bd;white-space:nowrap;}
 .lq-hs[hidden]{display:none;}
@@ -2300,7 +2302,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T12:18:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T12:40:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6746,7 +6748,7 @@ window.PP = (function () {
         hs.title = lq.devices.map(function (d) { return lqDevName(d.id) + ': last sync ' + lqAgoMin(lqSeen(d.id)); }).join('\n') + (waiting ? '\n' + waiting + ' change' + (waiting === 1 ? '' : 's') + ' waiting for the next sync' : '');
       }
     }
-    // Phones: a Studio Sync button in the top bar once a headset is linked, with the same status as the chip.
+    // A Studio Sync button in the top bar once Studio Sync is linked, with the same status as the chip.
     var tbs = document.getElementById('tbSS');
     if (tbs) {
       tbs.hidden = !lib;
@@ -6757,6 +6759,9 @@ window.PP = (function () {
         tbs.className = 'ghost tb-ss' + (tk ? ' ' + tk : '');
         tbs.querySelector('.tb-ss-n').textContent = tw ? (tw > 9 ? '9+' : String(tw)) : '';
         tbs.setAttribute('aria-label', 'Open Studio Sync' + (tw ? ', ' + tw + ' change' + (tw === 1 ? '' : 's') + ' waiting' : ''));
+        var tbSSTitle = !linked ? (down ? 'service isn\'t reachable right now' : !live || !lq.loaded ? 'checking your headsets' : 'no headset linked yet') : (lq.devices.length > 1 ? lq.devices.length + ' headsets' : lqDevName(lq.devices[0].id)) + ', ' +
+          (tw ? tw + ' change' + (tw === 1 ? '' : 's') + ' waiting' : tseen ? 'synced ' + lqAgoMin(tseen) : 'not synced yet');
+        tbs.title = 'Studio Sync: ' + tbSSTitle;
       }
     }
     ssRenderTips(linked);
