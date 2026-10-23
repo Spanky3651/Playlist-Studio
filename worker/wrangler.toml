@@ -1,0 +1,17 @@
+name = "playlist-replay"
+# The code stays at the top of the repo as relay-worker.js; this folder only holds the deploy setup.
+main = "../relay-worker.js"
+compatibility_date = "2025-09-01"
+
+# Hosted playlists and Studio Sync live here. It must be the namespace the Worker already uses
+# (Cloudflare dashboard: Workers & Pages -> playlist-replay -> Settings -> Bindings -> PLAYLISTS),
+# or every linked library looks gone. List them with: npx wrangler kv namespace list
+[[kv_namespaces]]
+binding = "PLAYLISTS"
+id = "PASTE_THE_PLAYLISTS_NAMESPACE_ID"
+
+# Optional, not set up yet: a global rate limit for writes. Without it the Worker uses its own per-instance limit.
+# [[ratelimits]]
+# name = "WRITE_LIMITER"
+# namespace_id = "1001"
+# simple = { limit = 30, period = 60 }

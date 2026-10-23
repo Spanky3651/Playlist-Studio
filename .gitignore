@@ -11,3 +11,8 @@ _pull*.html
 .git-rewrite/
 .fuse_hidden*
 *.orig
+
+# Worker deploy (wrangler)
+worker/node_modules/
+worker/.wrangler/
+.dev.vars

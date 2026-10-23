@@ -243,7 +243,7 @@ Pack your whole playlist into a single link with **Share Playlist**. The maps, t
 
 BeatLeader's API doesn't send cross-origin CORS headers, so a browser can't call it directly from a file or a third-party site - it fails with *"Failed to fetch."* Playlist Studio gets around this by routing read-only public requests through a **pool of public CORS relays**, racing them and using the first that responds. Dead or slow relays are dropped automatically, and there's nothing to configure.
 
-The relay is a small Cloudflare Worker (`relay-worker.js` in this repo). It only proxies BeatLeader, BeatSaver and ScoreSaber, and it also serves hosted playlists once a KV namespace is bound to it; the deploy steps are at the top of the file. AccSaber sends CORS headers, so the AccSaber pools and stats call it directly.
+The relay is a small Cloudflare Worker (`relay-worker.js` in this repo). It only proxies BeatLeader, BeatSaver and ScoreSaber, and it also serves hosted playlists and Studio Sync from a KV namespace bound as `PLAYLISTS`. It deploys with Wrangler from the `worker` folder (`npx wrangler deploy`; the settings are in `worker/wrangler.toml`). AccSaber sends CORS headers, so the AccSaber pools and stats call it directly.
 
 If you run your own CORS relay and would rather use it, point the app at it under **Search Scope & Sort → Advanced: custom relay**. (Map previews use BeatSaver and ArcViewer directly - both are CORS-friendly, so they need no relay.)
 
