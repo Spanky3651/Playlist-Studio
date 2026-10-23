@@ -246,7 +246,7 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .col-left .panel > .panel-head,.panel[data-collapsible] > .panel-head{cursor:pointer;user-select:none;}
 .col-left .panel > .panel-head:hover .panel-caret,.panel[data-collapsible] > .panel-head:hover .panel-caret{color:var(--blue-text);}
 .panel.collapsed .panel-caret{transform:rotate(-90deg);}
-.panel.collapsed > .panel-sub,.panel.collapsed > .panel-body{display:none;}
+.panel.collapsed:not(.tg-pane) > .panel-sub,.panel.collapsed:not(.tg-pane) > .panel-body{display:none;}
 .panel-sub{padding:10px 16px;border-bottom:1px solid var(--border);background:#0a0e15;color:var(--muted);font-size:13.5px;line-height:1.55;}
 .panel-sub b{color:#cdd8e6;font-weight:600;}
 .cover-opts{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
@@ -271,7 +271,7 @@ button.stale{border-color:var(--amber) !important;color:#ffe0a0 !important;anima
 .field{margin-bottom:12px;}
 .field:last-child{margin-bottom:0;}
 .field-label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-family:var(--mono);}
-input[type=text],input[type=number],select,textarea{
+input[type=text],input[type=search],input[type=number],select,textarea{
   width:100%;background:var(--panel-2);color:var(--text);
   border:1px solid var(--border-2);border-radius:8px;
   padding:10px 11px;font-size:15px;font-family:var(--sans);
@@ -1067,7 +1067,7 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
   .m-tab svg{width:20px;height:20px;}
   .m-tab.active{color:#fff;background:#0e1420;border-color:var(--border-2);box-shadow:var(--blue-glow);}
   .m-tab.active svg{color:var(--blue-text);}
-  .m-badge{display:inline-block;min-width:17px;padding:0 5px;border-radius:9px;background:var(--blue);color:#04070d;font-size:11px;font-weight:800;line-height:17px;vertical-align:middle;}
+  .m-badge{display:inline-block;min-width:17px;padding:0 5px;border-radius:9px;background:#3a7bff;color:#04070d;font-size:11px;font-weight:800;line-height:17px;vertical-align:middle;}
   .m-tab[data-view="playlist"] .m-badge{background:var(--red);color:#fff;}
   .m-tab .m-badge:empty{display:none;}
 
@@ -1209,6 +1209,138 @@ body.sd-lock{overflow:hidden}
 .sv-err{border:1px solid #4a1b26;border-radius:var(--r);background:#14080b;padding:18px 20px;color:#ffb3bf}
 @media(max-width:760px){.sd-head{gap:4px;padding:10px 12px}.sd-head h2{font-size:12px;letter-spacing:1.5px}.sd-link{font-size:12px;padding:6px}.sd-body{padding:12px}.sv-ranks{grid-template-columns:1fr}.sv-rk{border-right:0;border-bottom:1px solid var(--border)}.sv-two{grid-template-columns:1fr}.sv-row{grid-template-columns:44px minmax(0,1fr);gap:12px}.sv-row .sv-acc{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sv-row .sv-acc b{display:inline}.sv-row .ghost{grid-column:1/-1}}
 body.sd-lock .toast.show{z-index:950}
+
+/* ============ Layout v2: counts in headers, tabbed panels, compact rows, side by side ============ */
+.song-row.bk .bk-more{display:grid;color:var(--muted);}
+.song-row.bk .bk-more svg{width:15px;height:15px;}
+.song-row.bk .bk-more.on{border-color:var(--blue);color:#fff;}
+.bk-ph{padding:8px 12px 6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.bk-mx{margin-left:auto;padding-left:12px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.bk-menu{max-height:min(70vh,520px);overflow-y:auto;}
+.summary-panel{display:none !important;}   /* its numbers now sit in the Results and Your Playlist headers */
+.work-area,.pl-side{display:flex;flex-direction:column;gap:16px;min-width:0;}
+@media(max-width:720px){.work-area,.pl-side{gap:12px;}}
+/* Wide screens: results and your playlist side by side, so every add visibly lands (below this the columns get too narrow and rows wrap) */
+@media(min-width:1800px){
+  .layout{max-width:2200px;}
+  .work-area{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;}
+}
+/* Lists use the window height instead of a fixed 360 px box */
+@media(min-width:721px){
+  .song-list,.playlist-panel .song-list{max-height:max(380px,calc(100vh - 210px));}
+}
+.res-meta{padding:8px 14px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.5;background:#0a0e15;}
+.res-meta[hidden]{display:none;}
+#profilePanel.connected > .panel-sub{display:none;}
+.pl-meta{padding:8px 14px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.5;background:#0a0e15;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;}
+.pl-meta[hidden]{display:none;}
+.pl-meta b{color:var(--text);font-weight:600;}
+.pl-meta .pm-where{display:inline-flex;flex-wrap:wrap;gap:6px;}
+.pm-tag{font:600 12px/1 var(--mono);padding:4px 8px;border-radius:6px;border:1px solid var(--border-2);color:#cfe0f5;background:#0c1626;white-space:nowrap;}
+.pm-tag.q{border-color:#1c5c37;color:#9fe6bd;background:rgba(61,220,132,.08);}
+.pl-filter{flex:1 1 160px;min-width:140px;max-width:260px;margin-left:auto;padding:6px 10px;font-size:14px;}
+.pl-filter[hidden]{display:none;}
+.song-row.flt-hide{display:none !important;}
+.pl-selbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #23406b;background:#081426;font-size:14px;color:#cfe0f5;}
+.pl-selbar[hidden]{display:none;}
+.pl-selbar b{color:#fff;}
+.song-row.bk.sel{border-color:var(--blue);background:linear-gradient(90deg,rgba(47,140,255,.14),rgba(47,140,255,.04));}
+/* Compact rows: name and mapper on one line, badges under it */
+.dens-btn{margin-left:8px;width:30px;height:28px;padding:0;display:inline-grid;place-items:center;flex:none;}
+.dens-btn svg{width:16px;height:16px;margin:0;}
+.dens-btn[aria-pressed="true"]{border-color:var(--blue);color:#fff;background:rgba(47,140,255,.14);}
+@media(max-width:720px){.dens-btn{display:none;}}
+@media(min-width:721px){
+  body.dense .song-list{gap:4px;}
+  body.dense .song-row{grid-template-columns:34px minmax(0,1fr) auto;gap:10px;padding:5px 9px;}
+  body.dense .song-row.bk{grid-template-columns:14px 24px 34px minmax(0,1fr) auto;gap:9px;}
+  body.dense .song-cover,body.dense .song-row.bk .song-cover{width:34px;height:34px;border-radius:6px;font-size:15px;}
+  body.dense .song-info{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:9px;}
+  body.dense .song-name{font-size:15px;max-width:100%;}
+  body.dense .song-mapper{font-size:13px;margin-top:0;min-width:0;flex:0 1 auto;}
+  body.dense .rbadges{flex-basis:100%;margin-top:3px;gap:4px;}
+  body.dense .rb{padding:1px 6px;}
+  body.dense .song-row.bk .row-link{display:none;}   /* "Open on BeatLeader" is in the row's ... menu */
+}
+/* Same song already in the playlist at another difficulty */
+.newbie-hint{margin:8px 14px 0;padding:6px 8px 6px 12px;font-size:13.5px;}
+.newbie-hint .ghost.sm{padding:5px 10px;}
+.rb.rb-other{color:#ffd28a;border-color:rgba(255,194,61,.45);background:rgba(255,194,61,.08);}
+/* For You: once there are results it shrinks to a row of chips */
+.foryou-panel.fy-compact > .panel-body{padding:10px 14px;}
+.foryou-panel.fy-compact .fy-grid:not([hidden]){display:flex;flex-wrap:wrap;gap:8px;}
+.foryou-panel.fy-compact .fy-btn{padding:8px 13px;flex:none;}
+.foryou-panel.fy-compact .fy-btn span{display:none;}
+.foryou-panel.fy-compact > .panel-body{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.foryou-panel.fy-compact .fy-cta{flex:1 1 100%;flex-wrap:nowrap;gap:12px;}
+.foryou-panel.fy-compact .fy-cta p{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.foryou-panel.fy-compact .fy-cta .primary{padding:8px 13px;}
+.foryou-panel.fy-compact .fy-tools{order:3;flex-basis:100%;}
+.fy-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;align-items:start;}
+.fy-tools[hidden]{display:none;}
+@media(max-width:1180px){.fy-tools{grid-template-columns:1fr;}}
+.fy-sub{border-color:var(--border-2);}
+.fy-sub > .panel-head{padding:10px 14px;}
+.foryou-panel.fy-compact .fy-tools{margin-top:10px;}
+/* Your plays: Last played and accuracy behind "More" */
+.play-more .pm-n:not(:empty){display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:#3a7bff;color:#04070d;font-size:11px;font-weight:800;line-height:18px;text-align:center;}
+.play-more[aria-expanded="true"]{border-color:var(--blue);color:#fff;}
+.play-more-row{flex-basis:100%;display:grid;grid-template-columns:repeat(2,minmax(0,260px));gap:10px;margin-top:4px;}
+.play-more-row[hidden],.play-bar:not(.connected) .play-more,.play-bar:not(.connected) .play-more-row{display:none !important;}
+.play-more-row .field{margin:0;}
+/* Tabbed panels (Save and send, playlist tools): the sections inside keep their own content */
+.tg-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);background:#0a0e15;}
+.tabgroup.tg-closable:not(.tg-open) .tg-tabs{border-bottom:0;}
+.tg-lbl{font:600 12.5px/1 var(--mono);letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-right:6px;}
+.tg-tab{font-size:14px;font-weight:600;padding:7px 13px;border-radius:8px;background:transparent;border:1px solid var(--border-2);color:var(--text);}
+.tg-tab.on{background:rgba(47,140,255,.16);border-color:var(--blue);color:#fff;box-shadow:0 0 10px rgba(47,140,255,.2);}
+.tg-tab[hidden]{display:none;}
+.tg-pane{display:none;border:0;border-radius:0;background:none;box-shadow:none;margin:0;}
+.tg-pane.tg-on{display:block;}
+.tg-pane[hidden]{display:none !important;}
+.tg-pane > .panel-head{background:none;border-bottom:0;padding:10px 16px 0;cursor:default;}
+.tg-pane > .panel-head h2,.tg-pane > .panel-head > .ph-ic,.tg-pane > .panel-head .panel-caret{display:none;}
+.tg-pane > .panel-head:not(:has(input,label,.lq-hs:not([hidden]),.count:not(:empty))){display:none;}
+.tg-pane > .panel-head .count{margin-right:auto;}
+#sendPanel > .tg-head .count{font-size:13px;color:var(--muted);}
+@media(max-width:720px){
+  .tg-tabs{padding:10px 12px;}
+  .tg-tab{padding:7px 11px;}
+}
+/* Phones: the views follow the new grouping */
+@media(max-width:720px){
+  body.m-view-results .pl-side{display:none;}
+  body.m-view-results #panelQuickAdd{display:none;}
+  body.m-view-playlist .work-area > .list-panel{display:none;}
+  .foryou-panel.fy-compact .fy-grid:not([hidden]){flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
+  .foryou-panel.fy-compact .fy-grid::-webkit-scrollbar{display:none;}
+  /* toolbars scroll sideways instead of wrapping into several rows */
+  .list-actions{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
+  .list-actions::-webkit-scrollbar{display:none;}
+  .list-actions > *{flex:none;}
+  .pl-filter{flex:0 0 170px;max-width:none;order:-1;margin-left:0;}
+  .foryou-panel.fy-compact .fy-grid{flex:1 1 100%;min-width:0;}
+  .foryou-panel.fy-compact .fy-cta p{display:none;}
+  .foryou-panel.fy-compact .fy-cta .primary{flex:1 1 auto;}
+  .play-more-row{grid-template-columns:1fr;}
+}
+/* One Search button (the big one with the filters) and one row of top-bar buttons on phones */
+#fetchBtn{display:none !important;}
+@media(max-width:720px){
+  .topbar{flex-wrap:nowrap;gap:8px;}
+  .topbar .status-pill{display:none;}
+  .topbar-actions{flex-wrap:nowrap;gap:6px;margin-left:auto;}
+  .topbar-actions #resetBtn,.topbar-actions #downloadBtn,.topbar-actions .anim-toggle{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;font-size:0;gap:0;}
+  .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg,.topbar-actions .anim-toggle svg{width:20px;height:20px;margin:0;}
+  .tb-ss:not([hidden]){margin-left:auto;}
+  .tb-ss:not([hidden]) + .spacer + .topbar-actions{margin-left:0;}
+}
+@media(max-width:360px){.brand h1{font-size:15px;}}
+/* Toasts sit in the corner on desktop instead of over the middle of the lists */
+@media(min-width:721px){
+  .toast{left:auto;right:24px;transform:translateY(140%);max-width:440px;}
+  .toast.show{transform:translateY(0);}
+}
 </style>
 <style>
 /* Ko-fi support button (shared across MSploit tools) */
@@ -1519,7 +1651,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <p class="muted hint-line" id="topHint">Loads your highest-PP plays into the results, then hit <b>Add all</b> to build the playlist.</p>
           </div>
           <div class="divider"></div>
-          <p class="muted hint-line ps-hint">Filter by play status with the <b>Your plays</b> chips above the results.</p>
           <div class="field" id="playStatusField" hidden><label class="field-label">Your play status <span class="info" data-tip="Filter results by your BeatLeader history. Near-miss FC = you've played it, didn't full-combo, but were close (few misses and a high would-be FC accuracy).">i</span></label>
             <select id="playStatus">
               <option value="any" selected>Any</option>
@@ -1530,33 +1661,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="nearfc">Near-miss FC</option>
               <option value="nf">No Fail runs</option>
             </select></div>
-          <div class="field"><label class="field-label">Last played <span class="info" data-tip="Filter by how recently you played each map, using your synced scores. 'Played within' keeps maps you've played inside that window; 'Not played in over' finds ones you haven't touched in a while, handy for rebuilding a set to revisit. Only affects maps you've played.">i</span></label>
-            <select id="playRecency">
-              <option value="any" selected>Any time</option>
-              <optgroup label="Played within">
-                <option value="1w">Within 1 week</option>
-                <option value="1m">Within 1 month</option>
-                <option value="3m">Within 3 months</option>
-                <option value="6m">Within 6 months</option>
-                <option value="1y">Within 1 year</option>
-              </optgroup>
-              <optgroup label="Not played in over">
-                <option value="o3m">Over 3 months ago</option>
-                <option value="o6m">Over 6 months ago</option>
-                <option value="o1y">Over 1 year ago</option>
-                <option value="o2y">Over 2 years ago</option>
-              </optgroup>
-            </select></div>
-          <div class="field"><label class="field-label">Only my acc below <small class="muted">(%, played maps)</small></label>
-            <input type="number" id="accMax" min="0" max="100" step="0.5" placeholder="e.g. 90" /></div>
-          <label class="field-label" style="margin-top:2px">Quick lists</label>
-          <div class="quick-lists" id="quickLists">
-            <button class="ghost sm" type="button" data-quick="unplayed">Unplayed</button>
-            <button class="ghost sm" type="button" data-quick="nearfc">Near-miss FC</button>
-            <button class="ghost sm" type="button" data-quick="sub90">Sub-90%</button>
-            <button class="ghost sm" type="button" data-quick="nf" title="Maps you failed with No Fail on and haven't passed since">No Fail runs</button>
-            <button class="ghost sm" type="button" data-quick="clear">Clear</button>
-          </div>
         </div>
       </div>
     </section>
@@ -1602,7 +1706,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 
     <!-- Song Metrics -->
     <section class="panel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Song Metrics</h2></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Length, NPS &amp; BPM</h2></div>
       <div class="panel-sub">Optional numeric bounds. Blank = no limit. All applied instantly on the scanned set - no re-fetch needed.</div>
       <div class="panel-body">
         <div class="metric-row">
@@ -1682,7 +1786,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 
     <!-- Data Source -->
     <section class="panel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Search Scope &amp; Sort</h2></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Ranked Status &amp; Sort</h2></div>
       <div class="panel-sub"><span class="bl-only">Which slice of BeatLeader to search and how to order it.</span><span class="bs-only">How to order the BeatSaver catalog.</span> <b>Sort by</b> only re-orders results - it never changes which maps match.</div>
       <div class="panel-body">
         <div class="grid-2">
@@ -1787,37 +1891,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </section>
 
     <!-- Advanced: PP tools (below the core filters) -->
-    <div class="col-divider bl-only"><span>Ranked tools</span><small>pp, rank goals and AccSaber, for BeatLeader ranked play</small></div>
-    <section class="panel bl-only" id="recPanel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>PP Optimizer</h2><span class="count" id="recState"></span></div>
-      <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
-        <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
-        <div class="rec-empty" id="recEmpty"><b>Your PP targets show up here.</b><br>Connect your BeatLeader profile, then hit <b>Find PP gains</b>. Studio charts your accuracy curve and lists the unplayed ranked maps that add the most pp.</div>
-        <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:none;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
-        <div id="recFit" class="rec-fit"></div>
-        <div style="margin-top:12px;"><button type="button" class="primary" id="recRun">Find PP gains</button></div>
-      </div>
-    </section>
+    <div class="col-divider bl-only"><span>Ranked tools</span><small>AccSaber pools and a pp range, for BeatLeader ranked play (pp gains and rank-up plans are in For You)</small></div>
 
     <!-- Rank-Up Planner -->
-    <section class="panel bl-only" id="plannerPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Rank-Up Planner</h2></div>
-      <div class="panel-sub">Set a goal and get the fewest ranked maps that reach it, with a projected new PP and rank. Needs your BeatLeader profile connected. Projections reuse the PP Optimizer's accuracy model.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Goal</label>
-          <div class="feat-chips" id="plannerModeChips"><span class="feat-chip on" data-pl-mode="add">+ PP</span><span class="feat-chip" data-pl-mode="total">Goal PP</span></div>
-        </div>
-        <div class="field"><label class="field-label" id="plannerGoalLabel">PP to gain</label>
-          <input type="number" id="plannerGoal" min="1" step="10" placeholder="e.g. 500" /></div>
-        <div class="field"><label class="field-label">Accuracy <span class="info" data-tip="Predicted uses the same star-vs-accuracy fit as the PP Optimizer. Or pin a fixed target accuracy for every map.">i</span></label>
-          <div class="feat-chips" id="plannerAccChips"><span class="feat-chip on" data-pl-acc="pred">Predicted</span><span class="feat-chip" data-pl-acc="94">94%</span><span class="feat-chip" data-pl-acc="96">96%</span><span class="feat-chip" data-pl-acc="98">98%</span></div>
-        </div>
-        <div id="plannerBody"></div>
-        <div style="margin-top:12px;"><button type="button" class="primary" id="plannerRunBtn" style="width:100%;">&#9678; Plan my rank-up</button></div>
-      </div>
-    </section>
 
 
     <!-- AccSaber Pools -->
@@ -1836,7 +1912,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </section>
 
     <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Filter</h2><span class="count" id="ppFilterState"></span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Range</h2><span class="count" id="ppFilterState"></span></div>
       <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge (shown once your profile is connected or this panel is open) on every row and the <b>PP</b> sort.</div>
       <div class="panel-body">
         <div class="grid-2">
@@ -1895,6 +1971,37 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <button type="button" class="fy-btn" data-fy="revisit"><b>Revisit</b><span>Maps you haven't played in over 6 months</span></button>
           <button type="button" class="fy-btn" data-fy="nofail"><b>No Fail retries</b><span>Maps you failed with No Fail on and haven't passed since</span></button>
         </div>
+        <!-- The pp gains chart and the rank-up planner live with the For You starts that use them -->
+        <div class="fy-tools" id="fyTools" hidden>
+        <section class="panel bl-only fy-sub" id="recPanel" data-collapsible data-collapsed>
+          <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><h2>Top PP Gains</h2><span class="count" id="recState"></span></div>
+          <div class="panel-sub">Ranked maps you haven't played, ranked by the weighted PP they would add. Predicted from how your accuracy scales with stars, priced through the same PP curve as the rest of the app. Connect your profile, set the band in <b>Star Rating</b>, then hit <b>Find PP gains</b>.</div>
+          <div class="panel-body">
+            <div class="field"><label class="field-label">Show top <span class="info" data-tip="How many of the highest-gain maps to list.">i</span></label><input type="number" id="recTopN" value="25" min="5" max="100"></div>
+            <span class="rec-band-note">Star band comes from the Star Rating panel. Leave it at the default and the optimizer auto-centers on your comfort-to-stretch zone.</span>
+            <div class="rec-empty" id="recEmpty"><b>Your PP targets show up here.</b><br>Connect your BeatLeader profile, then hit <b>Find PP gains</b>. Studio charts your accuracy curve and lists the unplayed ranked maps that add the most pp.</div>
+            <canvas id="recChart" width="900" height="360" style="width:100%;height:200px;display:none;background:#08080a;border:1px solid var(--line,#20202a);border-radius:10px;margin-top:10px;"></canvas>
+            <div id="recFit" class="rec-fit"></div>
+            <div style="margin-top:12px;"><button type="button" class="primary" id="recRun">Find PP gains</button></div>
+          </div>
+        </section>
+        <section class="panel bl-only fy-sub" id="plannerPanel" data-collapsible data-collapsed>
+          <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Rank-Up Planner</h2></div>
+          <div class="panel-sub">Set a goal and get the fewest ranked maps that reach it, with a projected new PP and rank. Needs your BeatLeader profile connected. Projections reuse the accuracy model behind Top PP Gains.</div>
+          <div class="panel-body">
+            <div class="field"><label class="field-label">Goal</label>
+              <div class="feat-chips" id="plannerModeChips"><span class="feat-chip on" data-pl-mode="add">+ PP</span><span class="feat-chip" data-pl-mode="total">Goal PP</span></div>
+            </div>
+            <div class="field"><label class="field-label" id="plannerGoalLabel">PP to gain</label>
+              <input type="number" id="plannerGoal" min="1" step="10" placeholder="e.g. 500" /></div>
+            <div class="field"><label class="field-label">Accuracy <span class="info" data-tip="Predicted uses the same star-vs-accuracy fit as Top PP Gains. Or pin a fixed target accuracy for every map.">i</span></label>
+              <div class="feat-chips" id="plannerAccChips"><span class="feat-chip on" data-pl-acc="pred">Predicted</span><span class="feat-chip" data-pl-acc="94">94%</span><span class="feat-chip" data-pl-acc="96">96%</span><span class="feat-chip" data-pl-acc="98">98%</span></div>
+            </div>
+            <div id="plannerBody"></div>
+            <div style="margin-top:12px;"><button type="button" class="primary" id="plannerRunBtn" style="width:100%;">&#9678; Plan my rank-up</button></div>
+          </div>
+        </section>
+        </div>
       </div>
     </section>
 
@@ -1911,383 +2018,429 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
-    <!-- Results -->
-    <section class="panel list-panel">
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count" id="resultCount"></span></div>
-      <div class="clan-bar" id="clanBar" hidden></div>
-      <div class="list-actions" id="resultActions" hidden>
-        <button class="ghost sm" id="addAllBtn" disabled>+ Add all</button>
-        <div class="addtop">
-          <button class="ghost sm" id="addTopBtn" disabled>+ Add top</button>
-          <input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" />
+    <!-- Results and Your Playlist: stacked, or side by side on wide screens -->
+    <div class="work-area">
+      <!-- Results -->
+      <section class="panel list-panel">
+        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count" id="resultCount"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
+        <div class="res-meta" id="resMeta" hidden></div>
+        <div class="clan-bar" id="clanBar" hidden></div>
+        <div class="list-actions" id="resultActions" hidden>
+          <button class="ghost sm" id="addAllBtn" disabled>+ Add all</button>
+          <div class="addtop">
+            <button class="ghost sm" id="addTopBtn" disabled>+ Add top</button>
+            <input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" />
+          </div>
+          <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
+          <div class="addtop"><button class="ghost sm" id="fillRuntimeBtn" disabled title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">⏱ Fill to</button><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" /><span class="addtop-unit">min</span></div>
+          <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear results</button>
+          <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its maps from these results - great for building a 'new stuff only' set.">⊘ Skip maps from a playlist file</button>
+          <input type="file" id="hideFromFile" accept=".bplist,application/json" hidden />
+          <span class="hidefrom-info" id="hideFromInfo" hidden title="Click to stop hiding these maps"></span>
+          <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>One row per song</span></label>
+          <label class="mini-switch" title="Hide maps that are already in Your Playlist so you only see what you haven't added yet."><input type="checkbox" id="hideInPlaylist" /><span>Hide added</span></label>
         </div>
-        <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
-        <div class="addtop"><button class="ghost sm" id="fillRuntimeBtn" disabled title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">⏱ Fill to</button><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" /><span class="addtop-unit">min</span></div>
-        <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear results</button>
-        <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its maps from these results - great for building a 'new stuff only' set.">⊘ Skip maps from a playlist file</button>
-        <input type="file" id="hideFromFile" accept=".bplist,application/json" hidden />
-        <span class="hidefrom-info" id="hideFromInfo" hidden title="Click to stop hiding these maps"></span>
-        <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>One row per song</span></label>
-        <label class="mini-switch" title="Hide maps that are already in Your Playlist so you only see what you haven't added yet."><input type="checkbox" id="hideInPlaylist" /><span>Hide added</span></label>
-      </div>
-      <div class="play-bar" id="playFilterBar">
-        <span class="play-bar-lbl">Your plays</span>
-        <div class="play-chips" id="playChips">
-          <button type="button" class="play-chip active" data-ps="any">All</button>
-          <button type="button" class="play-chip" data-ps="unplayed" title="Only maps you haven't played yet">Unplayed</button>
-          <button type="button" class="play-chip" data-ps="played" title="Only maps you've played">Played</button>
-          <button type="button" class="play-chip" data-ps="fc" title="Only maps you've full-combo'd">FC'd</button>
-          <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
-          <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
-          <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
-        </div>
-        <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
-      </div>
-      <div class="sort-bar" id="sortBar" hidden>
-        <span class="sort-bar-lbl">Sort</span>
-        <select id="sortInline" title="Reorder the list below (same as the Search Scope &amp; Sort panel)">
-          <option value="myDate">Date I played</option>
-          <option value="stars">Stars</option>
-          <option value="nps">NPS</option>
-          <option value="njs">NJS</option>
-          <option value="duration">Duration</option>
-          <option value="bpm">BPM</option>
-          <option value="myAcc">My accuracy</option>
-          <option value="myRank">My rank</option>
-          <option value="techRating">Tech</option>
-          <option value="accRating">Acc</option>
-          <option value="passRating">Pass</option>
-          <option value="pp">PP @ target acc</option>
-          <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
-          <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
-        </select>
-        <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
-        <span class="sort-bar-sep"></span>
-        <span class="sort-bar-lbl">Show</span>
-        <select id="rankInline" title="Filter by ranked status - ranked means the map has a BeatLeader star rating">
-          <option value="all">All maps</option>
-          <option value="ranked">Ranked only</option>
-          <option value="unranked">Unranked only</option>
-        </select>
-      </div>
-      <div class="newbie-hint" id="newbieHint" hidden><span class="nh-txt"><b>New to custom maps?</b> These start at 4★, easiest first. Most new players are happier starting lower.</span><button type="button" class="ghost sm" id="newbieEasier">Start easier: 0-4★</button><button type="button" class="newbie-x" id="newbieX" aria-label="Hide this tip" title="Hide this tip">×</button></div>
-      <div class="panel-body list-body">
-        <div class="song-list" id="resultList">
-          <div class="empty">
-            <div class="empty-ic">◇</div>
-            <p><b>No results yet.</b></p>
-            <p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b> below.</p>
-            <p class="empty-alt">New here? <button type="button" class="link-btn" data-open-gallery>Start from a ready-made playlist</button></p>
+        <div class="play-bar" id="playFilterBar">
+          <span class="play-bar-lbl">Your plays</span>
+          <div class="play-chips" id="playChips">
+            <button type="button" class="play-chip active" data-ps="any">All</button>
+            <button type="button" class="play-chip" data-ps="unplayed" title="Only maps you haven't played yet">Unplayed</button>
+            <button type="button" class="play-chip" data-ps="played" title="Only maps you've played">Played</button>
+            <button type="button" class="play-chip" data-ps="fc" title="Only maps you've full-combo'd">FC'd</button>
+            <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
+            <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
+            <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
+            <button type="button" class="play-chip play-more" id="playMoreBtn" aria-expanded="false" aria-controls="playMoreRow" title="Last played and accuracy filters">More <span class="pm-n" id="playMoreN"></span></button>
+          </div>
+          <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
+          <div class="play-more-row" id="playMoreRow" hidden>
+              <div class="field"><label class="field-label">Last played <span class="info" data-tip="Filter by how recently you played each map, using your synced scores. 'Played within' keeps maps you've played inside that window; 'Not played in over' finds ones you haven't touched in a while, handy for rebuilding a set to revisit. Only affects maps you've played.">i</span></label>
+                <select id="playRecency">
+                  <option value="any" selected>Any time</option>
+                  <optgroup label="Played within">
+                    <option value="1w">Within 1 week</option>
+                    <option value="1m">Within 1 month</option>
+                    <option value="3m">Within 3 months</option>
+                    <option value="6m">Within 6 months</option>
+                    <option value="1y">Within 1 year</option>
+                  </optgroup>
+                  <optgroup label="Not played in over">
+                    <option value="o3m">Over 3 months ago</option>
+                    <option value="o6m">Over 6 months ago</option>
+                    <option value="o1y">Over 1 year ago</option>
+                    <option value="o2y">Over 2 years ago</option>
+                  </optgroup>
+                </select></div>
+              <div class="field"><label class="field-label">Only my acc below <small class="muted">(%, played maps)</small></label>
+                <input type="number" id="accMax" min="0" max="100" step="0.5" placeholder="e.g. 90" /></div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Your Playlist -->
-    <section class="panel list-panel playlist-panel">
-      <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span></div>
-      <div class="list-actions">
-        <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
-        <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
-        <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
-        <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader - catches rating recalcs">★ Re-check</button>
-        <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
-        <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
-        <button class="ghost sm" id="undoBtn" type="button" hidden>↶ Undo</button>
-        <button class="ghost sm" id="redoBtn" type="button" hidden>↷ Redo</button>
-      </div>
-      <div class="lq-editbar" id="lqEditBar" hidden></div>
-      <div class="panel-body list-body">
-        <div class="song-list basket" id="basketList">
-          <div class="empty">
-            <div class="empty-ic">♪</div>
-            <p><b>Your playlist is empty.</b></p>
-            <p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Playlist Stats -->
-    <section class="panel" id="statsPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><h2>Playlist Stats</h2></div>
-      <div class="panel-sub">A quick read on the shape of your current playlist: star spread, pacing and balance.</div>
-      <div class="panel-body">
-        <div id="statsBody"><p class="feat-empty">Add maps to see your playlist stats.</p></div>
-      </div>
-    </section>
-
-    <!-- Playlist Library -->
-    <section class="panel" id="libraryPanel" data-collapsible data-new-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><h2>Playlist Library</h2></div>
-      <div class="panel-sub">Save your whole playlist to reload later, or import an existing <code>.bplist</code> to edit it. Saved in this browser.</div>
-      <div class="panel-body">
-        <div class="preset-row">
-          <input type="text" id="playlistName" placeholder="Save current playlist as…" />
-          <button class="ghost sm" id="savePlaylistBtn">Save playlist</button>
-        </div>
-        <div class="preset-row">
-          <select id="savedPlaylists" aria-label="Saved playlists"><option value="">- saved playlists -</option></select>
-          <button class="ghost sm" id="loadPlaylistBtn">Load</button>
-          <button class="ghost sm danger" id="deletePlaylistBtn">Delete</button>
-        </div>
-        <div class="preset-row import-row">
-          <label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label>
-          <input type="file" id="importBplist" accept=".bplist,application/json" multiple hidden />
-          <span class="muted import-hint">Merges its maps into your current playlist</span>
-        </div>
-        <div class="preset-row import-row">
-          <button class="ghost sm" id="combineBtn" type="button" title="Merge several .bplist files or saved playlists into one, duplicates removed">&#10697; Combine playlists</button>
-          <span class="muted import-hint">Several into one, duplicates removed</span>
-        </div>
-        <div class="preset-row"><button class="ghost sm" id="galleryBtn" type="button">&#9638; Browse the gallery</button><span class="muted import-hint">Ready-made playlists you can load in one click</span></div>
-        <div class="preset-row lib-backup">
-          <button class="ghost sm" id="libBackupBtn" type="button" title="Download every saved playlist, filter preset and saved icon as one file">&#8615; Back up library</button>
-          <label class="filebtn" for="libRestoreFile" title="Restore a library backup file. Nothing you have now is overwritten.">&#8613; Restore backup</label>
-          <input type="file" id="libRestoreFile" accept=".json,application/json" hidden />
-        </div>
-        <p class="muted lib-note">Your library lives in this browser only. Back it up before clearing site data or moving to another computer.</p>
-      </div>
-    </section>
-
-    <!-- Share by link -->
-    <section class="panel" id="sharePanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share Playlist</h2></div>
-      <div class="panel-sub">Pack this playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools and sending a set to a friend.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Your share link</label>
-          <input type="text" id="shareLink" readonly placeholder="Add maps to build a share link" /></div>
-        <div class="preset-row"><button class="ghost sm" id="shareCopyBtn" disabled>&#8690; Copy link</button><span class="muted" id="shareInfo" style="font-family:var(--mono);font-size:11px;"></span></div>
-        <div class="feat-lbl" style="margin-top:14px;">Import a shared playlist</div>
-        <div class="preset-row"><input type="text" id="shareImportInput" placeholder="Paste a share link or code…" /><button class="ghost sm" id="shareImportBtn">Import</button></div>
-      </div>
-    </section>
-
-    <!-- Refine Playlist -->
-    <section class="panel" id="panelRefine" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
-      <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty - handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
-      <div class="panel-body">
-        <div class="refine-quick" id="refineQuick">
-          <button class="ghost sm" data-refine="remove" data-crit="played" type="button">Remove played</button>
-          <button class="ghost sm" data-refine="remove" data-crit="fc" type="button">Remove FC'd</button>
-          <button class="ghost sm" data-refine="keep" data-crit="unplayed" type="button">Keep unplayed</button>
-          <button class="ghost sm" data-refine="keep" data-crit="nearfc" type="button">Keep near-FC</button>
-        </div>
-        <div class="field"><label class="field-label">Criteria <span class="info" data-tip="Pick a set of maps in your playlist, then Remove them or Keep only them. Near-miss FC = played, no full-combo, ≤3 misses and a would-be FC accuracy ≥90%. Star tools use each map's BeatLeader rating - run ↻ Fill data first if imported maps show no stars.">i</span></label>
-          <select id="refineCrit">
-            <optgroup label="My play history">
-              <option value="played">Maps I've played</option>
-              <option value="unplayed">Maps I haven't played</option>
-              <option value="fc">Maps I've FC'd</option>
-              <option value="nofc">Played, not FC'd</option>
-              <option value="nearfc">Near-miss FC</option>
-              <option value="accAbove">My accuracy ≥ …%</option>
-              <option value="accBelow">My accuracy &lt; …%</option>
-              <option value="stale">Not played in over a year</option>
-            </optgroup>
-            <optgroup label="Difficulty">
-              <option value="starRange">Star rating in range</option>
-            </optgroup>
+        <div class="sort-bar" id="sortBar" hidden>
+          <span class="sort-bar-lbl">Sort</span>
+          <select id="sortInline" title="Reorder the list below (same as the Ranked Status &amp; Sort panel)">
+            <option value="myDate">Date I played</option>
+            <option value="stars">Stars</option>
+            <option value="nps">NPS</option>
+            <option value="njs">NJS</option>
+            <option value="duration">Duration</option>
+            <option value="bpm">BPM</option>
+            <option value="myAcc">My accuracy</option>
+            <option value="myRank">My rank</option>
+            <option value="techRating">Tech</option>
+            <option value="accRating">Acc</option>
+            <option value="passRating">Pass</option>
+            <option value="pp">PP @ target acc</option>
+            <option value="improve">Improvement potential</option><option value="complexity">AccSaber complexity</option>
+            <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
+          </select>
+          <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
+          <span class="sort-bar-sep"></span>
+          <span class="sort-bar-lbl">Show</span>
+          <select id="rankInline" title="Filter by ranked status - ranked means the map has a BeatLeader star rating">
+            <option value="all">All maps</option>
+            <option value="ranked">Ranked only</option>
+            <option value="unranked">Unranked only</option>
           </select>
         </div>
-        <div class="field" id="refineAccWrap" hidden><label class="field-label">Accuracy %</label>
-          <input type="number" id="refineAcc" min="0" max="100" step="0.5" value="95" /></div>
-        <div class="row" id="refineStarWrap" hidden>
-          <div class="field"><label class="field-label">Min ★</label><input type="number" id="refineStarMin" min="0" max="15" step="0.1" value="0" /></div>
-          <div class="field"><label class="field-label">Max ★</label><input type="number" id="refineStarMax" min="0" max="15" step="0.1" value="15" /></div>
-        </div>
-        <p class="refine-note" id="refinePreview">Your playlist is empty.</p>
-        <div class="refine-actions">
-          <button class="ghost sm danger" id="refineRemoveBtn" type="button" disabled>Remove matching</button>
-          <button class="ghost sm" id="refineKeepBtn" type="button" disabled>Keep only matching</button>
-        </div>
-        <p class="refine-note" id="refineConnectHint" hidden>Connect your BeatLeader profile (in <b>Your scores</b>) to use the play-history tools.</p>
-        <div id="refineUndoWrap" hidden style="margin-top:8px;">
-          <button class="ghost sm" id="refineUndoBtn" type="button">↩ Undo last change</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Session Ramp -->
-    <section class="panel" id="rampPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Session Ramp</h2></div>
-      <div class="panel-sub">Reorder Your Playlist into a smooth difficulty climb, so it plays like a real session instead of a random pile.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Order by</label>
-          <div class="feat-chips" id="rampByChips"><span class="feat-chip on" data-ramp-by="stars">Stars</span><span class="feat-chip" data-ramp-by="nps">NPS</span></div>
-        </div>
-        <div class="field"><label class="field-label">Shape</label>
-          <div class="feat-chips" id="rampDirChips"><span class="feat-chip on" data-ramp-dir="up">Warmup &rarr; Peak</span><span class="feat-chip" data-ramp-dir="down">Peak &rarr; Cooldown</span></div>
-        </div>
-        <div class="feat-lbl">Preview</div>
-        <div id="rampPreview"><p class="feat-empty">Add maps to preview the ramp.</p></div>
-        <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply ramp order</button>
-        <button class="ghost sm" id="rampUndoBtn" type="button" hidden style="width:100%;margin-top:8px;">&#8617; Undo ramp</button>
-      </div>
-    </section>
-
-    <!-- Playlist Info -->
-    <section class="panel" id="infoPanel" data-collapsible data-new-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Playlist Info</h2></div>
-      <div class="panel-sub">Metadata written into the <code>.bplist</code>. The description auto-updates as your playlist changes - type your own to override it, or clear the box to go back to auto.</div>
-      <div class="panel-body">
-        <div class="field"><label class="field-label">Title</label>
-          <input type="text" id="metaTitle" value="Playlist Studio Mix" placeholder="My Grind Set" /></div>
-        <div class="row">
-          <div class="field"><label class="field-label">Author</label>
-            <input type="text" id="metaAuthor" value="Playlist Studio" placeholder="Your name" /></div>
-        </div>
-        <div class="field"><label class="field-label">Description</label>
-          <textarea id="metaDescription" rows="2" placeholder="Auto-updates from your playlist - type to override"></textarea></div>
-      </div>
-    </section>
-
-    <!-- Cover -->
-    <section class="panel" id="coverPanel" data-collapsible data-new-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span><h2>Playlist Cover</h2>
-        <label class="switch head-switch"><input type="checkbox" id="useCustomImage" /><span class="track"></span><span class="switch-lbl">Upload custom</span></label>
-      </div>
-      <div class="panel-sub">A cover is generated from your title and star range automatically. Switch to a custom image any time - either is embedded as Base64 in the export.</div>
-      <div class="panel-body cover-body">
-        <div class="cover-canvas-wrap"><canvas id="coverCanvas" width="512" height="512" aria-label="Playlist cover preview"></canvas></div>
-        <div class="cover-controls">
-          <div class="field"><label class="field-label">Cover style <small class="muted">(click to pick)</small></label>
-            <div class="thumb-grid" id="coverStyleGrid"></div></div>
-          <div class="field"><label class="field-label">Accent</label>
-            <div class="swatch-row" id="coverAccentRow"></div></div>
-          <div class="grid-2">
-            <div class="field"><label class="field-label">Title text</label>
-              <input type="text" id="coverText" placeholder="(playlist title)" /></div>
-            <div class="field"><label class="field-label">Subtitle</label>
-              <input type="text" id="coverSubtitle" placeholder="(auto: ★ · maps)" /></div>
-          </div>
-          <div class="field custom-file" id="customFileField" hidden><label class="field-label">Custom image file</label>
-            <input type="file" id="customImageInput" accept="image/*" />
-            <div class="icon-lib"><label class="field-label">Your saved icons <small class="muted">(click to reuse)</small></label>
-              <div class="icon-lib-grid" id="iconLibraryGrid"></div></div></div>
-          <div class="cover-opts">
-            <label class="field-label">Text <span class="info" data-tip="Where the title/subtitle sit on the cover. Off hides them for a clean art-only cover.">i</span></label>
-            <select id="coverTextPos">
-              <option value="bottom" selected>Bottom</option>
-              <option value="center">Center</option>
-              <option value="off">Off</option>
-            </select>
-            <label class="field-label">Color</label>
-            <select id="coverTextColor">
-              <option value="#ffffff" selected>White</option>
-              <option value="#000000">Black</option>
-              <option value="#ffd54a">Gold</option>
-              <option value="#22e0a1">Green</option>
-              <option value="#2f8cff">Blue</option>
-              <option value="#ff2d55">Red</option>
-            </select>
-            <button class="ghost" id="regenCoverBtn" title="Redraw this style with a fresh random pattern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Shuffle art</button>
+        <div class="newbie-hint" id="newbieHint" hidden><span class="nh-txt"><b>New to custom maps?</b> These start at 4★, easiest first. Most new players are happier starting lower.</span><button type="button" class="ghost sm" id="newbieEasier">Start easier: 0-4★</button><button type="button" class="newbie-x" id="newbieX" aria-label="Hide this tip" title="Hide this tip">×</button></div>
+        <div class="panel-body list-body">
+          <div class="song-list" id="resultList">
+            <div class="empty">
+              <div class="empty-ic">◇</div>
+              <p><b>No results yet.</b></p>
+              <p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b> below.</p>
+              <p class="empty-alt">New here? <button type="button" class="link-btn" data-open-gallery>Start from a ready-made playlist</button></p>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- In-Game Sync -->
-    <section class="panel">
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h2>In-Game Sync</h2>
-        <label class="switch head-switch"><input type="checkbox" id="syncEnable" /><span class="track"></span><span class="switch-lbl">Enable</span></label>
-      </div>
-      <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist. Turn it on, then let Studio host the file or paste your own host's address. With your own host nothing is uploaded - Studio just writes the address you paste.</div>
-      <div class="panel-body" id="syncBody" hidden>
-        <div class="pub-box" id="pubBox" hidden>
-          <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
-          <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update. On Quest, the <a href="#studio-sync" data-ss-open="sync">Studio Sync mod</a> skips that first step.</p>
-          <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
-          <div class="pub-info" id="pubInfo"></div>
-        </div>
-        <div class="pub-or" id="pubOr">or use your own host</div>
-        <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
-          <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
-          <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Export (folds like the others; it opens by default and remembers) -->
-    <section class="panel" id="exportPanel" data-collapsible>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
-      <div class="panel-body">
-        <div class="export-validation" id="exportValidation">
-          <div class="valitem ok"><span class="ico">◇</span><span>Add maps to <b>Your Playlist</b>, then export.</span></div>
-        </div>
-        <div class="export-note"><b>Songs download in game.</b> The file lists the songs, it doesn't contain them. In game, open the playlist and use PlaylistManager's download button to grab the ones you don't have.</div>
-        <div class="plat-tabs" id="platTabs" data-needs-usb role="tablist" aria-label="Where do you play?">
-          <button type="button" data-plat="pc" class="on" role="tab">PC</button>
-          <button type="button" data-plat="quest" role="tab">Quest</button>
-        </div>
-        <div class="plat-pane" id="platPc">
-        <div class="export-row">
-          <button class="primary big" id="downloadBtn2" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .bplist</button>
-          <span class="export-hint" id="exportHint">Your playlist is empty.</span>
-        </div>
-        <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <a href="https://github.com/rithik-b/PlaylistManager" target="_blank" rel="noopener" data-track="playlistmanager-link" class="pm-link">PlaylistManager</a> mod.</p>
-        <p class="panel-sub" data-no-usb>Playing on Quest? The free <a href="#studio-sync" data-ss-open="pcnote">Studio Sync mod</a> sends playlists from here to your headset. Or copy the file to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest, or turn on <b>In-Game Sync</b> so the headset pulls updates itself.</p>
-        </div>
-        <div class="plat-pane" id="platQuest" hidden>
-          <div class="export-row">
-            <button class="primary big" id="questSendBtn" type="button" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>Send to Quest</button>
-            <span class="export-hint" id="questHint">Your playlist is empty.</span>
-            <button type="button" class="ghost sm" id="questCancelBtn" hidden>Cancel</button>
+      </section>
+      <div class="pl-side">
+        <!-- Your Playlist -->
+        <section class="panel list-panel playlist-panel">
+          <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
+          <div class="list-actions">
+            <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
+            <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
+            <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
+            <button class="ghost sm" id="refreshStarsBtn" disabled title="Refresh every map's stars &amp; NPS from BeatLeader - catches rating changes">★ Refresh ratings</button>
+            <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
+            <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
+            <button class="ghost sm" id="undoBtn" type="button" hidden>↶ Undo</button>
+            <button class="ghost sm" id="redoBtn" type="button" hidden>↷ Redo</button>
+            <input type="search" id="plFilter" class="pl-filter" placeholder="Filter this playlist" aria-label="Filter this playlist" autocomplete="off" spellcheck="false" hidden />
           </div>
-          <div class="quest-dest" id="questDestRow" hidden><label for="questDest">Folder</label><input type="text" id="questDest" spellcheck="false" /></div>
-          <div class="quest-log" id="questLog" aria-live="polite"></div>
-          <p class="ss-tip" id="ssTipQuest"><b>Skip the cable:</b> the free <a href="#studio-sync" data-ss-open="export">Studio Sync mod</a> sends playlists from here to your Quest over the internet.</p>
-          <p class="panel-sub" style="margin-top:12px;">Plug your Quest into this computer with a USB cable and use Chrome or Edge. Developer mode needs to be on, which modding already did. Studio finds your PlaylistManager folder on the headset and drops the playlist in. Restart Beat Saber to see a new playlist.</p>
-          <p class="panel-sub"><b>First time:</b> put the headset on after you pick it. It asks <b>Allow USB debugging?</b> for this browser. Tick <b>Always allow from this computer</b> and tap <b>Allow</b>. This is separate from SideQuest or adb on this PC, so it shows up once even if those already work.</p>
-          <p class="panel-sub">No cable handy? <a href="#" id="questDlLink">Download the .bplist</a> and copy it to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest. Turn on <b>In-Game Sync</b> and later updates come down with the in-game Sync button, no cable needed.</p>
-        </div>
+          <div class="pl-meta" id="plMeta" hidden></div>
+          <div class="pl-selbar" id="plSelBar" hidden></div>
+          <div class="lq-editbar" id="lqEditBar" hidden></div>
+          <div class="panel-body list-body">
+            <div class="song-list basket" id="basketList">
+              <div class="empty">
+                <div class="empty-ic">♪</div>
+                <p><b>Your playlist is empty.</b></p>
+                <p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Playlist tools: one tabbed panel instead of five folded ones. The sections keep their ids. -->
+        <section class="panel tabgroup tg-closable" id="plTools" data-tg-store="playlistStudio.tools.v1">
+          <div class="tg-tabs" role="tablist" aria-label="Playlist tools">
+            <span class="tg-lbl">Tools</span>
+            <button type="button" role="tab" class="tg-tab" data-tg="statsPanel">Stats</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="panelRefine">Prune</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="rampPanel">Warm-up order</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="infoPanel">Info</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="coverPanel">Cover</button>
+          </div>
+          <div class="tg-body">
+          <!-- Playlist Stats -->
+          <section class="panel tg-pane" id="statsPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><h2>Playlist Stats</h2></div>
+            <div class="panel-sub">A quick read on the shape of your current playlist: star spread, pacing and balance.</div>
+            <div class="panel-body">
+              <div id="statsBody"><p class="feat-empty">Add maps to see your playlist stats.</p></div>
+            </div>
+          </section>
+            <!-- Refine Playlist -->
+          <section class="panel tg-pane" id="panelRefine">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
+            <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty - handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
+            <div class="panel-body">
+              <div class="refine-quick" id="refineQuick">
+                <button class="ghost sm" data-refine="remove" data-crit="played" type="button">Remove played</button>
+                <button class="ghost sm" data-refine="remove" data-crit="fc" type="button">Remove FC'd</button>
+                <button class="ghost sm" data-refine="keep" data-crit="unplayed" type="button">Keep unplayed</button>
+                <button class="ghost sm" data-refine="keep" data-crit="nearfc" type="button">Keep near-FC</button>
+              </div>
+              <div class="field"><label class="field-label">Criteria <span class="info" data-tip="Pick a set of maps in your playlist, then Remove them or Keep only them. Near-miss FC = played, no full-combo, ≤3 misses and a would-be FC accuracy ≥90%. Star tools use each map's BeatLeader rating - run ↻ Fill data first if imported maps show no stars.">i</span></label>
+                <select id="refineCrit">
+                  <optgroup label="My play history">
+                    <option value="played">Maps I've played</option>
+                    <option value="unplayed">Maps I haven't played</option>
+                    <option value="fc">Maps I've FC'd</option>
+                    <option value="nofc">Played, not FC'd</option>
+                    <option value="nearfc">Near-miss FC</option>
+                    <option value="accAbove">My accuracy ≥ …%</option>
+                    <option value="accBelow">My accuracy &lt; …%</option>
+                    <option value="stale">Not played in over a year</option>
+                  </optgroup>
+                  <optgroup label="Difficulty">
+                    <option value="starRange">Star rating in range</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="field" id="refineAccWrap" hidden><label class="field-label">Accuracy %</label>
+                <input type="number" id="refineAcc" min="0" max="100" step="0.5" value="95" /></div>
+              <div class="row" id="refineStarWrap" hidden>
+                <div class="field"><label class="field-label">Min ★</label><input type="number" id="refineStarMin" min="0" max="15" step="0.1" value="0" /></div>
+                <div class="field"><label class="field-label">Max ★</label><input type="number" id="refineStarMax" min="0" max="15" step="0.1" value="15" /></div>
+              </div>
+              <p class="refine-note" id="refinePreview">Your playlist is empty.</p>
+              <div class="refine-actions">
+                <button class="ghost sm danger" id="refineRemoveBtn" type="button" disabled>Remove matching</button>
+                <button class="ghost sm" id="refineKeepBtn" type="button" disabled>Keep only matching</button>
+              </div>
+              <p class="refine-note" id="refineConnectHint" hidden>Connect your BeatLeader profile (in <b>Your scores</b>) to use the play-history tools.</p>
+              <div id="refineUndoWrap" hidden style="margin-top:8px;">
+                <button class="ghost sm" id="refineUndoBtn" type="button">↩ Undo last change</button>
+              </div>
+            </div>
+          </section>
+            <!-- Session Ramp -->
+          <section class="panel tg-pane" id="rampPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Session Ramp</h2></div>
+            <div class="panel-sub">Reorder Your Playlist into a smooth difficulty climb, so it plays like a real session instead of a random pile.</div>
+            <div class="panel-body">
+              <div class="field"><label class="field-label">Order by</label>
+                <div class="feat-chips" id="rampByChips"><span class="feat-chip on" data-ramp-by="stars">Stars</span><span class="feat-chip" data-ramp-by="nps">NPS</span></div>
+              </div>
+              <div class="field"><label class="field-label">Shape</label>
+                <div class="feat-chips" id="rampDirChips"><span class="feat-chip on" data-ramp-dir="up">Warmup &rarr; Peak</span><span class="feat-chip" data-ramp-dir="down">Peak &rarr; Cooldown</span></div>
+              </div>
+              <div class="feat-lbl">Preview</div>
+              <div id="rampPreview"><p class="feat-empty">Add maps to preview the ramp.</p></div>
+              <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply ramp order</button>
+              <button class="ghost sm" id="rampUndoBtn" type="button" hidden style="width:100%;margin-top:8px;">&#8617; Undo ramp</button>
+            </div>
+          </section>
+            <!-- Playlist Info -->
+          <section class="panel tg-pane" id="infoPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Playlist Info</h2></div>
+            <div class="panel-sub">Metadata written into the <code>.bplist</code>. The description auto-updates as your playlist changes - type your own to override it, or clear the box to go back to auto.</div>
+            <div class="panel-body">
+              <div class="field"><label class="field-label">Title</label>
+                <input type="text" id="metaTitle" value="Playlist Studio Mix" placeholder="My Grind Set" /></div>
+              <div class="row">
+                <div class="field"><label class="field-label">Author</label>
+                  <input type="text" id="metaAuthor" value="Playlist Studio" placeholder="Your name" /></div>
+              </div>
+              <div class="field"><label class="field-label">Description</label>
+                <textarea id="metaDescription" rows="2" placeholder="Auto-updates from your playlist - type to override"></textarea></div>
+            </div>
+          </section>
+            <!-- Cover -->
+          <section class="panel tg-pane" id="coverPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span><h2>Playlist Cover</h2>
+              <label class="switch head-switch"><input type="checkbox" id="useCustomImage" /><span class="track"></span><span class="switch-lbl">Upload custom</span></label>
+            </div>
+            <div class="panel-sub">A cover is generated from your title and star range automatically. Switch to a custom image any time - either is embedded as Base64 in the export.</div>
+            <div class="panel-body cover-body">
+              <div class="cover-canvas-wrap"><canvas id="coverCanvas" width="512" height="512" aria-label="Playlist cover preview"></canvas></div>
+              <div class="cover-controls">
+                <div class="field"><label class="field-label">Cover style <small class="muted">(click to pick)</small></label>
+                  <div class="thumb-grid" id="coverStyleGrid"></div></div>
+                <div class="field"><label class="field-label">Accent</label>
+                  <div class="swatch-row" id="coverAccentRow"></div></div>
+                <div class="grid-2">
+                  <div class="field"><label class="field-label">Title text</label>
+                    <input type="text" id="coverText" placeholder="(playlist title)" /></div>
+                  <div class="field"><label class="field-label">Subtitle</label>
+                    <input type="text" id="coverSubtitle" placeholder="(auto: ★ · maps)" /></div>
+                </div>
+                <div class="field custom-file" id="customFileField" hidden><label class="field-label">Custom image file</label>
+                  <input type="file" id="customImageInput" accept="image/*" />
+                  <div class="icon-lib"><label class="field-label">Your saved icons <small class="muted">(click to reuse)</small></label>
+                    <div class="icon-lib-grid" id="iconLibraryGrid"></div></div></div>
+                <div class="cover-opts">
+                  <label class="field-label">Text <span class="info" data-tip="Where the title/subtitle sit on the cover. Off hides them for a clean art-only cover.">i</span></label>
+                  <select id="coverTextPos">
+                    <option value="bottom" selected>Bottom</option>
+                    <option value="center">Center</option>
+                    <option value="off">Off</option>
+                  </select>
+                  <label class="field-label">Color</label>
+                  <select id="coverTextColor">
+                    <option value="#ffffff" selected>White</option>
+                    <option value="#000000">Black</option>
+                    <option value="#ffd54a">Gold</option>
+                    <option value="#22e0a1">Green</option>
+                    <option value="#2f8cff">Blue</option>
+                    <option value="#ff2d55">Red</option>
+                  </select>
+                  <button class="ghost" id="regenCoverBtn" title="Redraw this style with a fresh random pattern">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Shuffle art</button>
+                </div>
+              </div>
+            </div>
+          </section>
+          </div>
+        </section>
+        <!-- Save and send: every way a playlist leaves Studio, in one tabbed panel. The sections keep their ids. -->
+        <section class="panel tabgroup" id="sendPanel" data-tg-store="playlistStudio.send.v1">
+          <div class="panel-head tg-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Save and send</h2><span class="count" id="sendWhere"></span></div>
+          <div class="tg-tabs" role="tablist" aria-label="Save and send">
+            <button type="button" role="tab" class="tg-tab" data-tg="exportPanel">Download</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="lqPanel" hidden>Quest</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="syncPanel">Sync link</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="sharePanel">Share link</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="libraryPanel">Library</button>
+          </div>
+          <div class="tg-body">
+          <!-- Export (folds like the others; it opens by default and remembers) -->
+          <section class="panel tg-pane" id="exportPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
+            <div class="panel-body">
+              <div class="export-validation" id="exportValidation">
+                <div class="valitem ok"><span class="ico">◇</span><span>Add maps to <b>Your Playlist</b>, then export.</span></div>
+              </div>
+              <div class="export-note"><b>Songs download in game.</b> The file lists the songs, it doesn't contain them. In game, open the playlist and use PlaylistManager's download button to grab the ones you don't have.</div>
+              <div class="plat-tabs" id="platTabs" data-needs-usb role="tablist" aria-label="Where do you play?">
+                <button type="button" data-plat="pc" class="on" role="tab">PC</button>
+                <button type="button" data-plat="quest" role="tab">Quest</button>
+              </div>
+              <div class="plat-pane" id="platPc">
+              <div class="export-row">
+                <button class="primary big" id="downloadBtn2" disabled>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .bplist</button>
+                <span class="export-hint" id="exportHint">Your playlist is empty.</span>
+              </div>
+              <p class="panel-sub" style="margin-top:12px;">Drop the file into your Beat Saber <code>Playlists</code> folder (on PC usually <code>…\Steam\steamapps\common\Beat Saber\Playlists\</code>), then refresh your song list in-game. Needs the <a href="https://github.com/rithik-b/PlaylistManager" target="_blank" rel="noopener" data-track="playlistmanager-link" class="pm-link">PlaylistManager</a> mod.</p>
+              <p class="panel-sub" data-no-usb>Playing on Quest? The free <a href="#studio-sync" data-ss-open="pcnote">Studio Sync mod</a> sends playlists from here to your headset. Or copy the file to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest, or turn on <b>In-Game Sync</b> so the headset pulls updates itself.</p>
+              </div>
+              <div class="plat-pane" id="platQuest" hidden>
+                <div class="export-row">
+                  <button class="primary big" id="questSendBtn" type="button" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>Send to Quest</button>
+                  <span class="export-hint" id="questHint">Your playlist is empty.</span>
+                  <button type="button" class="ghost sm" id="questCancelBtn" hidden>Cancel</button>
+                </div>
+                <div class="quest-dest" id="questDestRow" hidden><label for="questDest">Folder</label><input type="text" id="questDest" spellcheck="false" /></div>
+                <div class="quest-log" id="questLog" aria-live="polite"></div>
+                <p class="ss-tip" id="ssTipQuest"><b>Skip the cable:</b> the free <a href="#studio-sync" data-ss-open="export">Studio Sync mod</a> sends playlists from here to your Quest over the internet.</p>
+                <p class="panel-sub" style="margin-top:12px;">Plug your Quest into this computer with a USB cable and use Chrome or Edge. Developer mode needs to be on, which modding already did. Studio finds your PlaylistManager folder on the headset and drops the playlist in. Restart Beat Saber to see a new playlist.</p>
+                <p class="panel-sub"><b>First time:</b> put the headset on after you pick it. It asks <b>Allow USB debugging?</b> for this browser. Tick <b>Always allow from this computer</b> and tap <b>Allow</b>. This is separate from SideQuest or adb on this PC, so it shows up once even if those already work.</p>
+                <p class="panel-sub">No cable handy? <a href="#" id="questDlLink">Download the .bplist</a> and copy it to <code>ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists</code> on the headset with SideQuest. Turn on <b>In-Game Sync</b> and later updates come down with the in-game Sync button, no cable needed.</p>
+              </div>
+            </div>
+          </section>
+            <!-- Studio Sync (Quest mod). Shown to Quest players and anyone who opens it; see lqShown(). -->
+          <section class="panel tg-pane" id="lqPanel" hidden>
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Studio Sync</h2><span class="lq-hs" id="lqHs" hidden></span><span class="ss-tag">Quest mod</span></div>
+            <div class="panel-sub" id="lqSub">A free mod for Beat Saber on Quest. Playlists you build here go straight onto the headset with no cable or file copying, and you can edit the ones already on it from here.</div>
+            <div class="panel-body">
+              <p class="lq-steps lq-status" id="lqStatus" hidden></p>
+              <div class="lq-link" id="lqLinkBox">
+                <ol class="ss-steps">
+                  <li><b>Install the mod</b>
+                    <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.4.0/StudioSync-1.04.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.4.0 &middot; Beat Saber 1.40.8 &middot; 1.8 MB</a></div>
+                    <p>On a PC or Android phone, open <a href="https://lauriethefish.github.io/ModsBeforeFriday/" target="_blank" rel="noopener" data-gc="mbf-link">ModsBeforeFriday</a> in Chrome or Edge and plug in your Quest. Choose <b>Upload Files</b> and pick the <code>.qmod</code>. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.</p>
+                    <p class="ss-hmd" id="ssHmd" hidden>You're in the headset browser, so do this step from a PC or phone.</p>
+                  </li>
+                  <li><b>Link your headset</b>
+                    <p>In game, open the <b>Mods</b> tab in the panel left of song select, pick <b>Studio Sync</b> and press <b>Link</b>. Type the 6-character code it shows.</p>
+                    <div class="lq-row"><input type="text" id="lqCode" maxlength="7" placeholder="ABC234" autocomplete="off" spellcheck="false" /><button type="button" class="primary" id="lqLinkBtn">Link headset</button></div>
+                  </li>
+                  <li><b>Send playlists</b>
+                    <p>Build one in Your Playlist and press <b>Send to Quest</b> here. It lands on the headset the next time the game syncs, and the mod downloads any songs you don't have.</p>
+                  </li>
+                </ol>
+              </div>
+              <div class="lq-card" id="lqThisBox" hidden></div>
+              <div class="lq-items" id="lqItems"></div>
+              <div class="lq-quest" id="lqQuest"></div>
+              <div class="lq-devs" id="lqDevs"></div>
+              <details class="lq-more" id="lqMore" hidden>
+                <summary>Manage from another browser</summary>
+                <p>This browser holds the key for your linked library. Paste this into Studio on another computer to manage the same headsets. Treat it like a password.</p>
+                <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
+                <p>Key shared somewhere it shouldn't be? Make a new one. Your headsets stay linked; other browsers and scripts using the old key stop working until you give them the new one.</p>
+                <div class="lq-row"><button type="button" class="ghost sm" id="lqRekey">Make a new key</button></div>
+              </details>
+              <details class="lq-more" id="lqImport">
+                <summary>Already linked on another browser?</summary>
+                <div class="lq-row"><input type="text" id="lqKeyIn" placeholder="Paste the library key" autocomplete="off" spellcheck="false" /><button type="button" class="ghost sm" id="lqKeyUse">Use it</button></div>
+              </details>
+              <button type="button" class="ss-hide" id="ssHide">Not on Quest? Hide Studio Sync</button>
+            </div>
+          </section>
+            <!-- In-Game Sync -->
+          <section class="panel tg-pane" id="syncPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h2>In-Game Sync</h2>
+              <label class="switch head-switch"><input type="checkbox" id="syncEnable" /><span class="track"></span><span class="switch-lbl">Enable</span></label>
+            </div>
+            <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist. Turn it on, then let Studio host the file or paste your own host's address. With your own host nothing is uploaded - Studio just writes the address you paste.</div>
+            <div class="panel-body" id="syncBody" hidden>
+              <div class="pub-box" id="pubBox" hidden>
+                <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
+                <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update. On Quest, the <a href="#studio-sync" data-ss-open="sync">Studio Sync mod</a> skips that first step.</p>
+                <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
+                <div class="pub-info" id="pubInfo"></div>
+              </div>
+              <div class="pub-or" id="pubOr">or use your own host</div>
+              <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
+                <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
+                <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.</p>
+              </div>
+            </div>
+          </section>
+            <!-- Share by link -->
+          <section class="panel tg-pane" id="sharePanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share Playlist</h2></div>
+            <div class="panel-sub">Pack this playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools and sending a set to a friend.</div>
+            <div class="panel-body">
+              <div class="field"><label class="field-label">Your share link</label>
+                <input type="text" id="shareLink" readonly placeholder="Add maps to build a share link" /></div>
+              <div class="preset-row"><button class="ghost sm" id="shareCopyBtn" disabled>&#8690; Copy link</button><span class="muted" id="shareInfo" style="font-family:var(--mono);font-size:11px;"></span></div>
+              <div class="feat-lbl" style="margin-top:14px;">Import a shared playlist</div>
+              <div class="preset-row"><input type="text" id="shareImportInput" placeholder="Paste a share link or code…" /><button class="ghost sm" id="shareImportBtn">Import</button></div>
+            </div>
+          </section>
+            <!-- Playlist Library -->
+          <section class="panel tg-pane" id="libraryPanel">
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><h2>Playlist Library</h2></div>
+            <div class="panel-sub">Save your whole playlist to reload later, or import an existing <code>.bplist</code> to edit it. Saved in this browser.</div>
+            <div class="panel-body">
+              <div class="preset-row">
+                <input type="text" id="playlistName" placeholder="Save current playlist as…" />
+                <button class="ghost sm" id="savePlaylistBtn">Save playlist</button>
+              </div>
+              <div class="preset-row">
+                <select id="savedPlaylists" aria-label="Saved playlists"><option value="">- saved playlists -</option></select>
+                <button class="ghost sm" id="loadPlaylistBtn">Load</button>
+                <button class="ghost sm danger" id="deletePlaylistBtn">Delete</button>
+              </div>
+              <div class="preset-row import-row">
+                <label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label>
+                <input type="file" id="importBplist" accept=".bplist,application/json" multiple hidden />
+                <span class="muted import-hint">Merges its maps into your current playlist</span>
+              </div>
+              <div class="preset-row import-row">
+                <button class="ghost sm" id="combineBtn" type="button" title="Merge several .bplist files or saved playlists into one, duplicates removed">&#10697; Combine playlists</button>
+                <span class="muted import-hint">Several into one, duplicates removed</span>
+              </div>
+              <div class="preset-row"><button class="ghost sm" id="galleryBtn" type="button">&#9638; Browse the gallery</button><span class="muted import-hint">Ready-made playlists you can load in one click</span></div>
+              <div class="preset-row lib-backup">
+                <button class="ghost sm" id="libBackupBtn" type="button" title="Download every saved playlist, filter preset and saved icon as one file">&#8615; Back up library</button>
+                <label class="filebtn" for="libRestoreFile" title="Restore a library backup file. Nothing you have now is overwritten.">&#8613; Restore backup</label>
+                <input type="file" id="libRestoreFile" accept=".json,application/json" hidden />
+              </div>
+              <p class="muted lib-note">Your library lives in this browser only. Back it up before clearing site data or moving to another computer.</p>
+            </div>
+          </section>
+          </div>
+        </section>
       </div>
-    </section>
-
-    <!-- Studio Sync (Quest mod). Shown to Quest players and anyone who opens it; see lqShown(). -->
-    <section class="panel" id="lqPanel" data-collapsible hidden>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="4"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></span><h2>Studio Sync</h2><span class="lq-hs" id="lqHs" hidden></span><span class="ss-tag">Quest mod</span></div>
-      <div class="panel-sub" id="lqSub">A free mod for Beat Saber on Quest. Playlists you build here go straight onto the headset with no cable or file copying, and you can edit the ones already on it from here.</div>
-      <div class="panel-body">
-        <p class="lq-steps lq-status" id="lqStatus" hidden></p>
-        <div class="lq-link" id="lqLinkBox">
-          <ol class="ss-steps">
-            <li><b>Install the mod</b>
-              <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.4.0/StudioSync-1.04.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.4.0 &middot; Beat Saber 1.40.8 &middot; 1.8 MB</a></div>
-              <p>On a PC or Android phone, open <a href="https://lauriethefish.github.io/ModsBeforeFriday/" target="_blank" rel="noopener" data-gc="mbf-link">ModsBeforeFriday</a> in Chrome or Edge and plug in your Quest. Choose <b>Upload Files</b> and pick the <code>.qmod</code>. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.</p>
-              <p class="ss-hmd" id="ssHmd" hidden>You're in the headset browser, so do this step from a PC or phone.</p>
-            </li>
-            <li><b>Link your headset</b>
-              <p>In game, open the <b>Mods</b> tab in the panel left of song select, pick <b>Studio Sync</b> and press <b>Link</b>. Type the 6-character code it shows.</p>
-              <div class="lq-row"><input type="text" id="lqCode" maxlength="7" placeholder="ABC234" autocomplete="off" spellcheck="false" /><button type="button" class="primary" id="lqLinkBtn">Link headset</button></div>
-            </li>
-            <li><b>Send playlists</b>
-              <p>Build one in Your Playlist and press <b>Send to Quest</b> here. It lands on the headset the next time the game syncs, and the mod downloads any songs you don't have.</p>
-            </li>
-          </ol>
-        </div>
-        <div class="lq-card" id="lqThisBox" hidden></div>
-        <div class="lq-items" id="lqItems"></div>
-        <div class="lq-quest" id="lqQuest"></div>
-        <div class="lq-devs" id="lqDevs"></div>
-        <details class="lq-more" id="lqMore" hidden>
-          <summary>Manage from another browser</summary>
-          <p>This browser holds the key for your linked library. Paste this into Studio on another computer to manage the same headsets. Treat it like a password.</p>
-          <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
-          <p>Key shared somewhere it shouldn't be? Make a new one. Your headsets stay linked; other browsers and scripts using the old key stop working until you give them the new one.</p>
-          <div class="lq-row"><button type="button" class="ghost sm" id="lqRekey">Make a new key</button></div>
-        </details>
-        <details class="lq-more" id="lqImport">
-          <summary>Already linked on another browser?</summary>
-          <div class="lq-row"><input type="text" id="lqKeyIn" placeholder="Paste the library key" autocomplete="off" spellcheck="false" /><button type="button" class="ghost sm" id="lqKeyUse">Use it</button></div>
-        </details>
-        <button type="button" class="ss-hide" id="ssHide">Not on Quest? Hide Studio Sync</button>
-      </div>
-    </section>
+    </div>
   </div>
 </div>
 
@@ -2310,7 +2463,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T20:05:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T20:10:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3955,7 +4108,7 @@ window.PP = (function () {
     step().then(function () {
         state.raw = collected; state.fetched = true; state.lastSig = serverSig(f); el.barFill.style.width = '100%';
         if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched - try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
-        else { setStatus('Loaded ' + collected.length + ' maps' + (state.pinnedRelay ? ' · ' + state.pinnedRelay.id : ''), 'on'); toast('Loaded ' + collected.length + ' maps - now add the ones you want.', 'ok'); }
+        else setStatus('Loaded ' + collected.length + ' maps', 'on');
         applyClientFilters();
         if (collected.length && isMobileView()) setMobileView('results');
       }).catch(function (err) {
@@ -3989,7 +4142,7 @@ window.PP = (function () {
     // results belong to the OTHER source - clear them (keep the playlist/basket)
     state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
     applySourceUI(); renderAll(); updateStale();
-    toast(src === 'beatsaver' ? 'Switched to BeatSaver - pick tags and Search.' : 'Switched to BeatLeader - set filters and Search.', 'ok');
+    setStatus(src === 'beatsaver' ? 'BeatSaver: pick tags and Search' : 'BeatLeader: set filters and Search', 'on');
   }
   // Full BeatSaver tag set (slug = human name lowercased, non-alphanumeric runs → hyphen).
   var BS_TAGS = [
@@ -4181,7 +4334,7 @@ window.PP = (function () {
       else if (!collected.length) { setStatus('No maps found', 'err'); toast(bsrMode ? 'No BeatSaver map matched that code or link - double-check it.' : 'No BeatSaver maps matched - loosen the tags, clear a filter, or try a different search.', 'warn'); }
       else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited - search again to pull the rest.', 'warn'); }
       else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast(collected.length === 1 ? 'Found “' + collected[0].songName + '” - add it below.' : 'Found ' + collected.length + ' maps - add the ones you want below.', 'ok'); }
-      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); toast('Loaded ' + mapsSeen + ' maps from BeatSaver - add the ones you want.', 'ok'); }
+      else setStatus('Loaded ' + mapsSeen + ' maps', 'on');
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
       if (state.bsrAutoOpen && bsrMode && collected.length === 1) openPreview(collected[0]);
@@ -4671,6 +4824,7 @@ window.PP = (function () {
   function mapsLabel(n, uniq) { return n + ' map' + (n === 1 ? '' : 's') + (uniq != null && uniq !== n ? ' (' + songsLabel(uniq) + ')' : ''); }
   function songsLabel(n) { return n + ' song' + (n === 1 ? '' : 's'); }
   function uniqueHashes(list) { var m = {}; list.forEach(function (s) { if (s.hash) m[s.hash.toLowerCase()] = true; }); return Object.keys(m).length; }
+  function rtPart(tail) { var r = basketRuntime(); return r > 0 ? ' · ' + fmtDur(r) + (tail || '') : ''; }
   function basketRuntime() { var seen = {}, total = 0; state.basket.forEach(function (e) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; total += e.duration || 0; } }); return total; }
   function playlistStats() {
     var rated = state.basket.filter(function (e) { return e.stars > 0; });
@@ -4729,7 +4883,7 @@ window.PP = (function () {
     if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
     if (e.njs) b.push('<span class="rb" title="Note jump speed">' + (Math.round(e.njs * 10) / 10) + ' NJS</span>');
     if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
-    if (PP.isRanked(e) && ppBadgesOn()) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Filter panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
+    if (PP.isRanked(e) && ppBadgesOn()) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Range panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
     if (state.player) {
       var sc = scoreFor(e);
       if (sc) {
@@ -4740,10 +4894,10 @@ window.PP = (function () {
         if (sc.t) b.push('<span class="rb rb-ago" title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
         if (sc.src !== 'ss' && sc.pp > 0 && PP.isRanked(e)) {
           var tgt = PP.ppFor(e, state.ppAcc, state.ppMod);
-          if (tgt != null && tgt - sc.pp >= 1) b.push('<span class="rb rb-up" title="Raw pp you would gain going from your best score to ' + state.ppAcc + '% (set the target in the PP Filter panel)">+' + Math.round(tgt - sc.pp) + 'pp at ' + state.ppAcc + '%</span>');
+          if (tgt != null && tgt - sc.pp >= 1) b.push('<span class="rb rb-up" title="Raw pp you would gain going from your best score to ' + state.ppAcc + '% (set the target in the PP Range panel)">+' + Math.round(tgt - sc.pp) + 'pp at ' + state.ppAcc + '%</span>');
         }
       } else {
-        b.push('<span class="rb rb-new" title="You haven\'t played this yet">NEW</span>');
+        b.push('<span class="rb rb-new" title="You haven\'t played this yet">Unplayed</span>');
       }
     }
     if (e.vsAcc) b.push('<span class="rb rb-vs" title="' + esc(e.vsName) + '\'s accuracy, ' + e.vsGap.toFixed(2) + ' points ahead of yours">' + esc(String(e.vsName).slice(0, 14)) + ' ' + (e.vsAcc * 100).toFixed(2) + '%</span>');
@@ -4755,9 +4909,9 @@ window.PP = (function () {
     }
     return b.join('');
   }
-  function infoBlock(e, inResults) {
+  function infoBlock(e, inResults, extra) {
     return '<div class="song-info"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
-      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + badges(e) + (inResults && eggBomb(e) ? eggBombHtml() : '') + '</div>' +
+      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + (extra || '') + badges(e) + (inResults && eggBomb(e) ? eggBombHtml() : '') + '</div>' +
       (inResults && state.viewMode === 'clan' ? (e._clan ? clanBlock(e) : e._asc ? ascBlock(e) : '') : '') + '</div>';
   }
   // The ≈pp estimate only means something once you know pp: show it with a profile connected,
@@ -4775,7 +4929,7 @@ window.PP = (function () {
     var ra = document.getElementById('resultActions'); if (ra) ra.hidden = !state.fetched && !state.raw.length && !state.excludeHashes;
     var cbar = document.getElementById('clanBar'); if (cbar && !cbar.hidden && state.viewMode !== 'clan') { cbar.hidden = true; cbar.innerHTML = ''; }
     var chid = document.getElementById('cbHidden');
-    if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Search Scope & Sort).' : ''; }
+    if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status & Sort).' : ''; }
     renderNewbieHint();
     el.resultCount.textContent = rows.length ? rows.length + (collapseOn() && rows.length !== avail.length ? ' songs' : '') : '';
     if (!rows.length) {
@@ -4797,7 +4951,7 @@ window.PP = (function () {
       } else if (state.player && el.playStatus.value === 'nf' && (state.viewMode === 'plays' || !nfCount())) {
         var nfn = nfCount();
         msg = nfn
-          ? '<p><b>Your other filters hide your ' + nfn + ' No Fail run' + (nfn === 1 ? '' : 's') + '.</b></p><p>Check <b>Last played</b>, <b>Show</b> (ranked or unranked) and the Mode chips in Search Scope &amp; Sort.</p>'
+          ? '<p><b>Your other filters hide your ' + nfn + ' No Fail run' + (nfn === 1 ? '' : 's') + '.</b></p><p>Check <b>Last played</b>, <b>Show</b> (ranked or unranked) and the Mode chips in Ranked Status &amp; Sort.</p>'
           : '<p><b>Nothing to retry yet.</b></p><p>None of your best BeatLeader scores is a No Fail run. When you fail a map with No Fail on, it shows up here until you pass it.</p>';
       } else {
         var why = [];
@@ -4814,10 +4968,12 @@ window.PP = (function () {
       if (_sw) _sw.addEventListener('click', function () { el.fType.value = 'all'; rememberRankType(); runFetch(); });
       return;
     }
-    var MAX = 400, items = [];
+    var MAX = 400, items = [], byHash = {};
+    // the same song already in Your Playlist at another difficulty gets a badge
+    state.basket.forEach(function (b) { if (b.hash) { var h = b.hash.toLowerCase(); (byHash[h] = byHash[h] || []).push(b); } });
     rows.slice(0, MAX).forEach(function (e) {
       var added = inBasket(e), k = keyOf(e);
-      items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '">' + coverImg(e) + infoBlock(e, true) +
+      items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '">' + coverImg(e) + infoBlock(e, true, added ? '' : otherDiffBadge(e, byHash)) +
         '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
         (added ? '<button class="row-btn added" data-act="unadd" title="In your playlist - click to take it out">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>' });
@@ -4858,8 +5014,8 @@ window.PP = (function () {
   function renderBasket() {
     noteBasketChange();
     var list = el.basketList, n = state.basket.length;
-    el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) : '';
-    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p></div>'; return; }
+    el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) + rtPart() : '';
+    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> - click a row or hit <b>+ Add all</b>.</p></div>'; plAfterRender(); return; }
     var last = n - 1, items = [];
     state.basket.forEach(function (e) {
       var k = keyOf(e);
@@ -4878,6 +5034,7 @@ window.PP = (function () {
       if (up && up.disabled !== (i === 0)) up.disabled = i === 0;
       if (dn && dn.disabled !== (i === last)) dn.disabled = i === last;
     });
+    plAfterRender();
     if (bkMenuKey) bkMenuFollow();
   }
   // ---- phones: the "..." menu on a playlist row ----
@@ -4888,7 +5045,8 @@ window.PP = (function () {
     top: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="4" x2="19" y2="4"/><polyline points="7 14 12 9 17 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>',
     bottom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="19" y2="20"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
     out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="8 7 17 7 17 16"/></svg>',
-    rm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>'
+    rm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>',
+    diff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="5" y2="14"/><line x1="10" y1="19" x2="10" y2="10"/><line x1="15" y1="19" x2="15" y2="7"/><line x1="20" y1="19" x2="20" y2="4"/></svg>'
   };
   var bkMenuKey = null;
   // While the list or the page scrolls the menu stays with its row, and closes once the row is out of sight.
@@ -4902,12 +5060,15 @@ window.PP = (function () {
   function bkMenuEl() {
     var m = document.getElementById('bkMenu');
     if (m) return m;
-    m = document.createElement('div'); m.id = 'bkMenu'; m.className = 'bk-menu'; m.setAttribute('role', 'menu'); m.hidden = true;
-    document.body.appendChild(m);
+    m = document.createElement('div'); m.id = 'bkMenu'; m.className = 'bk-menu'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', 'Playlist map'); m.hidden = true;
+    (document.querySelector('.layout') || document.body).appendChild(m);   // inside the main landmark
     m.addEventListener('click', function (e) {
       var b = e.target.closest('[data-bk]'); if (!b || b.disabled) return;
-      var k = bkMenuKey, a = b.getAttribute('data-bk'); bkMenuClose();
-      if (a !== 'bl') bkMenuAct(k, a);   // the BeatLeader link just opens
+      var k = bkMenuKey, a = b.getAttribute('data-bk');
+      if (a === 'diff') { bkDiffMenu(k); return; }   // the menu turns into the list of difficulties
+      bkMenuClose();
+      if (a === 'setdiff') bkSetDiff(k, b.getAttribute('data-d'), b.getAttribute('data-m'));
+      else if (a !== 'bl') bkMenuAct(k, a);   // the BeatLeader link just opens
     });
     return m;
   }
@@ -4921,9 +5082,10 @@ window.PP = (function () {
     var e = state.basket[i], last = state.basket.length - 1, m = bkMenuEl();
     var it = function (act, ico, label, off, cls) { return '<button type="button" class="bk-mi' + (cls ? ' ' + cls : '') + '" role="menuitem" data-bk="' + act + '"' + (off ? ' disabled' : '') + '><span class="bk-mic">' + ico + '</span>' + label + '</button>'; };
     var h = it('up', BK_ICO.up, 'Move up', i === 0) + it('down', BK_ICO.down, 'Move down', i === last) + it('top', BK_ICO.top, 'Move to top', i === 0) + it('bottom', BK_ICO.bottom, 'Move to bottom', i === last);
+    if (e.hash) h += '<div class="bk-hr"></div>' + it('diff', BK_ICO.diff, 'Change difficulty…', false);
     if (e.leaderboardId) h += '<div class="bk-hr"></div><a class="bk-mi" role="menuitem" data-bk="bl" href="https://beatleader.xyz/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener"><span class="bk-mic">' + BK_ICO.out + '</span>Open on BeatLeader</a>';
     h += '<div class="bk-hr"></div>' + it('remove', BK_ICO.rm, 'Remove from playlist', false, 'danger');
-    m.innerHTML = h; m.hidden = false; bkMenuKey = key;
+    m.innerHTML = h; m.hidden = false; bkMenuKey = key; m.removeAttribute('data-sub');
     Array.prototype.forEach.call(el.basketList.querySelectorAll('.bk-more.on'), function (x) { x.classList.remove('on'); x.setAttribute('aria-expanded', 'false'); });
     btn.classList.add('on'); btn.setAttribute('aria-expanded', 'true');
     bkMenuPlace(btn);
@@ -4945,7 +5107,11 @@ window.PP = (function () {
     Array.prototype.forEach.call(el.basketList.querySelectorAll('.bk-more.on'), function (x) { x.classList.remove('on'); x.setAttribute('aria-expanded', 'false'); });
   }
   // The list redrew (an edit, enrichment): keep the menu on its row, or close it if the row is gone.
-  function bkMenuFollow() { var b = bkMoreBtn(bkMenuKey); if (b && b.offsetParent !== null) bkMenuOpen(bkMenuKey, b); else bkMenuClose(); }
+  function bkMenuFollow() {
+    var b = bkMoreBtn(bkMenuKey), m = document.getElementById('bkMenu');
+    if (!b || b.offsetParent === null) { bkMenuClose(); return; }
+    if (m && m.getAttribute('data-sub')) { b.classList.add('on'); b.setAttribute('aria-expanded', 'true'); bkMenuPlace(b); } else bkMenuOpen(bkMenuKey, b);
+  }
   function bkMenuAct(key, a) {
     var i = basketIndex(key); if (i < 0) return;
     var e = state.basket[i];
@@ -4959,6 +5125,7 @@ window.PP = (function () {
     } else if (a === 'remove') removeBasket(key);
   }
   function renderSummary() {
+    var fyp = document.getElementById('forYouPanel'); if (fyp) fyp.classList.toggle('fy-compact', state.raw.length > 0);
     var matched = hideAddedOn() ? resultsAvailable().length : state.filtered.length, entries = state.basket.length, uniq = uniqueHashes(state.basket);
     var grew = entries > (state._prevBasket || 0); state._prevBasket = entries;
     countTo(el.matchCount, matched);
@@ -4970,8 +5137,8 @@ window.PP = (function () {
     if (el.mResultsBadge) el.mResultsBadge.textContent = matched || '';
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
-    if (!state.raw.length) el.counterMeta.textContent = 'Set filters and search to begin.';
-    else if (!entries) el.counterMeta.textContent = state.viewMode === 'clan' && clan.kind === 'as'
+    // What the special result views are showing (clan, versus, your plays, AccSaber): a line under the Results header.
+    var resText = !state.raw.length ? '' : state.viewMode === 'clan' && clan.kind === 'as'
       ? matched + ' picks for ' + ascMissionName() + '. Add the ones you want to play.'
       : state.viewMode === 'clan'
       ? matched + (clan.tab === 'def' ? ' maps where your run adds the most to ' : ' capture targets for ') + (clan.sel ? clan.sel.tag : 'your clan') + '. Add the ones you want to play.'
@@ -4979,19 +5146,21 @@ window.PP = (function () {
       ? matched + ' maps where ' + ((state.raw[0] && state.raw[0].vsName) || 'they') + ' beats you, closest gaps first. Add the ones you want to chase.'
       : state.viewMode === 'plays'
       ? matched + ' of your played maps shown. Narrow with the Your plays chips (e.g. Not FC), then add the ones you want.'
-      : state.viewMode === 'accsaber' ? matched + ' AccSaber charts shown, easiest first. Use the Your plays chips to find the ones you haven\'t played or FC\'d.'
-      : matched + ' maps matched. Add the ones you want to build your playlist.';
-    else {
+      : state.viewMode === 'accsaber' ? matched + ' AccSaber charts shown, easiest first. Use the Your plays chips to find the ones you haven\'t played or FC\'d.' : '';
+    var rm = document.getElementById('resMeta'); if (rm) { rm.textContent = resText; rm.hidden = !resText; }
+    var line = '';
+    if (entries) {
       var st = playlistStats();
-      var line = mapsLabel(entries, uniq) + ' · ' + fmtDur(basketRuntime()) + ' runtime';
+      line = mapsLabel(entries, uniq) + rtPart(' runtime');
       if (st) line += ' · ★' + st.min.toFixed(1) + '–' + st.max.toFixed(1) + ' (avg ' + st.avg.toFixed(1) + ')' + (st.nps ? ' · ' + st.nps.toFixed(1) + ' NPS avg' : '');
       if (state.player) {
         var played = 0, fc = 0, accSum = 0;
         state.basket.forEach(function (e) { var sc = scoreFor(e); if (sc) { played++; if (sc.fc) fc++; accSum += sc.a; } });
         line += played ? ' · you: ' + fc + '/' + entries + ' FC, ' + (accSum / played * 100).toFixed(1) + '% avg' : ' · you: none played yet';
       }
-      el.counterMeta.textContent = line + '.';
     }
+    el.counterMeta.textContent = !state.raw.length && !entries ? 'Set filters and search to begin.' : entries ? line + '.' : (resText || matched + ' maps matched. Add the ones you want to build your playlist.');
+    renderPlMeta(line);
   }
   function renderControls() {
     var hasResults = state.filtered.length > 0, hasBasket = state.basket.length > 0;
@@ -5008,7 +5177,7 @@ window.PP = (function () {
   function buildAutoDesc() {
     var st = playlistStats();
     var starPart = st ? (st.min === st.max ? st.min.toFixed(1) + '★' : st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★') : 'unranked';
-    return mapsLabel(state.basket.length) + ' · ' + fmtDur(basketRuntime()) + ' · ' + starPart + '. Built with Playlist Studio (BeatLeader).';
+    return mapsLabel(state.basket.length) + rtPart() + ' · ' + starPart + '. Built with Playlist Studio (BeatLeader).';
   }
   function isAutoDesc(text) { return !text || !String(text).trim() || /Built with Playlist Studio/.test(text); }
   function refreshAutoDesc() {
@@ -5018,11 +5187,11 @@ window.PP = (function () {
   function renderExport() {
     refreshAutoDesc();
     var entries = state.basket.length, uniq = uniqueHashes(state.basket);
-    el.exportHint.textContent = entries ? mapsLabel(entries, uniq) + ' · ' + fmtDur(basketRuntime()) : 'Your playlist is empty.';
+    el.exportHint.textContent = entries ? mapsLabel(entries, uniq) + rtPart() : 'Your playlist is empty.';
     var items = [];
     if (!entries) items.push({ level: 'ok', ico: '◇', msg: 'Add maps to Your Playlist, then export.' });
     else {
-      items.push({ level: 'ok', ico: '✓', msg: mapsLabel(entries, uniq) + ' · ' + fmtDur(basketRuntime()) + ' total.' });
+      items.push({ level: 'ok', ico: '✓', msg: mapsLabel(entries, uniq) + (basketRuntime() > 0 ? ', ' + fmtDur(basketRuntime()) + ' total.' : '.') });
       var missing = state.basket.filter(function (s) { return !s.hash; }).length;
       if (missing) items.push({ level: 'warn', ico: '!', msg: missing + ' entr' + (missing === 1 ? 'y is' : 'ies are') + ' missing a hash and will be skipped.' });
       var imgKB = Math.round((state.coverDataUrl || '').length * 3 / 4 / 1024);
@@ -5312,7 +5481,7 @@ window.PP = (function () {
     var acc = state.ppAcc || 95, ppVals = [];
     u.forEach(function (e) { if (PP.isRanked(e)) { var p = PP.ppFor(e, acc, ''); if (p != null) ppVals.push(p); } });
     var avgPp = ppVals.length ? ppVals.reduce(function (a, c) { return a + c; }, 0) / ppVals.length : 0;
-    var rt = fmtDur(basketRuntime());
+    var rt = basketRuntime() > 0 ? fmtDur(basketRuntime()) : '-';
     var tiles = [['Songs', n], ['Runtime', rt], ['Avg \u2605', avgStar ? avgStar.toFixed(1) : '-'], ['Avg PP', avgPp ? Math.round(avgPp) : '-'], ['Mappers', Object.keys(mappers).length]];
     var html = '<div class="feat-tiles">' + tiles.map(function (t) { return '<div class="feat-tile"><div class="ft-v">' + t[1] + '</div><div class="ft-l">' + t[0] + '</div></div>'; }).join('') + '</div>';
     if (starVals.length) {
@@ -6877,6 +7046,7 @@ window.PP = (function () {
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
     panel.hidden = !lqShown();
+    tgSync();
     // Header: which headset and when it last synced, readable even with the panel folded.
     var hs = document.getElementById('lqHs');
     if (hs) {
@@ -7569,6 +7739,7 @@ window.PP = (function () {
   // Expand a collapsible panel (and remember it), then bring it into view.
   function openPanel(panel) {
     if (!panel) return;
+    if (tgOpen(panel)) { var tg = tgGroup(panel); try { (tg || panel).scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} return; }
     if (panel.classList.contains('collapsed')) {
       panel.classList.remove('collapsed');
       var h2 = panel.querySelector('.panel-head h2'), key = panel.id || (h2 ? h2.textContent.trim() : '');
@@ -7580,6 +7751,7 @@ window.PP = (function () {
     var cta = document.getElementById('fyConnect'), grid = document.getElementById('fyGrid'); if (!cta || !grid) return;
     var on = !!state.player;
     cta.hidden = on; grid.hidden = !on;
+    var fyt = document.getElementById('fyTools'); if (fyt) fyt.hidden = !on;
     var nm = document.getElementById('fyName'); if (nm) nm.textContent = on ? state.player.name : '';
   }
   function runForYou(kind) {
@@ -7591,7 +7763,7 @@ window.PP = (function () {
       runFetchRecommend();
       if (isMobileView()) setMobileView('results');
     } else if (kind === 'plan') {
-      if (isMobileView()) setMobileView('filters');
+      if (isMobileView()) setMobileView('results');
       openPanel(el.plannerPanel);
       setTimeout(function () { try { if (el.plannerGoal) el.plannerGoal.focus(); } catch (e) {} }, 400);
       toast('Set a pp or rank goal, then hit Plan my rank-up.', 'ok');
@@ -7749,7 +7921,7 @@ window.PP = (function () {
     var o = lsGetPl();
     o[name] = libraryEntry();
     if (state.lq) state.lq.openName = name;
-    if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
+    if (lsSetPl(o)) { populatePlaylists(); el.savedPlaylists.value = name; el.playlistName.value = ''; renderSummary(); toast('Playlist "' + name + '" saved (' + state.basket.length + ' maps).', 'ok'); }
     else toast('Could not save - browser storage is full or unavailable.', 'err');
   }
   function loadPlaylist() {
@@ -8026,7 +8198,7 @@ window.PP = (function () {
       // New playlist: open Playlist Info and Cover so it can be named, and bring Info into view.
       var info = cmbEl('infoPanel'), cover = cmbEl('coverPanel');
       if (isMobileView()) setMobileView('playlist');
-      [info, cover].forEach(function (pn) { if (pn && pn.classList.contains('collapsed')) openPanel(pn); });
+      openPanel(info || cover);   // the Info tab: the title is the first thing to set
       setTimeout(function () {
         if (!info) return;
         var tb = document.querySelector('.topbar'), pos = tb ? getComputedStyle(tb).position : '';
@@ -8293,6 +8465,7 @@ window.PP = (function () {
     try { state.playIndex = JSON.parse(localStorage.getItem(PLAYS_KEY) || '{}') || {}; } catch (e) { state.playIndex = {}; }
   }
   function renderProfile() {
+    if (el.profilePanel) el.profilePanel.classList.toggle('connected', !!state.player);
     if (!state.player) {
       el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState('');
       renderPlayBar(); renderForYou(); updateLevelUI(); return;
@@ -8325,7 +8498,7 @@ window.PP = (function () {
   }
   // Compact inline sort control above the results list - mirrors the side-panel
   // Sort by + Order so you can re-sort (newest played, stars, duration, ...) without
-  // opening the Search Scope & Sort panel.
+  // opening the Ranked Status & Sort panel.
   function syncInlineSort() {
     if (!el.sortBar) return;
     var showable = state.source === 'beatleader' && state.fetched && state.raw.length > 0 && state.viewMode !== 'recommend';
@@ -8485,7 +8658,7 @@ window.PP = (function () {
       var nfAll = nfCount(), nfShown = state.filtered.length;
       setStatus('Loaded ' + nfShown + ' No Fail run' + (nfShown === 1 ? '' : 's'), 'on');
       toast(nfAll ? 'Loaded ' + nfShown + ' No Fail run' + (nfShown === 1 ? '' : 's') + ' to retry' + (nfAll > nfShown ? ' (' + (nfAll - nfShown) + ' more hidden by your filters, like the Mode chips)' : '') + '. Narrow with Last played or Show, then add the ones you want.' : 'None of your best BeatLeader scores is a No Fail run.', 'ok');
-    } else toast('Loaded your ' + list.length + ' played maps. Set “Your play status” to “Played, not FC” (or use Near-miss FC / accuracy) to narrow, then add the ones you want.', 'ok');
+    } else toast('Loaded your ' + list.length + ' played maps. Narrow them with the Your plays chips (Not FC, Near-FC) or More, then add the ones you want.', 'ok');
     if (isMobileView()) setMobileView('results');
   }
 
@@ -9086,7 +9259,7 @@ window.PP = (function () {
     }
     if (clan.err) h += '<p class="cb-err">' + esc(clan.err) + '</p>';
     var nHid = state.raw.length - state.filtered.length;
-    h += '<p class="cb-since-diff" id="cbHidden"' + (nHid > 0 ? '' : ' hidden') + '>' + (nHid > 0 ? nHid + (nHid === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Search Scope &amp; Sort).' : '') + '</p>';
+    h += '<p class="cb-since-diff" id="cbHidden"' + (nHid > 0 ? '' : ' hidden') + '>' + (nHid > 0 ? nHid + (nHid === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status &amp; Sort).' : '') + '</p>';
     if (!clan.busy && !clan.err && clan.tab === 'cap' && !inReach && clan.cap.length) {
       var best = null, bv = null;
       clan.cap.forEach(function (e) { var v = clanCapView(e); if (v.short != null && (!bv || v.short < bv.short)) { best = e; bv = v; } });
@@ -9405,7 +9578,7 @@ window.PP = (function () {
     if (asc.busy && asc.progress) h += '<div class="cb-progress"><div class="bar"><div class="bar-fill" style="width:' + (asc.info ? 55 : 15) + '%"></div></div><span>' + esc(asc.progress) + '</span></div>';
     if (asc.err) h += '<p class="cb-err">' + esc(asc.err) + '</p>';
     var nHid = state.raw.length - state.filtered.length;
-    h += '<p class="cb-since-diff" id="cbHidden"' + (nHid > 0 ? '' : ' hidden') + '>' + (nHid > 0 ? nHid + (nHid === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Search Scope &amp; Sort).' : '') + '</p>';
+    h += '<p class="cb-since-diff" id="cbHidden"' + (nHid > 0 ? '' : ' hidden') + '>' + (nHid > 0 ? nHid + (nHid === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status &amp; Sort).' : '') + '</p>';
     var grid = '', M = asc.model;
     if (M) ['true', 'standard', 'tech'].forEach(function (k2) {
       var cm = M.cat(k2); if (!cm) return;
@@ -9631,7 +9804,7 @@ window.PP = (function () {
   function countTo(elm, to) {
     if (!elm) return;
     var from = parseInt(elm.textContent, 10); if (isNaN(from)) from = 0;
-    if (!state.anim || from === to) { elm.textContent = to; return; }
+    if (!state.anim || from === to || elm.offsetParent === null) { elm.textContent = to; return; }   // nothing to animate when it isn't on screen
     var dur = Math.min(650, 140 + Math.abs(to - from) * 30), start = null;
     function tick(ts) { if (start === null) start = ts; var p = Math.min(1, (ts - start) / dur); elm.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); }
     requestAnimationFrame(tick);
@@ -9871,7 +10044,7 @@ window.PP = (function () {
     document.querySelectorAll('#quickLists [data-quick]').forEach(function (btn) { btn.addEventListener('click', function () { applyQuickList(this.dataset.quick); }); });
     // Results-side play-history chips (mirror the profile dropdown)
     el.playChips.addEventListener('click', function (e) {
-      var b = e.target.closest('.play-chip'); if (!b) return;
+      var b = e.target.closest('.play-chip[data-ps]'); if (!b) return;
       if (!state.player) { focusProfileConnect(); return; }
       el.playStatus.value = b.dataset.ps; if (b.dataset.ps !== 'played') el.accMax.value = '';
       if (b.dataset.ps === 'nf') { track('nofail-chip'); nfNeedsSync(); }
@@ -9924,12 +10097,226 @@ window.PP = (function () {
     initCollapsibles();
 
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
-    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery();
+    bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
     initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
+
+  // ---- tabbed panels: Save and send, and the playlist tools --------------------------------
+  // The sections inside keep their ids and their own code; a tab shows one of them. The tools group
+  // can also show none (click the open tab again). Each group remembers its last tab.
+  function tgGroup(node) { return node && node.closest ? node.closest('.tabgroup') : null; }
+  function tgShow(g, id, remember) {
+    var shown = '';
+    Array.prototype.forEach.call(g.querySelectorAll('.tg-tab'), function (t) { var on = !!id && t.getAttribute('data-tg') === id && !t.hidden; t.classList.toggle('on', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); if (on) shown = id; });
+    Array.prototype.forEach.call(g.querySelectorAll('.tg-pane'), function (pn) { var on = pn.id === shown; pn.classList.toggle('tg-on', on); if (on) pn.classList.remove('collapsed'); });
+    g.classList.toggle('tg-open', !!shown);
+    if (remember) { try { localStorage.setItem(g.getAttribute('data-tg-store'), shown); } catch (e) {} }
+    return shown;
+  }
+  function tgFirst(g) { var t = g.querySelector('.tg-tab:not([hidden])'); return t ? t.getAttribute('data-tg') : ''; }
+  function tgCurrent(g) { var t = g.querySelector('.tg-tab.on'); return t ? t.getAttribute('data-tg') : ''; }
+  function tgOpen(panel) {
+    var g = tgGroup(panel); if (!g || !panel.id || !g.querySelector('.tg-tab[data-tg="' + panel.id + '"]')) return false;
+    tgSync(); tgShow(g, panel.id, true); return true;
+  }
+  // A tab whose section is hidden (Studio Sync until someone wants it) steps aside.
+  function tgSync() {
+    Array.prototype.forEach.call(document.querySelectorAll('.tabgroup'), function (g) {
+      var cur = tgCurrent(g), lost = false;
+      Array.prototype.forEach.call(g.querySelectorAll('.tg-tab'), function (t) {
+        var pn = document.getElementById(t.getAttribute('data-tg')), hide = !pn || pn.hidden;
+        if (t.hidden !== hide) t.hidden = hide;
+        if (hide && t.getAttribute('data-tg') === cur) lost = true;
+      });
+      if (lost) tgShow(g, g.classList.contains('tg-closable') ? '' : tgFirst(g), false);
+    });
+  }
+  function initTabGroups() {
+    tgSync();
+    Array.prototype.forEach.call(document.querySelectorAll('.tabgroup'), function (g) {
+      g.querySelector('.tg-tabs').addEventListener('click', function (e) {
+        var t = e.target.closest('.tg-tab'); if (!t) return;
+        var id = t.getAttribute('data-tg');
+        if (g.classList.contains('tg-closable') && t.classList.contains('on')) { tgShow(g, '', true); return; }
+        tgShow(g, id, true);
+        track(id === 'statsPanel' ? 'stats-open' : 'tab-' + id);
+      });
+      var saved = null; try { saved = localStorage.getItem(g.getAttribute('data-tg-store')); } catch (e) {}
+      var tab = saved && g.querySelector('.tg-tab[data-tg="' + saved + '"]:not([hidden])');
+      if (g.classList.contains('tg-closable')) tgShow(g, tab ? saved : '', false);
+      else tgShow(g, tab ? saved : (libGet() && document.getElementById('lqPanel') && !document.getElementById('lqPanel').hidden ? 'lqPanel' : tgFirst(g)), false);
+    });
+  }
+
+  // ---- compact rows ------------------------------------------------------------------------
+  var DENS_KEY = 'playlistStudio.density.v1';
+  function applyDensity() {
+    var d = 'dense'; try { d = localStorage.getItem(DENS_KEY) || 'dense'; } catch (e) {}
+    document.body.classList.toggle('dense', d === 'dense');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-density]'), function (b) { b.setAttribute('aria-pressed', d === 'dense' ? 'true' : 'false'); b.title = d === 'dense' ? 'Roomy rows: bigger rows with more space' : 'Compact rows: more maps on screen'; });
+  }
+
+  // ---- Your Playlist: where it lives, filter, selection --------------------------------------
+  function plWhere() {
+    var tags = [], lq = state.lq;
+    if (lq && lq.editing) tags.push('<span class="pm-tag q">On ' + esc(lqEdWhere(lq.editing)) + '</span>');
+    if (lq && lq.openName) tags.push('<span class="pm-tag" title="Saved in Playlist Library in this browser">Saved here as “' + esc(lq.openName) + '”</span>');
+    if (state.publish && state.publish.id) tags.push('<span class="pm-tag" title="PlaylistManager\'s Sync button pulls updates from this link">Sync link</span>');
+    return tags;
+  }
+  function renderPlMeta(line) {
+    var m = document.getElementById('plMeta'); if (!m) return;
+    var where = state.basket.length ? plWhere() : [];
+    m.hidden = !line && !where.length;
+    m.innerHTML = (line ? '<span>' + esc(line) + '</span>' : '') + (where.length ? '<span class="pm-where">' + where.join('') + '</span>' : '');
+    var sw = document.getElementById('sendWhere'); if (sw) sw.textContent = where.length ? where.length === 1 ? m.querySelector('.pm-tag').textContent : where.length + ' places' : '';
+  }
+  var plSel = {}, plSelAnchor = null;
+  function plSelKeys() { return state.basket.map(keyOf).filter(function (k) { return plSel[k]; }); }
+  function plAfterRender() {
+    var list = el.basketList, f = document.getElementById('plFilter'), n = state.basket.length;
+    if (f) { f.hidden = n < 12; if (f.hidden && f.value) f.value = ''; }
+    var q = f && !f.hidden ? f.value.trim().toLowerCase() : '', shown = 0;
+    // forget selected maps that are gone
+    var live = {}; state.basket.forEach(function (e) { live[keyOf(e)] = e; });
+    Object.keys(plSel).forEach(function (k) { if (!live[k]) delete plSel[k]; });
+    Array.prototype.forEach.call(list.querySelectorAll('.song-row.bk'), function (r) {
+      var e = live[r.dataset.key];
+      var hit = !q || !e || (String(e.songName || '') + ' ' + (e.subName || '') + ' ' + (e.mapper || '')).toLowerCase().indexOf(q) >= 0;
+      r.classList.toggle('flt-hide', !hit); if (hit) shown++;
+      r.classList.toggle('sel', !!plSel[r.dataset.key]);
+    });
+    var fe = list.querySelector('.flt-empty');
+    if (q && !shown && n) { if (!fe) list.insertAdjacentHTML('beforeend', '<div class="empty flt-empty"><p><b>No maps match “' + esc(q) + '”.</b></p></div>'); }
+    else if (fe) fe.remove();
+    renderSelBar();
+  }
+  function renderSelBar() {
+    var bar = document.getElementById('plSelBar'); if (!bar) return;
+    var k = plSelKeys();
+    bar.hidden = !k.length;
+    if (!k.length) { bar.innerHTML = ''; return; }
+    bar.innerHTML = '<span><b>' + k.length + '</b> selected</span><button type="button" class="ghost sm" data-sel="top">Move to top</button><button type="button" class="ghost sm" data-sel="bottom">Move to bottom</button><button type="button" class="ghost sm danger" data-sel="remove">Remove</button><button type="button" class="ghost sm" data-sel="clear">Clear selection</button><span class="muted">Ctrl or Shift + click rows · Delete · Esc</span>';
+  }
+  function selAct(a) {
+    var k = plSelKeys(); if (!k.length) return;
+    var set = {}; k.forEach(function (x) { set[x] = 1; });
+    if (a === 'clear') { plSel = {}; plAfterRender(); return; }
+    var picked = state.basket.filter(function (e) { return set[keyOf(e)]; }), rest = state.basket.filter(function (e) { return !set[keyOf(e)]; });
+    if (a === 'remove') { state.basket = rest; plSel = {}; toast('Removed ' + mapsLabel(picked.length) + '. Ctrl+Z brings them back.', 'ok'); }
+    else if (a === 'top') state.basket = picked.concat(rest);
+    else if (a === 'bottom') state.basket = rest.concat(picked);
+    track('sel-' + a);
+    renderAll();
+  }
+  function selClick(e, row) {
+    var key = row.dataset.key, keys = state.basket.map(keyOf);
+    if (e.shiftKey && plSelAnchor && keys.indexOf(plSelAnchor) >= 0) {
+      var a = keys.indexOf(plSelAnchor), b = keys.indexOf(key), lo = Math.min(a, b), hi = Math.max(a, b);
+      for (var i = lo; i <= hi; i++) { var r = el.basketList.querySelector('.song-row[data-key="' + (window.CSS && CSS.escape ? CSS.escape(keys[i]) : keys[i]) + '"]'); if (!r || !r.classList.contains('flt-hide')) plSel[keys[i]] = 1; }
+    } else { if (plSel[key]) delete plSel[key]; else plSel[key] = 1; plSelAnchor = key; }
+    plAfterRender();
+  }
+
+  // ---- same song, another difficulty -------------------------------------------------------
+  var DIFF_LBL = { Easy: 'Easy', Normal: 'Normal', Hard: 'Hard', Expert: 'Expert', ExpertPlus: 'Expert+' };
+  function otherDiffBadge(e, byHash) {
+    var list = byHash[String(e.hash || '').toLowerCase()]; if (!list) return '';
+    var k = keyOf(e), others = list.filter(function (x) { return keyOf(x) !== k; });
+    if (!others.length) return '';
+    return '<span class="rb rb-other" title="This song is already in Your Playlist at another difficulty">In playlist: ' + others.map(function (x) { return esc((DIFF_LBL[x.difficultyName] || x.difficultyName || 'any') + (x.modeName && x.modeName !== 'Standard' ? ' ' + x.modeName : '')); }).join(', ') + '</span>';
+  }
+
+  // ---- change a playlist map's difficulty in place -------------------------------------------
+  var diffCache = {};
+  function mapDiffs(hash) {
+    var h = String(hash).toLowerCase();
+    if (diffCache[h]) return Promise.resolve(diffCache[h]);
+    return relayFetch(API_BASE + '/map/hash/' + encodeURIComponent(hash), MAP_VALID).then(function (m) { diffCache[h] = { bl: m, diffs: (m.difficulties || []).map(function (d) { return { name: d.difficultyName, mode: d.modeName, stars: d.stars || 0, nps: d.nps || 0 }; }) }; return diffCache[h]; }, function () {
+      return fetch(BS_API + '/maps/hash/' + encodeURIComponent(hash)).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (j) {
+        var v = (j.versions || [])[0] || {}; diffCache[h] = { bl: null, diffs: (v.diffs || []).map(function (d) { return { name: d.difficulty, mode: d.characteristic, stars: 0, nps: d.nps || 0 }; }) }; return diffCache[h];
+      });
+    });
+  }
+  function bkDiffMenu(key) {
+    var i = basketIndex(key), m = document.getElementById('bkMenu'); if (i < 0 || !m) return;
+    var e = state.basket[i];
+    m.setAttribute('data-sub', 'diff');
+    m.innerHTML = '<div class="bk-ph">Change difficulty</div><div class="bk-mi" aria-busy="true">Loading difficulties…</div>';
+    bkMenuPlace(bkMoreBtn(key));
+    mapDiffs(e.hash).then(function (info) {
+      if (bkMenuKey !== key) return;
+      var cur = keyOf(e), list = info.diffs.slice().sort(function (a, b) { return (a.mode === 'Standard' ? 0 : 1) - (b.mode === 'Standard' ? 0 : 1) || ['Easy', 'Normal', 'Hard', 'Expert', 'ExpertPlus'].indexOf(a.name) - ['Easy', 'Normal', 'Hard', 'Expert', 'ExpertPlus'].indexOf(b.name); });
+      var h = '<div class="bk-ph">Change difficulty</div>' + (list.length ? list.map(function (d) {
+        var k2 = e.hash.toLowerCase() + '|' + d.name + '|' + d.mode, isCur = k2 === cur, taken = !isCur && basketIndex(k2) >= 0;
+        return '<button type="button" class="bk-mi" role="menuitem" data-bk="setdiff" data-d="' + esc(d.name) + '" data-m="' + esc(d.mode) + '"' + (isCur || taken ? ' disabled' : '') + '><span class="bk-mic">' + (isCur ? '✓' : '') + '</span>' +
+          esc((DIFF_LBL[d.name] || d.name) + (d.mode !== 'Standard' ? ' · ' + d.mode : '')) + '<span class="bk-mx">' + (d.stars ? d.stars.toFixed(2) + '★' : taken ? 'in playlist' : d.nps ? d.nps.toFixed(1) + ' NPS' : '') + '</span></button>';
+      }).join('') : '<div class="bk-mi">No other difficulties found.</div>');
+      m.innerHTML = h; bkMenuPlace(bkMoreBtn(key));
+    }, function () { if (bkMenuKey === key) { m.innerHTML = '<div class="bk-ph">Change difficulty</div><div class="bk-mi">Couldn’t load this map’s difficulties.</div>'; } });
+  }
+  function bkSetDiff(key, name, mode) {
+    var i = basketIndex(key); if (i < 0) return;
+    var e = state.basket[i], k2 = e.hash.toLowerCase() + '|' + name + '|' + mode;
+    if (basketIndex(k2) >= 0) { toast('That difficulty is already in your playlist.', 'warn'); return; }
+    var ne = {}; Object.keys(e).forEach(function (x) { ne[x] = e[x]; });
+    ne.difficultyName = name; ne.modeName = mode; ne.stars = 0; ne.nps = 0; ne.notes = 0; ne.leaderboardId = ''; ne.techRating = 0; ne.accRating = 0; ne.passRating = 0; ne.mods = null;
+    state.basket[i] = ne;
+    var info = diffCache[e.hash.toLowerCase()]; if (info && info.bl) applyMap(e.hash, info.bl);
+    else { var d = info && info.diffs.filter(function (x) { return x.name === name && x.mode === mode; })[0]; if (d) ne.nps = d.nps; }
+    track('diff-change');
+    renderAll();
+    toast('“' + ne.songName + '” is now ' + (DIFF_LBL[name] || name) + (mode !== 'Standard' ? ' ' + mode : '') + '.', 'ok');
+  }
+
+  // ---- keys: / to search, Delete and Esc for selected playlist maps -------------------------------
+  function initKeys() {
+    document.addEventListener('keydown', function (e) {
+      var t = e.target, tag = t && t.tagName, typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable);
+      if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === '/') {
+        var f = document.getElementById('fSearch'); if (!f) return;
+        e.preventDefault();
+        if (isMobileView()) setMobileView('filters');
+        openPanel(f.closest('.panel'));
+        setTimeout(function () { try { f.focus(); f.select(); } catch (x) {} }, 250);
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && plSelKeys().length) { e.preventDefault(); selAct('remove'); }
+      else if (e.key === 'Escape' && plSelKeys().length) { plSel = {}; plAfterRender(); }
+    });
+  }
+
+  function initLayoutV2() {
+    initTabGroups();
+    applyDensity();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-density]'), function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var d = document.body.classList.contains('dense') ? 'comfy' : 'dense';
+        try { localStorage.setItem(DENS_KEY, d); } catch (x) {}
+        applyDensity(); track('density-' + d);
+      });
+    });
+    var pm = document.getElementById('playMoreBtn'), pr = document.getElementById('playMoreRow');
+    var pmCount = function () { var n = (el.playRecency && el.playRecency.value !== 'any' ? 1 : 0) + (el.accMax && el.accMax.value !== '' ? 1 : 0); var c = document.getElementById('playMoreN'); if (c) c.textContent = n ? n : ''; };
+    if (pm && pr) pm.addEventListener('click', function () { pr.hidden = !pr.hidden; pm.setAttribute('aria-expanded', pr.hidden ? 'false' : 'true'); });
+    if (el.playRecency) el.playRecency.addEventListener('change', pmCount);
+    if (el.accMax) el.accMax.addEventListener('input', pmCount);
+    pmCount();
+    var f = document.getElementById('plFilter');
+    if (f) f.addEventListener('input', plAfterRender);
+    var sb = document.getElementById('plSelBar');
+    if (sb) sb.addEventListener('click', function (e) { var b = e.target.closest('[data-sel]'); if (b) selAct(b.getAttribute('data-sel')); });
+    // Ctrl/Cmd or Shift + click a playlist row (not its buttons) selects it
+    el.basketList.addEventListener('click', function (e) {
+      if (!(e.ctrlKey || e.metaKey || e.shiftKey) || e.target.closest('[data-act], a, button, input')) return;
+      var row = e.target.closest('.song-row.bk'); if (!row) return;
+      e.preventDefault(); selClick(e, row);
+    });
+    initKeys();
+  }
   function setMobileView(v) {
     document.body.classList.remove('m-view-filters', 'm-view-results', 'm-view-playlist');
     document.body.classList.add('m-view-' + v);
