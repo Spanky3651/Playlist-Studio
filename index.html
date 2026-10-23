@@ -499,6 +499,11 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-more[hidden]{display:none;}
 .lq-now{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:12px 14px;margin-bottom:16px;border:1px solid #23406b;border-radius:12px;background:linear-gradient(180deg,#0b1a30,#081222);}
 .lq-now[hidden]{display:none;}
+.lq-now.idle{padding:9px 14px;margin-bottom:12px;background:#0a0e15;border-color:var(--border-2);border-style:dashed;}
+.lq-now.idle .lq-nowl{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;}
+.lq-now.idle .lq-k{display:none;}
+.lq-now.idle .lq-nowt{font-size:14.5px;color:#d7e3f2;}
+.lq-now.idle .lq-m{margin:0;}
 .lq-nowl{flex:1 1 260px;min-width:0;}
 .lq-nowc{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #2a4a7a;flex:none;box-shadow:0 0 18px rgba(30,107,255,.25);}
 .lq-now.hascov .lq-nowl{flex:1 1 200px;}
@@ -1243,11 +1248,38 @@ body.sd-lock .toast.show{z-index:950}
 .summary-panel{display:none !important;}   /* its numbers now sit in the Results and Your Playlist headers */
 .work-area,.pl-side{display:flex;flex-direction:column;gap:16px;min-width:0;}
 @media(max-width:720px){.work-area,.pl-side{gap:12px;}}
-/* Wide screens: results and your playlist side by side, so every add visibly lands (below this the columns get too narrow and rows wrap) */
+/* Wide screens: results and your playlist side by side, so every add visibly lands (below this the columns get too narrow
+   and rows wrap), with Save and send under Your Playlist. With Studio Sync on and no search results, Save and send gets a
+   column of its own instead: the headset's playlists sit at the top beside Your Playlist, with no empty column next to
+   them. A search hands that room back to the results. */
 @media(min-width:1800px){
   .layout{max-width:2200px;}
-  .work-area{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;}
+  .work-area{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"res side" "res send";gap:16px;align-items:start;}
+  .work-area > .list-panel{grid-area:res;}
+  .work-area > .pl-side{grid-area:side;}
+  .work-area > #sendPanel{grid-area:send;}
 }
+@media(min-width:1880px){
+  body.ss-on:not(.has-results) .work-area{grid-template-columns:minmax(0,.8fr) minmax(0,1.1fr) minmax(0,1.1fr);grid-template-rows:auto;grid-template-areas:"res side send";}
+}
+#sendPanel{container:send/inline-size;}
+#plTools{container:tools/inline-size;}
+/* Save and send or the playlist tools in one of those three columns: the tabs stay on one line, and the On Quest line
+   drops the sync time (the device chip above it has it). Wide screens only, so phones keep their own look. */
+@media(min-width:1800px){
+  @container send (max-width:500px){
+    #sendPanel .tg-tabs{gap:5px;padding:10px 12px;}
+    #sendPanel .tg-tab{padding:7px 8px;font-size:13.5px;}
+    #sendPanel .lq-sync{display:none;}
+    #sendPanel .lq-sync + *{margin-left:auto;}
+    #sendPanel .lq-sec .lq-h{white-space:nowrap;}
+  }
+  @container tools (max-width:500px){
+    #plTools .tg-tabs{gap:5px;padding:10px 12px;}
+    #plTools .tg-tab{padding:7px 8px;font-size:13.5px;}
+  }
+}
+.empty p{text-wrap:balance;}
 /* Lists use the window height instead of a fixed 360 px box */
 @media(min-width:721px){
   .song-list,.playlist-panel .song-list{max-height:max(380px,calc(100vh - 210px));}
@@ -1332,7 +1364,7 @@ body.sd-lock .toast.show{z-index:950}
 }
 /* Phones: the views follow the new grouping */
 @media(max-width:720px){
-  body.m-view-results .pl-side{display:none;}
+  body.m-view-results .pl-side,body.m-view-results #sendPanel{display:none;}
   body.m-view-results #panelQuickAdd{display:none;}
   body.m-view-playlist .work-area > .list-panel{display:none;}
   .foryou-panel.fy-compact .fy-grid:not([hidden]){flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
@@ -2323,6 +2355,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           </section>
           </div>
         </section>
+      </div>
         <!-- Save and send: every way a playlist leaves Studio, in one tabbed panel. The sections keep their ids. -->
         <section class="panel tabgroup" id="sendPanel" data-tg-store="playlistStudio.send.v1">
           <div class="panel-head tg-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Save and send</h2><span class="count" id="sendWhere"></span></div>
@@ -2477,7 +2510,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           </section>
           </div>
         </section>
-      </div>
     </div>
   </div>
 </div>
@@ -2501,7 +2533,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T22:11:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T23:20:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4970,6 +5002,7 @@ window.PP = (function () {
     if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status & Sort).' : ''; }
     renderNewbieHint();
     el.resultCount.textContent = rows.length ? rows.length + (collapseOn() && rows.length !== avail.length ? ' songs' : '') : '';
+    document.body.classList.toggle('has-results', !!(rows.length || state.raw.length));
     if (!rows.length) {
       var msg;
       if (state.viewMode === 'clan') {
@@ -7149,6 +7182,7 @@ window.PP = (function () {
     }
     // A Studio Sync button in the top bar once Studio Sync is linked, with the same status as the chip.
     var tbs = document.getElementById('tbSS');
+    document.body.classList.toggle('ss-on', !!lib);
     if (tbs) {
       tbs.hidden = !lib;
       if (lib) {
@@ -7208,7 +7242,7 @@ window.PP = (function () {
           (epend ? ' &middot; <span class="lq-wait">sent, waiting for the headset</span>' : earr ? ' &middot; <span class="lq-ok">arrived ' + esc(lqClock(earr.t)) + '</span>' : ', the headset updates on its next sync and keeps a backup'),
           lqBtn('Done editing', 'data-lq-stopedit'));
       } else if (!n) {
-        h = nowCard('This playlist', 'Nothing to send yet', 'Build a playlist in Your Playlist to send it, or edit one already on your Quest below.', '');
+        h = nowCard('This playlist', 'Nothing to send yet', 'Build one in Your Playlist, or press Edit on a playlist below.', '');
       } else if (lq.dup) {
         var all = lq.dup.hits.length === lq.dup.devs.length;
         var onWhere = all ? (lq.dup.devs.length > 1 ? 'all ' + lq.dup.devs.length + ' headsets' : lqDevName(lq.dup.hits[0])) : lq.dup.hits.map(lqDevName).join(', ');
@@ -7234,7 +7268,7 @@ window.PP = (function () {
           pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : (toAll ? 'Send to all headsets' : 'Send to Quest')), 'data-lq-send', 'primary'));
       }
       var hasCov = !!(n && state.coverDataUrl);
-      card.className = 'lq-now' + (wide ? ' wide' : '') + (hasCov ? ' hascov' : '');
+      card.className = 'lq-now' + (wide ? ' wide' : '') + (hasCov ? ' hascov' : '') + (!n && !ed ? ' idle' : '');
       card.innerHTML = h;
       if (hasCov) {
         var ci = lqRender.cov || (lqRender.cov = document.createElement('img'));
