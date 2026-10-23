@@ -586,6 +586,27 @@ body.anim .lq-added{animation:lqfade 4s ease-out both;}
 .lq-hr{height:1px;background:#1f3456;margin:5px 4px;}
 .lq-confirm{padding:10px 14px;border-top:1px solid #3a1a22;background:#140b10;font-size:13.5px;color:#f0c4c4;line-height:1.5;}
 .lq-confirm .lq-row{margin-top:8px;}
+/* Delete: also the songs no other playlist uses (opt-in) */
+.lq-chk{display:flex;align-items:flex-start;gap:9px;margin-top:9px;color:#f6e3e3;font-size:14px;cursor:pointer;line-height:1.4;}
+.lq-chk input{margin:2px 0 0;width:17px;height:17px;flex:none;accent-color:#ff5b6e;cursor:pointer;}
+.lq-chk-n{color:#cfa9ae;}
+.lq-chk-note{margin:6px 0 0 26px;color:#cfa9ae;font-size:13px;line-height:1.45;}
+p.lq-chk-note.solo{margin-left:0;}
+/* Select several headset playlists */
+.lq-selbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 8px;padding:8px 10px 8px 14px;border:1px solid #23406b;border-radius:10px;background:#081426;font-size:14px;color:#cfe0f5;}
+.lq-selbar .lq-sb-n{margin-right:auto;}
+.lq-selbar .lq-sb-n b{color:#fff;}
+.lq-selbar + .lq-confirm{margin:-2px 0 8px;border:1px solid #3a1a22;border-radius:10px;}
+.lq-pick{width:20px;height:20px;flex:none;display:grid;place-items:center;border:2px solid #4d6283;border-radius:6px;background:#0a1220;transition:background .12s,border-color .12s;}
+.lq-pl.lq-pickable{cursor:pointer;}
+.lq-pl.lq-pickable:hover{background:rgba(30,107,255,.07);}
+.lq-pl.lq-pickable:focus-visible{outline:2px solid var(--blue);outline-offset:-2px;}
+.lq-pl.lq-pickable.sel{background:linear-gradient(90deg,rgba(30,107,255,.16),rgba(30,107,255,0) 70%);}
+.lq-pl.sel .lq-pick{background:var(--blue);border-color:var(--blue);}
+.lq-pl.sel .lq-pick::after{content:'';width:9px;height:5px;border:solid #fff;border-width:0 0 2px 2px;transform:translateY(-1px) rotate(-45deg);}
+.lq-pl.lq-nopick{opacity:.45;}
+.lq-pl.lq-nopick .lq-pick{visibility:hidden;}
+.lq-selbtn{flex:none;}
 .lq-fold{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;padding:9px 12px;border:1px dashed #2a3a55;border-radius:10px;background:transparent;font-size:13.5px;color:var(--muted);font-weight:500;box-shadow:none;}
 .lq-fold:hover{color:#fff;}
 .lq-fold svg{width:15px;height:15px;margin-left:auto;transition:transform .18s;}
@@ -1118,6 +1139,8 @@ body.anim .brand .logo .hr{animation:lg-fade .4s ease .08s both;}
 body.anim .brand .logo .hb{animation:half-blue .55s cubic-bezier(.4,.5,.2,1) .16s both;}
 body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5s both;}
 .anim-toggle.off{opacity:.5;}
+/* Desktop: the effects switch is as tall as the buttons beside it */
+@media(min-width:721px){.topbar-actions .anim-toggle{min-height:37px;}}
 
 /* ---- fetch loading (functional feedback; shown regardless of the toggle) ---- */
 #topLoadBar{position:fixed;left:0;right:0;top:0;height:3px;z-index:60;overflow:hidden;display:none;}
@@ -1336,6 +1359,21 @@ body.sd-lock .toast.show{z-index:950}
   .tb-ss:not([hidden]) + .spacer + .topbar-actions{margin-left:0;}
 }
 @media(max-width:360px){.brand h1{font-size:15px;}}
+/* Small phones: the title stays on one line next to the buttons, which all match */
+@media(max-width:720px){
+  .topbar .tb-ss:not([hidden]){width:40px;height:40px;min-height:40px;border-radius:8px;}
+  .topbar .topbar-actions{gap:8px;}
+  .brand h1{white-space:nowrap;}
+}
+@media(max-width:380px){
+  .topbar{padding-left:10px;padding-right:10px;gap:5px;}
+  .brand h1{font-size:15px;}
+  .topbar .topbar-actions{gap:5px;}
+  .topbar-actions #resetBtn,.topbar-actions #downloadBtn,.topbar-actions .anim-toggle,.topbar .tb-ss:not([hidden]){width:36px;height:36px;min-height:36px;}
+  .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg,.topbar-actions .anim-toggle svg,.topbar .tb-ss svg{width:19px;height:19px;}
+}
+/* The effects switch makes room on the narrowest phones when the Studio Sync button is there */
+@media(max-width:340px){.topbar:has(.tb-ss:not([hidden])) .anim-toggle{display:none;}}
 /* Toasts sit in the corner on desktop instead of over the middle of the lists */
 @media(min-width:721px){
   .toast{left:auto;right:24px;transform:translateY(140%);max-width:440px;}
@@ -2463,7 +2501,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T20:15:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T22:11:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6606,17 +6644,54 @@ window.PP = (function () {
     lqSaveOpenQuest();
     return true;
   }
+  // "Also delete songs no other playlist uses": off unless ticked, and only when the headset's mod can.
+  // solo is the headset's count of songs only that playlist uses (null for several playlists at once).
+  function lqSongsChk(devId, solo) {
+    if (!lqCan(devId, 'delete-songs')) return '';
+    if (solo === 0) return '<p class="lq-chk-note solo">Every song in it is in another playlist too, so its songs stay.</p>';
+    return '<label class="lq-chk"><input type="checkbox" data-lq-delsongs' + (state.lq.delSongs ? ' checked' : '') + '><span>Also delete songs no other playlist uses' +
+      (typeof solo === 'number' ? ' <span class="lq-chk-n">(up to ' + songsLabel(solo) + ')</span>' : '') + '</span></label>' +
+      (state.lq.delSongs ? '<p class="lq-chk-note">The headset checks every playlist first. Favorites and songs BeatSaver no longer has stay, and restoring the playlist downloads the deleted songs again.</p>' : '');
+  }
+  function lqWantSongs(devId) { return !!state.lq.delSongs && lqCan(devId, 'delete-songs'); }
   // Deleting moves the playlist into the headset's backups, so it can be brought back for 30 days.
   function lqDelete(devId, k) {
     var it = lqQuestItems(devId).find(function (x) { return x.k === k; }); if (!it || state.lq.busy) return;
+    var songs = lqWantSongs(devId) && it.solo !== 0;
     lqBusy(true);
-    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/playlists/' + k + '/delete'), {}).then(function (res) {
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/playlists/' + k + '/delete'), songs ? { songs: true } : {}).then(function (res) {
       if (!res.ok) { toast((res.j && res.j.error) || 'Couldn’t delete it.', 'warn'); return; }
       var q = state.lq.quest[devId]; if (q && res.j) q.pending = res.j.pending || q.pending;
-      state.lq.delAsk = null;
+      state.lq.delAsk = null; state.lq.delSongs = false;
       lqDropTarget(devId, k);
-      toast('“' + (it.title || it.file) + '” is deleted from ' + lqDevName(devId) + ' on its next sync. Undo is right there until then, and after that it waits in Recently deleted for 30 days.', 'ok');
-      track('lq-delete');
+      toast('“' + (it.title || it.file) + '”' + (songs ? ' and the songs only it uses are' : ' is') + ' deleted from ' + lqDevName(devId) + ' on its next sync. Undo is right there until then, and after that it waits in Recently deleted for 30 days' + (songs ? ', where restoring it downloads the songs again.' : '.'), 'ok');
+      track(songs ? 'lq-delete-songs' : 'lq-delete');
+    }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  // Select: several playlists on one headset, deleted in one go.
+  function lqSelKeys(devId) {
+    var sel = state.lq.sel; if (!sel || sel.dev !== devId) return [];
+    return lqQuestItems(devId).filter(function (x) { return sel.keys[x.k] && lqPickable(devId, x); }).map(function (x) { return x.k; });
+  }
+  function lqPickable(devId, it) { var pw = lqPendingFor(devId, it.k); return !it.waiting && !(pw && pw.remove) && !lqIsEditing(devId, it.k) && lqCan(devId, 'delete'); }
+  function lqPick(id) {
+    var p = id.split('|'), sel = state.lq.sel; if (!sel || sel.dev !== p[0]) return;
+    if (sel.keys[p[1]]) delete sel.keys[p[1]]; else sel.keys[p[1]] = 1;
+    sel.ask = false;
+    lqRender();
+    var el2 = document.querySelector('[data-lq-pick="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); if (el2 && document.activeElement === document.body) el2.focus();
+  }
+  function lqDeleteMany(devId) {
+    var ks = lqSelKeys(devId); if (!ks.length || state.lq.busy) return;
+    var songs = lqWantSongs(devId), n = ks.length;
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/playlists/delete'), { ks: ks, songs: songs }).then(function (res) {
+      if (!res.ok) { toast((res.j && res.j.error) || 'Couldn’t delete them.', 'warn'); return; }
+      var q = state.lq.quest[devId]; if (q && res.j) q.pending = res.j.pending || q.pending;
+      ((res.j && res.j.deleted) || ks).forEach(function (k) { lqDropTarget(devId, k); });
+      state.lq.sel = null; state.lq.delSongs = false;
+      toast(n + ' playlist' + (n === 1 ? '' : 's') + (songs ? ' and the songs only they use are' : n === 1 ? ' is' : ' are') + ' deleted from ' + lqDevName(devId) + ' on its next sync. Undo is on each one until then, and after that they wait in Recently deleted for 30 days.', 'ok');
+      track(songs ? 'lq-delete-many-songs' : 'lq-delete-many');
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
   // Take back a send, restore or delete the headset hasn't picked up yet.
@@ -7020,13 +7095,20 @@ window.PP = (function () {
     if (sizeL) meta.push('<span class="lq-nw">' + sizeL + '</span>');
     if (!lqSameName(name, it.file)) meta.push(esc(it.file));
     var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new</span>'
-      : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting</span>'
+      : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting' + (pw.songs ? ' with its songs' : '') + '</span>'
       : pw && pw.restore ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>restoring</span>'
       : pw ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>waiting</span>'
       : editing ? '<span class="lq-edn">editing now</span>'
       : arr ? '<span class="lq-st lq-arr"><span class="lq-dot2 ok"></span>' + (arr.kind === 'restore' ? 'restored ' : arr.kind === 'add' ? 'added ' : 'arrived ') + esc(lqClock(arr.t)) + '</span>'
       : baks.length ? baks.length + ' backup' + (baks.length === 1 ? '' : 's') : '';
     if (st) meta.push(st);
+    // Select mode: the whole row is a checkbox; Edit and the menu step aside.
+    if (lq.sel && lq.sel.dev === d.id) {
+      var pick = lqPickable(d.id, it), on = pick && !!lq.sel.keys[it.k];
+      return '<div class="lq-pl ' + (pick ? 'lq-pickable' + (on ? ' sel' : '') : 'lq-nopick') + (editing ? ' ed' : '') + (removing ? ' gone' : '') + '"' +
+        (pick ? ' data-lq-pick="' + id + '" role="checkbox" tabindex="0" aria-checked="' + on + '"' : '') + '><span class="lq-pick" aria-hidden="true"></span>' + lqThumbHtml(key, lqThumbFor(d, it)) +
+        '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div></div>';
+    }
     var mi = '';
     if (pw && (pw.restore || it.waiting)) mi += lqMi(lqIco('undo') + (it.waiting ? 'Cancel sending' : 'Undo the restore'), 'data-lq-cancel="' + id + '"');
     if (!removing && baks.length) mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Restore a backup</div>' + baks.map(function (b) {
@@ -7040,7 +7122,7 @@ window.PP = (function () {
       (gl && !editing ? '<span class="lq-added"' + gd + '>' + gl.label + '</span>' : '') + act +
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
-    if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.<div class="lq-row">' +
+    if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.' + lqSongsChk(d.id, typeof it.solo === 'number' ? it.solo : null) + '<div class="lq-row">' +
       lqBtn(lqIco('trash') + 'Delete', 'data-lq-delete="' + id + '"', 'ghost sm danger') + lqBtn('Keep it', 'data-lq-delask=""') + '</div></div>';
     return row;
   }
@@ -7173,8 +7255,18 @@ window.PP = (function () {
         var q = lq.quest[d.id], all = lqQuestItems(d.id), fl = (lq.filter && lq.filter[d.id]) || '', items = lqSortList(all, fl, d.id);
         var pn = q && Array.isArray(q.pending) ? q.pending.length : 0, dnm = lqDevName(d.id);
         qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(dnm) + '</span>' + (all.length ? '<span class="lq-cnt">' + all.length + '</span>' : '') +
-          '<span class="lq-sync">' + (lqSeen(d.id) ? 'synced ' + esc(lqAgoMin(lqSeen(d.id))) : '') + '</span>' + lqBtn(lqIco('up') + 'Add playlist', 'data-lq-add="' + esc(d.id) + '" title="Send a .bplist file from this computer to ' + esc(lqDevName(d.id)) + '"', 'ghost sm lq-addbtn') + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
+          '<span class="lq-sync">' + (lqSeen(d.id) ? 'synced ' + esc(lqAgoMin(lqSeen(d.id))) : '') + '</span>' +
+          (lqCan(d.id, 'delete') && all.length > 1 && !(lq.sel && lq.sel.dev === d.id) ? lqBtn('Select', 'data-lq-select="' + esc(d.id) + '" title="Pick several playlists to delete at once"', 'ghost sm lq-selbtn') : '') + lqBtn(lqIco('up') + 'Add playlist', 'data-lq-add="' + esc(d.id) + '" title="Send a .bplist file from this computer to ' + esc(lqDevName(d.id)) + '"', 'ghost sm lq-addbtn') + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
         qh += lqAskHtml(d.id);
+        if (lq.sel && lq.sel.dev === d.id) {
+          var sk = lqSelKeys(d.id), sn = sk.length, pickAll = items.filter(function (x) { return lqPickable(d.id, x); });
+          qh += '<div class="lq-selbar" role="toolbar" aria-label="Selected playlists"><span class="lq-sb-n"><b>' + sn + '</b> selected</span>' +
+            lqBtn(sn && sn >= pickAll.length ? 'Clear' : 'Select all', 'data-lq-selall="' + esc(d.id) + '"') +
+            lqBtn(lqIco('trash') + 'Delete' + (sn ? ' ' + sn : ''), 'data-lq-seldel="' + esc(d.id) + '"' + (sn ? '' : ' disabled'), 'ghost sm danger') + lqBtn('Cancel', 'data-lq-selcancel') + '</div>';
+          if (lq.sel.ask && sn) qh += '<div class="lq-confirm">Delete ' + sn + ' playlist' + (sn === 1 ? '' : 's') + ' from ' + esc(dnm) + '? ' + (sn === 1 ? 'It moves' : 'They move') + ' to Recently deleted on the headset, where you can bring ' + (sn === 1 ? 'it' : 'them') + ' back for 30 days.' +
+            lqSongsChk(d.id, sn === 1 ? (function () { var one = all.find(function (x) { return x.k === sk[0]; }); return one && typeof one.solo === 'number' ? one.solo : null; })() : null) +
+            '<div class="lq-row">' + lqBtn(lqIco('trash') + 'Delete ' + (sn === 1 ? 'it' : sn), 'data-lq-seldo="' + esc(d.id) + '"', 'ghost sm danger') + lqBtn('Keep ' + (sn === 1 ? 'it' : 'them'), 'data-lq-selkeep') + '</div></div>';
+        }
         if (pn) qh += '<div class="lq-waitbar" role="status"><span class="lq-wb-ic">' + lqIco('send') + '</span><span class="lq-wb-t"><b>' + pn + ' change' + (pn === 1 ? '' : 's') + ' on ' + (pn === 1 ? 'its' : 'their') + ' way to ' + esc(dnm) + '</b>' +
           (pn === 1 ? 'It arrives' : 'They arrive') + ' on the next sync. Press <span class="lq-kbd">Sync now</span> in the Studio Sync tab to get ' + (pn === 1 ? 'it' : 'them') + ' sooner.</span></div>';
         if (all.length >= 8 || fl) qh += lqFilterHtml(d.id, fl, dnm);
@@ -7308,6 +7400,8 @@ window.PP = (function () {
     var onClick = function (e) {
       var t = e.target.closest('button');
       if (!t) {
+        var pk = e.target.closest('[data-lq-pick]');
+        if (pk && !state.lq.busy) { lqPick(pk.getAttribute('data-lq-pick')); return; }
         var rw = e.target.closest('[data-lq-row]'), sel = window.getSelection ? String(window.getSelection()) : '';
         if (!rw || e.lqMenuClosed || state.lq.busy || state.pubBusy || sel || e.target.closest('.lq-menu, .lq-confirm, input, select, a')) return;
         var rp0 = rw.getAttribute('data-lq-row').split('|'); track('lq-row-edit'); lqEdit(rp0[0], rp0[1]); return;
@@ -7330,7 +7424,13 @@ window.PP = (function () {
       else if (t.hasAttribute('data-lq-dupnew')) lqSendThis('new');
       else if (t.hasAttribute('data-lq-dupcancel')) { state.lq.dup = null; lqRender(); }
       else if (t.hasAttribute('data-lq-restoreopen')) { var r = t.getAttribute('data-lq-restoreopen'); state.lq.restoreOpen = state.lq.restoreOpen === r ? null : r; lqRender(); }
-      else if (t.hasAttribute('data-lq-delask')) { state.lq.delAsk = t.getAttribute('data-lq-delask') || null; lqRender(); }
+      else if (t.hasAttribute('data-lq-delask')) { state.lq.delAsk = t.getAttribute('data-lq-delask') || null; state.lq.delSongs = false; lqRender(); }
+      else if (t.hasAttribute('data-lq-select')) { state.lq.sel = { dev: t.getAttribute('data-lq-select'), keys: {}, ask: false }; state.lq.delAsk = null; state.lq.menuOpen = null; state.lq.delSongs = false; track('lq-select'); lqRender(); }
+      else if (t.hasAttribute('data-lq-selall')) { var sd = t.getAttribute('data-lq-selall'), fl0 = (state.lq.filter && state.lq.filter[sd]) || '', can = lqSortList(lqQuestItems(sd), fl0, sd).filter(function (x) { return lqPickable(sd, x); }); var allOn = can.length && lqSelKeys(sd).length >= can.length; state.lq.sel.keys = {}; if (!allOn) can.forEach(function (x) { state.lq.sel.keys[x.k] = 1; }); state.lq.sel.ask = false; lqRender(); }
+      else if (t.hasAttribute('data-lq-seldel')) { state.lq.sel.ask = true; state.lq.delSongs = false; lqRender(); }
+      else if (t.hasAttribute('data-lq-seldo')) lqDeleteMany(t.getAttribute('data-lq-seldo'));
+      else if (t.hasAttribute('data-lq-selkeep')) { state.lq.sel.ask = false; lqRender(); }
+      else if (t.hasAttribute('data-lq-selcancel')) { state.lq.sel = null; state.lq.delSongs = false; lqRender(); }
       else if (t.hasAttribute('data-lq-delete')) { var dp = t.getAttribute('data-lq-delete').split('|'); lqDelete(dp[0], dp[1]); }
       else if (t.hasAttribute('data-lq-cancel')) { var cp = t.getAttribute('data-lq-cancel').split('|'); lqCancel(cp[0], cp[1]); }
       else if (t.hasAttribute('data-lq-delopen')) { var dv = t.getAttribute('data-lq-delopen'); state.lq.delOpen = state.lq.delOpen || {}; state.lq.delOpen[dv] = !state.lq.delOpen[dv]; lqRender(); }
@@ -7354,6 +7454,8 @@ window.PP = (function () {
       if (e.key === 'Escape' && e.target && e.target.hasAttribute && e.target.hasAttribute('data-lq-filter') && e.target.value) {
         e.preventDefault(); e.stopPropagation(); state.lq.filter[e.target.getAttribute('data-lq-filter')] = ''; lqRender(); return;
       }
+      if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-lq-pick') && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); lqPick(e.target.getAttribute('data-lq-pick')); var again = document.querySelector('[data-lq-pick="' + (window.CSS && CSS.escape ? CSS.escape(e.target.getAttribute('data-lq-pick')) : '') + '"]'); if (again) again.focus(); return; }
+      if (e.key === 'Escape' && state.lq.sel) { e.preventDefault(); state.lq.sel = null; lqRender(); return; }
       if (!e.target || e.target.id !== 'lqRenameIn') return;
       if (e.key === 'Enter') { e.preventDefault(); lqRename(state.lq.renaming, e.target.value); }
       else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); state.lq.renaming = null; state.lq.renameDraft = null; lqRender(); }
@@ -7390,6 +7492,7 @@ window.PP = (function () {
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && state.lq.menuOpen) { state.lq.menuOpen = null; lqRender(); } });
     document.getElementById('lqPanel').addEventListener('change', function (e) {
       if (e.target && e.target.hasAttribute('data-lq-sort')) { try { localStorage.setItem(LQ_SORT, e.target.value); } catch (x) {} track('lq-sort-' + e.target.value); lqRender(); return; }
+      if (e.target && e.target.hasAttribute('data-lq-delsongs')) { state.lq.delSongs = !!e.target.checked; lqRender(); var cb = document.querySelector('[data-lq-delsongs]'); if (cb) cb.focus(); return; }
       if (e.target && e.target.id === 'lqSendTo') { state.lq.sendTo = e.target.value; state.lq.dup = null; if (e.target.value !== 'all') state.lq.lastDev = e.target.value; lqRender(); }
     });
     var bar = document.getElementById('lqEditBar'); if (bar) bar.addEventListener('click', onClick);

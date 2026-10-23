@@ -5,6 +5,9 @@ const MAX_SONGS = 3000;
 const TTL = 60 * 60 * 24 * 180;            // seconds a list lives after its last update
 const REFRESH_AFTER = 60 * 60 * 24 * 90;   // a list still being synced gets its clock reset after this
 const WRITE_LIMIT = 30, WRITE_WINDOW = 600; // writes per IP per 10 minutes (per Worker instance)
+// Requests made with a library key (Studio Sync): editing a headset playlist autosaves after every change,
+// so these get more room than anonymous hosting.
+const LIB_WRITE_LIMIT = 150;
 const writes = new Map();
 const LIB_TTL = 60 * 60 * 24 * 365;          // a library or device nobody touches for a year goes away
 const CODE_TTL = 600;                        // pairing codes live 10 minutes
@@ -237,6 +240,8 @@ function looksLikePlaylist(text) {
 const MAX_MOVED = 30, MAX_DELETED = 30;
 // Maps (each difficulty counts) when the mod reports them (0.6.2 and later), next to the song count.
 function mapsField(v) { return Number.isInteger(v) && v >= 0 ? { maps: Math.min(1000000, v) } : {}; }
+// Songs only this playlist uses on the headset (downloaded, not favorites), when the mod reports it (0.7.0 and later).
+function soloField(v) { return Number.isInteger(v) && v >= 0 ? { solo: Math.min(100000, v) } : {}; }
 // Backups the headset reports for one playlist: [{ t: unix seconds, count: songs or -1, maps? }], newest first.
 function cleanBackups(v) {
   if (!Array.isArray(v)) return [];
@@ -301,7 +306,7 @@ async function linked(request, env, ctx, url) {
       }
       const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
       out.items = await liveOut(env, dev.lib, me.id, out.items);
-      const writes = out.items.map((w) => Object.assign({ id: w.id, file: w.file, create: !!w.create, url: url.origin + "/link/outbox/" + w.id }, w.restore ? { restore: w.restore } : {}, w.remove ? { remove: true } : {}));
+      const writes = out.items.map((w) => Object.assign({ id: w.id, file: w.file, create: !!w.create, url: url.origin + "/link/outbox/" + w.id }, w.restore ? { restore: w.restore } : {}, w.remove ? { remove: true } : {}, w.remove && w.songs ? { songs: true } : {}));
       return json({ library: dev.lib, device: me.name, playlists, writes }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
 
@@ -316,12 +321,12 @@ async function linked(request, env, ctx, url) {
         const prev = byFile.get(it.file);
         const have = !!(prev && prev.sha === it.sha && prev.have);
         if (!have) need.push(it.file);
-        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), sha: it.sha, have, at: have ? prev.at : nowSec(), backups: cleanBackups(it.backups) });
+        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), ...soloField(it.solo), sha: it.sha, have, at: have ? prev.at : nowSec(), backups: cleanBackups(it.backups) });
       }
       // Drop stored copies of playlists that are gone from the headset.
       const keep = new Set(items.map((it) => it.file));
       const gone = old.items.filter((it) => !keep.has(it.file));
-      const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []) || (p && p.maps) !== it.maps; });
+      const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []) || (p && p.maps) !== it.maps || (p && p.solo) !== it.solo; });
       // Playlists deleted on the headset that it can still bring back, and what this mod version can do.
       const deleted = [];
       for (const d of (Array.isArray(body.deleted) ? body.deleted : []).slice(0, MAX_DELETED)) {
@@ -329,7 +334,7 @@ async function linked(request, env, ctx, url) {
         const backups = cleanBackups(d.backups);
         if (backups.length) deleted.push({ k: await fileKey(d.file), file: d.file, title: String(d.title || "").slice(0, 200), backups });
       }
-      const features = (Array.isArray(body.features) ? body.features : []).filter((f) => f === "restore" || f === "delete");
+      const features = (Array.isArray(body.features) ? body.features : []).filter((f) => f === "restore" || f === "delete" || f === "delete-songs");
       const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged ||
         JSON.stringify(deleted) !== JSON.stringify(old.deleted || []) || JSON.stringify(features) !== JSON.stringify(old.features || []);
       if (changed) {
@@ -407,7 +412,7 @@ async function linked(request, env, ctx, url) {
     return json({ id, key }, 201, cors);
   }
 
-  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
+  const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|delete|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
   const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
   if (!lib) return json({ error: "Not found" }, 404, cors);
@@ -421,9 +426,10 @@ async function linked(request, env, ctx, url) {
     const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
     const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
     out.items = await liveOut(env, id, dv.id, out.items);
-    const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, at: x.at }));
+    const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, songs: !!(x.remove && x.songs), at: x.at }));
     const movedList = () => (out.moved || []).map((x) => ({ k: x.k, nk: x.nk, file: x.file }));
-    // opts: { restore: backup time } or { remove: true }; neither carries a body.
+    // opts: { restore: backup time } or { remove: true, songs }; neither carries a body. opts.later leaves
+    // saving the list to the caller (deleting several at once writes it once).
     const queue = async (k, file, title, create, body, opts) => {
       opts = opts || {};
       // One pending write per playlist: a newer send replaces the older one (a create stays a create).
@@ -432,20 +438,21 @@ async function linked(request, env, ctx, url) {
       out.items = out.items.filter((x) => x.file !== file);
       const w = { id: randomId(10), k, file, title: String(title || "").slice(0, 200), create: create || prev.some((x) => x.create), at: nowSec() };
       if (opts.restore) w.restore = opts.restore;
-      else if (opts.remove) w.remove = true;
+      else if (opts.remove) { w.remove = true; if (opts.songs) w.songs = true; }
       else await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body));
       out.items.push(w);
-      await putTtl(env, outKey(id, dv.id), out);
+      if (!opts.later) await putTtl(env, outKey(id, dv.id), out);
       return w;
     };
+    const noSongs = () => !(inv.features || []).includes("delete-songs");
     if (!m[5] && request.method === "GET") {
-      const items = inv.items.map((it) => Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), { ready: !!it.have, at: it.at, backups: it.backups || [] }));
+      const items = inv.items.map((it) => Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), soloField(it.solo), { ready: !!it.have, at: it.at, backups: it.backups || [] }));
       const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
       const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
       return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
     if (m[5] === "new" && !m[6] && request.method === "POST") {
-      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
       const pl = await readPlaylist(request);
       if (pl.error) return json({ error: pl.error }, 400, cors);
       // A file name from the title that doesn't clash with anything on the headset or queued.
@@ -455,6 +462,23 @@ async function linked(request, env, ctx, url) {
       while (taken.has(file.toLowerCase())) file = base + " (" + (n++) + ").bplist";
       const w = await queue(await fileKey(file), file, pl.value.playlistTitle, true, pl.value);
       return json({ k: w.k, file: w.file, pending: pendingList() }, 201, cors);
+    }
+    if (m[5] === "delete" && !m[6] && request.method === "POST") {
+      if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!(inv.features || []).includes("delete")) return json({ error: "Update Studio Sync on the headset to delete from here" }, 409, cors);
+      const body = (await readJson(request, 20000)) || {};
+      const ks = Array.isArray(body.ks) ? body.ks.filter((x) => typeof x === "string" && /^[0-9a-f]{16}$/.test(x)).slice(0, 200) : [];
+      if (!ks.length) return json({ error: "Pick the playlists to delete" }, 400, cors);
+      if (body.songs && noSongs()) return json({ error: "Update Studio Sync on the headset to delete songs from here" }, 409, cors);
+      const done = [], missing = [];
+      for (const kk of ks) {
+        const hit = inv.items.find((x) => x.k === kk);
+        if (!hit) { missing.push(kk); continue; }
+        await queue(hit.k, hit.file, hit.title, false, null, { remove: true, songs: !!body.songs, later: true });
+        done.push(kk);
+      }
+      if (done.length) await putTtl(env, outKey(id, dv.id), out);
+      return json({ deleted: done, missing, pending: pendingList() }, 200, cors);
     }
     let k = m[5] && m[5] !== "new" ? m[5] : "";
     // Follow a new playlist that was saved under another name on the headset.
@@ -473,7 +497,7 @@ async function linked(request, env, ctx, url) {
       return json({ pending: pendingList() }, 200, cors);
     }
     if (m[6] === "/restore" && request.method === "POST" && del) {
-      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
       const body = (await readJson(request, 2000)) || {};
       const t = Number(body.t);
       if (!del.backups.some((b) => b.t === t)) return json({ error: "That backup isn't on the headset anymore" }, 404, cors);
@@ -482,10 +506,12 @@ async function linked(request, env, ctx, url) {
     }
     if (!it && !waiting) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
     if (m[6] === "/delete" && request.method === "POST") {
-      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
       if (!it) return json({ error: "The headset hasn't written that playlist yet" }, 409, cors);
       if (!(inv.features || []).includes("delete")) return json({ error: "Update Studio Sync on the headset to delete from here" }, 409, cors);
-      await queue(it.k, it.file, it.title, false, null, { remove: true });
+      const body = (await readJson(request, 2000)) || {};
+      if (body.songs && noSongs()) return json({ error: "Update Studio Sync on the headset to delete songs from here" }, 409, cors);
+      await queue(it.k, it.file, it.title, false, null, { remove: true, songs: !!body.songs });
       return json({ pending: pendingList() }, 200, cors);
     }
     if (!m[6] && request.method === "GET") {
@@ -494,7 +520,7 @@ async function linked(request, env, ctx, url) {
       return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
     }
     if (m[6] === "/restore" && request.method === "POST") {
-      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
       if (!it) return json({ error: "The headset hasn't written that playlist yet" }, 409, cors);
       const body = (await readJson(request, 2000)) || {};
       const t = Number(body.t);
@@ -503,7 +529,7 @@ async function linked(request, env, ctx, url) {
       return json({ pending: pendingList() }, 200, cors);
     }
     if (m[6] === "/send" && request.method === "POST") {
-      if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+      if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
       const pl = await readPlaylist(request);
       if (pl.error) return json({ error: pl.error }, 400, cors);
       const target = it || waiting;
@@ -517,7 +543,7 @@ async function linked(request, env, ctx, url) {
     return json({ items: lib.items || [], devices: await withSeen(env, id, publicDevices(lib)) }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
   }
 
-  if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+  if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
 
   if (m[2] === "/items" && request.method === "PUT") {
     const body = await readJson(request, 40000);
@@ -562,7 +588,7 @@ async function linked(request, env, ctx, url) {
 
   // Rename a headset. Studio shows the new name, and so does anything that reads the device record.
   if (m[3] && !m[4] && request.method === "POST") {
-    if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
     const body = (await readJson(request, 2000)) || {};
     const d = (lib.devices || []).find((x) => x.id === m[3]);
     if (!d) return json({ error: "That headset isn't linked anymore" }, 404, cors);
