@@ -8,7 +8,7 @@ compatibility_date = "2025-09-01"
 # or every linked library looks gone. List them with: npx wrangler kv namespace list
 [[kv_namespaces]]
 binding = "PLAYLISTS"
-id = "PASTE_THE_PLAYLISTS_NAMESPACE_ID"
+id = "39d6ff54b4664bcfaba148b9fe9bbd36"   # playlist-studio-hosted
 
 # Optional, not set up yet: a global rate limit for writes. Without it the Worker uses its own per-instance limit.
 # [[ratelimits]]
