@@ -525,6 +525,9 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-pl .lq-t{flex:1;min-width:0;}
 .lq-pl .lq-n{display:block;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .lq-pl .lq-m{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;font-size:13px;color:var(--muted);margin-top:1px;}
+.lq-pl .lq-mp{display:inline-flex;align-items:baseline;gap:6px;min-width:0;max-width:100%;}
+.lq-pl .lq-mt{min-width:0;overflow-wrap:anywhere;}
+.lq-nw{white-space:nowrap;}
 .lq-cov{width:40px;height:40px;border-radius:8px;flex:none;object-fit:cover;background:#0d1620;border:1px solid #1f3456;}
 .lq-cov.ph{display:flex;align-items:center;justify-content:center;color:#4f6789;font-size:18px;}
 .lq-cov.ld{background:linear-gradient(110deg,#0d1620 30%,#16243a 50%,#0d1620 70%);background-size:200% 100%;animation:lqshim 1.4s linear infinite;}
@@ -2302,7 +2305,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T13:05:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T13:40:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4647,7 +4650,8 @@ window.PP = (function () {
 
   // Playlist size always reads in maps (Studio Sync too). The song count only adds itself when a song is in
   // more than once, e.g. Expert and Expert+ of one song = 2 maps (1 song).
-  function mapsLabel(n, uniq) { return n + ' map' + (n === 1 ? '' : 's') + (uniq != null && uniq !== n ? ' (' + uniq + ' song' + (uniq === 1 ? '' : 's') + ')' : ''); }
+  function mapsLabel(n, uniq) { return n + ' map' + (n === 1 ? '' : 's') + (uniq != null && uniq !== n ? ' (' + songsLabel(uniq) + ')' : ''); }
+  function songsLabel(n) { return n + ' song' + (n === 1 ? '' : 's'); }
   function uniqueHashes(list) { var m = {}; list.forEach(function (s) { if (s.hash) m[s.hash.toLowerCase()] = true; }); return Object.keys(m).length; }
   function basketRuntime() { var seen = {}, total = 0; state.basket.forEach(function (e) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; total += e.duration || 0; } }); return total; }
   function playlistStats() {
@@ -4798,7 +4802,7 @@ window.PP = (function () {
   function renderBasket() {
     noteBasketChange();
     var list = el.basketList, n = state.basket.length;
-    el.playlistCount.textContent = n ? n + (n === 1 ? ' map' : ' maps') : '';
+    el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) : '';
     if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p></div>'; return; }
     var last = n - 1, frag = '';
     state.basket.forEach(function (e, i) {
@@ -6407,6 +6411,9 @@ window.PP = (function () {
     if (c && !c.src && c.v !== 2) c = null;
     if (c && (c.at === it.at || it.waiting || c.at === 'w')) {
       if (c.at === 'w' && it.at && !it.waiting) { c.at = it.at; lqThumbSave(); }   // what Studio sent is what the headset wrote
+      if (typeof c.m !== 'number' && typeof it.maps !== 'number' && it.ready && !it.waiting && it.at && !lqThumbTried[key + '|' + it.at]) {
+        lqThumbTried[key + '|' + it.at] = 'q'; lqThumbQ.push({ dev: d.id, k: it.k, at: it.at, keep: true }); setTimeout(lqThumbPump, 0);
+      }
       return c.src;
     }
     if (!it.ready || it.waiting || !it.at) return '';                 // nothing uploaded to read yet
@@ -6422,11 +6429,13 @@ window.PP = (function () {
     while (lqThumbBusy < 2 && lqThumbQ.length && libGet()) (function (job) {
       lqThumbBusy++;
       libFetch('GET', libPath('/devices/' + encodeURIComponent(job.dev) + '/playlists/' + job.k), null, null, true).then(function (res) {
-        if (!res.ok) { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; lqThumbPut(job.dev, job.k, null, '', true); return; }
-        var pl = null; try { pl = JSON.parse(res.text); } catch (e) {}
-        if (pl && Array.isArray(pl.songs)) lqBodyPut(job.dev, job.k, job.at, pl);
-        return lqMakeThumb(plImage(pl)).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src); });
-      }, function () { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; lqThumbPut(job.dev, job.k, null, '', true); }).then(function () { lqThumbBusy--; lqThumbPump(); });
+        if (!res.ok) { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; if (!job.keep) lqThumbPut(job.dev, job.k, null, '', true); return; }
+        var pl = null, bp = null; try { pl = JSON.parse(res.text); } catch (e) {}
+        if (pl && Array.isArray(pl.songs)) bp = lqBodyPut(job.dev, job.k, job.at, pl);
+        if (bp) lqMapsRedraw();
+        if (job.keep && !bp) return;
+        return lqMakeThumb(plImage(pl)).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src, false, bp ? bp.m : null); });
+      }, function () { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; if (!job.keep) lqThumbPut(job.dev, job.k, null, '', true); }).then(function () { lqThumbBusy--; lqThumbPump(); });
     })(lqThumbQ.shift());
   }
   // The cover in a playlist file. PlaylistManager on Quest saves it as "imageString" and shows that one
@@ -6457,9 +6466,9 @@ window.PP = (function () {
       im.src = src;
     });
   }
-  function lqThumbPut(dev, k, at, src, screenOnly) {
+  function lqThumbPut(dev, k, at, src, screenOnly, maps) {
     var key = dev + '|' + k;
-    if (!screenOnly) { lqThumbStore()[key] = { at: at, src: src, u: Date.now(), v: 2 }; lqThumbSave(); }
+    if (!screenOnly) { lqThumbStore()[key] = { at: at, src: src, u: Date.now(), v: 2, m: typeof maps === 'number' ? maps : undefined }; lqThumbSave(); }
     Array.prototype.forEach.call(document.querySelectorAll('[data-lq-thumb]'), function (x) { if (x.getAttribute('data-lq-thumb') === key) x.outerHTML = lqThumbHtml(key, src); });
   }
   // ---- Add playlist: send .bplist files from this computer straight to a headset ----
@@ -6504,7 +6513,8 @@ window.PP = (function () {
           q.pending = (res.j && res.j.pending) || q.pending;
           done.push(r);
           lqGlow(r.dev, k, hit ? 'Replaced' : 'Added');
-          return lqMakeThumb(r.image).then(function (src) { lqThumbPut(r.dev, k, 'w', src); });
+          var rm = null; try { rm = Object.keys(lqKeysOf(JSON.parse(r.text).songs)).length; } catch (e) {}
+          return lqMakeThumb(r.image).then(function (src) { lqThumbPut(r.dev, k, 'w', src, false, rm); });
         }, function () { failed++; });
       });
     });
@@ -6561,7 +6571,23 @@ window.PP = (function () {
     return o;
   }
   function lqSigOf(keys) { return Object.keys(keys).sort().join(','); }
-  function lqBodyPut(dev, k, at, pl) { var keys = lqKeysOf(pl && pl.songs); return (lqBodies[dev + '|' + k] = { at: at, keys: keys, sig: lqSigOf(keys), n: pl && Array.isArray(pl.songs) ? pl.songs.length : 0 }); }
+  function lqBodyPut(dev, k, at, pl) { var keys = lqKeysOf(pl && pl.songs); return (lqBodies[dev + '|' + k] = { at: at, keys: keys, sig: lqSigOf(keys), m: Object.keys(keys).length, n: pl && Array.isArray(pl.songs) ? pl.songs.length : 0 }); }
+  // Maps in a headset playlist (each difficulty counts, like Your Playlist). The headset reports songs; a mod
+  // that also reports maps wins, otherwise Studio counts them from the file it read for the cover. null = not known yet.
+  function lqMaps(devId, it) {
+    if (!it) return null;
+    if (typeof it.maps === 'number' && it.maps >= 0) return it.maps;
+    var key = devId + '|' + it.k, b = lqBodies[key];
+    if (b && b.at === it.at && typeof b.m === 'number') return b.m;
+    var c = lqThumbStore()[key];
+    return c && typeof c.m === 'number' && (c.at === it.at || c.at === 'w') ? c.m : null;
+  }
+  // "331 maps (289 songs)" once the maps are known, "289 songs" until then.
+  function lqSizeLabel(devId, it) {
+    var m = lqMaps(devId, it);
+    return m != null ? mapsLabel(m, it.count >= 0 ? it.count : null) : it.count >= 0 ? songsLabel(it.count) : '';
+  }
+  var lqMapsRedraw = debounce(function () { lqRender(); }, 150);
   // The headset's copy as it is now; null while it's being read (the panel redraws when it arrives).
   function lqBodyFor(dev, k) {
     var key = dev + '|' + k, it = lqQuestItems(dev).find(function (x) { return x.k === k; }), b = lqBodies[key];
@@ -6689,11 +6715,14 @@ window.PP = (function () {
   // Long lists get a filter box and a sort choice (the sort is remembered).
   var LQ_SORT = 'playlistStudio.lqSort.v1';
   function lqSortGet() { var v = ''; try { v = localStorage.getItem(LQ_SORT) || ''; } catch (e) {} return v === 'recent' || v === 'songs' ? v : 'az'; }
-  function lqSortList(all, fl) {
+  function lqSortList(all, fl, devId) {
     var srt = lqSortGet(), f = String(fl || '').trim().toLowerCase(), list = all.slice();
     if (f) list = list.filter(function (it) { return ((it.title || '') + ' ' + (it.file || '')).toLowerCase().indexOf(f) >= 0; });
     if (srt === 'recent') list.sort(function (a, b) { return (b.waiting ? 9e12 : b.at || 0) - (a.waiting ? 9e12 : a.at || 0); });
-    else if (srt === 'songs') list.sort(function (a, b) { return (b.count >= 0 ? b.count : -1) - (a.count >= 0 ? a.count : -1); });
+    else if (srt === 'songs') {
+      var sz = function (x) { var m = lqMaps(devId, x); return m != null ? m : x.count >= 0 ? x.count : -1; };
+      list.sort(function (a, b) { return sz(b) - sz(a); });
+    }
     return list;
   }
   function lqFilterHtml(devId, fl, nm) {
@@ -6701,12 +6730,20 @@ window.PP = (function () {
     return '<div class="lq-filter"><input type="text" id="lqFilter-' + dv + '" data-lq-filter="' + dv + '" value="' + esc(fl) + '" placeholder="Filter playlists" aria-label="Filter playlists on ' + esc(nm) + '" autocomplete="off" spellcheck="false" />' +
       '<select data-lq-sort aria-label="Sort playlists">' + o('az', 'A to Z') + o('recent', 'Last changed') + o('songs', 'Most maps') + '</select></div>';
   }
+  // A backup's size: maps when the mod reports them, songs otherwise, with the change from what's there now in the same unit.
+  function lqBakSize(b, curMaps, curSongs) {
+    var bm = typeof b.maps === 'number' && b.maps >= 0 ? b.maps : null, n = bm != null ? bm : b.count, cur = bm != null ? curMaps : curSongs;
+    if (n == null || n < 0) return '';
+    return '<span class="lq-m">' + (bm != null ? mapsLabel(bm) : songsLabel(n)) + (cur != null && cur >= 0 && n !== cur ? ' (' + (n > cur ? '+' : '−') + Math.abs(n - cur) + ')' : '') + '</span>';
+  }
+  function lqMetaHtml(meta) { return meta.map(function (x, i) { return '<span class="lq-mp">' + (i ? '<span class="lq-sep">&middot;</span> ' : '') + '<span class="lq-mt">' + x + '</span></span>'; }).join(' '); }
   function lqCovSync() { var ci = lqRender.cov; if (ci && ci.isConnected && state.coverDataUrl && ci.getAttribute('src') !== state.coverDataUrl) ci.src = state.coverDataUrl; }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
     var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [], arr = !pw && lqArrivedAt(d.id, it.k);
-    if (it.count >= 0) meta.push(mapsLabel(it.count));
+    var sizeL = lqSizeLabel(d.id, it), curM = lqMaps(d.id, it);
+    if (sizeL) meta.push('<span class="lq-nw">' + sizeL + '</span>');
     if (!lqSameName(name, it.file)) meta.push(esc(it.file));
     var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new</span>'
       : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting</span>'
@@ -6719,13 +6756,13 @@ window.PP = (function () {
     var mi = '';
     if (pw && (pw.restore || it.waiting)) mi += lqMi(lqIco('undo') + (it.waiting ? 'Cancel sending' : 'Undo the restore'), 'data-lq-cancel="' + id + '"');
     if (!removing && baks.length) mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Restore a backup</div>' + baks.map(function (b) {
-      return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + (b.count >= 0 ? '<span class="lq-m">' + mapsLabel(b.count) + (it.count >= 0 && b.count !== it.count ? ' (' + (b.count > it.count ? '+' : '−') + Math.abs(b.count - it.count) + ')' : '') + '</span>' : ''), 'data-lq-restore="' + id + '|' + b.t + '"');
+      return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + lqBakSize(b, curM, it.count), 'data-lq-restore="' + id + '|' + b.t + '"');
     }).join('');
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
     var open = !!mi && lq.menuOpen === key;
     var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
     var gl = lqGlowFor(key), gd = gl ? ' style="animation-delay:-' + gl.ms + 'ms"' : '';
-    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + '>' + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
+    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + '>' + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
       (gl && !editing ? '<span class="lq-added"' + gd + '>' + gl.label + '</span>' : '') + act +
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
@@ -6796,7 +6833,7 @@ window.PP = (function () {
     var card = document.getElementById('lqThisBox');
     card.hidden = !linked;
     if (linked) {
-      var title = esc(lqCurrentTitle()), n = state.basket.length, h = '', songs = mapsLabel(n), wide = false;
+      var title = esc(lqCurrentTitle()), n = state.basket.length, h = '', songs = mapsLabel(n, uniqueHashes(state.basket)), wide = false;
       var nowCard = function (kick, name, meta, acts, cls) {
         return '<div class="lq-nowl"><span class="lq-k' + (cls ? ' ' + cls : '') + '">' + kick + '</span><b class="lq-nowt">' + name + '</b><span class="lq-m">' + meta + '</span></div>' + (acts ? '<div class="lq-nowa">' + acts + '</div>' : '');
       };
@@ -6832,7 +6869,7 @@ window.PP = (function () {
           var hit0 = lqSameTitle(there[0], curT), onName = there.length === 1 ? lqDevName(there[0]) : there.length + ' headsets';
           var hb = lqBodyFor(there[0], hit0.k), hd = hb ? lqDiff(lqBasketKeys(), hb.keys) : null;
           h = nowCard('Already on ' + esc(there.map(lqDevName).join(', ')), title, songs + ' here' +
-            (hd ? ' &middot; updating ' + (hd.add || hd.rem ? (hd.add ? 'adds ' + hd.add : '') + (hd.add && hd.rem ? ' and ' : '') + (hd.rem ? 'removes ' + hd.rem : '') : 'changes no maps') : there.length === 1 && hit0.count >= 0 ? ' &middot; ' + hit0.count + ' on ' + esc(lqDevName(there[0])) : '') +
+            (hd ? ' &middot; updating ' + (hd.add || hd.rem ? (hd.add ? 'adds ' + hd.add : '') + (hd.add && hd.rem ? ' and ' : '') + (hd.rem ? 'removes ' + hd.rem : '') : 'changes no maps') : there.length === 1 && lqSizeLabel(there[0], hit0) ? ' &middot; ' + lqSizeLabel(there[0], hit0) + ' on ' + esc(lqDevName(there[0])) : '') +
             '. Update it with this version and your edits keep sending themselves (the headset keeps the old one as a backup), or send this as a separate playlist.' + (to.length > there.length ? ' Headsets without it get it as a new playlist.' : ''),
             pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : 'Update on ' + esc(onName)), 'data-lq-dupreplace', 'primary') + lqBtn('Send as new', 'data-lq-dupnew'));
         } else
@@ -6858,7 +6895,7 @@ window.PP = (function () {
     var qh = '';
     if (linked) {
       lq.devices.forEach(function (d) {
-        var q = lq.quest[d.id], all = lqQuestItems(d.id), fl = (lq.filter && lq.filter[d.id]) || '', items = lqSortList(all, fl);
+        var q = lq.quest[d.id], all = lqQuestItems(d.id), fl = (lq.filter && lq.filter[d.id]) || '', items = lqSortList(all, fl, d.id);
         var pn = q && Array.isArray(q.pending) ? q.pending.length : 0, dnm = lqDevName(d.id);
         qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(dnm) + '</span>' + (all.length ? '<span class="lq-cnt">' + all.length + '</span>' : '') +
           '<span class="lq-sync">' + (lqSeen(d.id) ? 'synced ' + esc(lqAgoMin(lqSeen(d.id))) : '') + '</span>' + lqBtn(lqIco('up') + 'Add playlist', 'data-lq-add="' + esc(d.id) + '" title="Send a .bplist file from this computer to ' + esc(lqDevName(d.id)) + '"', 'ghost sm lq-addbtn') + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
@@ -6878,11 +6915,11 @@ window.PP = (function () {
           qh += '<button type="button" class="lq-fold' + (delOpen ? ' open' : '') + '" data-lq-delopen="' + esc(d.id) + '" aria-expanded="' + delOpen + '">Recently deleted (' + gone.length + ')' + lqIco('chev') + '</button>';
           if (delOpen) qh += '<div class="lq-list">' + gone.map(function (g) {
             var pw = lqPendingFor(d.id, g.k), b = g.backups[0], id = esc(d.id) + '|' + esc(g.k), nm = g.title || g.file, meta = ['deleted ' + esc(lqWhen(b.t))];
-            if (b.count >= 0) meta.push(mapsLabel(b.count));
+            if (typeof b.maps === 'number' && b.maps >= 0) meta.push('<span class="lq-nw">' + mapsLabel(b.maps) + '</span>'); else if (b.count >= 0) meta.push('<span class="lq-nw">' + songsLabel(b.count) + '</span>');
             if (!lqSameName(nm, g.file)) meta.push(esc(g.file));
             if (pw && pw.restore) meta.push('<span class="lq-st lq-new"><span class="lq-dot2 new"></span>coming back</span>');
             var oldCov = lqThumbStore()[d.id + '|' + g.k];
-            return '<div class="lq-pl gone">' + lqThumbHtml(d.id + '|' + g.k, oldCov ? oldCov.src : '') + '<div class="lq-t"><span class="lq-n">' + esc(nm) + '</span><span class="lq-m">' + meta.join(' &middot; ') + '</span></div>' +
+            return '<div class="lq-pl gone">' + lqThumbHtml(d.id + '|' + g.k, oldCov ? oldCov.src : '') + '<div class="lq-t"><span class="lq-n">' + esc(nm) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
               (pw ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : lqBtn(lqIco('hist') + 'Restore', 'data-lq-restore="' + id + '|' + b.t + '"')) + '</div>';
           }).join('') + '</div>';
         }
