@@ -1867,7 +1867,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="sum-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="sum-block accent">
         <div class="sum-num" id="basketCount">0</div>
-        <div class="sum-lbl">in your playlist<br><b id="basketTime">0:00</b> · <span id="basketUnique">0</span> songs</div>
+        <div class="sum-lbl">in your playlist<br><b id="basketTime">0:00</b><span id="basketUniqueWrap" hidden> · <span id="basketUnique">0</span> songs</span></div>
       </div>
       <div class="sum-meta" id="counterMeta">Set filters and search to begin.</div>
     </section>
@@ -1916,7 +1916,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
         <div class="addtop"><button class="ghost sm" id="fillRuntimeBtn" disabled title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">⏱ Fill to</button><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" /><span class="addtop-unit">min</span></div>
         <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear results</button>
-        <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its songs from these results - great for building a 'new stuff only' set.">⊘ Skip maps from a playlist file</button>
+        <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its maps from these results - great for building a 'new stuff only' set.">⊘ Skip maps from a playlist file</button>
         <input type="file" id="hideFromFile" accept=".bplist,application/json" hidden />
         <span class="hidefrom-info" id="hideFromInfo" hidden title="Click to stop hiding these maps"></span>
         <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>One row per song</span></label>
@@ -1981,7 +1981,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="list-actions">
         <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
         <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
-        <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported songs from BeatLeader">↻ Fill data</button>
+        <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
         <button class="ghost sm" id="refreshStarsBtn" disabled title="Re-check every song's stars &amp; NPS on BeatLeader - catches rating recalcs">★ Re-check</button>
         <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
         <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
@@ -2005,7 +2005,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></span><h2>Playlist Stats</h2></div>
       <div class="panel-sub">A quick read on the shape of your current playlist: star spread, pacing and balance.</div>
       <div class="panel-body">
-        <div id="statsBody"><p class="feat-empty">Add songs to see your playlist stats.</p></div>
+        <div id="statsBody"><p class="feat-empty">Add maps to see your playlist stats.</p></div>
       </div>
     </section>
 
@@ -2026,7 +2026,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <div class="preset-row import-row">
           <label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label>
           <input type="file" id="importBplist" accept=".bplist,application/json" multiple hidden />
-          <span class="muted import-hint">Merges its songs into your current playlist</span>
+          <span class="muted import-hint">Merges its maps into your current playlist</span>
         </div>
         <div class="preset-row import-row">
           <button class="ghost sm" id="combineBtn" type="button" title="Merge several .bplist files or saved playlists into one, duplicates removed">&#10697; Combine playlists</button>
@@ -2048,7 +2048,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="panel-sub">Pack this playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools and sending a set to a friend.</div>
       <div class="panel-body">
         <div class="field"><label class="field-label">Your share link</label>
-          <input type="text" id="shareLink" readonly placeholder="Add songs to build a share link" /></div>
+          <input type="text" id="shareLink" readonly placeholder="Add maps to build a share link" /></div>
         <div class="preset-row"><button class="ghost sm" id="shareCopyBtn" disabled>&#8690; Copy link</button><span class="muted" id="shareInfo" style="font-family:var(--mono);font-size:11px;"></span></div>
         <div class="feat-lbl" style="margin-top:14px;">Import a shared playlist</div>
         <div class="preset-row"><input type="text" id="shareImportInput" placeholder="Paste a share link or code…" /><button class="ghost sm" id="shareImportBtn">Import</button></div>
@@ -2113,7 +2113,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="feat-chips" id="rampDirChips"><span class="feat-chip on" data-ramp-dir="up">Warmup &rarr; Peak</span><span class="feat-chip" data-ramp-dir="down">Peak &rarr; Cooldown</span></div>
         </div>
         <div class="feat-lbl">Preview</div>
-        <div id="rampPreview"><p class="feat-empty">Add songs to preview the ramp.</p></div>
+        <div id="rampPreview"><p class="feat-empty">Add maps to preview the ramp.</p></div>
         <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply ramp order</button>
         <button class="ghost sm" id="rampUndoBtn" type="button" hidden style="width:100%;margin-top:8px;">&#8617; Undo ramp</button>
       </div>
@@ -2152,7 +2152,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <div class="field"><label class="field-label">Title text</label>
               <input type="text" id="coverText" placeholder="(playlist title)" /></div>
             <div class="field"><label class="field-label">Subtitle</label>
-              <input type="text" id="coverSubtitle" placeholder="(auto: ★ · songs)" /></div>
+              <input type="text" id="coverSubtitle" placeholder="(auto: ★ · maps)" /></div>
           </div>
           <div class="field custom-file" id="customFileField" hidden><label class="field-label">Custom image file</label>
             <input type="file" id="customImageInput" accept="image/*" />
@@ -2207,7 +2207,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
       <div class="panel-body">
         <div class="export-validation" id="exportValidation">
-          <div class="valitem ok"><span class="ico">◇</span><span>Add songs to <b>Your Playlist</b>, then export.</span></div>
+          <div class="valitem ok"><span class="ico">◇</span><span>Add maps to <b>Your Playlist</b>, then export.</span></div>
         </div>
         <div class="export-note"><b>Songs download in game.</b> The file lists the songs, it doesn't contain them. In game, open the playlist and use PlaylistManager's download button to grab the ones you don't have.</div>
         <div class="plat-tabs" id="platTabs" data-needs-usb role="tablist" aria-label="Where do you play?">
@@ -2302,7 +2302,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T12:40:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T13:05:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2330,7 +2330,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
   <div class="modal" style="width:min(470px,100%);">
     <div class="modal-head">
       <span class="modal-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
-      <h3>Your Playlist already has songs</h3>
+      <h3>Your Playlist already has maps</h3>
     </div>
     <div class="modal-body">
       <p id="dropChoiceMsg" style="margin:0;font-size:15px;line-height:1.6;color:var(--text);"></p>
@@ -2438,7 +2438,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
   <div class="modal" style="width:min(720px,100%);">
     <div class="modal-head"><span class="modal-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span><h3>Playlist Gallery</h3><button class="ghost sm" id="galleryClose" title="Close (Esc)">&#10005;</button></div>
     <div class="modal-body"><div class="gal-list" id="galleryList"><p class="muted">Loading&hellip;</p></div></div>
-    <div class="modal-foot"><span class="muted preview-note">Loading one works like dropping a .bplist: if Your Playlist already has songs you choose Merge or Replace.</span></div>
+    <div class="modal-foot"><span class="muted preview-note">Loading one works like dropping a .bplist: if Your Playlist already has maps you choose Merge or Replace.</span></div>
   </div>
 </div>
 
@@ -3085,7 +3085,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     /** Build + trigger a browser download. Returns unique-song count. */
     download: function (meta, songs) {
       var playlist = this.build(meta, songs);
-      if (!playlist.songs.length) throw new Error('No songs to export.');
+      if (!playlist.songs.length) throw new Error('No maps to export.');
       var blob = new Blob([this.toJSON(playlist)], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
@@ -4336,7 +4336,7 @@ window.PP = (function () {
     reader.onerror = function () { toast('Could not read that file.', 'err'); };
     reader.onload = function () {
       var pl; try { pl = JSON.parse(reader.result); } catch (e) { toast('That file is not valid JSON / .bplist.', 'err'); return; }
-      if (!pl || !Array.isArray(pl.songs)) { toast('No songs found in that .bplist.', 'err'); return; }
+      if (!pl || !Array.isArray(pl.songs)) { toast('No maps found in that .bplist.', 'err'); return; }
       var map = {}, n = 0;
       pl.songs.forEach(function (sng) { var h = (sng.hash || sng.songHash || '').toString().toLowerCase(); if (h) { if (!map[h]) n++; map[h] = 1; } });
       if (!n) { toast('That .bplist has no usable song hashes.', 'warn'); return; }
@@ -4645,6 +4645,9 @@ window.PP = (function () {
   }
   function removeBasket(key) { var i = basketIndex(key); if (i < 0) return; state.basket.splice(i, 1); renderAll(); }
 
+  // Playlist size always reads in maps (Studio Sync too). The song count only adds itself when a song is in
+  // more than once, e.g. Expert and Expert+ of one song = 2 maps (1 song).
+  function mapsLabel(n, uniq) { return n + ' map' + (n === 1 ? '' : 's') + (uniq != null && uniq !== n ? ' (' + uniq + ' song' + (uniq === 1 ? '' : 's') + ')' : ''); }
   function uniqueHashes(list) { var m = {}; list.forEach(function (s) { if (s.hash) m[s.hash.toLowerCase()] = true; }); return Object.keys(m).length; }
   function basketRuntime() { var seen = {}, total = 0; state.basket.forEach(function (e) { var h = e.hash.toLowerCase(); if (!seen[h]) { seen[h] = 1; total += e.duration || 0; } }); return total; }
   function playlistStats() {
@@ -4893,8 +4896,9 @@ window.PP = (function () {
     countTo(el.matchCount, matched);
     countTo(el.basketCount, entries);
     el.basketUnique.textContent = uniq;
+    var buw = document.getElementById('basketUniqueWrap'); if (buw) buw.hidden = uniq === entries;
     el.basketTime.textContent = fmtDur(basketRuntime());
-    el.brandCount.textContent = uniq + ' in playlist';
+    el.brandCount.textContent = entries + ' in playlist';
     if (el.mResultsBadge) el.mResultsBadge.textContent = matched || '';
     if (el.mPlaylistBadge) el.mPlaylistBadge.textContent = state.basket.length || '';
     if (grew) { fxPop(el.basketCount); fxPop(el.mPlaylistBadge); fxRing(document.querySelector('.sum-arrow')); }
@@ -4911,7 +4915,7 @@ window.PP = (function () {
       : matched + ' maps matched. Add the ones you want to build your playlist.';
     else {
       var st = playlistStats();
-      var line = uniq + ' unique song' + (uniq === 1 ? '' : 's') + ' · ' + entries + ' map' + (entries === 1 ? '' : 's') + ' · ' + fmtDur(basketRuntime()) + ' runtime';
+      var line = mapsLabel(entries, uniq) + ' · ' + fmtDur(basketRuntime()) + ' runtime';
       if (st) line += ' · ★' + st.min.toFixed(1) + '–' + st.max.toFixed(1) + ' (avg ' + st.avg.toFixed(1) + ')' + (st.nps ? ' · ' + st.nps.toFixed(1) + ' NPS avg' : '');
       if (state.player) {
         var played = 0, fc = 0, accSum = 0;
@@ -4934,9 +4938,9 @@ window.PP = (function () {
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.disabled = !hasBasket; });
   }
   function buildAutoDesc() {
-    var uniq = uniqueHashes(state.basket), st = playlistStats();
+    var st = playlistStats();
     var starPart = st ? (st.min === st.max ? st.min.toFixed(1) + '★' : st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★') : 'unranked';
-    return uniq + ' songs · ' + fmtDur(basketRuntime()) + ' · ' + starPart + '. Built with Playlist Studio (BeatLeader).';
+    return mapsLabel(state.basket.length) + ' · ' + fmtDur(basketRuntime()) + ' · ' + starPart + '. Built with Playlist Studio (BeatLeader).';
   }
   function isAutoDesc(text) { return !text || !String(text).trim() || /Built with Playlist Studio/.test(text); }
   function refreshAutoDesc() {
@@ -4946,11 +4950,11 @@ window.PP = (function () {
   function renderExport() {
     refreshAutoDesc();
     var entries = state.basket.length, uniq = uniqueHashes(state.basket);
-    el.exportHint.textContent = entries ? uniq + ' songs · ' + entries + ' maps · ' + fmtDur(basketRuntime()) : 'Your playlist is empty.';
+    el.exportHint.textContent = entries ? mapsLabel(entries, uniq) + ' · ' + fmtDur(basketRuntime()) : 'Your playlist is empty.';
     var items = [];
-    if (!entries) items.push({ level: 'ok', ico: '◇', msg: 'Add songs to Your Playlist, then export.' });
+    if (!entries) items.push({ level: 'ok', ico: '◇', msg: 'Add maps to Your Playlist, then export.' });
     else {
-      items.push({ level: 'ok', ico: '✓', msg: uniq + ' unique song' + (uniq === 1 ? '' : 's') + ' (' + entries + ' map' + (entries === 1 ? '' : 's') + ') · ' + fmtDur(basketRuntime()) + ' total.' });
+      items.push({ level: 'ok', ico: '✓', msg: mapsLabel(entries, uniq) + ' · ' + fmtDur(basketRuntime()) + ' total.' });
       var missing = state.basket.filter(function (s) { return !s.hash; }).length;
       if (missing) items.push({ level: 'warn', ico: '!', msg: missing + ' entr' + (missing === 1 ? 'y is' : 'ies are') + ' missing a hash and will be skipped.' });
       var imgKB = Math.round((state.coverDataUrl || '').length / 1024);
@@ -4974,7 +4978,7 @@ window.PP = (function () {
     if (rampPrevOrder && state.basket.length !== rampSnapLen) { rampPrevOrder = null; if (el.rampUndoBtn) el.rampUndoBtn.hidden = true; }
     if (el.rampApplyBtn) el.rampApplyBtn.disabled = state.basket.length < 2;
     var vals = state.basket.map(rampMetric).filter(function (v) { return v > 0; });
-    if (vals.length < 2) { box.innerHTML = '<p class="feat-empty">Add rated songs to preview the ramp.</p>'; return; }
+    if (vals.length < 2) { box.innerHTML = '<p class="feat-empty">Add rated maps to preview the ramp.</p>'; return; }
     vals.sort(function (a, b) { return a - b; }); if (rampDir === 'down') vals.reverse();
     var W = 260, H = 70, mx = 0; vals.forEach(function (v) { if (v > mx) mx = v; }); if (!mx) mx = 1;
     var pts = vals.map(function (v, i) { var x = i / (vals.length - 1) * W; var y = H - v / mx * H; return x.toFixed(1) + ' ' + y.toFixed(1); });
@@ -5230,7 +5234,7 @@ window.PP = (function () {
   function renderStats() {
     var box = el.statsBody; if (!box) return;
     var b = state.basket;
-    if (!b.length) { box.innerHTML = '<p class="feat-empty">Add songs to see your playlist stats.</p>'; return; }
+    if (!b.length) { box.innerHTML = '<p class="feat-empty">Add maps to see your playlist stats.</p>'; return; }
     var seen = {}, u = [];
     b.forEach(function (e) { var h = (e.hash || '').toLowerCase(); if (h && !seen[h]) { seen[h] = 1; u.push(e); } if (!h) u.push(e); });
     var n = uniqueHashes(b) || u.length;
@@ -5274,11 +5278,11 @@ window.PP = (function () {
 
   // ---- cover ----------------------------------------------------------------
   function coverSubtitle() {
-    var n = uniqueHashes(state.basket), st = playlistStats();
-    if (st) return st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★' + (n ? '  ·  ' + n + ' songs' : '');
+    var n = state.basket.length, st = playlistStats();
+    if (st) return st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★' + (n ? '  ·  ' + mapsLabel(n) : '');
     var f = getFilters();
     var base = f.type === 'unranked' ? 'Unranked' : f.starMin.toFixed(1) + '★–' + f.starMax.toFixed(1) + '★';
-    return base + (n ? '  ·  ' + n + ' songs' : '');
+    return base + (n ? '  ·  ' + mapsLabel(n) : '');
   }
   function updateCover(force) {
     setTimeout(function () { if (typeof lqCovSync === 'function') lqCovSync(); }, 0);
@@ -5537,7 +5541,7 @@ window.PP = (function () {
     if (!state.basket.length) return;
     var x = exportParts();
     if (el.syncEnable.checked && !x.syncURL) toast('Sync is on but the host URL is incomplete - exporting without a syncURL.', 'warn');
-    try { var c = BplistExporter.download(x.meta, x.songs); setStatus('Exported ' + c + ' songs', 'on'); toast('Downloaded ' + c + '-song .bplist' + (x.syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
+    try { BplistExporter.download(x.meta, x.songs); var c = state.basket.length; setStatus('Exported ' + mapsLabel(c), 'on'); toast('Downloaded ' + c + '-map .bplist' + (x.syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
     catch (err) { toast(err.message, 'err'); }
   }
 
@@ -5563,7 +5567,7 @@ window.PP = (function () {
     var btn = document.getElementById('questSendBtn'), hint = document.getElementById('questHint'); if (!btn) return;
     var entries = state.basket.length;
     btn.disabled = !entries || QS.busy;
-    hint.textContent = QS.wait ? 'Waiting for your headset…' : QS.busy ? 'Working…' : (entries ? (function (n) { return n + (n === 1 ? ' song ready' : ' songs ready'); })(uniqueHashes(state.basket)) : 'Your playlist is empty.');
+    hint.textContent = QS.wait ? 'Waiting for your headset…' : QS.busy ? 'Working…' : (entries ? mapsLabel(entries) + ' ready' : 'Your playlist is empty.');
     var cb = document.getElementById('questCancelBtn'); if (cb) cb.hidden = !QS.wait;
   }
   function webusbCheck() {
@@ -5859,7 +5863,7 @@ window.PP = (function () {
   }
   function publishHosted(auto) {
     if (!state.pubAvailable || state.pubBusy) return;
-    if (!state.basket.length) { toast('Add songs to Your Playlist first.', 'warn'); return; }
+    if (!state.basket.length) { toast('Add maps to Your Playlist first.', 'warn'); return; }
     var pub = state.publish; if (pub) applyPublishToSync();
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to host. A smaller cover image usually fixes it.', 'warn'); return; }
@@ -6080,7 +6084,7 @@ window.PP = (function () {
   // mode: undefined checks for a playlist with the same name first; 'replace' overwrites it (the headset
   // keeps a backup); 'new' sends a second playlist alongside it.
   function lqSendThis(mode) {
-    if (!state.basket.length) { toast('Add songs to Your Playlist first.', 'warn'); return; }
+    if (!state.basket.length) { toast('Add maps to Your Playlist first.', 'warn'); return; }
     var devs = lqSendDevs(); if (!devs.length || state.lq.busy) return;
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return; }
@@ -6244,7 +6248,7 @@ window.PP = (function () {
   }
   function lqSendBack(quiet) {
     var ed = state.lq.editing; if (!ed || state.lq.busy) return Promise.resolve(false);
-    if (!state.basket.length) { toast('The playlist is empty. Add songs before sending it back.', 'warn'); return Promise.resolve(false); }
+    if (!state.basket.length) { toast('The playlist is empty. Add maps before sending it back.', 'warn'); return Promise.resolve(false); }
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return Promise.resolve(false); }
     lqBusy(true);
@@ -6468,7 +6472,7 @@ window.PP = (function () {
         rd.onerror = function () { res({ bad: f.name, why: 'couldn’t be read' }); };
         rd.onload = function () {
           var text = String(rd.result).replace(/^﻿/, ''), pl = null; try { pl = JSON.parse(text); } catch (e) {}
-          if (!pl || !Array.isArray(pl.songs) || !pl.songs.length) return res({ bad: f.name, why: 'not a playlist with songs' });
+          if (!pl || !Array.isArray(pl.songs) || !pl.songs.length) return res({ bad: f.name, why: 'not a playlist with maps' });
           if (text.length > 1950000) return res({ bad: f.name, why: 'too big (2 MB max; a smaller cover usually fixes it)' });
           res({ dev: devId, file: f.name, title: String(pl.playlistTitle || f.name.replace(/\.(bplist|json)$/i, '')), text: text, image: plImage(pl) });
         };
@@ -6694,14 +6698,14 @@ window.PP = (function () {
   function lqFilterHtml(devId, fl, nm) {
     var srt = lqSortGet(), dv = esc(devId), o = function (v, t) { return '<option value="' + v + '"' + (srt === v ? ' selected' : '') + '>' + t + '</option>'; };
     return '<div class="lq-filter"><input type="text" id="lqFilter-' + dv + '" data-lq-filter="' + dv + '" value="' + esc(fl) + '" placeholder="Filter playlists" aria-label="Filter playlists on ' + esc(nm) + '" autocomplete="off" spellcheck="false" />' +
-      '<select data-lq-sort aria-label="Sort playlists">' + o('az', 'A to Z') + o('recent', 'Last changed') + o('songs', 'Most songs') + '</select></div>';
+      '<select data-lq-sort aria-label="Sort playlists">' + o('az', 'A to Z') + o('recent', 'Last changed') + o('songs', 'Most maps') + '</select></div>';
   }
   function lqCovSync() { var ci = lqRender.cov; if (ci && ci.isConnected && state.coverDataUrl && ci.getAttribute('src') !== state.coverDataUrl) ci.src = state.coverDataUrl; }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
     var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [], arr = !pw && lqArrivedAt(d.id, it.k);
-    if (it.count >= 0) meta.push(it.count + ' song' + (it.count === 1 ? '' : 's'));
+    if (it.count >= 0) meta.push(mapsLabel(it.count));
     if (!lqSameName(name, it.file)) meta.push(esc(it.file));
     var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new</span>'
       : removing ? '<span class="lq-st lq-wait"><span class="lq-dot2"></span>deleting</span>'
@@ -6714,7 +6718,7 @@ window.PP = (function () {
     var mi = '';
     if (pw && (pw.restore || it.waiting)) mi += lqMi(lqIco('undo') + (it.waiting ? 'Cancel sending' : 'Undo the restore'), 'data-lq-cancel="' + id + '"');
     if (!removing && baks.length) mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Restore a backup</div>' + baks.map(function (b) {
-      return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + (b.count >= 0 ? '<span class="lq-m">' + b.count + ' song' + (b.count === 1 ? '' : 's') + (it.count >= 0 && b.count !== it.count ? ' (' + (b.count > it.count ? '+' : '−') + Math.abs(b.count - it.count) + ')' : '') + '</span>' : ''), 'data-lq-restore="' + id + '|' + b.t + '"');
+      return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + (b.count >= 0 ? '<span class="lq-m">' + mapsLabel(b.count) + (it.count >= 0 && b.count !== it.count ? ' (' + (b.count > it.count ? '+' : '−') + Math.abs(b.count - it.count) + ')' : '') + '</span>' : ''), 'data-lq-restore="' + id + '|' + b.t + '"');
     }).join('');
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
     var open = !!mi && lq.menuOpen === key;
@@ -6791,14 +6795,14 @@ window.PP = (function () {
     var card = document.getElementById('lqThisBox');
     card.hidden = !linked;
     if (linked) {
-      var title = esc(lqCurrentTitle()), n = state.basket.length, h = '', songs = n + ' song' + (n === 1 ? '' : 's'), wide = false;
+      var title = esc(lqCurrentTitle()), n = state.basket.length, h = '', songs = mapsLabel(n), wide = false;
       var nowCard = function (kick, name, meta, acts, cls) {
         return '<div class="lq-nowl"><span class="lq-k' + (cls ? ' ' + cls : '') + '">' + kick + '</span><b class="lq-nowt">' + name + '</b><span class="lq-m">' + meta + '</span></div>' + (acts ? '<div class="lq-nowa">' + acts + '</div>' : '');
       };
       if (ed && lq.conflict) {
         var cb = lqBodies[lq.conflict.dev + '|' + lq.conflict.k], cd = cb && n ? lqDiff(cb.keys, lqBasketKeys()) : null, cdn = esc(lqDevName(lq.conflict.dev));
         h = nowCard('Changed on ' + cdn, n ? title : esc(ed.title), 'Since you opened it, the copy on ' + cdn + ' changed' +
-          (cd && (cd.add || cd.rem) ? ': it has ' + (cd.add ? cd.add + ' song' + (cd.add === 1 ? '' : 's') + ' yours doesn’t' : '') + (cd.add && cd.rem ? ' and ' : '') + (cd.rem ? 'is missing ' + cd.rem + ' of yours' : '') : '') +
+          (cd && (cd.add || cd.rem) ? ': it has ' + (cd.add ? mapsLabel(cd.add) + ' yours doesn’t' : '') + (cd.add && cd.rem ? ' and ' : '') + (cd.rem ? 'is missing ' + cd.rem + ' of yours' : '') : '') +
           '. Maybe it was edited in game. Saving is paused so neither version gets lost.',
           lqBtn('Use the ' + cdn + ' version', 'data-lq-cfquest', 'primary') + lqBtn('Keep mine', 'data-lq-cfmine'), 'warn');
         wide = true;
@@ -6827,7 +6831,7 @@ window.PP = (function () {
           var hit0 = lqSameTitle(there[0], curT), onName = there.length === 1 ? lqDevName(there[0]) : there.length + ' headsets';
           var hb = lqBodyFor(there[0], hit0.k), hd = hb ? lqDiff(lqBasketKeys(), hb.keys) : null;
           h = nowCard('Already on ' + esc(there.map(lqDevName).join(', ')), title, songs + ' here' +
-            (hd ? ' &middot; updating ' + (hd.add || hd.rem ? (hd.add ? 'adds ' + hd.add : '') + (hd.add && hd.rem ? ' and ' : '') + (hd.rem ? 'removes ' + hd.rem : '') : 'changes no songs') : there.length === 1 && hit0.count >= 0 ? ' &middot; ' + hit0.count + ' on ' + esc(lqDevName(there[0])) : '') +
+            (hd ? ' &middot; updating ' + (hd.add || hd.rem ? (hd.add ? 'adds ' + hd.add : '') + (hd.add && hd.rem ? ' and ' : '') + (hd.rem ? 'removes ' + hd.rem : '') : 'changes no maps') : there.length === 1 && hit0.count >= 0 ? ' &middot; ' + hit0.count + ' on ' + esc(lqDevName(there[0])) : '') +
             '. Update it with this version and your edits keep sending themselves (the headset keeps the old one as a backup), or send this as a separate playlist.' + (to.length > there.length ? ' Headsets without it get it as a new playlist.' : ''),
             pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : 'Update on ' + esc(onName)), 'data-lq-dupreplace', 'primary') + lqBtn('Send as new', 'data-lq-dupnew'));
         } else
@@ -6873,7 +6877,7 @@ window.PP = (function () {
           qh += '<button type="button" class="lq-fold' + (delOpen ? ' open' : '') + '" data-lq-delopen="' + esc(d.id) + '" aria-expanded="' + delOpen + '">Recently deleted (' + gone.length + ')' + lqIco('chev') + '</button>';
           if (delOpen) qh += '<div class="lq-list">' + gone.map(function (g) {
             var pw = lqPendingFor(d.id, g.k), b = g.backups[0], id = esc(d.id) + '|' + esc(g.k), nm = g.title || g.file, meta = ['deleted ' + esc(lqWhen(b.t))];
-            if (b.count >= 0) meta.push(b.count + ' song' + (b.count === 1 ? '' : 's'));
+            if (b.count >= 0) meta.push(mapsLabel(b.count));
             if (!lqSameName(nm, g.file)) meta.push(esc(g.file));
             if (pw && pw.restore) meta.push('<span class="lq-st lq-new"><span class="lq-dot2 new"></span>coming back</span>');
             var oldCov = lqThumbStore()[d.id + '|' + g.k];
@@ -7600,7 +7604,7 @@ window.PP = (function () {
   }
   function savePlaylist() {
     var name = el.playlistName.value.trim(); if (!name) { toast('Name the playlist first.', 'warn'); return; }
-    if (!state.basket.length) { toast('Add some songs before saving.', 'warn'); return; }
+    if (!state.basket.length) { toast('Add some maps before saving.', 'warn'); return; }
     track('save-playlist');
     var o = lsGetPl();
     o[name] = libraryEntry();
@@ -7649,7 +7653,7 @@ window.PP = (function () {
     reader.onerror = function () { toast('Could not read that file.', 'err'); };
     reader.onload = function () {
       var pl; try { pl = JSON.parse(reader.result); } catch (e) { toast('That file is not valid JSON / .bplist.', 'err'); return; }
-      if (!pl || !Array.isArray(pl.songs)) { toast('No songs found in that .bplist.', 'err'); return; }
+      if (!pl || !Array.isArray(pl.songs)) { toast('No maps found in that .bplist.', 'err'); return; }
       // A fresh import (empty playlist) should adopt the file's identity wholesale - reset first
       // so any field the file omits falls back to default instead of inheriting the last list.
       // Importing INTO an existing playlist is a merge, so we leave the current metadata alone.
@@ -7708,7 +7712,7 @@ window.PP = (function () {
     if (!validPlaylistFile(file)) { toast('Drop a .bplist file (or its JSON).', 'warn'); return; }
     if (!state.basket.length) { track(dropTag + '-import-fresh'); dropTag = 'drop'; importBplistFile(file); return; }
     pendingDropFile = file;
-    if (el.dropChoiceMsg) el.dropChoiceMsg.innerHTML = 'Your Playlist already has <b>' + state.basket.length + '</b> song' + (state.basket.length === 1 ? '' : 's') + '. <b>Merge</b> adds this file’s songs to it. <b>Replace</b> swaps in the file instead - your current list goes to <b>Undo clear</b> so you can bring it back.';
+    if (el.dropChoiceMsg) el.dropChoiceMsg.innerHTML = 'Your Playlist already has <b>' + state.basket.length + '</b> map' + (state.basket.length === 1 ? '' : 's') + '. <b>Merge</b> adds this file’s maps to it. <b>Replace</b> swaps in the file instead - your current list goes to <b>Undo clear</b> so you can bring it back.';
     if (el.dropChoiceModal) { el.dropChoiceModal.classList.add('show'); el.dropChoiceModal.setAttribute('aria-hidden', 'false'); }
   }
   function dropMerge() { var f = pendingDropFile; closeDropChoice(); if (f) { track(dropTag + '-import-merge'); dropTag = 'drop'; importBplistFile(f); } }
@@ -7790,7 +7794,7 @@ window.PP = (function () {
   function cmbRender() {
     var list = cmbEl('cmbList'), n = CMB.src.length;
     list.innerHTML = n ? CMB.src.map(function (x, i) {
-      return '<li class="cmb-item"><span class="cmb-n">' + (i + 1) + '</span><span class="cmb-name">' + esc(x.name) + '<span class="cmb-sub">' + cmbN(x.entries.length, 'song') + ' &middot; ' + esc(x.sub) + '</span></span>' +
+      return '<li class="cmb-item"><span class="cmb-n">' + (i + 1) + '</span><span class="cmb-name">' + esc(x.name) + '<span class="cmb-sub">' + cmbN(x.entries.length, 'map') + ' &middot; ' + esc(x.sub) + '</span></span>' +
         '<button type="button" class="ghost sm" data-cmb-up="' + x.id + '" title="Move up"' + (i ? '' : ' disabled') + '>&#8593;</button>' +
         '<button type="button" class="ghost sm" data-cmb-del="' + x.id + '" title="Remove">&#10005;</button></li>';
     }).join('') : '<li class="cmb-empty">Add .bplist files or tick playlists from your library.</li>';
@@ -7798,17 +7802,17 @@ window.PP = (function () {
       cb.checked = CMB.src.some(function (x) { return x.kind === 'lib' && x.lib === cb.getAttribute('data-cmb-lib'); });
     });
     var cur = state.basket.length, add = !!cur && cmbTo() === 'add';
-    cmbEl('cmbTarget').hidden = !cur; cmbEl('cmbCur').textContent = cmbN(cur, 'song');
+    cmbEl('cmbTarget').hidden = !cur; cmbEl('cmbCur').textContent = cmbN(cur, 'map');
     var sum = cmbEl('cmbSum'), go = cmbEl('cmbGo');
     go.disabled = !n;
     if (!n) { sum.innerHTML = 'Nothing to combine yet.'; return; }
     var srcTotal = CMB.src.reduce(function (a, x) { return a + x.entries.length; }, 0);
     var r = cmbMerge((add ? [state.basket] : []).concat(CMB.src.map(function (x) { return x.entries; })), cmbEl('cmbAnyDiff').checked);
     var gained = r.list.length - (add ? cur : 0), dup = srcTotal - gained;
-    go.textContent = add ? 'Add ' + cmbN(gained, 'song') : 'Combine into ' + cmbN(r.list.length, 'song');
-    sum.innerHTML = '<b>' + cmbN(n, 'playlist') + '</b>, ' + cmbN(srcTotal, 'song') + ' in total. ' +
-      (add ? '<b>' + cmbN(gained, 'new song') + '</b> ' + (gained === 1 ? 'goes' : 'go') + ' into Your Playlist (' + cmbN(r.list.length, 'song') + ' after), ' + dup + ' already there or repeated.'
-        : '<b>' + cmbN(dup, 'duplicate') + '</b> removed, so the combined playlist has <b>' + cmbN(r.list.length, 'song') + '</b>.' +
+    go.textContent = add ? 'Add ' + cmbN(gained, 'map') : 'Combine into ' + cmbN(r.list.length, 'map');
+    sum.innerHTML = '<b>' + cmbN(n, 'playlist') + '</b>, ' + cmbN(srcTotal, 'map') + ' in total. ' +
+      (add ? '<b>' + cmbN(gained, 'new map') + '</b> ' + (gained === 1 ? 'goes' : 'go') + ' into Your Playlist (' + cmbN(r.list.length, 'map') + ' after), ' + dup + ' already there or repeated.'
+        : '<b>' + cmbN(dup, 'duplicate') + '</b> removed, so the combined playlist has <b>' + cmbN(r.list.length, 'map') + '</b>.' +
           (cur ? ' Your current playlist goes to <b>Undo clear</b>.' : ''));
   }
   function cmbReadFile(f) {
@@ -7864,7 +7868,7 @@ window.PP = (function () {
     var before = add ? state.basket.length : 0, msg;
     if (add) {
       state.basket = r.list; state.clearUndo = null;
-      msg = 'Added ' + cmbN(r.list.length - before, 'song') + ' from ' + cmbN(n, 'playlist') + ' (' + cmbN(srcTotal - (r.list.length - before), 'duplicate') + ' skipped).';
+      msg = 'Added ' + cmbN(r.list.length - before, 'map') + ' from ' + cmbN(n, 'playlist') + ' (' + cmbN(srcTotal - (r.list.length - before), 'duplicate') + ' skipped).';
     } else {
       var snap = state.basket.length ? snapshotPlaylist() : null;
       state.basket = [];
@@ -7872,7 +7876,7 @@ window.PP = (function () {
       if (el.playlistName) el.playlistName.value = '';
       if (el.savedPlaylists) el.savedPlaylists.value = '';
       state.basket = r.list; state.clearUndo = snap;
-      msg = 'Combined ' + cmbN(n, 'playlist') + ' into ' + cmbN(r.list.length, 'song') + ' (' + cmbN(r.dupes, 'duplicate') + ' removed). Give it a title and cover, then export.';
+      msg = 'Combined ' + cmbN(n, 'playlist') + ' into ' + cmbN(r.list.length, 'map') + ' (' + cmbN(r.dupes, 'duplicate') + ' removed). Give it a title and cover, then export.';
     }
     closeCombine();
     renderAll();
