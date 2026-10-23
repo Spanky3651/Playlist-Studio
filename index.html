@@ -6662,6 +6662,7 @@ window.PP = (function () {
   function lqConflictKeepMine() {
     var c = state.lq.conflict, ed = state.lq.editing; if (!c || !ed) return;
     ed.at = c.at; state.lq.conflict = null;
+    lqAuto.base = lqAuto.last = lqSig();   // this send covers the edits made while saving was paused
     lqSendBack(true).then(function (ok) {
       toast(ok ? 'Sent yours. ' + lqEdWhere(ed) + ' replaces its version on the next sync and keeps it as a backup.' : 'Couldn’t send yours. Try Keep mine again in a moment.', ok ? 'ok' : 'warn');
       if (!ok) { state.lq.conflict = c; lqRender(); }
