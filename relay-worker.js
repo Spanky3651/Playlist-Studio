@@ -235,10 +235,12 @@ function looksLikePlaylist(text) {
   try { const p = JSON.parse(text); return !!(p && typeof p === "object" && Array.isArray(p.songs)); } catch (e) { return false; }
 }
 const MAX_MOVED = 30, MAX_DELETED = 30;
-// Backups the headset reports for one playlist: [{ t: unix seconds, count: songs or -1 }], newest first.
+// Maps (each difficulty counts) when the mod reports them (0.6.2 and later), next to the song count.
+function mapsField(v) { return Number.isInteger(v) && v >= 0 ? { maps: Math.min(1000000, v) } : {}; }
+// Backups the headset reports for one playlist: [{ t: unix seconds, count: songs or -1, maps? }], newest first.
 function cleanBackups(v) {
   if (!Array.isArray(v)) return [];
-  return v.filter((b) => b && Number.isSafeInteger(b.t) && b.t > 0 && b.t < 1e11).slice(0, 5).map((b) => ({ t: b.t, count: Number.isInteger(b.count) ? Math.max(-1, Math.min(100000, b.count)) : -1 }));
+  return v.filter((b) => b && Number.isSafeInteger(b.t) && b.t > 0 && b.t < 1e11).slice(0, 5).map((b) => Object.assign({ t: b.t, count: Number.isInteger(b.count) ? Math.max(-1, Math.min(100000, b.count)) : -1 }, mapsField(b.maps)));
 }
 function publicDevices(lib) { return (lib.devices || []).map((d) => ({ id: d.id, name: d.name, added: d.added, seen: d.seen || 0 })); }
 
@@ -314,12 +316,12 @@ async function linked(request, env, ctx, url) {
         const prev = byFile.get(it.file);
         const have = !!(prev && prev.sha === it.sha && prev.have);
         if (!have) need.push(it.file);
-        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), sha: it.sha, have, at: have ? prev.at : nowSec(), backups: cleanBackups(it.backups) });
+        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), sha: it.sha, have, at: have ? prev.at : nowSec(), backups: cleanBackups(it.backups) });
       }
       // Drop stored copies of playlists that are gone from the headset.
       const keep = new Set(items.map((it) => it.file));
       const gone = old.items.filter((it) => !keep.has(it.file));
-      const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []); });
+      const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []) || (p && p.maps) !== it.maps; });
       // Playlists deleted on the headset that it can still bring back, and what this mod version can do.
       const deleted = [];
       for (const d of (Array.isArray(body.deleted) ? body.deleted : []).slice(0, MAX_DELETED)) {
@@ -437,7 +439,7 @@ async function linked(request, env, ctx, url) {
       return w;
     };
     if (!m[5] && request.method === "GET") {
-      const items = inv.items.map((it) => ({ k: it.k, file: it.file, title: it.title, count: it.count, ready: !!it.have, at: it.at, backups: it.backups || [] }));
+      const items = inv.items.map((it) => Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), { ready: !!it.have, at: it.at, backups: it.backups || [] }));
       const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
       const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
       return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
