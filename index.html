@@ -2533,7 +2533,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T23:20:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T23:40:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6279,8 +6279,10 @@ window.PP = (function () {
     return Promise.all(devs.map(function (d) {
       return libFetch('GET', libPath('/devices/' + encodeURIComponent(d.id) + '/playlists')).then(function (res) {
         if (!res.ok || !res.j) return;
-        if (mut === lqMut && before[d.id]) lqNoteArrivals(d.id, before[d.id], res.j);
+        var landed = mut === lqMut && before[d.id] && lqNoteArrivals(d.id, before[d.id], res.j);
         state.lq.quest[d.id] = res.j;
+        if (landed) lqFollowUp(d.id, res.j);
+        else if (lqFollow.since[d.id] && (res.j.updated || 0) >= lqFollow.since[d.id]) delete lqFollow.since[d.id];
       }, function () {});
     })).then(function () {
       Object.keys(state.lq.quest).forEach(function (k) { if (!devs.some(function (d) { return d.id === k; })) delete state.lq.quest[k]; });
@@ -7019,7 +7021,7 @@ window.PP = (function () {
     var ids = {}, ks = {};
     (q.pending || []).forEach(function (w) { ids[w.id] = 1; ks[w.k] = 1; });
     var got = before.filter(function (w) { return w && w.id && !ids[w.id] && !ks[w.k]; });
-    if (!got.length) return;
+    if (!got.length) return false;
     var t = Date.now();
     state.lq.arrived = state.lq.arrived || {};
     got.forEach(function (w) {
@@ -7030,6 +7032,27 @@ window.PP = (function () {
     var dn = lqDevName(dev), w0 = got[0], nm = '“' + (w0.title || String(w0.file || '').replace(/\.bplist$/i, '')) + '”';
     toast(got.length > 1 ? got.length + ' changes arrived on ' + dn + '.' : w0.remove ? nm + ' was deleted on ' + dn + '.' : w0.restore ? nm + ' was restored on ' + dn + '.' : nm + ' arrived on ' + dn + '.', 'ok');
     track('lq-arrived');
+    return true;
+  }
+  // The headset clears a change from the queue as soon as it applies it, but reports its playlists at the end of
+  // the sync: seconds later, or a minute or more when it deletes songs. Until that report is in, look again
+  // (4, 10, 20, 35, 60 and 90 seconds after), so a restored or new playlist shows and a deleted one goes
+  // without reloading the page.
+  var lqFollow = { since: {}, n: 0, t: 0 }, LQ_FOLLOW = [4, 10, 20, 35, 60, 90];
+  function lqFollowUp(dev, q) {
+    if ((q.updated || 0) >= (q.seen || 0)) return;   // the report came in with this answer
+    lqFollow.since[dev] = q.seen || 0; lqFollow.n = 0; lqFollowNext();
+  }
+  function lqFollowNext() {
+    clearTimeout(lqFollow.t);
+    if (!Object.keys(lqFollow.since).length || lqFollow.n >= LQ_FOLLOW.length) { lqFollow.since = {}; return; }
+    var wait = (LQ_FOLLOW[lqFollow.n] - (lqFollow.n ? LQ_FOLLOW[lqFollow.n - 1] : 0)) * 1000;
+    lqFollow.n++;
+    lqFollow.t = setTimeout(function () {
+      if (!libGet() || !lqActive()) { lqFollow.since = {}; return; }
+      if (state.lq.busy || state.pubBusy) { lqFollowNext(); return; }
+      lqRefresh().then(lqFollowNext, lqFollowNext);
+    }, wait);
   }
   function lqArrivedAt(dev, k) { var a = state.lq.arrived && state.lq.arrived[dev + '|' + k]; return a && Date.now() - a.t < 15 * 60000 ? a : null; }
   function lqClock(ms) { try { return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
