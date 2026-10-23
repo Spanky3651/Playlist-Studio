@@ -2305,7 +2305,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T13:40:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T14:20:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3287,7 +3287,7 @@ window.PP = (function () {
   var DEFAULT_TITLE = 'Playlist Studio Mix';
   var DEFAULT_AUTHOR = 'Playlist Studio';
   var DEFAULT_COVER_STYLE = 'pulse', DEFAULT_COVER_ACCENT = 'rb';
-  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, playIndex: {}, viewMode: 'search', excludeHashes: null, excludeName: '', syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader', descAuto: true };
+  var state = { raw: [], fetched: false, filtered: [], basket: [], coverDataUrl: '', usingCustom: false, coverSrc: 'auto', fetching: false, enriching: false, pinnedRelay: null, lastSig: null, coverStyle: 'pulse', coverAccent: 'rb', coverSeed: 0, coverTextPos: 'bottom', coverTextColor: '#ffffff', customBaseUrl: '', customImgEl: null, player: null, scores: {}, playIndex: {}, viewMode: 'search', excludeHashes: null, excludeName: '', syncing: false, ppAcc: 95, ppMod: '', ppEntry: null, ppModalAcc: 95, ppModalMod: '', source: 'beatleader', descAuto: true };
 
   function debounce(fn, ms) { var t; return function () { var a = arguments, self = this; clearTimeout(t); t = setTimeout(function () { fn.apply(self, a); }, ms); }; }
 
@@ -4505,7 +4505,7 @@ window.PP = (function () {
     state.coverTextPos = 'bottom'; if (el.coverTextPos) el.coverTextPos.value = 'bottom';
     state.coverTextColor = '#ffffff'; if (el.coverTextColor) el.coverTextColor.value = '#ffffff';
     state.usingCustom = false; state.customImgEl = null; state.customBaseUrl = '';
-    state.coverDataUrl = ''; state._coverSig = null;
+    state.coverDataUrl = ''; state._coverSig = null; state.coverSrc = 'auto';
     if (el.useCustomImage) el.useCustomImage.checked = false;
     if (el.customFileField) el.customFileField.hidden = true;
     if (el.coverStyleGrid) buildCoverPickers();
@@ -4524,7 +4524,7 @@ window.PP = (function () {
       coverText: el.coverText.value, coverSubtitle: el.coverSubtitle.value,
       coverStyle: state.coverStyle, coverAccent: state.coverAccent, coverSeed: state.coverSeed,
       coverTextPos: state.coverTextPos, coverTextColor: state.coverTextColor,
-      usingCustom: state.usingCustom, customImgEl: state.customImgEl, customBaseUrl: state.customBaseUrl, coverDataUrl: state.coverDataUrl,
+      usingCustom: state.usingCustom, customImgEl: state.customImgEl, customBaseUrl: state.customBaseUrl, coverDataUrl: state.coverDataUrl, coverSrc: state.coverSrc,
       useCustom: el.useCustomImage.checked, customFieldHidden: el.customFileField.hidden,
       syncEnabled: el.syncEnable.checked, syncUrl: el.syncUrl.value,
       playlistName: el.playlistName.value, savedSel: el.savedPlaylists.value, publish: state.publish || null
@@ -4538,7 +4538,7 @@ window.PP = (function () {
     state.coverTextPos = s.coverTextPos; el.coverTextPos.value = s.coverTextPos;
     state.coverTextColor = s.coverTextColor; el.coverTextColor.value = s.coverTextColor;
     state.usingCustom = s.usingCustom; state.customImgEl = s.customImgEl; state.customBaseUrl = s.customBaseUrl;
-    state.coverDataUrl = s.coverDataUrl; state._coverSig = null;
+    state.coverDataUrl = s.coverDataUrl; state._coverSig = null; state.coverSrc = s.coverSrc || 'auto';
     el.useCustomImage.checked = s.useCustom; el.customFileField.hidden = s.customFieldHidden;
     buildCoverPickers();
     el.syncEnable.checked = s.syncEnabled; el.syncUrl.value = s.syncUrl; updateSyncUI();
@@ -4680,6 +4680,7 @@ window.PP = (function () {
         if (rl) {
           state.lq.editing = { dev: rl.ed.dev, k: rl.ed.k, file: rl.ed.file, title: rl.ed.title || rl.ed.file, at: rl.ed.at || 0, sent: rl.ed.sent || '', also: Array.isArray(rl.ed.also) ? rl.ed.also.filter(function (t) { return t && t.dev && t.k; }) : [] };
           state.lq.openName = rl.name || null; lqAuto.resume = rl.sent || '';
+          setTimeout(lqCoverFromHeadset, 0);
         }
         toast('Restored your last playlist (' + state.basket.length + ' maps).' + (rl ? ' Still editing it on your Quest.' : ' Clear to start fresh.'), 'ok');
       }
@@ -5401,6 +5402,12 @@ window.PP = (function () {
     };
     reader.readAsDataURL(file);
   }
+  // A playlist file's cover as a data URL: "image" or PlaylistManager's raw base64 "imageString". '' = none.
+  function fileCoverUrl(img) {
+    img = typeof img === 'string' ? img.trim() : '';
+    if (/^data:image\//i.test(img)) return img;
+    return /^[A-Za-z0-9+/=\s]+$/.test(img) && img.replace(/\s+/g, '').length > 100 ? 'data:image/png;base64,' + img.replace(/\s+/g, '') : '';
+  }
   // Paint a finished data-URL cover as-is (used when importing a .bplist whose
   // image already has text baked in - no overlay so it isn't doubled).
   function setCoverFromDataUrl(dataUrl) {
@@ -6092,6 +6099,8 @@ window.PP = (function () {
     var devs = lqSendDevs(); if (!devs.length || state.lq.busy) return;
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return; }
+    // Replacing one already there: a generated cover doesn't replace the headset's (new playlists still get it).
+    var bodyOver = state.coverSrc === 'auto' ? JSON.stringify(BplistExporter.build(Object.assign({}, x.meta, { image: '' }), x.songs)) : body;
     if (!mode) {
       var hits = devs.filter(function (d) { return lqSameTitle(d, x.meta.title); });
       if (hits.length) { state.lq.dup = { devs: devs, hits: hits, title: x.meta.title }; lqRender(); return; }
@@ -6102,7 +6111,7 @@ window.PP = (function () {
     devs.forEach(function (dev) {
       chain = chain.then(function () {
         var hit = mode === 'replace' ? lqSameTitle(dev, x.meta.title) : null;
-        return libFetch('POST', libPath('/devices/' + encodeURIComponent(dev) + '/playlists/' + (hit ? hit.k + '/send' : 'new')), body).then(function (res) {
+        return libFetch('POST', libPath('/devices/' + encodeURIComponent(dev) + '/playlists/' + (hit ? hit.k + '/send' : 'new')), hit ? bodyOver : body).then(function (res) {
           var k = res.j && res.j.k || (res.ok && hit ? hit.k : ''), file = res.j && res.j.file || (hit ? hit.file : '');
           if (!res.ok || !k) { failed++; lastErr = (res.j && res.j.error) || ''; return; }
           var q = state.lq.quest[dev] || (state.lq.quest[dev] = { items: [], pending: [], updated: 0 });
@@ -6179,7 +6188,7 @@ window.PP = (function () {
     return parts.join('|');
   }
   function lqSig() {
-    try { var x = exportParts(); return JSON.stringify([x.meta.title, x.meta.author, x.meta.description, (x.meta.image || '').length, (x.meta.image || '').slice(-64), x.songs]); } catch (e) { return ''; }
+    try { var x = exportParts(), im = state.coverSrc === 'user' ? x.meta.image || '' : ''; return JSON.stringify([x.meta.title, x.meta.author, x.meta.description, im.length, im.slice(-64), x.songs]); } catch (e) { return ''; }
   }
   function lqMarkSaved() { state.lq.dirty = false; state.lq.savedAt = Date.now(); lqRender(); }
   // What the page remembers about an edit in progress: which headset playlist, and what was last sent.
@@ -6250,10 +6259,24 @@ window.PP = (function () {
       var yp = document.querySelector('.playlist-panel'); if (yp && yp.scrollIntoView) yp.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
+  // The headset's own cover for the playlist being edited, after a reload brought the edit back without it.
+  function lqCoverFromHeadset() {
+    var ed = state.lq && state.lq.editing; if (!ed || !libGet()) return;
+    libFetch('GET', libPath('/devices/' + encodeURIComponent(ed.dev) + '/playlists/' + ed.k), null, null, true).then(function (res) {
+      var pl = null; try { pl = JSON.parse(res.text); } catch (e) {}
+      if (!res.ok || !pl || state.lq.editing !== ed || state.coverSrc !== 'auto') return;
+      var url = fileCoverUrl(plImage(pl)); if (!url) return;
+      setCoverFromDataUrl(url); state.coverSrc = 'file';
+      renderAll(); lqCovSync();
+      if (state.lq.openName) { var o = lsGetPl(); if (o[state.lq.openName]) { o[state.lq.openName] = libraryEntry(); lsSetPl(o); } }
+    }, function () {});
+  }
   function lqSendBack(quiet) {
     var ed = state.lq.editing; if (!ed || state.lq.busy) return Promise.resolve(false);
     if (!state.basket.length) { toast('The playlist is empty. Add maps before sending it back.', 'warn'); return Promise.resolve(false); }
-    var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
+    var x = exportParts();
+    if (state.coverSrc !== 'user') x.meta.image = '';   // no cover in the edit: the headset keeps the one it has
+    var body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return Promise.resolve(false); }
     lqBusy(true);
     var sent = 0, err = '', moved = false, chain = Promise.resolve();
@@ -7634,7 +7657,7 @@ window.PP = (function () {
   // Everything Save playlist stores for the current list.
   function libraryEntry() {
     var cover = { usingCustom: state.usingCustom, style: state.coverStyle, accent: state.coverAccent,
-      seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value };
+      seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value, src: state.coverSrc };
     if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
     return { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
       sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value }, pub: state.publish || null,
@@ -7665,6 +7688,7 @@ window.PP = (function () {
       state.coverSeed = cv.seed || 0; state.coverTextPos = cv.textPos || 'bottom'; el.coverTextPos.value = state.coverTextPos;
       state.coverTextColor = cv.textColor || '#ffffff'; el.coverTextColor.value = state.coverTextColor;
       buildCoverPickers();
+      state.coverSrc = cv.src === 'user' || cv.src === 'file' ? cv.src : cv.usingCustom && cv.dataUrl ? 'file' : 'auto';
       if (cv.usingCustom && cv.dataUrl) {
         if (cv.customEditable) loadCustomImageEl(cv.dataUrl);
         else setCoverFromDataUrl(cv.dataUrl);
@@ -7718,11 +7742,8 @@ window.PP = (function () {
         el.metaDescription.value = pl.playlistDescription || ''; state.descAuto = isAutoDesc(pl.playlistDescription || '');
         var importedSync = pl.customData && typeof pl.customData.syncURL === 'string' ? pl.customData.syncURL.trim() : '';
         if (importedSync) { el.syncEnable.checked = true; el.syncUrl.value = importedSync; updateSyncUI(); }
-        if (plImage(pl)) {
-          var img = plImage(pl);
-          if (/^data:image\//i.test(img)) setCoverFromDataUrl(img);
-          else if (/^[A-Za-z0-9+/=\s]+$/.test(img) && img.replace(/\s+/g, '').length > 100) setCoverFromDataUrl('data:image/png;base64,' + img.replace(/\s+/g, '')); // raw base64 cover (common in community .bplists)
-        }
+        var fcov = fileCoverUrl(plImage(pl));   // raw base64 covers are common in community .bplists and on the headset
+        if (fcov) { setCoverFromDataUrl(fcov); state.coverSrc = 'file'; }
       }
       renderAll();
       toast(added ? 'Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from "' + (pl.playlistTitle || 'playlist') + '".' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn');
@@ -9778,6 +9799,13 @@ window.PP = (function () {
     el.coverTextPos.addEventListener('change', function () { state.coverTextPos = el.coverTextPos.value; updateCover(true); });
     el.metaTitle.addEventListener('input', function () { updateCover(); });
     el.metaDescription.addEventListener('input', function () { state.descAuto = !el.metaDescription.value.trim(); if (state.descAuto) refreshAutoDesc(); saveSession(); });
+    // Any change made in Cover Art makes the cover yours: only then do edits send it to the headset.
+    var covPanel = document.getElementById('coverPanel'), covMine = function () { state.coverSrc = 'user'; };
+    if (covPanel) {
+      covPanel.addEventListener('change', covMine, true);
+      covPanel.addEventListener('input', covMine, true);
+      covPanel.addEventListener('click', function (e) { var bt = e.target.closest && e.target.closest('button'); if (bt && !bt.closest('.panel-head') && !bt.classList.contains('icon-lib-del')) covMine(); }, true);
+    }
     el.regenCoverBtn.addEventListener('click', function () { state.usingCustom = false; el.useCustomImage.checked = false; el.customFileField.hidden = true; state.coverSeed = (state.coverSeed || 0) + 1; updateCover(true); renderExport(); });
     el.useCustomImage.addEventListener('change', function () { el.customFileField.hidden = !el.useCustomImage.checked; if (el.useCustomImage.checked) renderIconLibrary(); if (!el.useCustomImage.checked) { state.usingCustom = false; updateCover(true); renderExport(); } else if (state.customImgEl) { state.usingCustom = true; updateCover(true); renderExport(); } });
     el.customImageInput.addEventListener('change', function (e) { var file = e.target.files && e.target.files[0]; if (file) handleCustomImage(file); });
