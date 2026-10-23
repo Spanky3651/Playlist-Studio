@@ -220,6 +220,12 @@ function outKey(lib, dev) { return "out:" + lib + ":" + dev; }
 // A headset's "done" for one pending write lives under its own key. KV has no transactions, so if acks
 // rewrote the shared list, two at once (or an ack and a send from Studio) could undo each other.
 function ackKey(lib, dev, id) { return "outa:" + lib + ":" + dev + ":" + id; }
+// When a headset last checked in, kept apart from the library so it can be fresher than the hourly copy there.
+function seenKey(lib, dev) { return "seen:" + lib + ":" + dev; }
+async function withSeen(env, lib, devices) {
+  const seen = await Promise.all(devices.map((d) => env.PLAYLISTS.get(seenKey(lib, d.id))));
+  return devices.map((d, i) => Object.assign({}, d, { seen: Math.max(d.seen || 0, +seen[i] || 0) }));
+}
 async function liveOut(env, lib, dev, items) {
   const done = await Promise.all(items.map((w) => env.PLAYLISTS.get(ackKey(lib, dev, w.id))));
   return items.filter((w, i) => done[i] === null);
@@ -285,6 +291,11 @@ async function linked(request, env, ctx, url) {
         me.seen = nowSec();
         const w = Promise.all([putLib(env, dev.lib, lib), env.PLAYLISTS.put("dev:" + th, JSON.stringify(dev), { expirationTtl: LIB_TTL })]);
         if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
+      }
+      const sk = seenKey(dev.lib, me.id), lastSeen = +(await env.PLAYLISTS.get(sk)) || 0;
+      if (nowSec() - lastSeen > 600) {
+        const sw = putTtl(env, sk, String(nowSec()));
+        if (ctx && ctx.waitUntil) ctx.waitUntil(sw); else await sw;
       }
       const out = (await env.PLAYLISTS.get(outKey(dev.lib, me.id), "json")) || { items: [] };
       out.items = await liveOut(env, dev.lib, me.id, out.items);
@@ -428,7 +439,8 @@ async function linked(request, env, ctx, url) {
     if (!m[5] && request.method === "GET") {
       const items = inv.items.map((it) => ({ k: it.k, file: it.file, title: it.title, count: it.count, ready: !!it.have, at: it.at, backups: it.backups || [] }));
       const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
-      return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0 }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+      const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
+      return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
     if (m[5] === "new" && !m[6] && request.method === "POST") {
       if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
@@ -500,7 +512,7 @@ async function linked(request, env, ctx, url) {
   }
 
   if (!m[2] && request.method === "GET") {
-    return json({ items: lib.items || [], devices: publicDevices(lib) }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+    return json({ items: lib.items || [], devices: await withSeen(env, id, publicDevices(lib)) }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
   }
 
   if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
