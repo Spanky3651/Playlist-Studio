@@ -2463,7 +2463,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T20:10:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T20:15:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6437,6 +6437,8 @@ window.PP = (function () {
   function lqSig() {
     try { var x = exportParts(), im = state.coverSrc === 'user' ? x.meta.image || '' : ''; return JSON.stringify([x.meta.title, x.meta.author, x.meta.description, im.length, im.slice(-64), x.songs]); } catch (e) { return ''; }
   }
+  // The maps in Your Playlist, in the form Studio remembers for what the headset has (editing.sent).
+  function lqMapsHash() { try { return lqHash(lqSigOf(lqKeysOf(exportParts().songs))); } catch (e) { return ''; } }
   function lqMarkSaved() { state.lq.dirty = false; state.lq.savedAt = Date.now(); lqRender(); }
   // What the page remembers about an edit in progress: which headset playlist, and what was last sent.
   function lqHash(x) { x = String(x || ''); var h = 5381; for (var i = 0; i < x.length; i++) h = ((h << 5) + h + x.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + ':' + x.length; }
@@ -6454,6 +6456,8 @@ window.PP = (function () {
       lqAuto.key = key; lqAuto.base = lqAuto.last = sig; state.lq.savedAt = 0; state.lq.dirty = false;
       // Back after a reload: send what was changed but not sent before the page went away.
       if (lqAuto.resume != null) { if (lqAuto.resume && lqHash(sig) !== lqAuto.resume) { lqAuto.base = ''; state.lq.dirty = true; } lqAuto.resume = null; }
+      // Maps changed in the moments between opening it and this first check: they still go out.
+      else if (state.lq.editing && state.lq.editing.sent && lqMapsHash() !== state.lq.editing.sent) { lqAuto.base = ''; state.lq.dirty = true; }
       lqRender(); return;
     }
     if (sig !== lqAuto.last) { lqAuto.last = sig; if (!state.lq.dirty) { state.lq.dirty = true; lqRender(); } return; }
