@@ -1113,8 +1113,8 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 /* ============================================================
    BEAT-SABER ANIMATIONS - gentle, GPU-light, no flashing/strobe.
    Everything is gated behind body.anim, which is OFF under the OS
-   "reduce motion" setting or the topbar toggle. When off, the page
-   looks exactly as it did before.
+   "reduce motion" setting. When off, the page looks exactly as it
+   did before.
    ============================================================ */
 #fxCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.5;display:none;}
 body.anim #fxCanvas{display:block;}
@@ -1143,9 +1143,7 @@ body.anim .brand .logo{animation:fx-logo 4.6s ease-in-out infinite;}
 body.anim .brand .logo .hr{animation:lg-fade .4s ease .08s both;}
 body.anim .brand .logo .hb{animation:half-blue .55s cubic-bezier(.4,.5,.2,1) .16s both;}
 body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5s both;}
-.anim-toggle.off{opacity:.5;}
 /* Desktop: the effects switch is as tall as the buttons beside it */
-@media(min-width:721px){.topbar-actions .anim-toggle{min-height:37px;}}
 
 /* ---- fetch loading (functional feedback; shown regardless of the toggle) ---- */
 #topLoadBar{position:fixed;left:0;right:0;top:0;height:3px;z-index:60;overflow:hidden;display:none;}
@@ -1385,8 +1383,8 @@ body.sd-lock .toast.show{z-index:950}
   .topbar{flex-wrap:nowrap;gap:8px;}
   .topbar .status-pill{display:none;}
   .topbar-actions{flex-wrap:nowrap;gap:6px;margin-left:auto;}
-  .topbar-actions #resetBtn,.topbar-actions #downloadBtn,.topbar-actions .anim-toggle{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;font-size:0;gap:0;}
-  .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg,.topbar-actions .anim-toggle svg{width:20px;height:20px;margin:0;}
+  .topbar-actions #resetBtn,.topbar-actions #downloadBtn{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;font-size:0;gap:0;}
+  .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg{width:20px;height:20px;margin:0;}
   .tb-ss:not([hidden]){margin-left:auto;}
   .tb-ss:not([hidden]) + .spacer + .topbar-actions{margin-left:0;}
 }
@@ -1401,11 +1399,9 @@ body.sd-lock .toast.show{z-index:950}
   .topbar{padding-left:10px;padding-right:10px;gap:5px;}
   .brand h1{font-size:15px;}
   .topbar .topbar-actions{gap:5px;}
-  .topbar-actions #resetBtn,.topbar-actions #downloadBtn,.topbar-actions .anim-toggle,.topbar .tb-ss:not([hidden]){width:36px;height:36px;min-height:36px;}
-  .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg,.topbar-actions .anim-toggle svg,.topbar .tb-ss svg{width:19px;height:19px;}
+  .topbar-actions #resetBtn,.topbar-actions #downloadBtn,.topbar .tb-ss:not([hidden]){width:36px;height:36px;min-height:36px;}
+  .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg,.topbar .tb-ss svg{width:19px;height:19px;}
 }
-/* The effects switch makes room on the narrowest phones when the Studio Sync button is there */
-@media(max-width:340px){.topbar:has(.tb-ss:not([hidden])) .anim-toggle{display:none;}}
 /* Toasts sit in the corner on desktop instead of over the middle of the lists */
 @media(min-width:721px){
   .toast{left:auto;right:24px;transform:translateY(140%);max-width:440px;}
@@ -1637,8 +1633,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
-    <button class="ghost anim-toggle" id="animToggle" title="Turn background animations / effects on or off" aria-label="Toggle animations / effects">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 14l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7L19 14z"/></svg></button>
     <button class="ghost" id="resetBtn" title="Reset search filters - your playlist is kept">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset</button>
     <button class="primary" id="fetchBtn" title="Search BeatLeader for maps that match your filters">
@@ -2533,7 +2527,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-23T23:40:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T00:02:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3536,7 +3530,7 @@ window.PP = (function () {
    'addAllBtn','addTopBtn','addTopN','addRandomBtn','fillRuntimeBtn','fillMins','clearResultsBtn','collapseSongs','hideInPlaylist','hideFromBtn','hideFromFile','hideFromInfo','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
    'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','coverTextColor','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput','iconLibraryGrid',
-   'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','animToggle','topLoadBar','topLoadFill',
+   'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','topLoadBar','topLoadFill',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'quickAddInput','quickAddBtn','quickAddHint','undoClearBtn',
@@ -9948,16 +9942,17 @@ window.PP = (function () {
   }
   function fxStart() { if (FX.running || !el.fxCanvas) return; FX.running = true; fxResize(); fxSeed(); FX.raf = requestAnimationFrame(fxDraw); }
   function fxStop() { FX.running = false; if (FX.raf) cancelAnimationFrame(FX.raf); FX.raf = null; if (el.fxCanvas) { var ctx = el.fxCanvas.getContext('2d'); if (ctx) ctx.clearRect(0, 0, FX.W, FX.H); } }
-  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); if (el.animToggle) el.animToggle.classList.toggle('off', !state.anim); if (state.anim) fxStart(); else fxStop(); }
+  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); if (state.anim) fxStart(); else fxStop(); }
   function fxStagger() {
     var items = document.querySelectorAll('.col-left > .panel, .col-left > .intro, .col-left > .fetch-dock, .col-right > .panel');
     for (var i = 0; i < items.length; i++) { items[i].style.animationDelay = (Math.min(i, 10) * 0.045) + 's'; items[i].classList.add('fx-rise'); }
   }
   function fxInit() {
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var stored = null; try { stored = localStorage.getItem('playlistStudio.anim.v1'); } catch (e) {}
-    state.anim = stored == null ? !reduce : (stored === '1');
-    if (el.animToggle) el.animToggle.addEventListener('click', function () { state.anim = !state.anim; try { localStorage.setItem('playlistStudio.anim.v1', state.anim ? '1' : '0'); } catch (e) {} applyAnim(); toast(state.anim ? 'Animations on.' : 'Animations off.', 'ok'); });
+    // Animations follow the device's "reduce motion" setting (the old on/off button is gone, and so is its saved choice).
+    var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    state.anim = !(mq && mq.matches);
+    try { localStorage.removeItem('playlistStudio.anim.v1'); } catch (e) {}
+    if (mq) { var onMq = function () { state.anim = !mq.matches; applyAnim(); }; if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq); }
     window.addEventListener('resize', function () { if (FX.running) fxResize(); });
     applyAnim();
     if (state.anim) fxStagger();
