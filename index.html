@@ -2531,7 +2531,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T18:01:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T21:15:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6296,6 +6296,7 @@ window.PP = (function () {
         if (!res.ok || !res.j) return;
         var landed = mut === lqMut && before[d.id] && lqNoteArrivals(d.id, before[d.id], res.j);
         state.lq.quest[d.id] = res.j;
+        lqKnownNote(d.id, res.j);
         if (landed) lqFollowUp(d.id, res.j);
         else if (lqFollow.since[d.id] && (res.j.updated || 0) >= lqFollow.since[d.id]) delete lqFollow.since[d.id];
       }, function () {});
@@ -7084,6 +7085,24 @@ window.PP = (function () {
       lqRefresh().then(lqFollowNext, lqFollowNext);
     }, wait);
   }
+  // When this browser first saw each headset playlist (kept across reloads), so one that showed up on the headset
+  // without going through Studio still reads "added 5:11 PM". The first list ever seen for a headset sets the
+  // baseline (nothing in it counts as new). The headset's copy time (it.at) gives "updated".
+  var LQ_KNOWN = 'playlistStudio.lqKnown.v1', LQ_FRESH = 15 * 60;
+  function lqKnownGet() { try { return JSON.parse(localStorage.getItem(LQ_KNOWN) || '{}') || {}; } catch (e) { return {}; } }
+  function lqKnownNote(dev, q) {
+    if (!q || !Array.isArray(q.items)) return;
+    var all = lqKnownGet(), was = all[dev], kn = {}, t = Math.floor(Date.now() / 1000);
+    q.items.forEach(function (it) { kn[it.k] = was ? (Object.prototype.hasOwnProperty.call(was, it.k) ? was[it.k] : t) : 0; });
+    all[dev] = kn;
+    try { localStorage.setItem(LQ_KNOWN, JSON.stringify(all)); } catch (e) {}
+  }
+  function lqFreshAt(dev, it) {
+    var now = Date.now() / 1000, kn = lqKnownGet()[dev], first = kn && kn[it.k];
+    if (first && now - first < LQ_FRESH) return { add: true, t: first * 1000 };
+    if (it.at && it.ready && now - it.at < LQ_FRESH && !(first && it.at - first < 60)) return { add: false, t: it.at * 1000 };
+    return null;
+  }
   function lqArrivedAt(dev, k) { var a = state.lq.arrived && state.lq.arrived[dev + '|' + k]; return a && Date.now() - a.t < 15 * 60000 ? a : null; }
   function lqClock(ms) { try { return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
 
@@ -7194,7 +7213,7 @@ window.PP = (function () {
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
-    var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [], arr = !pw && lqArrivedAt(d.id, it.k);
+    var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [], arr = !pw && lqArrivedAt(d.id, it.k), fresh = !pw && !arr && !it.waiting && lqFreshAt(d.id, it);
     var sizeL = lqSizeLabel(d.id, it), curM = lqMaps(d.id, it);
     // A change from here is waiting for the headset: show where the count is going, not just what's there now.
     var sent = pw && !pw.remove && !pw.restore && !it.waiting ? lqSent[key] : null;
@@ -7208,6 +7227,7 @@ window.PP = (function () {
       : pw ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>waiting</span>'
       : editing ? '<span class="lq-edn">editing now</span>'
       : arr ? '<span class="lq-st lq-arr"><span class="lq-dot2 ok"></span>' + (arr.kind === 'restore' ? 'restored ' : arr.kind === 'add' ? 'added ' : 'arrived ') + esc(lqClock(arr.t)) + '</span>'
+      : fresh ? '<span class="lq-st lq-arr"><span class="lq-dot2 ok"></span>' + (fresh.add ? 'added ' : 'updated ') + esc(lqClock(fresh.t)) + '</span>'
       : baks.length ? baks.length + ' backup' + (baks.length === 1 ? '' : 's') : '';
     if (st) meta.push(st);
     // Select mode: the whole row is a checkbox; Edit and the menu step aside.
