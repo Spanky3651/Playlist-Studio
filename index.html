@@ -862,6 +862,9 @@ button[hidden],.filebtn[hidden]{display:none !important;}
 
 .song-row{grid-template-columns:44px 1fr auto;gap:12px;padding:8px 10px;}
 .song-row.bk{grid-template-columns:18px 26px 40px 1fr auto;gap:11px;}
+/* A map just added while editing a headset playlist (it lands on top): a short blue glow */
+.song-row.bk.fresh{animation:pl-fresh 2.6s ease-out both;}
+@keyframes pl-fresh{0%,30%{box-shadow:inset 0 0 0 1px #2f8cff;background-color:rgba(47,140,255,.16);}100%{box-shadow:inset 0 0 0 1px rgba(47,140,255,0);}}
 .song-cover{width:44px;height:44px;}
 .song-row.bk .song-cover{width:40px;height:40px;}
 .bk-idx{font-family:var(--mono);font-size:14px;color:var(--muted-2);text-align:center;font-variant-numeric:tabular-nums;}
@@ -4604,9 +4607,17 @@ window.PP = (function () {
     if (collapseOn()) return state.basket.some(function (b) { return b.hash.toLowerCase() === e.hash.toLowerCase(); });
     return state.basket.some(function (b) { return keyOf(b) === keyOf(e); });
   }
+  // Editing a playlist that's already on the headset: new maps go on top, in the order they're added (one click, Add all
+  // or a Quick Add of several), and the list scrolls up to show them. Building a new playlist still adds at the bottom.
+  var addOnTop = null, plFresh = {};
   function addEntry(e) {
     if (inBasket(e)) return false;
-    state.basket.push(e); state.clearUndo = null; return true;   // adding maps voids a pending "undo clear"
+    if (state.lq && state.lq.editing) {
+      if (!addOnTop) { addOnTop = { i: 0 }; setTimeout(function () { addOnTop = null; }, 0); }
+      state.basket.splice(addOnTop.i++, 0, e);
+      plFresh[keyOf(e)] = Date.now(); state.plShowTop = true;
+    } else state.basket.push(e);
+    state.clearUndo = null; return true;   // adding maps voids a pending "undo clear"
   }
   // Strict add: dedupe by exact hash|diff|mode, ignoring the "Collapse dupes" view toggle.
   // Used by import so every difficulty in a .bplist lands (collapse must not silently drop diffs).
@@ -6619,6 +6630,7 @@ window.PP = (function () {
       });
     });
     return chain.then(function () {
+      if (sent) lqTargets(ed).forEach(function (t) { lqSent[t.dev + '|' + t.k] = { maps: x.songs.length, songs: uniqueHashes(x.songs) }; });
       if (sent && !err) ed.sent = lqHash(lqSigOf(lqKeysOf(x.songs)));
       if (moved) lqSaveOpenQuest();
       if (sent) { lqMarkSaved(); if (!quiet) { toast('Sent. ' + lqEdWhere(ed) + ' replaces “' + ed.title + '” on its next sync and keeps a backup.', 'ok'); track('lq-sendback'); } }
@@ -6946,7 +6958,7 @@ window.PP = (function () {
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
   }
   // ---- what each headset copy holds: for change counts, and to spot edits made on the headset ----
-  var lqBodies = {}, lqBodyBusy = {};
+  var lqBodies = {}, lqBodyBusy = {}, lqSent = {};
   function lqKeysOf(songs) {
     var o = {};
     (songs || []).forEach(function (sg) {
@@ -7151,6 +7163,10 @@ window.PP = (function () {
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
     var baks = !it.waiting && Array.isArray(it.backups) ? it.backups : [], name = it.title || it.file, meta = [], arr = !pw && lqArrivedAt(d.id, it.k);
     var sizeL = lqSizeLabel(d.id, it), curM = lqMaps(d.id, it);
+    // A change from here is waiting for the headset: show where the count is going, not just what's there now.
+    var sent = pw && !pw.remove && !pw.restore && !it.waiting ? lqSent[key] : null;
+    if (!pw) delete lqSent[key];
+    if (sent && curM != null && sent.maps !== curM) sizeL = curM + ' \u2192 ' + mapsLabel(sent.maps, sent.songs);
     if (sizeL) meta.push('<span class="lq-nw">' + sizeL + '</span>');
     if (!lqSameName(name, it.file)) meta.push(esc(it.file));
     var st = it.waiting ? '<span class="lq-st lq-new"><span class="lq-dot2 new"></span>new</span>'
@@ -10348,6 +10364,12 @@ window.PP = (function () {
   function plSelKeys() { return state.basket.map(keyOf).filter(function (k) { return plSel[k]; }); }
   function plAfterRender() {
     var list = el.basketList, f = document.getElementById('plFilter'), n = state.basket.length;
+    var tnow = Date.now();
+    Object.keys(plFresh).forEach(function (k) { if (tnow - plFresh[k] > 2600) delete plFresh[k]; });
+    Array.prototype.forEach.call(list.querySelectorAll('.song-row.bk'), function (r) {
+      var t = plFresh[r.dataset.key]; r.classList.toggle('fresh', !!t); r.style.animationDelay = t ? -(tnow - t) + 'ms' : '';
+    });
+    if (state.plShowTop) { state.plShowTop = false; list.scrollTop = 0; }
     if (f) { f.hidden = n < 12; if (f.hidden && f.value) f.value = ''; }
     var q = f && !f.hidden ? f.value.trim().toLowerCase() : '', shown = 0;
     // forget selected maps that are gone
