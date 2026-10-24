@@ -630,8 +630,7 @@ p.lq-chk-note.solo{margin-left:0;}
 .lq-a:hover{box-shadow:none;border:0;text-decoration:underline;color:#8fb8ff;}
 @media(max-width:720px){.lq-sync{display:none;}.lq-sec .lq-ib{margin-left:auto;}.lq-nowa{flex-basis:100%;}.lq-nowa button{flex:1;justify-content:center;}.lq-dev .lq-m{flex-basis:100%;order:3;}.lq-dev .lq-a{margin-left:auto;}}
 .tb-ss{display:none;}
-.tb-ss:not([hidden]){display:inline-flex;align-items:center;justify-content:center;position:relative;margin-left:auto;width:37px;height:37px;padding:0;flex:none;color:#8fbaff;}
-.tb-ss:not([hidden]) + .spacer{display:none;}
+.tb-ss:not([hidden]){display:inline-flex;align-items:center;justify-content:center;position:relative;width:37px;height:37px;padding:0;flex:none;color:#8fbaff;}
 .tb-ss svg{width:20px;height:20px;margin:0;}
 .tb-ss-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 2px #06090e;}
 .tb-ss.idle .tb-ss-dot{background:#5a6b85;}
@@ -1385,8 +1384,6 @@ body.sd-lock .toast.show{z-index:950}
   .topbar-actions{flex-wrap:nowrap;gap:6px;margin-left:auto;}
   .topbar-actions #resetBtn,.topbar-actions #downloadBtn{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;font-size:0;gap:0;}
   .topbar-actions #resetBtn svg,.topbar-actions #downloadBtn svg{width:20px;height:20px;margin:0;}
-  .tb-ss:not([hidden]){margin-left:auto;}
-  .tb-ss:not([hidden]) + .spacer + .topbar-actions{margin-left:0;}
 }
 @media(max-width:360px){.brand h1{font-size:15px;}}
 /* Small phones: the title stays on one line next to the buttons, which all match */
@@ -1629,7 +1626,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <div class="sub"><span id="srcLabel">BEATLEADER</span> SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
     </div>
   </div>
-  <button type="button" class="ghost tb-ss" id="tbSS" data-ss-open="topbar" hidden title="Studio Sync" aria-label="Open Studio Sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9.6C6 5 18 5 18 9.6"/><path d="M5.5 9.6H18.5A3 3 0 0 1 21.5 12.6V16.6A3 3 0 0 1 18.5 19.6H15.6Q14.8 19.6 14.2 18.7L13.2 17.1Q12 16 10.8 17.1L9.8 18.7Q9.2 19.6 8.4 19.6H5.5A3 3 0 0 1 2.5 16.6V12.6A3 3 0 0 1 5.5 9.6Z"/></svg><span class="tb-ss-dot"></span><span class="tb-ss-n"></span></button>
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="status-pill off" id="statusPill" title="BeatLeader connection state"><span class="led"></span><span id="statusText">Ready</span></span>
@@ -1639,6 +1635,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</button>
     <button class="cyan" id="downloadBtn" disabled title="Download your playlist as a .bplist">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export .bplist</button>
+    <button type="button" class="ghost tb-ss" id="tbSS" data-ss-open="topbar" hidden title="Studio Sync" aria-label="Open Studio Sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9.6C6 5 18 5 18 9.6"/><path d="M5.5 9.6H18.5A3 3 0 0 1 21.5 12.6V16.6A3 3 0 0 1 18.5 19.6H15.6Q14.8 19.6 14.2 18.7L13.2 17.1Q12 16 10.8 17.1L9.8 18.7Q9.2 19.6 8.4 19.6H5.5A3 3 0 0 1 2.5 16.6V12.6A3 3 0 0 1 5.5 9.6Z"/></svg><span class="tb-ss-dot"></span><span class="tb-ss-n"></span></button>
   </div>
 </header>
 
@@ -2527,7 +2524,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T00:21:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T01:01:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
