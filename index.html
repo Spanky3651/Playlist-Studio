@@ -2524,7 +2524,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T01:01:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T11:20:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6498,8 +6498,14 @@ window.PP = (function () {
     if (lq.openName && parts.length) parts.push('lib:' + lq.openName);
     return parts.join('|');
   }
+  // What counts as a change worth sending: the maps in order, the title, the author, a description someone wrote and a
+  // cover someone picked. Song names and an automatic description fill in as song details load, so they don't count.
   function lqSig() {
-    try { var x = exportParts(), im = state.coverSrc === 'user' ? x.meta.image || '' : ''; return JSON.stringify([x.meta.title, x.meta.author, x.meta.description, im.length, im.slice(-64), x.songs]); } catch (e) { return ''; }
+    try {
+      var x = exportParts(), im = state.coverSrc === 'user' ? x.meta.image || '' : '';
+      var maps = x.songs.map(function (sg) { return String(sg.hash || '').toLowerCase() + '|' + (sg.difficulties || []).map(function (d) { return (d.characteristic || '') + '/' + (d.name || ''); }).join(','); });
+      return JSON.stringify([x.meta.title, x.meta.author, state.descAuto ? '' : x.meta.description, im.length, im.slice(-64), maps]);
+    } catch (e) { return ''; }
   }
   // The maps in Your Playlist, in the form Studio remembers for what the headset has (editing.sent).
   function lqMapsHash() { try { return lqHash(lqSigOf(lqKeysOf(exportParts().songs))); } catch (e) { return ''; } }
@@ -6514,7 +6520,7 @@ window.PP = (function () {
     if (!lqActive() || !libGet() || !state.lq.devices.length) return;
     var key = lqAutoKey();
     if (!key) { lqAuto.key = null; return; }
-    if (state.pubBusy || state.lq.busy) return;
+    if (state.pubBusy || state.lq.busy || state.lq.loading) return;   // a headset playlist still opening
     var sig = lqSig();
     if (key !== lqAuto.key) {
       lqAuto.key = key; lqAuto.base = lqAuto.last = sig; state.lq.savedAt = 0; state.lq.dirty = false;
@@ -6569,7 +6575,9 @@ window.PP = (function () {
       state.lq.conflict = null;
       state.lq.dup = null;
       state.lq.lastDev = devId;
-      importBplistFile(new File([res.text], it.file, { type: 'application/json' }), snap ? { restoreUndo: snap } : {});
+      state.lq.loading = true; setTimeout(function () { state.lq.loading = false; }, 8000);   // never stuck if the import throws
+      lqAuto.key = null;   // a fresh look once it's open, even when the same playlist was just closed
+      importBplistFile(new File([res.text], it.file, { type: 'application/json' }), { restoreUndo: snap || null, done: function () { state.lq.loading = false; } });
       track('lq-edit');
       var yp = document.querySelector('.playlist-panel'); if (yp && yp.scrollIntoView) yp.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
@@ -6628,7 +6636,7 @@ window.PP = (function () {
       if (unsent) lqAuto.base = lqSig();
       if (state.lq.openName && n) { var o = lsGetPl(); o[state.lq.openName] = libraryEntry(); lsSetPl(o); populatePlaylists(); }
       var waiting = lqEdPending(ed);
-      state.lq.savedAt = 0; state.lq.dirty = false; state.lq.keepEdit = null;
+      state.lq.savedAt = 0; state.lq.dirty = false; state.lq.keepEdit = null; lqAuto.key = null;
       state.basket = []; state.clearUndo = null;
       resetPlaylistIdentity();
       state.lq.editing = null;
@@ -8155,7 +8163,9 @@ window.PP = (function () {
       toast(added ? 'Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from "' + (pl.playlistTitle || 'playlist') + '".' : 'Those maps are already in your playlist.', added ? 'ok' : 'warn');
       if (needsEnrich().length) enrichImported();
       if (opts.restoreUndo) { state.clearUndo = opts.restoreUndo; renderControls(); }
+      if (opts.done) opts.done();
     };
+    if (opts.done) reader.onerror = function () { toast('Could not read that file.', 'err'); opts.done(); };
     reader.readAsText(file);
   }
 
