@@ -21,7 +21,7 @@
 })();
 </script>
 <link rel="canonical" href="https://spanky3651.github.io/Playlist-Studio/" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3CclipPath%20id%3D%22cc%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%2F%3E%3C%2FclipPath%3E%3Cg%20clip-path%3D%22url%28%23cc%29%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23ff2740%22%2F%3E%3Cpath%20d%3D%22M0%2C64%20L64%2C0%20L64%2C64%20Z%22%20fill%3D%22%232f7bff%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M25%2021%20L46%2032%20L25%2043%20Z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212.5%22%20fill%3D%22%2308090c%22%2F%3E%3Cpath%20d%3D%22M8.06%2030.33A24%2024%200%200%201%2051.90%2018.58%22%20stroke%3D%22%23ff2740%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M55.94%2033.67A24%2024%200%200%201%2012.10%2045.42%22%20stroke%3D%22%232f7bff%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2213.8%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M28.12%2024.24L40.05%2032L28.12%2039.76Z%22%20fill%3D%22%2308090c%22%20stroke%3D%22%2308090c%22%20stroke-width%3D%221.87%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#05070c" />
   <meta name="description" content="The all-in-one Beat Saber playlist tool: build, generate and export playlists from BeatLeader and BeatSaver. Filter by stars, PP, mapper, NPS and tags, see your own scores on every map, and export a ready-to-play .bplist. Runs in your browser, no install or account." />
@@ -1135,12 +1135,12 @@ body.anim .big-fetch::after{content:"";position:absolute;inset:0;border-radius:i
 body.anim .topbar::after{animation:fx-underline 4s ease-in-out infinite;}
 @keyframes fx-logo{0%,100%{filter:drop-shadow(0 0 2px rgba(255,45,85,.45))}50%{filter:drop-shadow(0 0 8px rgba(47,140,255,.7))}}
 body.anim .brand .logo{animation:fx-logo 4.6s ease-in-out infinite;}
-/* logo intro on load: the split slices in (blue half reveals the diagonal cut), then the play cue pops */
-@keyframes lg-fade{from{opacity:0}to{opacity:1}}
-@keyframes half-blue{0%{opacity:0;transform:translate(11px,11px)}100%{opacity:1;transform:translate(0,0)}}
+/* logo intro on load: the red and blue arcs draw in, then the play button pops */
+@keyframes arc-draw{0%{stroke-dashoffset:1;opacity:0}12%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
 @keyframes tri-pop{0%,42%{transform:scale(0);opacity:0}74%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
-body.anim .brand .logo .hr{animation:lg-fade .4s ease .08s both;}
-body.anim .brand .logo .hb{animation:half-blue .55s cubic-bezier(.4,.5,.2,1) .16s both;}
+body.anim .brand .logo .hr,body.anim .brand .logo .hb{stroke-dasharray:1;}
+body.anim .brand .logo .hr{animation:arc-draw .5s cubic-bezier(.4,.5,.2,1) .08s both;}
+body.anim .brand .logo .hb{animation:arc-draw .5s cubic-bezier(.4,.5,.2,1) .2s both;}
 body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5s both;}
 /* Desktop: the effects switch is as tall as the buttons beside it */
 
@@ -1620,7 +1620,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 <!-- ============ TOPBAR ============ -->
 <header class="topbar">
   <div class="brand">
-    <div class="logo"><svg class="logo-svg" viewBox="0 0 64 64" aria-hidden="true"><rect class="half hr" width="64" height="64" fill="#ff2740"/><path class="half hb" d="M0,64 L64,0 L64,64 Z" fill="#2f7bff"/><path class="ptri" d="M25 21 L46 32 L25 43 Z" fill="#fff"/></svg></div>
+    <div class="logo"><svg class="logo-svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#08090c"/><path class="hr" d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="7" stroke-linecap="round" fill="none" pathLength="1"/><path class="hb" d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="7" stroke-linecap="round" fill="none" pathLength="1"/><g class="ptri"><circle cx="32" cy="32" r="13.8" fill="#ffffff"/><path d="M28.12 24.24L40.05 32L28.12 39.76Z" fill="#08090c" stroke="#08090c" stroke-width="1.87" stroke-linejoin="round"/></g></svg></div>
     <div class="brand-txt">
       <h1>Playlist <span>Studio</span></h1>
       <div class="sub"><span id="srcLabel">BEATLEADER</span> SOURCE &nbsp;·&nbsp; <b id="brandCount">0 in playlist</b> &nbsp;·&nbsp; .BPLIST EXPORT</div>
