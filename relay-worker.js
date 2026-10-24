@@ -199,6 +199,7 @@ function finalize(pl, origin, id) {
 function libCors(request) {
   const h = writeCors(request);
   h["Access-Control-Allow-Headers"] = "Content-Type, X-Lib-Key, Authorization";
+  h["Access-Control-Expose-Headers"] = "X-Studio-Version";
   return h;
 }
 function bearer(request) {
@@ -246,6 +247,22 @@ function soloField(v) { return Number.isInteger(v) && v >= 0 ? { solo: Math.min(
 function cleanBackups(v) {
   if (!Array.isArray(v)) return [];
   return v.filter((b) => b && Number.isSafeInteger(b.t) && b.t > 0 && b.t < 1e11).slice(0, 5).map((b) => Object.assign({ t: b.t, count: Number.isInteger(b.count) ? Math.max(-1, Math.min(100000, b.count)) : -1 }, mapsField(b.maps)));
+}
+// A playlist's version: its maps (song + characteristic + difficulty, in any order), the same thing Studio compares.
+// Studio and upload.ps1 send the version they started from (?base=); a send made from an older one gets 409, so
+// an edit can't silently replace one made meanwhile somewhere else. The headset's copy after it applies a send has
+// the same version as the send, so applying never looks like a change.
+async function plVersion(pl) {
+  if (typeof pl === "string") { try { pl = JSON.parse(pl); } catch (e) { return ""; } }
+  if (!pl || !Array.isArray(pl.songs)) return "";
+  const o = new Set();
+  for (const sg of pl.songs) {
+    if (!sg || !sg.hash) continue;
+    const h = String(sg.hash).toLowerCase(), ds = Array.isArray(sg.difficulties) ? sg.difficulties : [];
+    if (!ds.length) o.add(h + "|*");
+    for (const d of ds) if (d) o.add(h + "|" + String(d.characteristic || "Standard").toLowerCase() + "|" + String(d.name || "").toLowerCase());
+  }
+  return (await sha256("v1:" + [...o].sort().join(","))).slice(0, 16);
 }
 function publicDevices(lib) { return (lib.devices || []).map((d) => ({ id: d.id, name: d.name, added: d.added, seen: d.seen || 0 })); }
 
@@ -321,7 +338,7 @@ async function linked(request, env, ctx, url) {
         const prev = byFile.get(it.file);
         const have = !!(prev && prev.sha === it.sha && prev.have);
         if (!have) need.push(it.file);
-        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), ...soloField(it.solo), sha: it.sha, have, at: have ? prev.at : nowSec(), backups: cleanBackups(it.backups) });
+        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), ...soloField(it.solo), sha: it.sha, have, at: have ? prev.at : nowSec(), ...(have && prev.v ? { v: prev.v } : {}), backups: cleanBackups(it.backups) });
       }
       // Drop stored copies of playlists that are gone from the headset.
       const keep = new Set(items.map((it) => it.file));
@@ -353,7 +370,7 @@ async function linked(request, env, ctx, url) {
       const it = inv.items.find((x) => x.file === file);
       if (!it) return json({ error: "Not in the inventory" }, 404, cors);
       await putTtl(env, "invb:" + dev.lib + ":" + me.id + ":" + it.k, text);
-      it.have = true; it.at = nowSec();
+      it.have = true; it.at = nowSec(); it.v = await plVersion(text);
       await putTtl(env, invKey(dev.lib, me.id), inv);
       return json({ ok: true }, 200, cors);
     }
@@ -426,7 +443,14 @@ async function linked(request, env, ctx, url) {
     const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
     const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
     out.items = await liveOut(env, id, dv.id, out.items);
-    const pendingList = () => out.items.map((x) => ({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, songs: !!(x.remove && x.songs), at: x.at }));
+    const pendingList = () => out.items.map((x) => Object.assign({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, songs: !!(x.remove && x.songs), at: x.at }, x.v ? { v: x.v } : {}));
+    // The newest version of a playlist: a send still waiting for the headset, else the headset's copy.
+    // "" = not known (a restore or delete is waiting, or the headset hasn't shared this copy yet): no check.
+    const latestV = (file, item) => {
+      const w = out.items.find((x) => x.file === file);
+      if (w) return w.v || "";
+      return (item && item.have && item.v) || "";
+    };
     const movedList = () => (out.moved || []).map((x) => ({ k: x.k, nk: x.nk, file: x.file }));
     // opts: { restore: backup time } or { remove: true, songs }; neither carries a body. opts.later leaves
     // saving the list to the caller (deleting several at once writes it once).
@@ -439,14 +463,19 @@ async function linked(request, env, ctx, url) {
       const w = { id: randomId(10), k, file, title: String(title || "").slice(0, 200), create: create || prev.some((x) => x.create), at: nowSec() };
       if (opts.restore) w.restore = opts.restore;
       else if (opts.remove) { w.remove = true; if (opts.songs) w.songs = true; }
-      else await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body));
+      else { await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body)); w.v = await plVersion(body); }
       out.items.push(w);
       if (!opts.later) await putTtl(env, outKey(id, dv.id), out);
       return w;
     };
     const noSongs = () => !(inv.features || []).includes("delete-songs");
     if (!m[5] && request.method === "GET") {
-      const items = inv.items.map((it) => Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), soloField(it.solo), { ready: !!it.have, at: it.at, backups: it.backups || [] }));
+      const old = inv.items.filter((it) => it.have && it.v === undefined).slice(0, 25);
+      if (old.length) {
+        for (const it of old) it.v = await plVersion(await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k));
+        await putTtl(env, invKey(id, dv.id), inv);
+      }
+      const items = inv.items.map((it) => { const v = latestV(it.file, it); return Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), soloField(it.solo), { ready: !!it.have, at: it.at }, v ? { v } : {}, { backups: it.backups || [] }); });
       const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
       const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
       return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
@@ -461,7 +490,7 @@ async function linked(request, env, ctx, url) {
       let file = base + ".bplist", n = 2;
       while (taken.has(file.toLowerCase())) file = base + " (" + (n++) + ").bplist";
       const w = await queue(await fileKey(file), file, pl.value.playlistTitle, true, pl.value);
-      return json({ k: w.k, file: w.file, pending: pendingList() }, 201, cors);
+      return json({ k: w.k, file: w.file, v: w.v, pending: pendingList() }, 201, cors);
     }
     if (m[5] === "delete" && !m[6] && request.method === "POST") {
       if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
@@ -515,9 +544,12 @@ async function linked(request, env, ctx, url) {
       return json({ pending: pendingList() }, 200, cors);
     }
     if (!m[6] && request.method === "GET") {
-      const text = it ? await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k) : await env.PLAYLISTS.get("outb:" + id + ":" + dv.id + ":" + waiting.id);
+      const w = url.searchParams.get("latest") === "1" ? out.items.find((x) => x.k === k && x.v) : null;
+      const text = w ? await env.PLAYLISTS.get("outb:" + id + ":" + dv.id + ":" + w.id)
+        : it ? await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k) : await env.PLAYLISTS.get("outb:" + id + ":" + dv.id + ":" + waiting.id);
       if (!text) return json({ error: "The headset hasn't uploaded this one yet" }, 404, cors);
-      return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
+      const v = w ? w.v : (it ? (it.have && it.v) || await plVersion(text) : waiting.v || "");
+      return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, v ? { "X-Studio-Version": v } : {}, cors) });
     }
     if (m[6] === "/restore" && request.method === "POST") {
       if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
@@ -533,8 +565,10 @@ async function linked(request, env, ctx, url) {
       const pl = await readPlaylist(request);
       if (pl.error) return json({ error: pl.error }, 400, cors);
       const target = it || waiting;
-      await queue(target.k, target.file, pl.value.playlistTitle, false, pl.value);
-      return json({ k: target.k, file: target.file, pending: pendingList() }, 200, cors);
+      const base = url.searchParams.get("base") || "", now = latestV(target.file, it);
+      if (base && now && base !== now) return json({ error: "This playlist changed since you opened it", conflict: true, v: now, pending: pendingList() }, 409, cors);
+      const w = await queue(target.k, target.file, pl.value.playlistTitle, false, pl.value);
+      return json({ k: target.k, file: target.file, v: w.v, pending: pendingList() }, 200, cors);
     }
     return json({ error: "Method not allowed" }, 405, cors);
   }
