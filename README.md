@@ -225,7 +225,7 @@ Pack your whole playlist into a single link with **Share Playlist**. The maps, t
 ### Made for mobile too
 - A fixed bottom **tab bar** - **Filters / Results / Playlist** with live count badges - switches between the three views so you're not scrolling one endless column. A search jumps you straight to **Results**, the **Search** button floats within easy reach while you filter, touch targets are enlarged, and map previews go full-screen.
 - The desktop two-column layout is untouched; the mobile treatment only kicks in on small screens.
-- **Install it like an app.** In Chrome or Edge, choose **Install app** from the menu (on iPhone, **Add to Home Screen** in Safari). It gets its own icon and opens in its own window.
+- **Install it like an app.** In Chrome or Edge, choose **Install app** from the menu (on iPhone, **Add to Home Screen** in Safari). It gets its own icon and opens in its own window. On a computer, Playlist Studio links you click open in that window, and you can double-click a `.bplist` to open it in Studio (Chrome asks the first time). Links and files go to the window that's already open, so you never end up with two Studios, and with maps already in Your Playlist a share link or file asks **Merge** or **Replace** first.
 
 ### Beat Saber flair
 - Subtle ambient neon - note cubes and saber-light drift behind the app, the logo crosses its sabers on load, a saber **slash** sweeps across on every search, and adding a map gives a satisfying count-up and pop. The Search button and logo carry a slow idle glow.

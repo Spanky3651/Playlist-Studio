@@ -2531,7 +2531,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T11:20:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T12:10:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3483,6 +3483,7 @@ window.PP = (function () {
 (function () {
   'use strict';
 
+  var bootHref = location.href;   // the address this window opened with (see setupAppLaunch)
   var API_BASE = 'https://api.beatleader.xyz';
   var PAGE_SIZE = 100, PAGE_DELAY_MS = 130, RELAY_DELAY_MS = 220;
   var RELAY_TIMEOUT = 15000, DIRECT_TIMEOUT = 3500;
@@ -4020,6 +4021,13 @@ window.PP = (function () {
     }).join('') + '</div>';
   }
 
+  // ?stats=<player> (the stats share link) opens that player's stats.
+  function statsFromUrl() {
+    var q = null; try { q = new URLSearchParams(location.search).get('stats'); } catch (e) {}
+    if (!q || !/^[A-Za-z0-9_-]{1,40}$/.test(q)) return false;
+    setTimeout(function () { svOpen(q, true); }, 0);
+    return true;
+  }
   function svOpen(id, fromLink) {
     id = id || (state.player && state.player.id);
     if (!id) { focusProfileConnect(); return; }
@@ -4104,9 +4112,7 @@ window.PP = (function () {
       panel.hidden = false; b.innerHTML = '&#9632; Close';
       panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
-    var q = null;
-    try { q = new URLSearchParams(location.search).get('stats'); } catch (e) {}
-    if (q && /^[A-Za-z0-9_-]{1,40}$/.test(q)) setTimeout(function () { svOpen(q, true); }, 0);
+    statsFromUrl();
   }
 
   // ---- normalize + fetch ----------------------------------------------------
@@ -6250,10 +6256,12 @@ window.PP = (function () {
   var LQ_QUEST_UA = /OculusBrowser|Quest/i.test(navigator.userAgent || '');
   function lsFlag(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
   function lsFlagSet(k, on) { try { if (on) localStorage.setItem(k, '1'); else localStorage.removeItem(k); } catch (e) {} }
-  (function () {
+  function lqFlagsFromUrl() {
     var q = null; try { q = new URLSearchParams(location.search).get('studiosync'); } catch (e) {}
     if (q === '1') { lsFlagSet(LQ_WANT, true); lsFlagSet(LQ_HIDE, false); } else if (q === '0') { lsFlagSet(LQ_HIDE, true); lsFlagSet(LQ_WANT, false); lsFlagSet(LQ_BETA, false); }
-  })();
+    return q === '1' || q === '0';
+  }
+  lqFlagsFromUrl();
   function lqShown() {
     if (libGet()) return true;
     if (lsFlag(LQ_HIDE)) return false;
@@ -10045,6 +10053,79 @@ window.PP = (function () {
     } catch (e) {}
   }
 
+  // ---- opened as an installed app ---------------------------------------------
+  // The manifest keeps one Studio window (launch_handler "focus-existing"): a Playlist Studio link you click, or a .bplist
+  // you open from your computer, comes to the window that's already open instead of starting a second one that could
+  // autosave over the first. Chrome hands it over here without reloading, so whatever you were doing stays put.
+  // A link is handled the way a fresh page load handles it (share links, ?bsr=, ?stats=, Studio Sync links) and counts
+  // as a GoatCounter visit with its utm tags. A share link with maps already in Your Playlist asks Merge or Replace,
+  // like a dropped file, instead of mixing into what you're working on. Opened files go the same way as dropped ones.
+  var APP_START = '?utm_source=pwa&utm_campaign=installed';
+  function setupAppLaunch() {
+    var lq = window.launchQueue;
+    if (!lq || typeof lq.setConsumer !== 'function') return;
+    var first = true;
+    lq.setConsumer(function (p) {
+      var wasFirst = first; first = false; p = p || {};
+      var files = Array.prototype.slice.call(p.files || []).filter(function (h) { return h && h.kind === 'file' && typeof h.getFile === 'function'; });
+      if (files.length) { appOpenFiles(files); return; }
+      if (!p.targetURL || (wasFirst && sameHref(p.targetURL, bootHref))) return;   // the launch that opened this window, handled on load
+      appOpenLink(p.targetURL);
+    });
+  }
+  function sameHref(a, b) { try { return new URL(a).href === new URL(b, location.href).href; } catch (e) { return false; } }
+  // A preview or the stats panel would sit over what the launch shows.
+  function appClearWay() {
+    if (el.previewModal && el.previewModal.classList.contains('show')) closePreview();
+    var sd = document.getElementById('sdPanel'); if (sd && sd.classList.contains('open')) svClose();
+  }
+  function appOpenLink(href) {
+    var u; try { u = new URL(href); } catch (e) { return; }
+    var dir = location.pathname.replace(/[^/]*$/, '');
+    if (u.origin !== location.origin || u.pathname.indexOf(dir) !== 0) return;
+    if (u.pathname !== dir && u.pathname !== dir + 'index.html') { window.open(u.href, '_blank', 'noopener'); return; }   // another page of the site
+    if (!u.hash && (!u.search || u.search === APP_START)) return;   // just opening the app: Chrome brings the window up
+    track('pwa-link');
+    try { history.replaceState(null, '', location.pathname + u.search + u.hash); } catch (e) { return; }
+    appClearWay();
+    if (lqFlagsFromUrl()) lqRender();
+    var share = (u.hash || '').match(/[#&]p=([^&]+)/), f = share && state.basket.length ? shareAsFile(share[1]) : null;
+    if (f) {
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+      track('share-open'); if (isMobileView()) setMobileView('playlist');
+      dropTag = 'share'; handleDroppedPlaylist(f);
+    } else if (share) { if (isMobileView()) setMobileView('playlist'); checkShareOnLoad(); }
+    if (u.hash === '#studio-sync') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} setTimeout(function () { ssOpen('hash'); }, 100); }
+    checkBsrLinkOnLoad();
+    statsFromUrl();
+    gcVisit();
+  }
+  // A share link's maps as a .bplist, so the Merge / Replace choice can take it. Null if the link is broken
+  // (the normal share import then says so).
+  function shareAsFile(code) {
+    var pl; try { pl = JSON.parse(b64dec(code)); } catch (e) { return null; }
+    if (!pl || !Array.isArray(pl.s)) return null;
+    var songs = pl.s.filter(function (r) { return r && r[0]; }).map(function (r) {
+      return { hash: r[0], songName: 'Loading\u2026', difficulties: r[1] ? [{ name: r[1], characteristic: r[2] || 'Standard' }] : [] };
+    });
+    var t = pl.t || 'Shared playlist';
+    return new File([JSON.stringify({ playlistTitle: t, playlistAuthor: pl.a || '', songs: songs })], t + '.bplist', { type: 'application/json' });
+  }
+  // The page view a fresh load of the link would have counted (count.js reads the utm tags from the address).
+  function gcVisit() { var n = 0; (function go() { if (window.goatcounter && window.goatcounter.count) { try { window.goatcounter.count(); } catch (e) {} } else if (++n < 30) setTimeout(go, 500); })(); }
+  function appOpenFiles(handles) {
+    track('pwa-open-file');
+    Promise.all(handles.map(function (h) { return h.getFile().then(null, function () { return null; }); })).then(function (fs) {
+      fs = fs.filter(Boolean);
+      if (!fs.length) { toast('Could not read that file.', 'err'); return; }
+      appClearWay();
+      if (isMobileView()) setMobileView('playlist');
+      if (cmbIsOpen()) { cmbAddFiles(fs); return; }
+      if (fs.length > 1) { openCombine('file', fs); return; }
+      dropTag = 'file'; handleDroppedPlaylist(fs[0]);
+    });
+  }
+
   function init() {
     [el.fetchBtn, el.fetchBtn2].forEach(function (b) { b.addEventListener('click', runFetch); });
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.addEventListener('click', doDownload); });
@@ -10285,7 +10366,7 @@ window.PP = (function () {
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch();
   }
 
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
@@ -10613,6 +10694,8 @@ window.PP = (function () {
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
      lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<az|recent|songs>, lq-done, lq-arrived, lq-conflict, lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
+     Installed app: pwa-link (a link opened in the open window, also counted as a visit), pwa-open-file,
+     file-import-<fresh|merge|replace>, share-import-<merge|replace>, combine-open-file;
      Share links carry utm_source=share-link with utm_campaign=playlist-share or stats-share;
      AccSaber clan: stats-asclan, asclan-open, asclan-scan, asclan-fail, asclan-recheck, asclan-switch,
      asclan-pick-<scores|cat|card|plays|xp|grind>, asclan-add;
