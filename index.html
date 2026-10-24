@@ -2536,7 +2536,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T21:42:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T21:58:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7216,7 +7216,6 @@ window.PP = (function () {
   function lqMetaHtml(meta) { return meta.map(function (x, i) { return '<span class="lq-mp">' + (i ? '<span class="lq-sep">&middot;</span> ' : '') + '<span class="lq-mt">' + x + '</span></span>'; }).join(' '); }
   function lqCovSync() { var ci = lqRender.cov; if (ci && ci.isConnected && state.coverDataUrl && ci.getAttribute('src') !== state.coverDataUrl) ci.src = state.coverDataUrl; }
   var LQ_HS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9.6C7 5.4 17 5.4 17 9.6"/><path d="M6.6 9.6H17.4A2.6 2.6 0 0 1 20 12.2V16.4A2.6 2.6 0 0 1 17.4 19H14.9Q14.2 19 13.7 18.2L12.9 16.9Q12 16 11.1 16.9L10.3 18.2Q9.8 19 9.1 19H6.6A2.6 2.6 0 0 1 4 16.4V12.2A2.6 2.6 0 0 1 6.6 9.6Z"/><path d="M4 14.3H1.8M20 14.3H22.2"/></svg>';
-  function lqHsIcon(fresh) { return '<span class="lq-hsi">' + LQ_HS_SVG + '<span class="lq-dot' + (fresh ? '' : ' idle') + '"></span></span>'; }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
@@ -7437,9 +7436,9 @@ window.PP = (function () {
     var dOpen = !!lq.devsOpen, rnAt = document.activeElement && document.activeElement.id === 'lqRenameIn' ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
     document.getElementById('lqDevs').innerHTML = lq.devices.length ? '<div class="lq-devs2">' + lq.devices.map(function (d, i) {
       var dseen = lqSeen(d.id), fresh = dseen && (Date.now() / 1000 - dseen) < 86400 * 2, nm = esc(lqDevName(d.id)), dflt = d.name === 'Quest';
-      if (lq.renaming === d.id) return '<div class="lq-dev lq-renaming">' + lqHsIcon(fresh) + '<input type="text" id="lqRenameIn" class="lq-rn" maxlength="40" value="' + esc(lq.renameDraft != null ? lq.renameDraft : (dflt ? '' : d.name)) + '" placeholder="e.g. Living room Quest" aria-label="Headset name" spellcheck="false" autocomplete="off" />' +
+      if (lq.renaming === d.id) return '<div class="lq-dev lq-renaming"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><input type="text" id="lqRenameIn" class="lq-rn" maxlength="40" value="' + esc(lq.renameDraft != null ? lq.renameDraft : (dflt ? '' : d.name)) + '" placeholder="e.g. Living room Quest" aria-label="Headset name" spellcheck="false" autocomplete="off" />' +
         lqBtn('Save', 'data-lq-rnsave="' + esc(d.id) + '"', 'primary sm') + lqBtn('Cancel', 'data-lq-rncancel') + '</div>';
-      return '<div class="lq-dev">' + lqHsIcon(fresh) + '<span class="lq-devn">' + nm + '</span>' +
+      return '<div class="lq-dev"><span class="lq-dot' + (fresh ? '' : ' idle') + '"></span><span class="lq-devn">' + nm + '</span>' +
         '<button type="button" class="lq-pen' + (dflt ? ' nudge' : '') + '" data-lq-rename="' + esc(d.id) + '" title="Rename this headset" aria-label="Rename ' + nm + '">' + lqIco('edit') + (dflt ? '<span>Name it</span>' : '') + '</button><span class="lq-m">linked ' + esc(lqAgo(d.added)) + ' &middot; last sync ' + esc(lqAgoMin(dseen)) + '</span>' +
         (dOpen ? lqBtn('Unlink', 'data-lq-unlink="' + esc(d.id) + '"', 'ghost sm danger') : (i === 0 ? '<button type="button" class="lq-a" data-lq-devsopen>Manage headsets</button>' : '')) + '</div>';
     }).join('') + (dOpen ? '<div class="lq-devacts">' + (lq.showLink ? '' : lqBtn('+ Link another headset', 'data-lq-showlink')) + '<button type="button" class="lq-a" data-lq-devsopen>Done</button></div>' : '') + '</div>' : '';
