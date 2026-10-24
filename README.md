@@ -225,10 +225,11 @@ Pack your whole playlist into a single link with **Share Playlist**. The maps, t
 ### Made for mobile too
 - A fixed bottom **tab bar** - **Filters / Results / Playlist** with live count badges - switches between the three views so you're not scrolling one endless column. A search jumps you straight to **Results**, the **Search** button floats within easy reach while you filter, touch targets are enlarged, and map previews go full-screen.
 - The desktop two-column layout is untouched; the mobile treatment only kicks in on small screens.
+- **Install it like an app.** In Chrome or Edge, choose **Install app** from the menu (on iPhone, **Add to Home Screen** in Safari). It gets its own icon and opens in its own window.
 
 ### Beat Saber flair
 - Subtle ambient neon - note cubes and saber-light drift behind the app, the logo crosses its sabers on load, a saber **slash** sweeps across on every search, and adding a map gives a satisfying count-up and pop. The Search button and logo carry a slow idle glow.
-- Everything is smooth with **no flashing or strobing**, there's a **one-tap toggle** in the top bar to turn it all off, and it automatically stays off if your device has *reduce motion* enabled.
+- Everything is smooth with **no flashing or strobing**, and it all stays off if your device has *reduce motion* turned on.
 
 ### Clear feedback while it works
 - Long scans are impossible to miss: the Search Results panel shows a Beat Saber equalizer with a **live "N of M maps" counter** and a progress bar, a slim neon bar sweeps across the top of the page, and the Search icon spins until the pull completes.
