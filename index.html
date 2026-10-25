@@ -1399,6 +1399,84 @@ body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s
     body.dense .rcard.you,body.dense .rcard.none{display:grid;grid-template-columns:16px 68px minmax(0,1fr);column-gap:8px;}
   }
 }
+/* Search Results header (Oct 25 2026): count pill, one action row with a ⋯ menu, counted chips, one sort row */
+.rc-pill{display:none;}
+.rc-pill.on{display:inline-flex;align-items:baseline;gap:6px;margin-left:auto;padding:4px 11px 5px;border-radius:20px;background:rgba(30,107,255,.12);border:1px solid rgba(77,141,255,.42);font-family:var(--mono);white-space:nowrap;}
+.rc-pill b{font-size:15.5px;font-weight:800;color:#fff;letter-spacing:.2px;}
+.rc-pill span{font-size:12px;color:#9fc2ff;}
+.rc-pill.filt span{color:var(--muted);}
+.panel-head .rc-pill.on + .dens-btn{margin-left:10px;}
+.res-meta.res-sum{font-family:var(--mono);font-size:12.5px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;color:var(--muted);}
+.res-meta.res-sum b{color:var(--text);font-weight:600;}
+.res-meta.res-sum i{font-style:normal;color:#3a4354;margin:0 9px;}
+.res-meta.res-sum .rs-f{color:#9fc2ff;}
+#resultActions.list-actions{display:block;padding:10px 14px;position:relative;}
+#resultActions[hidden]{display:none;}
+.ra-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ra-add.addtop .primary{border-top-right-radius:0;border-bottom-right-radius:0;padding-right:11px;}
+.ra-add.addtop input{border-color:var(--blue);background:#000;color:#fff;font-weight:700;width:54px;}
+.ra-rand b{font-family:var(--mono);font-weight:700;color:#fff;margin-left:2px;}
+.ra-more-btn{width:38px;padding:0;display:inline-grid;place-items:center;}
+.ra-more-btn svg{width:17px;height:17px;}
+.ra-more-btn.on{border-color:var(--blue);color:#fff;background:rgba(30,107,255,.14);}
+.ra-more{position:absolute;top:calc(100% - 4px);left:14px;z-index:40;width:min(340px,calc(100% - 28px));background:#0d121b;border:1px solid #243550;border-radius:12px;padding:6px;box-shadow:0 18px 44px rgba(0,0,0,.65);}
+.ra-more[hidden],.ra-scrim[hidden]{display:none;}
+.ra-grab{display:none;}
+.ra-item{display:flex;align-items:center;gap:11px;width:100%;min-height:42px;padding:8px 10px;border:0;border-radius:8px;background:none;color:var(--text);font:500 14.5px var(--sans);text-align:left;cursor:pointer;box-shadow:none;}
+.ra-item:hover:not(:disabled),.ra-item:focus-within{background:#141b28;transform:none;box-shadow:none;}
+.ra-item:disabled{opacity:.45;cursor:default;}
+.ra-item + .ra-item{border-top:1px solid #172030;border-radius:0 0 8px 8px;}
+.ra-i{width:20px;flex:none;text-align:center;color:var(--muted);font-size:15px;}
+.ra-t{flex:1;min-width:0;}
+.ra-r{margin-left:auto;font:13px var(--mono);color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.ra-r input{width:58px;padding:5px 7px;font:600 13.5px var(--mono);text-align:center;}
+.ra-link{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;box-shadow:none;}
+.ra-link:hover{transform:none;box-shadow:none;color:#fff;}
+.ra-item.danger,.ra-item.danger .ra-i{color:#ff8597;}
+.ra-tog{appearance:none;-webkit-appearance:none;margin-left:auto;flex:none;width:40px;height:23px;border-radius:12px;background:#28303f;position:relative;cursor:pointer;transition:background .15s;}
+.ra-tog::after{content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#8792a6;transition:left .15s,background .15s;}
+.ra-tog:checked{background:var(--blue);}
+.ra-tog:checked::after{left:20px;background:#fff;}
+.ra-tog:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+.play-chip{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+.play-chip .pc-n{font-size:11.5px;color:#6c7689;background:#121722;border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums;}
+.play-chip.active .pc-n{color:#d6e5ff;background:rgba(30,107,255,.3);}
+.play-chip.zero:not(.active){opacity:.55;}
+.sort-order .so-a{font-weight:700;}
+/* NEW strip for maps you haven't played */
+.rnew{display:flex;align-items:center;gap:10px;border-radius:9px;padding:8px 12px;background:rgba(34,224,161,.05);border:1px solid rgba(34,224,161,.28);font-family:var(--mono);min-width:0;grid-column:1/-1;}
+.rnew-tag{font-size:10.5px;font-weight:800;letter-spacing:1px;color:#cfe0ff;background:rgba(30,107,255,.18);border:1px solid rgba(77,141,255,.45);border-radius:5px;padding:2px 6px;flex:none;}
+.rnew b{color:var(--green);font-size:17px;font-weight:800;white-space:nowrap;}
+.rnew-s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.rnew > .rnew-s:first-of-type:last-child{font-size:12.5px;}
+@media(min-width:721px){
+  body.dense .rnewwrap{display:block;}
+  body.dense .rnew{background:none;border:0;padding:0;gap:8px;}
+  body.dense .rnew b{font-size:14px;}
+  body.dense .rnew-x{display:none;}
+}
+@media(max-width:720px){
+  #resultActions.list-actions{padding:10px 12px;overflow:visible;}
+  .ra-main{flex-wrap:nowrap;}
+  .ra-add{flex:1.35 1 0;min-width:0;}
+  .ra-add .primary{flex:1;justify-content:center;min-width:0;}
+  .ra-rand{flex:1 1 0;justify-content:center;min-width:0;white-space:nowrap;}
+  .ra-more-btn{width:42px;flex:none;}
+  .ra-main .hidefrom-info{display:none;}
+  .ra-scrim{position:fixed;inset:0;z-index:1190;background:rgba(0,0,0,.55);}
+  .ra-more{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;z-index:1200;border-radius:16px 16px 0 0;padding:8px 14px calc(18px + env(safe-area-inset-bottom));border-width:1px 0 0;box-shadow:0 -20px 50px rgba(0,0,0,.7);}
+  .ra-grab{display:block;width:40px;height:4px;border-radius:3px;background:#2a3346;margin:4px auto 10px;}
+  .ra-item{min-height:50px;font-size:15.5px;}
+  body.ra-sheet-open{overflow:hidden;}
+  .play-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:24px;}
+  .play-chips::-webkit-scrollbar{display:none;}
+  .play-chip{flex:none;}
+  .sort-bar{flex-wrap:nowrap;gap:7px;}
+  .sort-bar select{flex:1 1 0;min-width:0;max-width:none;}
+  .sort-bar .so-t{display:none;}
+  .sort-bar .sort-order{flex:none;width:40px;padding:5px 0;text-align:center;}
+  .sort-bar-sep{display:none;}
+}
 /* Same song already in the playlist at another difficulty */
 .newbie-hint{margin:8px 14px 0;padding:6px 8px 6px 12px;font-size:13.5px;}
 .newbie-hint .ghost.sm{padding:5px 10px;}
@@ -2167,24 +2245,28 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     <div class="work-area">
       <!-- Results -->
       <section class="panel list-panel">
-        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count" id="resultCount"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
+        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count rc-pill" id="resultCount" aria-live="polite"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
         <div class="res-meta" id="resMeta" hidden></div>
         <div class="clan-bar" id="clanBar" hidden></div>
         <div class="list-actions" id="resultActions" hidden>
-          <button class="ghost sm" id="addAllBtn" disabled>+ Add all</button>
-          <div class="addtop">
-            <button class="ghost sm" id="addTopBtn" disabled>+ Add top</button>
-            <input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" />
+          <div class="ra-main">
+            <div class="addtop ra-add"><button class="primary sm" id="addTopBtn" disabled title="Add the top results to Your Playlist">+ Add top</button><input type="number" id="addTopN" min="1" max="500" step="1" value="20" title="How many of the top results to add / pick at random" aria-label="How many to add" /></div>
+            <button class="ghost sm ra-rand" id="addRandomBtn" disabled title="Add a random selection from the results (same number as Add top)">⚄ Random <b id="randN">20</b></button>
+            <button type="button" class="ghost sm ra-more-btn" id="resMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="resMore" title="More: add all, fill to a length, skip maps from a file, list options"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+            <span class="hidefrom-info" id="hideFromInfo" hidden title="Click to stop hiding these maps"></span>
           </div>
-          <button class="ghost sm" id="addRandomBtn" disabled title="Add a random selection from results (uses the number in Add top)">⚄ Random</button>
-          <div class="addtop"><button class="ghost sm" id="fillRuntimeBtn" disabled title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">⏱ Fill to</button><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" /><span class="addtop-unit">min</span></div>
-          <button class="ghost sm danger" id="clearResultsBtn" disabled title="Clear the results and reset all search filters">Clear results</button>
-          <button class="ghost sm" id="hideFromBtn" title="Load a .bplist and hide its maps from these results - great for building a 'new stuff only' set.">⊘ Skip maps from a playlist file</button>
-          <input type="file" id="hideFromFile" accept=".bplist,application/json" hidden />
-          <span class="hidefrom-info" id="hideFromInfo" hidden title="Click to stop hiding these maps"></span>
-          <label class="mini-switch" title="Show only one entry per song (hide duplicate difficulties)"><input type="checkbox" id="collapseSongs" /><span>One row per song</span></label>
-          <label class="mini-switch" title="Hide maps that are already in Your Playlist so you only see what you haven't added yet."><input type="checkbox" id="hideInPlaylist" /><span>Hide added</span></label>
+          <div class="ra-more" id="resMore" hidden>
+            <div class="ra-grab" aria-hidden="true"></div>
+            <button type="button" class="ra-item" id="addAllBtn" disabled data-close><span class="ra-i">+</span><span class="ra-t">Add all</span><span class="ra-r" id="addAllN"></span></button>
+            <div class="ra-item ra-fill"><span class="ra-i">⏱</span><button type="button" class="ra-t ra-link" id="fillRuntimeBtn" disabled data-close title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">Fill playlist to</button><span class="ra-r"><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" aria-label="Minutes" /> min</span></div>
+            <button type="button" class="ra-item" id="hideFromBtn" data-close title="Load a .bplist and hide its maps from these results - great for building a 'new stuff only' set."><span class="ra-i">⊘</span><span class="ra-t">Skip maps from a playlist file</span></button>
+            <input type="file" id="hideFromFile" accept=".bplist,application/json" hidden />
+            <label class="ra-item ra-sw" title="Show only one entry per song (hide duplicate difficulties)"><span class="ra-i">☰</span><span class="ra-t">One row per song</span><input type="checkbox" id="collapseSongs" class="ra-tog" /></label>
+            <label class="ra-item ra-sw" title="Hide maps that are already in Your Playlist so you only see what you haven't added yet."><span class="ra-i">✓</span><span class="ra-t">Hide maps already added</span><input type="checkbox" id="hideInPlaylist" class="ra-tog" /></label>
+            <button type="button" class="ra-item danger" id="clearResultsBtn" disabled data-close title="Clear the results and reset all search filters"><span class="ra-i">✕</span><span class="ra-t">Clear results</span></button>
+          </div>
         </div>
+        <div class="ra-scrim" id="resMoreScrim" hidden></div>
         <div class="play-bar" id="playFilterBar">
           <span class="play-bar-lbl">Your plays</span>
           <div class="play-chips" id="playChips">
@@ -2608,7 +2690,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:39:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:55:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4525,6 +4607,10 @@ window.PP = (function () {
     var ageCutoff = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366 }[f.bsAge];
     // A BSR code / link lookup asked for those exact maps, so the filters don't hide them.
     var exact = state.source === 'beatsaver' && state.bsrLookup;
+    // Oct 25 2026: count every Your plays chip in one pass. The play status is checked last, so the counts
+    // are "what each chip would show" with every other filter applied.
+    var psWant = f.playStatus, pc = { any: 0, unplayed: 0, played: 0, fc: 0, nofc: 0, nearfc: 0, nf: 0 };
+    f.playStatus = 'any';
     var out = state.raw.filter(function (s) {
       if (exact) return true;
       if (hideAuto && hasAutoCredit(s.mapper)) return false;   // "Hide auto-lighting maps" toggle
@@ -4595,8 +4681,15 @@ window.PP = (function () {
         var exHay = (s.mapper + ' ' + s.author).toLowerCase();
         if (f.mapperExclude.some(function (t) { return exHay.indexOf(t) !== -1; })) return false;
       }
+      if (state.player && !exact) {
+        var pq = playInfo(s); pc.any++;
+        if (!pq) pc.unplayed++; else { pc.played++; if (pq.fc) pc.fc++; else { pc.nofc++; if (pq.near) pc.nearfc++; } if (pq.nf) pc.nf++; }
+        return psWant === 'any' || (psWant === 'unplayed' ? !pq : psWant === 'played' ? !!pq : psWant === 'fc' ? !!(pq && pq.fc)
+          : psWant === 'nofc' ? !!(pq && !pq.fc) : psWant === 'nearfc' ? !!(pq && pq.near && !pq.fc) : psWant === 'nf' ? !!(pq && pq.nf) : true);
+      }
       return true;
     });
+    f.playStatus = psWant; state.playCounts = state.player && !exact ? pc : null;
     var key = f.sort;
     var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
     if (state.viewMode === 'recommend') {
@@ -5078,7 +5171,11 @@ window.PP = (function () {
       var rpl = !ss && sc.rp ? 'https://replay.beatleader.com/?link=' + encodeURIComponent(sc.rp) : '';
       L = card('you' + (sc.fc ? ' fc' : '') + (rpl ? ' rp' : ''), ss ? 'ScoreSaber best' : 'Your best', sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'Played', sub.join(' · '),
         (rpl ? 'Watch this replay' : '') + (sc.rk ? (rpl ? ' · ' : '') + 'Rank #' + sc.rk : '') + (isNF(sc) ? (rpl || sc.rk ? ' · ' : '') + 'No Fail run: you failed and No Fail carried you to the end' : ''), rpl);
-    } else L = card('none', 'Your best', 'Not played', '', 'You haven\'t played this yet');
+    } else {
+      // Unplayed: one strip instead of a "Not played" card next to the pp card (Oct 25 2026)
+      return '<div class="rcards rnewwrap"><div class="rnew" title="You haven\'t played this yet' + (tgt != null ? ' · raw pp at ' + esc(at) : '') + '"><span class="rnew-tag">NEW</span>' +
+        (tgt != null ? '<b>+' + PP.fmtShort(tgt) + 'pp</b><span class="rnew-s">at ' + esc(at) + '<span class="rnew-x"> · not played yet</span></span>' : '<span class="rnew-s">not played yet</span>') + '</div></div>';
+    }
     if (tgt != null) {
       var tip = 'Raw pp at ' + at + ' (set the target in the PP Range panel)';
       if (sc && sc.src !== 'ss' && sc.pp > 0) {
@@ -5125,6 +5222,25 @@ window.PP = (function () {
   function blLink(e) {
     return e.leaderboardId ? '<a class="row-link" href="https://beatleader.xyz/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener" title="Open on BeatLeader">↗</a>' : '';
   }
+  function fmtN(n) { return Number(n || 0).toLocaleString('en-US'); }
+  // Results header (Oct 25 2026): "1,219 maps", or "845 of 1,219" when a Your plays chip, Hide added or a skip
+  // file is hiding some. The Your plays chips carry their own counts.
+  function renderResultCount(rows, avail) {
+    var rc = el.resultCount, allN = state.playCounts ? state.playCounts.any : state.filtered.length;
+    if (!rows.length) { rc.innerHTML = ''; rc.classList.remove('on', 'filt'); }
+    else if (collapseOn() && rows.length !== avail.length) { rc.innerHTML = '<b>' + fmtN(rows.length) + '</b><span>songs</span>'; rc.classList.add('on'); rc.classList.remove('filt'); }
+    else if (allN > avail.length) { rc.innerHTML = '<b>' + fmtN(avail.length) + '</b><span>of ' + fmtN(allN) + '</span>'; rc.classList.add('on', 'filt'); }
+    else { rc.innerHTML = '<b>' + fmtN(avail.length) + '</b><span>' + (avail.length === 1 ? 'map' : 'maps') + '</span>'; rc.classList.add('on'); rc.classList.remove('filt'); }
+    rc.title = rows.length ? (allN > avail.length ? avail.length + ' shown of ' + allN + ' that match your search filters' : avail.length + ' maps match your filters') : '';
+    var aan = document.getElementById('addAllN'); if (aan) aan.textContent = rows.length ? fmtN(rows.length) : '';
+    var pc = state.playCounts;
+    Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip[data-ps]'), function (b) {
+      if (b.dataset.lbl == null) b.dataset.lbl = b.textContent.trim();
+      var n = pc ? pc[b.dataset.ps] : null;
+      b.innerHTML = esc(b.dataset.lbl) + (n != null && state.raw.length ? '<span class="pc-n">' + fmtN(n) + '</span>' : '');
+      b.classList.toggle('zero', n === 0 && b.dataset.ps !== 'any');
+    });
+  }
   function renderResults() {
     var avail = resultsAvailable(), rows = collapseList(avail), list = el.resultList;
     var ra = document.getElementById('resultActions'); if (ra) ra.hidden = !state.fetched && !state.raw.length && !state.excludeHashes;
@@ -5132,7 +5248,7 @@ window.PP = (function () {
     var chid = document.getElementById('cbHidden');
     if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status & Sort).' : ''; }
     renderNewbieHint();
-    el.resultCount.textContent = rows.length ? rows.length + (collapseOn() && rows.length !== avail.length ? ' songs' : '') : '';
+    renderResultCount(rows, avail);
     document.body.classList.toggle('has-results', !!(rows.length || state.raw.length));
     if (!rows.length) {
       var msg;
@@ -5349,7 +5465,22 @@ window.PP = (function () {
       : state.viewMode === 'plays'
       ? matched + ' of your played maps shown. Narrow with the Your plays chips (e.g. Not FC), then add the ones you want.'
       : state.viewMode === 'accsaber' ? matched + ' AccSaber charts shown, easiest first. Use the Your plays chips to find the ones you haven\'t played or FC\'d.' : '';
-    var rm = document.getElementById('resMeta'); if (rm) { rm.textContent = resText; rm.hidden = !resText; }
+    var rm = document.getElementById('resMeta');
+    if (rm) {
+      var sum = '';
+      if (!resText && state.raw.length && state.filtered.length && !(state.source === 'beatsaver' && state.bsrLookup)) {
+        var sp = [], ps0 = el.playStatus ? el.playStatus.value : 'any', smin = num(el.starMinNum, 0), smax = num(el.starMaxNum, 15);
+        // What's shaping the list (the chips already carry the play counts)
+        if (state.source === 'beatleader' && (smin > 0 || smax < 15)) sp.push('<span><b>' + (+smin).toFixed(1) + '–' + (+smax).toFixed(1) + '★</b></span>');
+        if (state.player && ps0 !== 'any') sp.push('<span class="rs-f">' + esc(playStatusLabel(ps0)) + ' only</span>');
+        if (hideAddedOn()) sp.push('<span class="rs-f">Added maps hidden</span>');
+        if (collapseOn()) sp.push('<span class="rs-f">One row per song</span>');
+        sum = sp.join('<i>·</i>');
+      }
+      if (resText) { rm.textContent = resText; rm.classList.remove('res-sum'); }
+      else { rm.innerHTML = sum; rm.classList.toggle('res-sum', !!sum); }
+      rm.hidden = !resText && !sum;
+    }
     var line = '';
     if (entries) {
       var st = playlistStats();
@@ -8870,9 +9001,10 @@ window.PP = (function () {
     if (el.sortInline && el.sortInline.value !== el.fSort.value) el.sortInline.value = el.fSort.value;
     if (el.sortInlineOrder) {
       var desc = el.fOrder.value !== 'asc', dateLike = el.fSort.value === 'myDate';
-      el.sortInlineOrder.textContent = dateLike
-        ? (desc ? '↓ Newest first' : '↑ Oldest first')
-        : (desc ? '↓ High → Low' : '↑ Low → High');
+      el.sortInlineOrder.innerHTML = '<span class="so-a">' + (desc ? '↓' : '↑') + '</span><span class="so-t"> ' + (dateLike
+        ? (desc ? 'Newest first' : 'Oldest first')
+        : (desc ? 'High → Low' : 'Low → High')) + '</span>';
+      el.sortInlineOrder.setAttribute('aria-label', 'Sort ' + (dateLike ? (desc ? 'newest first' : 'oldest first') : (desc ? 'high to low' : 'low to high')) + ', tap to flip');
     }
   }
   function setupInlineSort() {
@@ -10360,6 +10492,21 @@ window.PP = (function () {
     el.addAllBtn.addEventListener('click', addAll);
     el.addTopBtn.addEventListener('click', addTop);
     el.addRandomBtn.addEventListener('click', addRandom);
+    var syncRandN = function () { var rn = document.getElementById('randN'); if (rn) rn.textContent = clamp(num(el.addTopN, 20), 1, 500); };
+    el.addTopN.addEventListener('input', syncRandN); syncRandN();
+    (function () {
+      var btn = document.getElementById('resMoreBtn'), menu = document.getElementById('resMore'), scrim = document.getElementById('resMoreScrim');
+      if (!btn || !menu) return;
+      var open = function (on) {
+        menu.hidden = !on; if (scrim) scrim.hidden = !on; btn.setAttribute('aria-expanded', on ? 'true' : 'false'); btn.classList.toggle('on', on);
+        document.body.classList.toggle('ra-sheet-open', on);
+      };
+      btn.addEventListener('click', function (e) { e.stopPropagation(); open(menu.hidden); if (!menu.hidden) track('results-more'); });
+      if (scrim) scrim.addEventListener('click', function () { open(false); });
+      menu.addEventListener('click', function (e) { if (e.target.closest('[data-close]') && !e.target.closest('input')) setTimeout(function () { open(false); }, 0); });
+      document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) open(false); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { open(false); btn.focus(); } });
+    })();
     el.fillRuntimeBtn.addEventListener('click', fillToRuntime);
     el.shuffleBtn.addEventListener('click', shuffleBasket);
     el.sortPlaylistBtn.addEventListener('click', sortBasketByStar);
