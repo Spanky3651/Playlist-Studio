@@ -925,6 +925,8 @@ button[hidden],.filebtn[hidden]{display:none !important;}
   .song-list .song-row .song-name{grid-column:2;grid-row:1;align-self:end;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25;font-size:16.5px;}
   .song-list .song-row .song-mapper{grid-column:2;grid-row:2;align-self:start;margin-top:2px;}
   .song-list .song-row .rbadges{grid-row:3;margin-top:10px;gap:6px;}
+  .song-list .song-row .song-ttl{display:contents;}
+  .song-list .song-row .rcards{grid-row:4;margin-top:10px;max-width:none;}
   .song-list .song-row .row-actions{grid-column:3;grid-row:1/3;align-self:center;gap:6px;}
   .song-list .song-row .row-btn{width:40px;height:40px;min-width:40px;min-height:40px;border-radius:10px;font-size:16px;}
   .song-list .song-row .row-link{width:34px;height:34px;}
@@ -1324,7 +1326,51 @@ body.sd-lock .toast.show{z-index:950}
   body.dense .song-mapper{font-size:13px;margin-top:0;min-width:0;flex:0 1 auto;}
   body.dense .rbadges{flex-basis:100%;margin-top:3px;gap:4px;}
   body.dense .rb{padding:1px 6px;}
+  body.dense .song-ttl{display:flex;align-items:baseline;column-gap:9px;min-width:0;max-width:100%;}
   body.dense .song-row.bk .row-link{display:none;}   /* "Open on BeatLeader" is in the row's ... menu */
+}
+/* Song stats (Oct 25 2026): facts line + Your best / At target cards. Wide lists put the cards in a column on the right,
+   narrow ones (phones, the 3-column layout) put them under the facts, compact rows show them as one line. */
+.rb-diff.dc{font-weight:800;color:#05070c;}
+.rb-diff.dc-easy{background:#3ddc84;border-color:#3ddc84;}
+.rb-diff.dc-normal{background:#4fb3ff;border-color:#4fb3ff;}
+.rb-diff.dc-hard{background:#ff9f2e;border-color:#ff9f2e;}
+.rb-diff.dc-expert{background:#ff4d6d;border-color:#ff4d6d;}
+.rb-diff.dc-ep{background:#c77dff;border-color:#c77dff;}
+.rf-star{font:800 14px/1.2 var(--mono);color:var(--amber);white-space:nowrap;align-self:center;}
+.rf-txt{font:500 12.5px/1.2 var(--mono);color:var(--muted);white-space:nowrap;align-self:center;}
+.rf-txt b{color:var(--text);font-weight:600;}
+.rbadges{align-items:center;}
+.rcards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;max-width:440px;}
+.rcard{border-radius:9px;padding:6px 10px 7px;background:var(--panel-3);border:1px solid var(--border);min-width:0;}
+.rcard .rl{font:600 10.5px/1.2 var(--mono);letter-spacing:1px;text-transform:uppercase;color:var(--muted-2);white-space:nowrap;}
+.rcard .rv{font:800 17px/1.15 var(--mono);margin-top:2px;color:var(--text);white-space:nowrap;}
+.rcard .rs{font:500 11.5px/1.3 var(--mono);color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rcard .rvt{display:none;}
+.rcard.gain{background:rgba(34,224,161,.05);border-color:rgba(34,224,161,.28);}
+.rcard.gain .rv{color:var(--green);}
+.rcard.none .rv{color:var(--muted);font-size:14px;margin-top:5px;}
+.rcard.done .rv{color:#9fb3c8;}
+.rc-fc{color:var(--blue-text);font-weight:800;}
+.rc-nf{color:#ff8597;font-weight:800;}
+body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s ease-in-out 4;}
+@media (prefers-reduced-motion:reduce){body.egg-115 .rcard .rv{animation:none;}}
+@media(min-width:721px){
+  .song-list{container:songs/inline-size;}
+  body.dense .rcards{flex-basis:100%;margin-top:3px;display:flex;gap:16px;max-width:none;}
+  body.dense .rcard{background:none;border:0;padding:0;display:flex;align-items:baseline;gap:7px;}
+  body.dense .rcard .rl{display:none;}
+  body.dense .rcard .rv{font-size:14px;margin:0;}
+  body.dense .rcard .rs{margin:0;}
+  body.dense .rcard.gain .rs,body.dense .rcard.done .rs{display:none;}
+  body.dense .rcard .rvt{display:inline;font-size:11.5px;font-weight:400;color:var(--muted);}
+  @container songs (min-width:740px){
+    .song-row .song-info:has(>.rcards){display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;align-items:center;}
+    .song-row .song-info:has(>.rcards)>*{grid-column:1;}
+    .song-row .song-info>.rcards{grid-column:2;grid-row:1/span 3;grid-template-columns:168px 142px;margin-top:0;max-width:none;align-self:center;}
+    body.dense .song-row .song-info>.rcards{display:grid;grid-template-columns:232px 136px;gap:12px;}
+    body.dense .rcard.you,body.dense .rcard.none{display:grid;grid-template-columns:68px minmax(0,1fr);column-gap:8px;}
+  }
 }
 /* Same song already in the playlist at another difficulty */
 .newbie-hint{margin:8px 14px 0;padding:6px 8px 6px 12px;font-size:13.5px;}
@@ -2536,7 +2582,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-24T21:58:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:12:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4959,34 +5005,23 @@ window.PP = (function () {
       ? '<img class="song-cover" src="' + esc(e.cover) + '" alt="" loading="lazy" onerror="this.classList.add(\'ph\');this.removeAttribute(\'src\');this.textContent=\'♪\';">'
       : '<div class="song-cover ph">♪</div>';
   }
+  // Song rows (Oct 25 2026): one facts line (difficulty in Beat Saber's colours, stars, NPS, NJS, length) and, with a
+  // profile connected, two cards: your best (score, misses or FC, when) and what the PP Range target adds. pp shows once.
+  var DIFF_CLS = { Easy: 'easy', Normal: 'normal', Hard: 'hard', Expert: 'expert', ExpertPlus: 'ep' };
   function badges(e) {
-    var b = [];
-    if (e.stars > 0) b.push('<span class="rb rb-star">' + e.stars.toFixed(2) + '★</span>');
+    var b = [], dn = e.difficultyName;
+    b.push('<span class="rb rb-diff' + (dn && DIFF_CLS[dn] ? ' dc dc-' + DIFF_CLS[dn] : '') + '">' + esc(dn ? (dn === 'ExpertPlus' ? 'Expert+' : dn) : (e.diffCount ? e.diffCount + (e.diffCount === 1 ? ' diff' : ' diffs') : 'All diffs')) + '</span>');
+    if (e.stars > 0) b.push('<span class="rf-star">' + e.stars.toFixed(2) + '★</span>');
     else if (e.asCat) b.push('<span class="rb rb-as" title="AccSaber ' + esc(AS_LABEL[e.asCat] || e.asCat) + ' · complexity ' + (+e.complexity || 0).toFixed(1) + '">AS ' + esc(AS_LABEL[e.asCat] || e.asCat) + ' ' + (+e.complexity || 0).toFixed(1) + '</span>');
     else if (e.ssStars > 0) b.push('<span class="rb rb-ss" title="ScoreSaber star rating (not on BeatLeader\'s ranked list)">SS ' + e.ssStars.toFixed(2) + '★</span>');
     else b.push('<span class="rb rb-ur">UR</span>');
-    b.push('<span class="rb rb-diff">' + esc(e.difficultyName ? (e.difficultyName === 'ExpertPlus' ? 'Expert+' : e.difficultyName) : (e.diffCount ? e.diffCount + (e.diffCount === 1 ? ' diff' : ' diffs') : 'All diffs')) + '</span>');
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
-    if (e.nps) b.push('<span class="rb">' + e.nps.toFixed(1) + ' NPS</span>');
-    if (e.njs) b.push('<span class="rb" title="Note jump speed">' + (Math.round(e.njs * 10) / 10) + ' NJS</span>');
-    if (e.duration) b.push('<span class="rb">' + fmtDur(e.duration) + '</span>');
-    if (PP.isRanked(e) && ppBadgesOn()) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Range panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
-    if (state.player) {
-      var sc = scoreFor(e);
-      if (sc) {
-        var ssTag = sc.src === 'ss' ? 'SS ' : '', acc = sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'played';
-        if (sc.fc) b.push('<span class="rb rb-you fc" title="Full combo' + (sc.rk ? ' · rank #' + sc.rk : '') + (ssTag ? ' · from ScoreSaber' : '') + '">' + ssTag + 'FC ' + acc + '</span>');
-        else if (isNF(sc)) b.push('<span class="rb rb-you rb-nf" title="No Fail run: you failed and No Fail carried you to the end' + (sc.m ? ' · ' + sc.m + ' miss' : '') + '">NF ' + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
-        else b.push('<span class="rb rb-you" title="' + (sc.rk ? 'rank #' + sc.rk : 'your best') + (sc.m ? ' · ' + sc.m + ' miss' : '') + (ssTag ? ' · from ScoreSaber' : '') + '">' + ssTag + acc + (sc.m ? ' · ' + sc.m + '✗' : '') + '</span>');
-        if (sc.t) b.push('<span class="rb rb-ago" title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
-        if (sc.src !== 'ss' && sc.pp > 0 && PP.isRanked(e)) {
-          var tgt = PP.ppFor(e, state.ppAcc, state.ppMod);
-          if (tgt != null && tgt - sc.pp >= 1) b.push('<span class="rb rb-up" title="Raw pp you would gain going from your best score to ' + state.ppAcc + '% (set the target in the PP Range panel)">+' + Math.round(tgt - sc.pp) + 'pp at ' + state.ppAcc + '%</span>');
-        }
-      } else {
-        b.push('<span class="rb rb-new" title="You haven\'t played this yet">Unplayed</span>');
-      }
-    }
+    var t = [];
+    if (e.nps) t.push('<b>' + e.nps.toFixed(1) + '</b> NPS');
+    if (e.njs) t.push('<span title="Note jump speed"><b>' + (Math.round(e.njs * 10) / 10) + '</b> NJS</span>');
+    if (e.duration) t.push('<b>' + fmtDur(e.duration) + '</b>');
+    if (t.length) b.push('<span class="rf-txt">' + t.join(' · ') + '</span>');
+    if (!state.player && PP.isRanked(e) && ppBadgesOn()) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Range panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
     if (e.vsAcc) b.push('<span class="rb rb-vs" title="' + esc(e.vsName) + '\'s accuracy, ' + e.vsGap.toFixed(2) + ' points ahead of yours">' + esc(String(e.vsName).slice(0, 14)) + ' ' + (e.vsAcc * 100).toFixed(2) + '%</span>');
     if (e._sim != null) b.push('<span class="rb rb-sim" title="How closely this matches the map you searched from">' + e._sim + '% match</span>');
     if (e._rec) {
@@ -4996,9 +5031,37 @@ window.PP = (function () {
     }
     return b.join('');
   }
+  function statCards(e) {
+    if (!state.player) return '';
+    var sc = scoreFor(e), tgt = PP.isRanked(e) ? PP.ppFor(e, state.ppAcc, state.ppMod) : null;
+    var at = state.ppAcc + '%' + (state.ppMod ? ' ' + modCode(state.ppMod) : '');
+    var card = function (cls, lab, val, sub, title) {
+      return '<div class="rcard' + (cls ? ' ' + cls : '') + '"' + (title ? ' title="' + esc(title) + '"' : '') + '><div class="rl">' + lab + '</div><div class="rv">' + val + '</div>' + (sub ? '<div class="rs">' + sub + '</div>' : '') + '</div>';
+    };
+    var L, R = '';
+    if (sc) {
+      var ss = sc.src === 'ss', m = sc.m || 0, sub = [];
+      if (sc.fc) sub.push('<span class="rc-fc">FC</span>');
+      else if (isNF(sc)) sub.push('<span class="rc-nf">NF</span>');
+      if (!sc.fc && m) sub.push(m + (m === 1 ? ' miss' : ' misses'));
+      if (sc.t) sub.push('<span title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
+      L = card('you' + (sc.fc ? ' fc' : ''), ss ? 'ScoreSaber best' : 'Your best', sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'Played', sub.join(' · '),
+        (sc.rk ? 'Rank #' + sc.rk : '') + (isNF(sc) ? (sc.rk ? ' · ' : '') + 'No Fail run: you failed and No Fail carried you to the end' : ''));
+    } else L = card('none', 'Your best', 'Not played', '', 'You haven\'t played this yet');
+    if (tgt != null) {
+      var tip = 'Raw pp at ' + at + ' (set the target in the PP Range panel)';
+      if (sc && sc.src !== 'ss' && sc.pp > 0) {
+        var g = tgt - sc.pp;
+        R = g >= 1 ? card('gain', 'At ' + at, '+' + Math.round(g) + 'pp<span class="rvt"> at ' + at + '</span>', PP.fmtShort(sc.pp) + ' → ' + PP.fmtShort(tgt) + 'pp', 'Raw pp you would gain going from your best score to ' + at)
+                   : card('done', 'At ' + at, PP.fmtShort(sc.pp) + 'pp<span class="rvt"> past ' + at + '</span>', 'already past ' + at, 'Your best already beats ' + at + ': ' + PP.fmtShort(sc.pp) + 'pp now');
+      } else if (sc) R = card('', 'At ' + at, '≈' + PP.fmtShort(tgt) + 'pp', 'BeatLeader pp', tip);
+      else R = card('gain', 'At ' + at, '+' + PP.fmtShort(tgt) + 'pp<span class="rvt"> at ' + at + '</span>', 'all new pp', tip);
+    }
+    return '<div class="rcards' + (R ? '' : ' one') + '">' + L + R + '</div>';
+  }
   function infoBlock(e, inResults, extra) {
-    return '<div class="song-info"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
-      '</div><div class="song-mapper">' + esc(e.mapper) + '</div><div class="rbadges">' + (extra || '') + badges(e) + (inResults && eggBomb(e) ? eggBombHtml() : '') + '</div>' +
+    return '<div class="song-info"><div class="song-ttl"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
+      '</div><div class="song-mapper">' + esc(e.mapper) + '</div></div><div class="rbadges">' + (extra || '') + badges(e) + (inResults && eggBomb(e) ? eggBombHtml() : '') + '</div>' + statCards(e) +
       (inResults && state.viewMode === 'clan' ? (e._clan ? clanBlock(e) : e._asc ? ascBlock(e) : '') : '') + '</div>';
   }
   // The ≈pp estimate only means something once you know pp: show it with a profile connected,
