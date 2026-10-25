@@ -686,6 +686,7 @@ function safeEqual(a, b) {
 // Counts only: how many headsets are linked and how many sync. No playlist names, headset names or ids leave
 // the Worker. The page is public but empty; the numbers need ADMIN_KEY, a Worker secret
 // (npx wrangler secret put ADMIN_KEY), sent as "Authorization: Bearer <key>".
+let adminFails = [];   // times of recent wrong admin keys, kept in memory only
 async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
@@ -694,9 +695,16 @@ async function admin(request, env, url) {
   }
   if (url.pathname !== "/admin/stats" || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
-  if (!(await allowWrite(request, env, "admin", 30))) return json({ error: "Too many tries - wait a few minutes" }, 429, nocache);
+  // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
+  // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
+  const t = nowSec();
+  adminFails = adminFails.filter((x) => t - x < 600);
+  if (adminFails.length >= 20) return json({ error: "Too many wrong keys - wait a few minutes" }, 429, nocache);
   const m = (request.headers.get("Authorization") || "").match(/^Bearer\s+(\S{8,200})$/);
-  if (!m || !env.PLAYLISTS || !safeEqual(await sha256(m[1]), await sha256(env.ADMIN_KEY))) return json({ error: "Wrong key" }, 401, nocache);
+  if (!m || !env.PLAYLISTS || !safeEqual(await sha256(m[1]), await sha256(env.ADMIN_KEY))) {
+    adminFails.push(t);
+    return json({ error: "Wrong key" }, 401, nocache);
+  }
   return json(await adminStats(env), 200, nocache);
 }
 
