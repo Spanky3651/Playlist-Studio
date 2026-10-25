@@ -156,6 +156,8 @@ button.big{padding:13px 20px;font-size:16px;}
 /* The Search button floats over the filters; the fade behind it keeps the text it passes over from showing through. */
 .fetch-dock{position:sticky;bottom:0;z-index:6;margin-top:-14px;padding:24px 0 10px;background:linear-gradient(to bottom,rgba(0,0,0,0),var(--bg) 46%);pointer-events:none;}
 .fetch-dock .big-fetch{pointer-events:auto;}
+/* Oct 25 2026 (Matt): with Studio Sync linked the top bar shows the headset button instead of Export (Download stays in Save and send) */
+body.ss-on .topbar-actions #downloadBtn{display:none !important;}
 /* Oct 25 2026 (Matt): Reset filters lives beside the big Search button instead of the top bar */
 .fetch-dock{display:flex;gap:8px;align-items:stretch;}
 .fetch-dock .big-fetch{flex:1;min-width:0;}
@@ -2606,7 +2608,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:35:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:39:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
