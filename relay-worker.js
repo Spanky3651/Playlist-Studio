@@ -225,6 +225,8 @@ function outKey(lib, dev) { return "out:" + lib + ":" + dev; }
 // rewrote the shared list, two at once (or an ack and a send from Studio) could undo each other.
 function ackKey(lib, dev, id) { return "outa:" + lib + ":" + dev + ":" + id; }
 // When a headset last checked in, kept apart from the library so it can be fresher than the hourly copy there.
+// The player's own order for a headset's playlists (playlist keys, top first), set from Studio's "My order".
+function ordKey(lib, dev) { return "ord:" + lib + ":" + dev; }
 function seenKey(lib, dev) { return "seen:" + lib + ":" + dev; }
 async function withSeen(env, lib, devices) {
   const seen = await Promise.all(devices.map((d) => env.PLAYLISTS.get(seenKey(lib, d.id))));
@@ -429,6 +431,22 @@ async function linked(request, env, ctx, url) {
     return json({ id, key }, 201, cors);
   }
 
+  // PUT /lib/<id>/devices/<dev>/order { ks: [playlist keys, top first] }
+  const om = path.match(/^\/lib\/([A-Za-z0-9]{6,16})\/devices\/([A-Za-z0-9]{6,16})\/order$/);
+  if (om) {
+    const olib = await env.PLAYLISTS.get("lib:" + om[1], "json");
+    if (!olib) return json({ error: "Not found" }, 404, cors);
+    const okey = request.headers.get("X-Lib-Key") || "";
+    if (!okey || !safeEqual(await sha256(okey), olib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+    if (!(olib.devices || []).some((x) => x.id === om[2])) return json({ error: "Not found" }, 404, cors);
+    if (request.method !== "PUT") return json({ error: "Method not allowed" }, 405, cors);
+    if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    const body = (await readJson(request, 20000)) || {};
+    if (!Array.isArray(body.ks)) return json({ error: "Expected { ks: [] }" }, 400, cors);
+    const ks = [...new Set(body.ks.filter((x) => typeof x === "string" && /^[0-9a-f]{16}$/.test(x)))].slice(0, MAX_INVENTORY);
+    await putTtl(env, ordKey(om[1], om[2]), { ks, t: nowSec() });
+    return json({ order: ks }, 200, cors);
+  }
   const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|delete|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
   const id = m[1], lib = await env.PLAYLISTS.get("lib:" + id, "json");
@@ -478,7 +496,8 @@ async function linked(request, env, ctx, url) {
       const items = inv.items.map((it) => { const v = latestV(it.file, it); return Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), soloField(it.solo), { ready: !!it.have, at: it.at }, v ? { v } : {}, { backups: it.backups || [] }); });
       const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
       const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
-      return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+      const ord = (await env.PLAYLISTS.get(ordKey(id, dv.id), "json")) || {};
+      return json({ items, deleted, features: inv.features || [], pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen, order: Array.isArray(ord.ks) ? ord.ks : [] }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
     if (m[5] === "new" && !m[6] && request.method === "POST") {
       if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);

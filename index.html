@@ -549,6 +549,14 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-pl .lq-mt{min-width:0;overflow-wrap:anywhere;}
 .lq-nw{white-space:nowrap;}
 .lq-cov{width:40px;height:40px;border-radius:8px;flex:none;object-fit:cover;background:#0d1620;border:1px solid #1f3456;}
+/* My order: a grip at the start of each row; the row being dragged lifts, the others slide out of its way */
+.lq-pl .lq-grip{flex:none;display:grid;place-items:center;width:22px;height:40px;min-width:0;min-height:0;margin:0 -2px 0 -8px;padding:0;border:0;border-radius:6px;background:none;box-shadow:none;color:#5d6f8a;cursor:grab;touch-action:none;}
+.lq-pl .lq-grip svg{width:18px;height:18px;}
+.lq-pl .lq-grip:hover,.lq-pl .lq-grip:focus-visible{color:#cfe0ff;background:none;border:0;box-shadow:none;}
+.lq-list.lq-dragging{user-select:none;}
+.lq-list.lq-dragging .lq-pl:not(.lq-drag){transition:transform .15s ease;}
+.lq-pl.lq-drag{z-index:5;background:#0d1626;box-shadow:0 10px 28px rgba(0,0,0,.65);cursor:grabbing;}
+.lq-pl.lq-drag .lq-grip{cursor:grabbing;color:#cfe0ff;}
 .lq-cov.ph{display:flex;align-items:center;justify-content:center;color:#4f6789;font-size:18px;}
 .lq-cov.ld{background:linear-gradient(110deg,#0d1620 30%,#16243a 50%,#0d1620 70%);background-size:200% 100%;animation:lqshim 1.4s linear infinite;}
 @keyframes lqshim{from{background-position:100% 0}to{background-position:-100% 0}}
@@ -2697,7 +2705,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T01:04:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T01:33:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7443,21 +7451,57 @@ window.PP = (function () {
   }
   // Long lists get a filter box and a sort choice (the sort is remembered).
   var LQ_SORT = 'playlistStudio.lqSort.v1';
-  function lqSortGet() { var v = ''; try { v = localStorage.getItem(LQ_SORT) || ''; } catch (e) {} return v === 'recent' || v === 'songs' ? v : 'az'; }
+  function lqSortGet() { var v = ''; try { v = localStorage.getItem(LQ_SORT) || ''; } catch (e) {} return v === 'recent' || v === 'az' ? v : 'mine'; }
+  // My order: playlist keys top first, per headset. The relay keeps it with the library (every browser), this browser
+  // keeps a copy (an older relay, or offline), and a drag shows at once while it saves.
+  var LQ_ORDER = 'playlistStudio.lqOrder.v1', lqOrd = {}, lqOrdT = {}, lqDrag = null;
+  function lqOrderCache() { try { return JSON.parse(localStorage.getItem(LQ_ORDER) || '{}') || {}; } catch (e) { return {}; } }
+  function lqOrderOf(dev) {
+    if (lqOrd[dev]) return lqOrd[dev];
+    var q = state.lq.quest[dev]; if (q && Array.isArray(q.order) && q.order.length) return q.order;
+    return lqOrderCache()[dev] || [];
+  }
+  function lqOrderSave(dev, ks) {
+    lqOrd[dev] = ks;
+    var c = lqOrderCache(); c[dev] = ks; try { localStorage.setItem(LQ_ORDER, JSON.stringify(c)); } catch (e) {}
+    lqRender();
+    clearTimeout(lqOrdT[dev]);
+    lqOrdT[dev] = setTimeout(function () {
+      if (!libGet()) return;
+      libFetch('PUT', libPath('/devices/' + encodeURIComponent(dev) + '/order'), { ks: ks }).then(function (res) {
+        if (!res.ok || !res.j || !Array.isArray(res.j.order)) return;
+        var q = state.lq.quest[dev]; if (q) q.order = res.j.order;
+        if (lqOrd[dev] === ks) delete lqOrd[dev];
+      }, function () {});
+    }, 700);
+  }
+  // The sort menu shows from 8 playlists up; below that it's always My order.
+  function lqSortFor(n) { return n >= 8 ? lqSortGet() : 'mine'; }
+  function lqCanDrag(dev) {
+    return lqSortFor(lqQuestItems(dev).length) === 'mine' && !String((state.lq.filter && state.lq.filter[dev]) || '').trim() && !(state.lq.sel && state.lq.sel.dev === dev) && lqQuestItems(dev).length > 1;
+  }
+  function lqMove(dev, from, to) {
+    var ks = lqSortList(lqQuestItems(dev), '', dev).map(function (x) { return x.k; });
+    if (from < 0 || to < 0 || from >= ks.length || to >= ks.length || from === to) return;
+    ks.splice(to, 0, ks.splice(from, 1)[0]);
+    lqOrderSave(dev, ks);
+    track('lq-reorder');
+  }
   function lqSortList(all, fl, devId) {
-    var srt = lqSortGet(), f = String(fl || '').trim().toLowerCase(), list = all.slice();
+    var srt = lqSortFor(all.length), f = String(fl || '').trim().toLowerCase(), list = all.slice();
     if (f) list = list.filter(function (it) { return ((it.title || '') + ' ' + (it.file || '')).toLowerCase().indexOf(f) >= 0; });
     if (srt === 'recent') list.sort(function (a, b) { return (b.waiting ? 9e12 : b.at || 0) - (a.waiting ? 9e12 : a.at || 0); });
-    else if (srt === 'songs') {
-      var sz = function (x) { var m = lqMaps(devId, x); return m != null ? m : x.count >= 0 ? x.count : -1; };
-      list.sort(function (a, b) { return sz(b) - sz(a); });
+    else if (srt === 'mine') {
+      // Placed ones in your order; ones you haven't placed yet (new on the headset) on top, A to Z.
+      var pos = {}; lqOrderOf(devId).forEach(function (k, i) { pos[k] = i + 1; });
+      list.sort(function (a, b) { return (pos[a.k] || 0) - (pos[b.k] || 0); });
     }
     return list;
   }
   function lqFilterHtml(devId, fl, nm) {
     var srt = lqSortGet(), dv = esc(devId), o = function (v, t) { return '<option value="' + v + '"' + (srt === v ? ' selected' : '') + '>' + t + '</option>'; };
     return '<div class="lq-filter"><input type="text" id="lqFilter-' + dv + '" data-lq-filter="' + dv + '" value="' + esc(fl) + '" placeholder="Filter playlists" aria-label="Filter playlists on ' + esc(nm) + '" autocomplete="off" spellcheck="false" />' +
-      '<select data-lq-sort aria-label="Sort playlists">' + o('az', 'A to Z') + o('recent', 'Last changed') + o('songs', 'Most maps') + '</select></div>';
+      '<select data-lq-sort aria-label="Sort playlists">' + o('mine', 'My order') + o('az', 'A to Z') + o('recent', 'Last changed') + '</select></div>';
   }
   // A backup's size: maps when the mod reports them, songs otherwise, with the change from what's there now in the same unit.
   function lqBakSize(b, curMaps, curSongs) {
@@ -7504,7 +7548,8 @@ window.PP = (function () {
     var open = !!mi && lq.menuOpen === key;
     var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
     var gl = lqGlowFor(key), gd = gl ? ' style="animation-delay:-' + gl.ms + 'ms"' : '';
-    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + '>' + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
+    var grip = lqCanDrag(d.id) && !removing ? '<button type="button" class="lq-grip" data-lq-grip="' + id + '" title="Drag to reorder" aria-label="Move ' + esc(name) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '';
+    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + '>' + grip + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
       (gl && !editing ? '<span class="lq-added"' + gd + '>' + gl.label + '</span>' : '') + act +
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
@@ -7514,6 +7559,7 @@ window.PP = (function () {
   }
   function lqBtn(label, attrs, cls) { return '<button type="button" class="' + (cls || 'ghost sm') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
   function lqRender() {
+    if (lqDrag) { lqDrag.dirty = true; return; }   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
@@ -7884,6 +7930,49 @@ window.PP = (function () {
       if (e.target && e.target.id === 'lqSendTo') { state.lq.sendTo = e.target.value; state.lq.dup = null; if (e.target.value !== 'all') state.lq.lastDev = e.target.value; lqRender(); }
     });
     var bar = document.getElementById('lqEditBar'); if (bar) bar.addEventListener('click', onClick);
+    // My order: drag a row by its grip, or focus the grip and use the arrow keys.
+    var gripRows = function (g) { var row = g.closest('.lq-pl'), list = row && row.parentElement; if (!list) return null; return { row: row, list: list, rows: Array.prototype.filter.call(list.children, function (x) { return x.classList.contains('lq-pl'); }) }; };
+    document.addEventListener('pointerdown', function (e) {
+      var g = e.target.closest && e.target.closest('[data-lq-grip]'); if (!g || e.button > 0 || lqDrag) return;
+      var r = gripRows(g); if (!r) return;
+      e.preventDefault();
+      var from = r.rows.indexOf(r.row);
+      lqDrag = { dev: g.getAttribute('data-lq-grip').split('|')[0], row: r.row, list: r.list, rows: r.rows, from: from, to: from, y0: e.clientY, id: e.pointerId,
+        mids: r.rows.map(function (x) { var b = x.getBoundingClientRect(); return b.top + b.height / 2; }), h: r.row.getBoundingClientRect().height };
+      try { g.setPointerCapture(e.pointerId); } catch (x) {}
+      r.row.classList.add('lq-drag'); r.list.classList.add('lq-dragging');
+    });
+    document.addEventListener('pointermove', function (e) {
+      var d = lqDrag; if (!d || e.pointerId !== d.id) return;
+      var dy = e.clientY - d.y0, c = d.mids[d.from] + dy, to = d.from;
+      d.row.style.transform = 'translateY(' + dy + 'px)';
+      while (to > 0 && c < d.mids[to - 1]) to--;
+      while (to < d.rows.length - 1 && c > d.mids[to + 1]) to++;
+      d.to = to;
+      d.rows.forEach(function (x, i) {
+        if (x === d.row) return;
+        var sh = d.from < to && i > d.from && i <= to ? -d.h : d.from > to && i >= to && i < d.from ? d.h : 0;
+        x.style.transform = sh ? 'translateY(' + sh + 'px)' : '';
+      });
+    });
+    var dragEnd = function (e) {
+      var d = lqDrag; if (!d || (e && e.pointerId !== d.id)) return;
+      lqDrag = null;
+      d.rows.forEach(function (x) { x.style.transform = ''; });
+      d.row.classList.remove('lq-drag'); d.list.classList.remove('lq-dragging');
+      if (d.to !== d.from) lqMove(d.dev, d.from, d.to); else if (d.dirty) lqRender();
+    };
+    document.addEventListener('pointerup', dragEnd);
+    document.addEventListener('pointercancel', dragEnd);
+    document.addEventListener('keydown', function (e) {
+      var g = e.target.closest && e.target.closest('[data-lq-grip]'); if (!g || lqDrag) return;
+      var step = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0; if (!step) return;
+      e.preventDefault();
+      var r = gripRows(g); if (!r) return;
+      var at = g.getAttribute('data-lq-grip'), i = r.rows.indexOf(r.row);
+      lqMove(at.split('|')[0], i, i + step);
+      var g2 = document.querySelector('[data-lq-grip="' + at + '"]'); if (g2) g2.focus();
+    });
     // Coming back to the tab is a good moment to pick up what the headset shared.
     document.addEventListener('visibilitychange', function () { if (!document.hidden && libGet() && lqActive()) lqRefresh(); });
     // Shown on its own (not opened on purpose) it starts folded, so it's one quiet row until wanted.
@@ -11027,7 +11116,7 @@ window.PP = (function () {
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<az|recent|songs>, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Installed app: pwa-link (a link opened in the open window, also counted as a visit), pwa-open-file,
      file-import-<fresh|merge|replace>, share-import-<merge|replace>, combine-open-file;
