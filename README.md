@@ -172,7 +172,7 @@ From then on:
 - **Delete** (also in the **•••** menu) removes a playlist from the headset after one confirm. Nothing is erased: the headset keeps it as a backup, and it shows under **Recently deleted** for 30 days with a **Restore** button. Until the headset syncs, **Undo** takes back a delete, restore or new send. Delete shows once the headset runs Studio Sync 0.5.0 or later.
 - Playlists linked through a hosted copy before this get a one-click **Move to headset**. **Manage headsets** shows **Unlink**, which stops syncing a headset, and **+ Link another headset**. The pencil next to a headset's name renames it (a new headset starts out as "Quest"), so two Quests are easy to tell apart.
 
-The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key (copy it under *Manage from another browser* to use a second computer); the headset holds its own token, and either side can unlink.
+The headset syncs when the game starts, when you return to the main menu, when you open its tab, or with **Sync now**. Your browser holds the library key; the headset holds its own token, and either side can unlink. To use Studio Sync on your phone or another computer, open *Use Studio Sync on your phone or another computer* at the bottom of Studio Sync and scan the QR code with your phone's camera, or copy the key and choose *Use its key instead* in step 2 on the other device. Treat the code and the key like a password.
 
 Covers come from the playlists the headset shares: Studio reads each one once, keeps a small copy in your browser, and only reads it again after the playlist changes.
 
