@@ -691,7 +691,7 @@ async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname !== "/admin/stats" || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
@@ -778,6 +778,10 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .msg{color:var(--muted);font-size:15px;min-height:22px;margin:0 0 16px}
 .msg.err{color:#ff8a98}
 .msg:empty{display:none}
+/* Inside Playlist Studio's drawer (?embed=1) the drawer has its own title, so the page's title goes */
+.embed body{padding-top:16px}
+.embed .brand,.embed .top .sub{display:none}
+.embed .top{justify-content:flex-end;margin-bottom:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .label{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
@@ -821,6 +825,12 @@ h2{font-size:18px;margin:26px 0 10px}
 </main>
 <script>
 (function () {
+  var embedded = /[?&]embed=1/.test(location.search);
+  if (embedded) {
+    document.documentElement.classList.add('embed');
+    // Esc pressed in here closes Playlist Studio's drawer too.
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') try { parent.postMessage('studio-sync-stats-close', 'https://spanky3651.github.io'); } catch (x) {} });
+  }
   var K = 'studioSyncAdminKey', keyIn = document.getElementById('key'), msg = document.getElementById('msg');
   function getKey() { try { return localStorage.getItem(K) || ''; } catch (e) { return ''; } }
   function setKey(v) { try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) {} }

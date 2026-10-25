@@ -1206,6 +1206,10 @@ body.sd-lock{overflow:hidden}
 .sd-x{width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0}
 .sd-body{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
 .sd-body>*{flex-shrink:0}
+/* Studio Sync stats drawer (five quick clicks on the Quest tab in Save and send): the Worker's private /admin page */
+.sd.ssa .sd-body{padding:0;gap:0}
+.sd.ssa iframe{flex:1;width:100%;border:0;background:#000}
+.sd.ssa a.sd-link{text-decoration:none}
 .sv-hero{position:relative;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--panel)}
 .sv-hero .cvr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22}
 .sv-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--panel) 20%,rgba(11,14,20,.5) 65%,var(--panel));pointer-events:none}
@@ -2705,7 +2709,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T12:16:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T12:30:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2717,6 +2721,17 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     <button type="button" class="ghost sd-x" id="sdClose" aria-label="Close player stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
   </div>
   <div class="sd-body" id="sdBody"></div>
+</aside>
+
+<!-- ============ STUDIO SYNC STATS (private; opened by five quick clicks on the Quest tab) ============ -->
+<div class="sd-back" id="ssaBack"></div>
+<aside class="sd ssa" id="ssaPanel" aria-label="Studio Sync stats" aria-hidden="true">
+  <div class="sd-head">
+    <h2>Studio Sync stats</h2>
+    <a class="sd-link" id="ssaNewTab" href="https://playlist-replay.msploit.workers.dev/admin" target="_blank" rel="noopener">Open in new tab</a>
+    <button type="button" class="ghost sd-x" id="ssaClose" aria-label="Close Studio Sync stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+  </div>
+  <div class="sd-body" id="ssaBody"></div>
 </aside>
 
 <!-- ============ DRAG-AND-DROP A .BPLIST ============ -->
@@ -6439,6 +6454,31 @@ window.PP = (function () {
   // The box stays hidden until the Worker says hosting is set up, so nothing changes
   // for players before it is deployed.
   var PUB_BASE = 'https://playlist-replay.msploit.workers.dev';
+  // ---- Studio Sync stats: five quick clicks on Save and send's Quest tab slide in the Worker's private
+  // stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
+  (function () {
+    var clicks = [], panel = document.getElementById('ssaPanel'), back = document.getElementById('ssaBack');
+    if (!panel || !back) return;
+    function open() {
+      var body = document.getElementById('ssaBody');
+      if (!body.querySelector('iframe')) { var f = document.createElement('iframe'); f.title = 'Studio Sync stats'; f.src = PUB_BASE + '/admin?embed=1'; body.appendChild(f); }
+      panel.classList.add('open'); back.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); document.body.classList.add('sd-lock');
+    }
+    function close() {
+      panel.classList.remove('open'); back.classList.remove('open'); panel.setAttribute('aria-hidden', 'true');
+      if (!document.getElementById('sdPanel') || !document.getElementById('sdPanel').classList.contains('open')) document.body.classList.remove('sd-lock');
+    }
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest && e.target.closest('.tg-tab[data-tg="lqPanel"]'); if (!t) return;
+      var now = Date.now(); clicks = clicks.filter(function (x) { return now - x < 2000; }); clicks.push(now);
+      if (clicks.length >= 5) { clicks = []; open(); }
+    });
+    document.getElementById('ssaClose').addEventListener('click', close);
+    back.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+    // Esc pressed inside the stats page arrives as a message from the Worker's page.
+    window.addEventListener('message', function (e) { if (e.origin === PUB_BASE && e.data === 'studio-sync-stats-close' && panel.classList.contains('open')) close(); });
+  })();
   function pubFetch(method, path, body, key) {
     var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 20000);
     var h = { 'Content-Type': 'application/json' }; if (key) h['X-Edit-Key'] = key;
