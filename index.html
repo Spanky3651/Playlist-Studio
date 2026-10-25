@@ -513,6 +513,16 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-qr{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:10px 0 12px;}
 .lq-qrc{width:150px;height:150px;flex:none;border-radius:12px;background:#fff;padding:7px;box-sizing:border-box;}
 .lq-qrc svg{width:100%;height:100%;display:block;}
+.lq-qrc{position:relative;overflow:hidden;}
+.lq-qrc.veil svg{filter:blur(9px);opacity:.55;}
+.lq-qrc .lq-qrshow{position:absolute;inset:0;margin:auto;width:max-content;height:max-content;padding:8px 14px;border-radius:20px;border:1px solid #2f8cff;background:#0b1424;color:#fff;font-size:13.5px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.5);}
+.lq-qrc:not(.veil) .lq-qrshow{display:none;}
+.lq-keyrow input{flex:1;min-width:0;width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--border-2);border-radius:8px;padding:10px 11px;font-size:14px;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.5px;}
+.lq-keyrow .lq-eye{width:36px;height:36px;padding:0;display:grid;place-items:center;flex:none;}
+.lq-keyrow .lq-eye svg{width:18px;height:18px;}
+.lq-keyrow .lq-eye .e-shut{display:none;}
+.lq-keyrow .lq-eye[aria-pressed="true"] .e-open{display:none;}
+.lq-keyrow .lq-eye[aria-pressed="true"] .e-shut{display:inline;}
 .lq-qrt{flex:1;min-width:190px;color:#a9b8cc;font-size:14px;line-height:1.5;}
 .lq-qrt b{display:block;color:#fff;font-size:15px;margin-bottom:3px;}
 .lq-qrw{display:block;margin-top:10px;color:#ffcf8a;}
@@ -2627,9 +2637,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <div class="lq-devs" id="lqDevs"></div>
               <details class="lq-more" id="lqMore" hidden>
                 <summary>Use Studio Sync on your phone or another computer</summary>
-                <div class="lq-qr"><div class="lq-qrc" id="lqQr" role="img" aria-label="QR code that links another device to your headsets"></div><div class="lq-qrt"><b>Scan with your phone's camera</b>Playlist Studio opens on your phone already linked to your headsets. Nothing to copy.<span class="lq-qrw">This code works like a password: don't post it or share a screenshot.</span></div></div>
+                <div class="lq-qr"><div class="lq-qrc veil" id="lqQrBox"><div id="lqQr" role="img" aria-label="QR code that links another device to your headsets"></div><button type="button" class="lq-qrshow" id="lqQrShow">Show code</button></div><div class="lq-qrt"><b>Scan with your phone's camera</b>Playlist Studio opens on your phone already linked to your headsets. Nothing to copy.<span class="lq-qrw">This code works like a password: don't post it or share a screenshot.</span></div></div>
                 <div class="lq-or">or copy the key</div>
-                <div class="lq-row"><input type="text" id="lqKeyOut" readonly /><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
+                <div class="lq-row lq-keyrow"><input type="password" id="lqKeyOut" readonly autocomplete="off" aria-label="Library key (hidden)" /><button type="button" class="ghost lq-eye" id="lqKeyEye" aria-pressed="false" title="Show key" aria-label="Show key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="e-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="e-open" cx="12" cy="12" r="3"/><path class="e-shut" d="M3 3l18 18M10.6 5.1A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button><button type="button" class="ghost sm" id="lqKeyCopy">Copy</button></div>
                 <p>Key shared somewhere it shouldn't be? Make a new one. Your headsets stay linked; other browsers and scripts using the old key stop working until you give them the new one.</p>
                 <div class="lq-row"><button type="button" class="ghost sm" id="lqRekey">Make a new key</button></div>
               </details>
@@ -2725,7 +2735,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T14:46:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T14:56:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7864,6 +7874,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqQrDraw(lib) {
     var box = document.getElementById('lqQr'); if (!box || typeof qrcode !== 'function') return;
     var link = lqKeyLink(lib); if (box.getAttribute('data-for') === lib.id + '.' + lib.key) return;
+    lqKeyCover();   // a new key starts hidden too
     try { var q = qrcode(0, 'M'); q.addData(link); q.make(); box.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); box.setAttribute('data-for', lib.id + '.' + lib.key); } catch (e) { box.innerHTML = ''; }
   }
   // Opened from that QR code (or the link): link this browser with the key, then take it out of the address bar.
@@ -7879,6 +7890,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     lqUseKey();
     ssOpen('key-link');
     return true;
+  }
+  // Hidden until asked: the key as dots, the QR code blurred. Showing the code lasts a minute.
+  var lqQrT = 0;
+  function lqKeyShow(on) {
+    var inp = document.getElementById('lqKeyOut'), eye = document.getElementById('lqKeyEye'); if (!inp || !eye) return;
+    inp.type = on ? 'text' : 'password'; inp.setAttribute('aria-label', on ? 'Library key' : 'Library key (hidden)');
+    eye.setAttribute('aria-pressed', on ? 'true' : 'false'); eye.title = on ? 'Hide key' : 'Show key'; eye.setAttribute('aria-label', eye.title);
+  }
+  function lqKeyCover() {
+    clearTimeout(lqQrT); var qb = document.getElementById('lqQrBox'); if (qb) qb.classList.add('veil');
+    lqKeyShow(false);
   }
   function lqUseKey() {
     var v = (document.getElementById('lqKeyIn').value || '').trim(), m = v.match(/^([A-Za-z0-9]{6,16})\.([0-9a-f]{48})$/);
@@ -7916,8 +7938,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('lqRekey').addEventListener('click', lqRekey);
     document.getElementById('lqKeyCopy').addEventListener('click', function () {
       var v = document.getElementById('lqKeyOut').value;
-      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function () { toast('Library key copied.', 'ok'); }, function () { document.getElementById('lqKeyOut').select(); });
+      // No clipboard access: show the key and select it so it can be copied by hand.
+      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function () { toast('Library key copied.', 'ok'); }, function () { lqKeyShow(true); document.getElementById('lqKeyOut').select(); });
     });
+    document.getElementById('lqKeyEye').addEventListener('click', function () { lqKeyShow(document.getElementById('lqKeyOut').type === 'password'); });
+    document.getElementById('lqQrShow').addEventListener('click', function () {
+      var qb = document.getElementById('lqQrBox'); qb.classList.remove('veil'); track('lq-qr-show');
+      clearTimeout(lqQrT); lqQrT = setTimeout(function () { qb.classList.add('veil'); }, 60000);
+    });
+    document.getElementById('lqMore').addEventListener('toggle', function () { if (!this.open) lqKeyCover(); });
     var onClick = function (e) {
       var t = e.target.closest('button');
       if (!t) {
@@ -11238,7 +11267,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-key-show, lq-key-link (opened the QR code link), lq-open-key-link, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-key-show, lq-qr-show, lq-key-link (opened the QR code link), lq-open-key-link, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Installed app: pwa-link (a link opened in the open window, also counted as a visit), pwa-open-file,
      file-import-<fresh|merge|replace>, share-import-<merge|replace>, combine-open-file;
