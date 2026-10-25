@@ -772,6 +772,7 @@ button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:11p
 button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
 .msg{color:var(--muted);font-size:15px;min-height:22px;margin:0 0 16px}
 .msg.err{color:#ff8a98}
+.msg:empty{display:none}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .label{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
@@ -786,11 +787,15 @@ h2{font-size:18px;margin:26px 0 10px}
 .fill.alt{background:var(--red)}
 .num{text-align:right;font-weight:700}
 .hidden{display:none}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tools{display:flex;gap:8px;margin-top:4px}
+.tools button{padding:7px 12px;font-size:14px;font-weight:600}
 </style></head><body><main>
-<h1>Studio Sync stats</h1>
-<p class="sub">Headsets linked to Playlist Studio and how many keep syncing. Counts only.</p>
-<div class="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
-<button id="go">Show stats</button><button id="forget" class="ghost hidden">Forget key</button></div>
+<div class="top"><div><h1>Studio Sync stats</h1>
+<p class="sub">Headsets linked to Playlist Studio and how many keep syncing. Counts only.</p></div>
+<div class="tools hidden" id="tools"><button id="refresh" class="ghost">Refresh</button><button id="forget" class="ghost">Forget key</button></div></div>
+<div class="keyrow" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
+<button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
 <div class="grid">
@@ -814,6 +819,12 @@ h2{font-size:18px;margin:26px 0 10px}
   function getKey() { try { return localStorage.getItem(K) || ''; } catch (e) { return ''; } }
   function setKey(v) { try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) {} }
   function txt(id, v) { document.getElementById(id).textContent = v; }
+  // With a working key the key box goes away; Refresh and Forget key sit by the title instead.
+  function signedIn(on) {
+    document.getElementById('keyrow').classList.toggle('hidden', on);
+    document.getElementById('tools').classList.toggle('hidden', !on);
+    if (!on) document.getElementById('out').classList.add('hidden');
+  }
   function say(t, err) { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); }
   function bars(id, data, alt) {
     var max = Math.max.apply(null, data.concat([1])), el = document.getElementById(id);
@@ -835,8 +846,8 @@ h2{font-size:18px;margin:26px 0 10px}
     fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
-      if (!res.ok) { if (res.status === 401) setKey(''); document.getElementById('forget').classList.toggle('hidden', !getKey()); say(res.j.error || 'Couldn’t load stats.', true); return; }
-      setKey(key); keyIn.value = ''; document.getElementById('forget').classList.remove('hidden');
+      if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); } say(res.j.error || 'Couldn’t load stats.', true); return; }
+      setKey(key); keyIn.value = ''; signedIn(true);
       var s = res.j, players = s.libraries - s.librariesNoHeadset;
       txt('activeDay', s.activeDay); txt('activeWeek', s.activeWeek); txt('activeMonth', s.activeMonth);
       txt('headsets', s.headsets); txt('neverNote', s.neverSynced ? s.neverSynced + ' never synced' : 'all have synced at least once');
@@ -850,7 +861,8 @@ h2{font-size:18px;margin:26px 0 10px}
   }
   document.getElementById('go').addEventListener('click', load);
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') load(); });
-  document.getElementById('forget').addEventListener('click', function () { setKey(''); this.classList.add('hidden'); document.getElementById('out').classList.add('hidden'); say('Key forgotten on this device.'); });
-  if (getKey()) { document.getElementById('forget').classList.remove('hidden'); load(); }
+  document.getElementById('refresh').addEventListener('click', load);
+  document.getElementById('forget').addEventListener('click', function () { setKey(''); signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
+  if (getKey()) { document.getElementById('keyrow').classList.add('hidden'); load(); }
 })();
 </script></body></html>`;
