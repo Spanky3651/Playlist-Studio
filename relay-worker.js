@@ -26,6 +26,10 @@ export default {
       try { return await hosted(request, env, ctx, url); }
       catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
     }
+    if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
+      try { return await admin(request, env, url); }
+      catch (e) { return json({ error: "Server error" }, 500, { "Cache-Control": "no-store" }); }
+    }
     return relay(request, url);
   },
 };
@@ -677,3 +681,164 @@ function safeEqual(a, b) {
   let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
 }
+
+// ---------------------------------------------------------------- private stats page (/admin)
+// Counts only: how many headsets are linked and how many sync. No playlist names, headset names or ids leave
+// the Worker. The page is public but empty; the numbers need ADMIN_KEY, a Worker secret
+// (npx wrangler secret put ADMIN_KEY), sent as "Authorization: Bearer <key>".
+async function admin(request, env, url) {
+  const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
+  if (url.pathname === "/admin" && request.method === "GET") {
+    return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }, nocache) });
+  }
+  if (url.pathname !== "/admin/stats" || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
+  if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
+  if (!(await allowWrite(request, env, "admin", 30))) return json({ error: "Too many tries - wait a few minutes" }, 429, nocache);
+  const m = (request.headers.get("Authorization") || "").match(/^Bearer\s+(\S{8,200})$/);
+  if (!m || !env.PLAYLISTS || !safeEqual(await sha256(m[1]), await sha256(env.ADMIN_KEY))) return json({ error: "Wrong key" }, 401, nocache);
+  return json(await adminStats(env), 200, nocache);
+}
+
+async function adminStats(env) {
+  const now = nowSec(), DAY = 86400, WEEKS = 8;
+  const ids = [];
+  let cursor;
+  do {
+    const page = await env.PLAYLISTS.list({ prefix: "lib:", cursor, limit: 1000 });
+    for (const k of page.keys) ids.push(k.name.slice(4));
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+
+  const st = { generated: now, libraries: ids.length, librariesNoHeadset: 0, librariesMulti: 0, headsets: 0,
+    activeDay: 0, activeWeek: 0, activeMonth: 0, neverSynced: 0, newWeek: 0, newMonth: 0,
+    sharedPlaylists: 0, hostedLinks: 0, linksByWeek: new Array(WEEKS).fill(0), activeByWeek: new Array(WEEKS).fill(0) };
+  for (let i = 0; i < ids.length; i += 25) {
+    await Promise.all(ids.slice(i, i + 25).map(async (id) => {
+      const lib = await env.PLAYLISTS.get("lib:" + id, "json");
+      if (!lib) return;
+      const devs = Array.isArray(lib.devices) ? lib.devices : [];
+      st.hostedLinks += (lib.items || []).length;
+      if (!devs.length) { st.librariesNoHeadset++; return; }
+      if (devs.length > 1) st.librariesMulti++;
+      const seen = await withSeen(env, id, devs);
+      const invs = await Promise.all(devs.map((d) => env.PLAYLISTS.get(invKey(id, d.id), "json")));
+      seen.forEach((d, j) => {
+        st.headsets++;
+        const s = d.seen || 0, added = d.added || 0;
+        if (!s) st.neverSynced++;
+        else {
+          if (now - s < DAY) st.activeDay++;
+          if (now - s < 7 * DAY) st.activeWeek++;
+          if (now - s < 30 * DAY) st.activeMonth++;
+          const sw = Math.floor((now - s) / (7 * DAY)); if (sw < WEEKS) st.activeByWeek[sw]++;
+        }
+        if (now - added < 7 * DAY) st.newWeek++;
+        if (now - added < 30 * DAY) st.newMonth++;
+        const w = Math.floor((now - added) / (7 * DAY)); if (added && w < WEEKS) st.linksByWeek[w]++;
+        const inv = invs[j];
+        if (inv && Array.isArray(inv.items)) st.sharedPlaylists += inv.items.length;
+      });
+    }));
+  }
+  return st;
+}
+
+const ADMIN_PAGE = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Studio Sync Stats</title>
+<style>
+:root{--bg:#000;--card:#0b0f17;--line:#1f2a3d;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--red:#ff2740;--green:#3ddc84;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,'Segoe UI',Arial,sans-serif;padding:24px 16px 48px}
+main{max-width:980px;margin:0 auto}
+h1{font-size:26px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:15px;margin:0 0 22px}
+.keyrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+input{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 13px;font-size:16px}
+button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:11px 18px;font-size:16px;font-weight:700;cursor:pointer}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.msg{color:var(--muted);font-size:15px;min-height:22px;margin:0 0 16px}
+.msg.err{color:#ff8a98}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.label{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.value{font-size:34px;font-weight:800;margin-top:2px}
+.note{font-size:14px;color:var(--muted)}
+.hero .value{color:var(--green)}
+h2{font-size:18px;margin:26px 0 10px}
+.bars{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.bar{display:grid;grid-template-columns:110px 1fr 44px;align-items:center;gap:10px;margin:6px 0;font-size:15px}
+.track{height:14px;background:#111827;border-radius:7px;overflow:hidden}
+.fill{height:100%;border-radius:7px;background:var(--blue)}
+.fill.alt{background:var(--red)}
+.num{text-align:right;font-weight:700}
+.hidden{display:none}
+</style></head><body><main>
+<h1>Studio Sync stats</h1>
+<p class="sub">Headsets linked to Playlist Studio and how many keep syncing. Counts only.</p>
+<div class="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
+<button id="go">Show stats</button><button id="forget" class="ghost hidden">Forget key</button></div>
+<p class="msg" id="msg"></p>
+<div id="out" class="hidden">
+<div class="grid">
+<div class="card hero"><div class="label">Active today</div><div class="value" id="activeDay"></div><div class="note">synced in the last 24 hours</div></div>
+<div class="card hero"><div class="label">Active this week</div><div class="value" id="activeWeek"></div><div class="note">last 7 days</div></div>
+<div class="card"><div class="label">Active this month</div><div class="value" id="activeMonth"></div><div class="note">last 30 days</div></div>
+<div class="card"><div class="label">Headsets linked</div><div class="value" id="headsets"></div><div class="note" id="neverNote"></div></div>
+<div class="card"><div class="label">New this week</div><div class="value" id="newWeek"></div><div class="note" id="newMonthNote"></div></div>
+<div class="card"><div class="label">Players</div><div class="value" id="players"></div><div class="note" id="multiNote"></div></div>
+<div class="card"><div class="label">Playlists shared</div><div class="value" id="sharedPlaylists"></div><div class="note">from headsets to Studio</div></div>
+<div class="card"><div class="label">Started, not linked</div><div class="value" id="librariesNoHeadset"></div><div class="note">opened linking but no headset yet</div></div>
+</div>
+<h2>New headsets per week</h2><div class="bars" id="linksBars"></div>
+<h2>Headsets by last sync</h2><div class="bars" id="activeBars"></div>
+<p class="sub" id="when" style="margin-top:16px"></p>
+</div>
+</main>
+<script>
+(function () {
+  var K = 'studioSyncAdminKey', keyIn = document.getElementById('key'), msg = document.getElementById('msg');
+  function getKey() { try { return localStorage.getItem(K) || ''; } catch (e) { return ''; } }
+  function setKey(v) { try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) {} }
+  function txt(id, v) { document.getElementById(id).textContent = v; }
+  function say(t, err) { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); }
+  function bars(id, data, alt) {
+    var max = Math.max.apply(null, data.concat([1])), el = document.getElementById(id);
+    el.textContent = '';
+    data.forEach(function (n, i) {
+      var row = document.createElement('div'); row.className = 'bar';
+      var lab = document.createElement('span'); lab.textContent = i === 0 ? 'This week' : i === 1 ? 'Last week' : i + ' weeks ago';
+      var tr = document.createElement('span'); tr.className = 'track';
+      var f = document.createElement('span'); f.className = 'fill' + (alt ? ' alt' : ''); f.style.display = 'block'; f.style.width = Math.round(n / max * 100) + '%';
+      tr.appendChild(f);
+      var num = document.createElement('span'); num.className = 'num'; num.textContent = n;
+      row.appendChild(lab); row.appendChild(tr); row.appendChild(num); el.appendChild(row);
+    });
+  }
+  function load() {
+    var key = keyIn.value.trim() || getKey();
+    if (!key) { say('Enter your admin key.', true); return; }
+    say('Loading...');
+    fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      if (!res.ok) { if (res.status === 401) setKey(''); document.getElementById('forget').classList.toggle('hidden', !getKey()); say(res.j.error || 'Couldn’t load stats.', true); return; }
+      setKey(key); keyIn.value = ''; document.getElementById('forget').classList.remove('hidden');
+      var s = res.j, players = s.libraries - s.librariesNoHeadset;
+      txt('activeDay', s.activeDay); txt('activeWeek', s.activeWeek); txt('activeMonth', s.activeMonth);
+      txt('headsets', s.headsets); txt('neverNote', s.neverSynced ? s.neverSynced + ' never synced' : 'all have synced at least once');
+      txt('newWeek', s.newWeek); txt('newMonthNote', s.newMonth + ' in the last 30 days');
+      txt('players', players); txt('multiNote', s.librariesMulti ? s.librariesMulti + ' with more than one headset' : 'one headset each');
+      txt('sharedPlaylists', s.sharedPlaylists); txt('librariesNoHeadset', s.librariesNoHeadset);
+      bars('linksBars', s.linksByWeek); bars('activeBars', s.activeByWeek, true);
+      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.');
+      document.getElementById('out').classList.remove('hidden'); say('');
+    }).catch(function () { say('Couldn’t reach the Worker.', true); });
+  }
+  document.getElementById('go').addEventListener('click', load);
+  keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') load(); });
+  document.getElementById('forget').addEventListener('click', function () { setKey(''); this.classList.add('hidden'); document.getElementById('out').classList.add('hidden'); say('Key forgotten on this device.'); });
+  if (getKey()) { document.getElementById('forget').classList.remove('hidden'); load(); }
+})();
+</script></body></html>`;
