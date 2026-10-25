@@ -2735,7 +2735,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T20:33:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T20:38:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -10908,7 +10908,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]p=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
   }
 
   // ---- a refresh comes back where you were ------------------------------------
