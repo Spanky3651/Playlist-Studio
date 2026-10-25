@@ -724,7 +724,15 @@ async function adminStats(env) {
 
   const st = { generated: now, excluded, libraries: ids.length, librariesNoHeadset: 0, librariesMulti: 0, headsets: 0,
     activeDay: 0, activeWeek: 0, activeMonth: 0, neverSynced: 0, newWeek: 0, newMonth: 0,
-    sharedPlaylists: 0, hostedLinks: 0, linksByWeek: new Array(WEEKS).fill(0), activeByWeek: new Array(WEEKS).fill(0) };
+    sharedPlaylists: 0, hostedLinks: 0, linksByWeek: new Array(WEEKS).fill(0), activeByWeek: new Array(WEEKS).fill(0),
+    // Of headsets linked 14+ days ago, how many still synced in the last 7 days.
+    retentionBase: 0, retained: 0,
+    // Synced at least once, but not in the last 14 days.
+    goneQuiet: 0,
+    // Mod version, read from what each headset says it can do (no version number is sent yet).
+    modOld: 0, mod05: 0, mod07: 0, modUnknown: 0,
+    // Changes Studio queued that the headset hasn't picked up yet.
+    pendingChanges: 0, pendingHeadsets: 0, pendingOldest: 0 };
   for (let i = 0; i < ids.length; i += 25) {
     await Promise.all(ids.slice(i, i + 25).map(async (id) => {
       const lib = await env.PLAYLISTS.get("lib:" + id, "json");
@@ -735,6 +743,10 @@ async function adminStats(env) {
       if (devs.length > 1) st.librariesMulti++;
       const seen = await withSeen(env, id, devs);
       const invs = await Promise.all(devs.map((d) => env.PLAYLISTS.get(invKey(id, d.id), "json")));
+      const outs = await Promise.all(devs.map(async (d) => {
+        const out = await env.PLAYLISTS.get(outKey(id, d.id), "json");
+        return out && Array.isArray(out.items) && out.items.length ? liveOut(env, id, d.id, out.items) : [];
+      }));
       seen.forEach((d, j) => {
         st.headsets++;
         const s = d.seen || 0, added = d.added || 0;
@@ -750,6 +762,18 @@ async function adminStats(env) {
         const w = Math.floor((now - added) / (7 * DAY)); if (added && w < WEEKS) st.linksByWeek[w]++;
         const inv = invs[j];
         if (inv && Array.isArray(inv.items)) st.sharedPlaylists += inv.items.length;
+        if (now - added >= 14 * DAY) { st.retentionBase++; if (s && now - s < 7 * DAY) st.retained++; }
+        if (s && now - s >= 14 * DAY) st.goneQuiet++;
+        const f = inv && Array.isArray(inv.features) ? inv.features : null;
+        if (!inv) st.modUnknown++;
+        else if (f && f.includes("delete-songs")) st.mod07++;
+        else if (f && (f.includes("restore") || f.includes("delete"))) st.mod05++;
+        else st.modOld++;
+        const waiting = outs[j];
+        if (waiting.length) {
+          st.pendingChanges += waiting.length; st.pendingHeadsets++;
+          for (const w of waiting) if (w.at && now - w.at > st.pendingOldest) st.pendingOldest = now - w.at;
+        }
       });
     }));
   }
@@ -790,7 +814,7 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .hero .value{color:var(--green)}
 h2{font-size:18px;margin:26px 0 10px}
 .bars{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.bar{display:grid;grid-template-columns:110px 1fr 44px;align-items:center;gap:10px;margin:6px 0;font-size:15px}
+.bar{display:grid;grid-template-columns:130px 1fr 44px;align-items:center;gap:10px;margin:6px 0;font-size:15px}
 .track{height:14px;background:#111827;border-radius:7px;overflow:hidden}
 .fill{height:100%;border-radius:7px;background:var(--blue)}
 .fill.alt{background:var(--red)}
@@ -818,6 +842,13 @@ h2{font-size:18px;margin:26px 0 10px}
 <div class="card"><div class="label">Playlists shared</div><div class="value" id="sharedPlaylists"></div><div class="note">from headsets to Studio</div></div>
 <div class="card"><div class="label">Started, not linked</div><div class="value" id="librariesNoHeadset"></div><div class="note">opened linking but no headset yet</div></div>
 </div>
+<h2>Keeping people</h2>
+<div class="grid">
+<div class="card hero"><div class="label">Retention</div><div class="value" id="retention"></div><div class="note" id="retentionNote"></div></div>
+<div class="card"><div class="label">Gone quiet</div><div class="value" id="goneQuiet"></div><div class="note">synced before, nothing in 14+ days</div></div>
+<div class="card"><div class="label">Waiting for headsets</div><div class="value" id="pendingChanges"></div><div class="note" id="pendingNote"></div></div>
+</div>
+<h2>Mod versions</h2><div class="bars" id="modBars"></div>
 <h2>New headsets per week</h2><div class="bars" id="linksBars"></div>
 <h2>Headsets by last sync</h2><div class="bars" id="activeBars"></div>
 <p class="sub" id="when" style="margin-top:16px"></p>
@@ -855,6 +886,21 @@ h2{font-size:18px;margin:26px 0 10px}
       row.appendChild(lab); row.appendChild(tr); row.appendChild(num); el.appendChild(row);
     });
   }
+  function ago(sec) { var h = Math.floor(sec / 3600); return h < 1 ? 'under an hour' : h < 48 ? h + ' hour' + (h === 1 ? '' : 's') : Math.floor(h / 24) + ' days'; }
+  // Labeled bars for counts that aren't weeks.
+  function rows(id, data) {
+    var max = Math.max.apply(null, data.map(function (d) { return d[1]; }).concat([1])), el = document.getElementById(id);
+    el.textContent = '';
+    data.forEach(function (d) {
+      var row = document.createElement('div'); row.className = 'bar';
+      var lab = document.createElement('span'); lab.textContent = d[0];
+      var tr = document.createElement('span'); tr.className = 'track';
+      var f = document.createElement('span'); f.className = 'fill'; f.style.display = 'block'; f.style.width = Math.round(d[1] / max * 100) + '%';
+      tr.appendChild(f);
+      var num = document.createElement('span'); num.className = 'num'; num.textContent = d[1];
+      row.appendChild(lab); row.appendChild(tr); row.appendChild(num); el.appendChild(row);
+    });
+  }
   function load() {
     var key = keyIn.value.trim() || getKey();
     if (!key) { say('Enter your admin key.', true); return; }
@@ -871,6 +917,12 @@ h2{font-size:18px;margin:26px 0 10px}
       txt('players', players); txt('multiNote', s.librariesMulti ? s.librariesMulti + ' with more than one headset' : 'one headset each');
       txt('sharedPlaylists', s.sharedPlaylists); txt('librariesNoHeadset', s.librariesNoHeadset);
       bars('linksBars', s.linksByWeek); bars('activeBars', s.activeByWeek, true);
+      txt('retention', s.retentionBase ? Math.round(s.retained / s.retentionBase * 100) + '%' : '-');
+      txt('retentionNote', s.retentionBase ? s.retained + ' of ' + s.retentionBase + ' headsets linked 2+ weeks ago synced this week' : 'no headsets linked 2+ weeks ago yet');
+      txt('goneQuiet', s.goneQuiet);
+      txt('pendingChanges', s.pendingChanges);
+      txt('pendingNote', s.pendingChanges ? 'on ' + s.pendingHeadsets + ' headset' + (s.pendingHeadsets === 1 ? '' : 's') + ', oldest ' + ago(s.pendingOldest) : 'nothing queued');
+      rows('modBars', [['0.7 or newer', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]]);
       txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn\u2019t set).'));
       document.getElementById('out').classList.remove('hidden'); say('');
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
