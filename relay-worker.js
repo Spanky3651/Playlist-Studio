@@ -717,8 +717,12 @@ async function adminStats(env) {
     for (const k of page.keys) ids.push(k.name.slice(4));
     cursor = page.list_complete ? null : page.cursor;
   } while (cursor);
+  // The owner's own libraries (ADMIN_EXCLUDE, comma-separated library ids) are left out of every count.
+  const skip = new Set(String(env.ADMIN_EXCLUDE || "").split(/[\s,]+/).map((x) => x.split(".")[0]).filter(Boolean));
+  const excluded = ids.filter((id) => skip.has(id)).length;
+  if (excluded) ids.splice(0, ids.length, ...ids.filter((id) => !skip.has(id)));
 
-  const st = { generated: now, libraries: ids.length, librariesNoHeadset: 0, librariesMulti: 0, headsets: 0,
+  const st = { generated: now, excluded, libraries: ids.length, librariesNoHeadset: 0, librariesMulti: 0, headsets: 0,
     activeDay: 0, activeWeek: 0, activeMonth: 0, neverSynced: 0, newWeek: 0, newMonth: 0,
     sharedPlaylists: 0, hostedLinks: 0, linksByWeek: new Array(WEEKS).fill(0), activeByWeek: new Array(WEEKS).fill(0) };
   for (let i = 0; i < ids.length; i += 25) {
@@ -840,7 +844,7 @@ h2{font-size:18px;margin:26px 0 10px}
       txt('players', players); txt('multiNote', s.librariesMulti ? s.librariesMulti + ' with more than one headset' : 'one headset each');
       txt('sharedPlaylists', s.sharedPlaylists); txt('librariesNoHeadset', s.librariesNoHeadset);
       bars('linksBars', s.linksByWeek); bars('activeBars', s.activeByWeek, true);
-      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.');
+      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn\u2019t set).'));
       document.getElementById('out').classList.remove('hidden'); say('');
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
