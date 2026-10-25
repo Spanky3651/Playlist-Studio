@@ -2710,7 +2710,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T12:45:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T13:52:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -10832,9 +10832,43 @@ window.PP = (function () {
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', ssSync);
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
   }
 
+  // ---- a refresh comes back where you were ------------------------------------
+  // Saved when the page goes away: the phone tab, the scroll position and the panel at the top of the screen (and how
+  // far into it), so the spot still lines up after lists above it fill in at a different height. Restored a few times
+  // while things load, and never again once you touch or scroll.
+  var MV_KEY = 'playlistStudio.mview.v1', mvUser = false;
+  function mvTop() { var tb = document.querySelector('.topbar'); return tb && /sticky|fixed/.test(getComputedStyle(tb).position) ? tb.getBoundingClientRect().bottom : 0; }
+  function mvSave() {
+    try {
+      var v = ['filters', 'results', 'playlist'].filter(function (x) { return document.body.classList.contains('m-view-' + x); })[0] || 'filters';
+      var top = mvTop() + 10, a = null;
+      Array.prototype.forEach.call(document.querySelectorAll('.panel[id]'), function (el) {
+        var r = el.getBoundingClientRect(); if (r.height && r.top <= top && r.bottom > top) a = { id: el.id, off: Math.round(top - r.top) };
+      });
+      sessionStorage.setItem(MV_KEY, JSON.stringify({ v: v, y: Math.round(window.scrollY), a: a, t: Date.now() }));
+    } catch (e) {}
+  }
+  function mvRestore() {
+    window.addEventListener('pagehide', mvSave);
+    document.addEventListener('visibilitychange', function () { if (document.hidden) mvSave(); });
+    var s = null; try { s = JSON.parse(sessionStorage.getItem(MV_KEY) || 'null'); } catch (e) {}
+    if (!s || Date.now() - (s.t || 0) > 6 * 3600 * 1000) return;
+    if (/[?&](bsr|stats)=/.test(bootHref) || /#(.*&)?p=|#studio-sync/.test(bootHref)) return;   // a link chose where to go
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+    if (isMobileView() && s.v && s.v !== 'filters') setMobileView(s.v === 'results' && !state.raw.length ? 'filters' : s.v);
+    var stop = function () { mvUser = true; };
+    ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(function (ev) { window.addEventListener(ev, stop, { once: true, passive: true }); });
+    var go = function () {
+      if (mvUser) return;
+      var a = s.a && document.getElementById(s.a.id), top = mvTop() + 10;
+      if (a && a.getBoundingClientRect().height) { var r = a.getBoundingClientRect(); window.scrollTo(0, Math.max(0, window.scrollY + r.top - (top - s.a.off))); }
+      else window.scrollTo(0, s.y || 0);
+    };
+    [0, 300, 900, 1800, 3000].forEach(function (ms) { setTimeout(go, ms); });
+  }
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
 
   // ---- tabbed panels: Save and send, and the playlist tools --------------------------------
