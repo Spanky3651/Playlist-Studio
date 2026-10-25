@@ -1352,6 +1352,21 @@ body.sd-lock .toast.show{z-index:950}
 .rcard.none .rv{color:var(--muted);font-size:14px;margin-top:5px;}
 .rcard.done .rv{color:#9fb3c8;}
 .rc-fc{color:var(--blue-text);font-weight:800;}
+a.rcard{display:block;position:relative;color:inherit;text-decoration:none;}
+.rcard .rpi{display:none;}
+.rcard.rp{cursor:pointer;border-color:#1c3a6b;transition:border-color .14s,box-shadow .14s;}
+.rcard.rp .rpi{display:grid;position:absolute;top:7px;right:8px;width:24px;height:24px;border-radius:50%;place-items:center;font-size:9px;color:var(--blue-text);background:rgba(30,107,255,.16);border:1px solid rgba(77,141,255,.45);}
+.rcard.rp:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+@media (hover:hover){.rcard.rp:hover{border-color:var(--blue);box-shadow:0 0 12px rgba(30,107,255,.25);text-decoration:none;}}
+.rp-modal{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:24px;}
+.rp-modal[hidden]{display:none;}
+.rp-box{width:min(1280px,100%);background:var(--panel);border:1px solid #243550;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.rp-head{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--border);font-weight:700;}
+.rp-head #rpTitle{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rp-head a{font:600 13px var(--mono);color:var(--blue-text);white-space:nowrap;}
+.rp-frame{aspect-ratio:16/9;max-height:calc(100vh - 120px);background:#000;}
+.rp-frame iframe{width:100%;height:100%;border:0;display:block;}
+body.rp-open{overflow:hidden;}
 .rc-nf{color:#ff8597;font-weight:800;}
 body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s ease-in-out 4;}
 @media (prefers-reduced-motion:reduce){body.egg-115 .rcard .rv{animation:none;}}
@@ -1364,12 +1379,16 @@ body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s
   body.dense .rcard .rs{margin:0;}
   body.dense .rcard.gain .rs,body.dense .rcard.done .rs{display:none;}
   body.dense .rcard .rvt{display:inline;font-size:11.5px;font-weight:400;color:var(--muted);}
+  body.dense .rcard .rpi{display:inline-grid;visibility:hidden;position:static;width:16px;height:16px;border-radius:50%;place-items:center;font-size:7px;flex:none;align-self:center;}
+  body.dense .rcard.rp .rpi{visibility:visible;color:var(--blue-text);background:rgba(30,107,255,.16);border:1px solid rgba(77,141,255,.45);}
+  body.dense .rcard.rp{border-radius:6px;margin:-2px -6px;padding:2px 6px;}
+  body.dense a.rcard.rp:hover{background:rgba(30,107,255,.12);box-shadow:none;}
   @container songs (min-width:740px){
     .song-row .song-info:has(>.rcards){display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;align-items:center;}
     .song-row .song-info:has(>.rcards)>*{grid-column:1;}
     .song-row .song-info>.rcards{grid-column:2;grid-row:1/span 3;grid-template-columns:168px 142px;margin-top:0;max-width:none;align-self:center;}
     body.dense .song-row .song-info>.rcards{display:grid;grid-template-columns:232px 136px;gap:12px;}
-    body.dense .rcard.you,body.dense .rcard.none{display:grid;grid-template-columns:68px minmax(0,1fr);column-gap:8px;}
+    body.dense .rcard.you,body.dense .rcard.none{display:grid;grid-template-columns:16px 68px minmax(0,1fr);column-gap:8px;}
   }
 }
 /* Same song already in the playlist at another difficulty */
@@ -2582,7 +2601,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:12:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T00:32:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5035,8 +5054,12 @@ window.PP = (function () {
     if (!state.player) return '';
     var sc = scoreFor(e), tgt = PP.isRanked(e) ? PP.ppFor(e, state.ppAcc, state.ppMod) : null;
     var at = state.ppAcc + '%' + (state.ppMod ? ' ' + modCode(state.ppMod) : '');
-    var card = function (cls, lab, val, sub, title) {
-      return '<div class="rcard' + (cls ? ' ' + cls : '') + '"' + (title ? ' title="' + esc(title) + '"' : '') + '><div class="rl">' + lab + '</div><div class="rv">' + val + '</div>' + (sub ? '<div class="rs">' + sub + '</div>' : '') + '</div>';
+    var card = function (cls, lab, val, sub, title, href) {
+      var a = 'class="rcard' + (cls ? ' ' + cls : '') + '"' + (title ? ' title="' + esc(title) + '"' : '');
+      var inner = '<div class="rl">' + lab + '</div><div class="rv">' + val + '</div>' + (sub ? '<div class="rs">' + sub + '</div>' : '');
+      // Oct 25 2026 (Matt): the score card opens that run's BeatLeader replay (in-page player on desktop, new tab on phones)
+      if (href) return '<a ' + a + ' href="' + esc(href) + '" target="_blank" rel="noopener" data-rpl="' + esc(href) + '" data-rpt="' + esc(e.songName || '') + '"><span class="rpi" aria-hidden="true">▶</span>' + inner + '</a>';
+      return '<div ' + a + '>' + (/\byou\b|\bnone\b/.test(cls) ? '<span class="rpi off" aria-hidden="true"></span>' : '') + inner + '</div>';
     };
     var L, R = '';
     if (sc) {
@@ -5045,8 +5068,9 @@ window.PP = (function () {
       else if (isNF(sc)) sub.push('<span class="rc-nf">NF</span>');
       if (!sc.fc && m) sub.push(m + (m === 1 ? ' miss' : ' misses'));
       if (sc.t) sub.push('<span title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
-      L = card('you' + (sc.fc ? ' fc' : ''), ss ? 'ScoreSaber best' : 'Your best', sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'Played', sub.join(' · '),
-        (sc.rk ? 'Rank #' + sc.rk : '') + (isNF(sc) ? (sc.rk ? ' · ' : '') + 'No Fail run: you failed and No Fail carried you to the end' : ''));
+      var rpl = !ss && sc.rp ? 'https://replay.beatleader.com/?link=' + encodeURIComponent(sc.rp) : '';
+      L = card('you' + (sc.fc ? ' fc' : '') + (rpl ? ' rp' : ''), ss ? 'ScoreSaber best' : 'Your best', sc.a > 0 ? (sc.a * 100).toFixed(2) + '%' : 'Played', sub.join(' · '),
+        (rpl ? 'Watch this replay' : '') + (sc.rk ? (rpl ? ' · ' : '') + 'Rank #' + sc.rk : '') + (isNF(sc) ? (rpl || sc.rk ? ' · ' : '') + 'No Fail run: you failed and No Fail carried you to the end' : ''), rpl);
     } else L = card('none', 'Your best', 'Not played', '', 'You haven\'t played this yet');
     if (tgt != null) {
       var tip = 'Raw pp at ' + at + ' (set the target in the PP Range panel)';
@@ -5058,6 +5082,26 @@ window.PP = (function () {
       else R = card('gain', 'At ' + at, '+' + PP.fmtShort(tgt) + 'pp<span class="rvt"> at ' + at + '</span>', 'all new pp', tip);
     }
     return '<div class="rcards' + (R ? '' : ' one') + '">' + L + R + '</div>';
+  }
+  // Replay player for a score card (desktop): BeatLeader's viewer in a dialog. Esc, the X or the backdrop closes it.
+  function rpOpen(url, title) {
+    var m = document.getElementById('rpModal');
+    if (!m) {
+      m = document.createElement('div'); m.id = 'rpModal'; m.className = 'rp-modal'; m.hidden = true;
+      m.innerHTML = '<div class="rp-box" role="dialog" aria-modal="true" aria-labelledby="rpTitle"><div class="rp-head"><span id="rpTitle"></span>' +
+        '<a id="rpExt" target="_blank" rel="noopener">Open on BeatLeader ↗</a><button type="button" class="ghost sm" id="rpClose" aria-label="Close replay">✕</button></div><div class="rp-frame"></div></div>';
+      document.body.appendChild(m);
+      m.addEventListener('click', function (ev) { if (ev.target === m || ev.target.closest('#rpClose')) rpClose(); });
+      document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !m.hidden) rpClose(); });
+    }
+    document.getElementById('rpTitle').textContent = title || 'Replay';
+    document.getElementById('rpExt').href = url;
+    m.querySelector('.rp-frame').innerHTML = '<iframe src="' + esc(url) + '" allow="autoplay; fullscreen" allowfullscreen title="Replay"></iframe>';
+    m.hidden = false; document.body.classList.add('rp-open');
+  }
+  function rpClose() {
+    var m = document.getElementById('rpModal'); if (!m) return;
+    m.hidden = true; m.querySelector('.rp-frame').innerHTML = ''; document.body.classList.remove('rp-open');
   }
   function infoBlock(e, inResults, extra) {
     return '<div class="song-info"><div class="song-ttl"><div class="song-name">' + esc(e.songName) + (e.subName ? ' <span class="subname">' + esc(e.subName) + '</span>' : '') +
@@ -10339,6 +10383,12 @@ window.PP = (function () {
     // row delegation
     // A click anywhere on a result row adds it, or takes it back out when it's already in (the check
     // button does the same); links, buttons and selected text are left alone.
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a.rcard.rp'); if (!a) return;
+      e.stopPropagation(); track('row-replay');
+      if (window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)').matches) return;   // phones: new tab
+      e.preventDefault(); rpOpen(a.dataset.rpl, a.dataset.rpt);
+    }, true);
     el.resultList.addEventListener('click', function (e) {
       var row = e.target.closest('.song-row'); if (!row || !row.dataset.key) return;
       var btn = e.target.closest('[data-act]');
