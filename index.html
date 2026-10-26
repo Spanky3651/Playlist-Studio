@@ -575,6 +575,26 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-nw{white-space:nowrap;}
 .lq-cov{width:40px;height:40px;border-radius:8px;flex:none;object-fit:cover;background:#0d1620;border:1px solid #1f3456;}
 /* My order: a grip at the start of each row; the row being dragged lifts, the others slide out of its way */
+/* + adds to: a headset playlist instead of Your Playlist */
+.add-to{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--muted);}
+.add-to[hidden]{display:none;}
+.add-to select{width:auto;flex:0 1 320px;min-width:0;padding:6px 30px 6px 10px;font-size:14px;}
+.add-to.on select{border-color:#2f8cff;color:#cfe0ff;background-color:#0b1424;}
+/* a peek at a headset playlist's maps, under its row */
+.lq-peek{margin:0 10px 10px 14px;border:1px solid #1c2738;border-radius:10px;background:#070b12;padding:8px 10px;}
+.lq-peek-h{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:4px;flex-wrap:wrap;}
+.lq-peek-h b{color:#e6edf6;} .lq-peek-h .sp{flex:1;}
+.lq-peek ol{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;}
+.lq-peek li{display:flex;align-items:center;gap:10px;padding:5px 2px;border-top:1px solid #111a28;font-size:13.5px;}
+.lq-peek li:first-child{border-top:0;}
+.lq-peek li img{width:30px;height:30px;border-radius:5px;flex:none;background:#0d1620;object-fit:cover;}
+.lq-peek .pk-n{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e6edf6;}
+.lq-peek .pk-n small{color:var(--muted);margin-left:6px;}
+.lq-peek .pk-d{font:12px var(--mono);flex:none;}
+.lq-peek .pk-msg{font-size:13px;color:var(--muted);padding:6px 2px;}
+.lq-pl.lq-dropping{outline:2px dashed #2f8cff;outline-offset:-3px;background:#0c1626;}
+.lq-pl .lq-ren{display:flex;gap:6px;flex:1;min-width:0;align-items:center;}
+.lq-pl .lq-ren input{flex:1;min-width:0;padding:7px 10px;font-size:14px;}
 .lq-pl .lq-grip{flex:none;display:grid;place-items:center;width:22px;height:40px;min-width:0;min-height:0;margin:0 -2px 0 -8px;padding:0;border:0;border-radius:6px;background:none;box-shadow:none;color:#5d6f8a;cursor:grab;touch-action:none;}
 .lq-pl .lq-grip svg{width:18px;height:18px;}
 .lq-pl .lq-grip:hover,.lq-pl .lq-grip:focus-visible{color:#cfe0ff;background:none;border:0;box-shadow:none;}
@@ -2384,6 +2404,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         </div>
         <div class="newbie-hint" id="newbieHint" hidden><span class="nh-txt"><b>New to custom maps?</b> These start at 4★, easiest first. Most new players are happier starting lower.</span><button type="button" class="ghost sm" id="newbieEasier">Start easier: 0-4★</button><button type="button" class="newbie-x" id="newbieX" aria-label="Hide this tip" title="Hide this tip">×</button></div>
         <div class="panel-body list-body">
+          <div class="add-to" id="addToBar" hidden><label for="addToSel">+ adds to</label><select id="addToSel"></select></div>
           <div class="song-list" id="resultList">
             <div class="empty">
               <div class="empty-ic">◇</div>
@@ -2743,7 +2764,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T00:21:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T13:33:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5371,8 +5392,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // the same song already in Your Playlist at another difficulty gets a badge
     state.basket.forEach(function (b) { if (b.hash) { var h = b.hash.toLowerCase(); (byHash[h] = byHash[h] || []).push(b); } });
     rows.slice(0, MAX).forEach(function (e) {
-      var added = inBasket(e), k = keyOf(e);
-      items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '">' + coverImg(e) + infoBlock(e, true, added ? '' : otherDiffBadge(e, byHash)) +
+      var tgt = state.lq && state.lq.addTo, added = tgt ? lqInTarget(e) : inBasket(e), k = keyOf(e);
+      items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '" draggable="true">' + coverImg(e) + infoBlock(e, true, added ? '' : otherDiffBadge(e, byHash)) +
         '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
         (added ? '<button class="row-btn added" data-act="unadd" title="In your playlist - click to take it out">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>' });
@@ -7143,6 +7164,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var LQ_ICO = {
     up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    rn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>',
     more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
     hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><path d="M12 7v5l3 2"/></svg>',
     trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>',
@@ -7604,6 +7628,169 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqMetaHtml(meta) { return meta.map(function (x, i) { return '<span class="lq-mp">' + (i ? '<span class="lq-sep">&middot;</span> ' : '') + '<span class="lq-mt">' + x + '</span></span>'; }).join(' '); }
   function lqCovSync() { var ci = lqRender.cov; if (ci && ci.isConnected && state.coverDataUrl && ci.getAttribute('src') !== state.coverDataUrl) ci.src = state.coverDataUrl; }
   var LQ_HS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9.6C7 5.4 17 5.4 17 9.6"/><path d="M6.6 9.6H17.4A2.6 2.6 0 0 1 20 12.2V16.4A2.6 2.6 0 0 1 17.4 19H14.9Q14.2 19 13.7 18.2L12.9 16.9Q12 16 11.1 16.9L10.3 18.2Q9.8 19 9.1 19H6.6A2.6 2.6 0 0 1 4 16.4V12.2A2.6 2.6 0 0 1 6.6 9.6Z"/><path d="M4 14.3H1.8M20 14.3H22.2"/></svg>';
+  // ---- headset playlists without opening them --------------------------------------------------------------
+  // Peek at the maps, add or take out one map, rename, download, copy to another headset. Each change reads the
+  // newest version (a send still on its way counts) and sends from it, so it never undoes a change made meanwhile;
+  // if one sneaks in between, it reads again and retries.
+  var lqPeekCache = {}, lqTarget = { keys: null }, lqChain = Promise.resolve();
+  function lqPlPath(dev, k, rest) { return libPath('/devices/' + encodeURIComponent(dev) + '/playlists/' + k + (rest || '')); }
+  function lqLatest(dev, k) {
+    return libFetch('GET', lqPlPath(dev, k, '?latest=1'), null, null, true).then(function (res) {
+      var pl = null; try { pl = JSON.parse(res.text); } catch (e) {}
+      if (!res.ok || !pl || !Array.isArray(pl.songs)) throw new Error('That playlist couldn\u2019t be read from the headset.');
+      lqPeekCache[dev + '|' + k] = { pl: pl, t: Date.now() };
+      return { pl: pl, v: res.v || '', text: res.text };
+    });
+  }
+  function lqChange(dev, k, fn) {
+    var run = function (tries) {
+      return lqLatest(dev, k).then(function (got) {
+        if (fn(got.pl) === false) return { same: true, pl: got.pl };
+        return libFetch('POST', lqPlPath(dev, k, '/send' + (got.v ? '?base=' + encodeURIComponent(got.v) : '')), JSON.stringify(got.pl)).then(function (res) {
+          if (res.status === 409 && tries < 2) return run(tries + 1);
+          if (!res.ok) throw new Error((res.j && res.j.error) || 'Couldn\u2019t send it.');
+          var q = state.lq.quest[dev]; if (q && res.j && Array.isArray(res.j.pending)) q.pending = res.j.pending;
+          lqPeekCache[dev + '|' + k] = { pl: got.pl, t: Date.now() };
+          return { pl: got.pl };
+        });
+      });
+    };
+    var p = lqChain.then(function () { return run(0); });
+    lqChain = p.then(null, function () {});
+    return p;
+  }
+  function lqTitleOf(dev, k) { var it = lqQuestItems(dev).find(function (x) { return x.k === k; }); return it ? it.title || String(it.file || '').replace(/\.bplist$/i, '') : 'that playlist'; }
+  function lqDiffMatch(x, mode, name) { return x && String(x.characteristic || 'Standard').toLowerCase() === String(mode || 'Standard').toLowerCase() && String(x.name || '').toLowerCase() === String(name || '').toLowerCase(); }
+  function lqEntryIn(pl, e) {
+    var h = String(e.hash || '').toLowerCase(), d = e.difficultyName ? BplistExporter.mapDifficultyName(e.difficultyName) : '';
+    var sg = (pl.songs || []).find(function (x) { return x && String(x.hash || '').toLowerCase() === h; });
+    if (!sg) return null;
+    var ds = Array.isArray(sg.difficulties) ? sg.difficulties : [];
+    return { song: sg, has: !d || !ds.length || ds.some(function (x) { return lqDiffMatch(x, e.modeName, d); }), d: d };
+  }
+  // + on a search result while "+ adds to" is a headset playlist (or a result dropped on its row)
+  function lqAddTo(dev, k, e, how) {
+    if (!e || !e.hash) return Promise.resolve();
+    var t = lqTitleOf(dev, k);
+    if (lqIsEditing(dev, k)) { if (addEntry(e)) renderAll(); else toast('That map is already in ' + t + '.', 'warn'); return Promise.resolve(); }   // it's open: it saves from Your Playlist
+    return lqChange(dev, k, function (pl) {
+      var hit = lqEntryIn(pl, e);
+      if (hit && hit.has) return false;
+      if (hit) { hit.song.difficulties = (hit.song.difficulties || []).concat([{ characteristic: e.modeName || 'Standard', name: hit.d }]); return true; }
+      var d = e.difficultyName ? BplistExporter.mapDifficultyName(e.difficultyName) : '';
+      pl.songs.unshift({ hash: e.hash, songName: e.songName || '', levelAuthorName: e.mapper || e.author || '', difficulties: d ? [{ characteristic: e.modeName || 'Standard', name: d }] : [] });
+      return true;
+    }).then(function (r) {
+      lqTargetNote(dev, k, r.pl);
+      toast(r.same ? '\u201c' + e.songName + '\u201d is already in ' + t + '.' : 'Added \u201c' + e.songName + '\u201d to ' + t + ' on ' + lqDevName(dev) + '. It arrives on the next sync.', r.same ? 'warn' : 'ok');
+      if (!r.same) track('lq-quick-add-' + (how || 'button'));
+      lqRender();
+    }, function (err) { toast((err && err.message) || 'Couldn\u2019t add it.', 'warn'); });
+  }
+  function lqTakeOut(dev, k, e) {
+    var t = lqTitleOf(dev, k);
+    if (lqIsEditing(dev, k)) { removeBasket(keyOf(e)); return Promise.resolve(); }
+    return lqChange(dev, k, function (pl) {
+      var hit = lqEntryIn(pl, e); if (!hit || !hit.has) return false;
+      var ds = Array.isArray(hit.song.difficulties) ? hit.song.difficulties : [];
+      var left = hit.d ? ds.filter(function (x) { return !lqDiffMatch(x, e.modeName, hit.d); }) : [];
+      if (left.length) hit.song.difficulties = left; else pl.songs.splice(pl.songs.indexOf(hit.song), 1);
+      return true;
+    }).then(function (r) {
+      lqTargetNote(dev, k, r.pl);
+      if (!r.same) { toast('Took \u201c' + e.songName + '\u201d out of ' + t + '. The headset updates on its next sync.', 'ok'); track('lq-quick-remove'); }
+      lqRender();
+    }, function (err) { toast((err && err.message) || 'Couldn\u2019t take it out.', 'warn'); });
+  }
+  // The "+ adds to" picker: Your Playlist, or one of the headsets' playlists (in your order).
+  function lqTargetNote(dev, k, pl) {
+    var tg = state.lq.addTo; if (!tg || tg.dev !== dev || tg.k !== k) return;
+    lqTarget.keys = lqKeysOf(pl.songs); lqTarget.hashes = {};
+    Object.keys(lqTarget.keys).forEach(function (x) { lqTarget.hashes[x.split('|')[0]] = 1; });
+    renderResults();
+  }
+  function lqInTarget(e) {
+    if (!lqTarget.keys) return false;
+    var h = String(e.hash || '').toLowerCase();
+    if (!e.difficultyName) return !!lqTarget.hashes[h];
+    return !!lqTarget.keys[h + '|' + String(e.modeName || 'Standard').toLowerCase() + '|' + BplistExporter.mapDifficultyName(e.difficultyName).toLowerCase()] || !!lqTarget.keys[h + '|*'];
+  }
+  function lqAddToRender() {
+    var bar = document.getElementById('addToBar'), sel = document.getElementById('addToSel'); if (!bar || !sel) return;
+    var ok = lqActive() && !!libGet() && state.lq.devices.some(function (d) { return lqQuestItems(d.id).length; });
+    if (!ok) { bar.hidden = true; if (state.lq.addTo) { state.lq.addTo = null; lqTarget.keys = null; renderResults(); } return; }
+    var opts = [['', 'Your Playlist']], groups = [];
+    state.lq.devices.forEach(function (d) {
+      var list = lqSortList(lqQuestItems(d.id), '', d.id).filter(function (x) { return !x.waiting; });
+      if (list.length) groups.push({ label: 'On ' + lqDevName(d.id), items: list.map(function (x) { return [d.id + '|' + x.k, x.title || x.file]; }) });
+    });
+    var sig = JSON.stringify(groups);
+    if (sel.getAttribute('data-sig') !== sig) {
+      sel.innerHTML = '<option value="">Your Playlist</option>' + groups.map(function (g) { return '<optgroup label="' + esc(g.label) + '">' + g.items.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join('') + '</optgroup>'; }).join('');
+      sel.setAttribute('data-sig', sig);
+    }
+    var tg = state.lq.addTo, want = tg ? tg.dev + '|' + tg.k : '';
+    if (want && !sel.querySelector('option[value="' + want + '"]')) { state.lq.addTo = null; lqTarget.keys = null; want = ''; renderResults(); }
+    sel.value = want;
+    bar.hidden = false; bar.classList.toggle('on', !!want);
+  }
+  function lqAddToPick(v) {
+    if (!v) { state.lq.addTo = null; lqTarget.keys = null; lqAddToRender(); renderResults(); track('lq-add-to-mine'); return; }
+    var pr = v.split('|'); state.lq.addTo = { dev: pr[0], k: pr[1] }; lqTarget.keys = null;
+    lqAddToRender(); renderResults(); track('lq-add-to');
+    lqLatest(pr[0], pr[1]).then(function (got) { lqTargetNote(pr[0], pr[1], got.pl); }, function () { toast('Couldn\u2019t read that playlist from the headset yet.', 'warn'); });
+  }
+  // Tap a row: a quick look at its maps (the newest version), with Edit right there.
+  function lqPeek(dev, k) {
+    var key = dev + '|' + k;
+    if (state.lq.peek === key) { state.lq.peek = null; lqRender(); return; }
+    state.lq.peek = key; state.lq.peekErr = null; lqRender(); track('lq-peek');
+    lqLatest(dev, k).then(function () { lqRender(); }, function (err) { state.lq.peekErr = key; lqRender(); });
+  }
+  function lqPeekHtml(d, it, key, id) {
+    var c = lqPeekCache[key], pl = c && c.pl, rows = [];
+    if (pl) pl.songs.forEach(function (sg) {
+      var ds = Array.isArray(sg.difficulties) && sg.difficulties.length ? sg.difficulties : [null];
+      ds.forEach(function (x) {
+        var dn = x ? BplistExporter.mapDifficultyName(x.name) : '', dc = SV_DIFF[dn] || [dn, '#8792a6'];
+        rows.push('<li><img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(sg.songName || sg.hash || '') + (sg.levelAuthorName ? '<small>' + esc(sg.levelAuthorName) + '</small>' : '') + '</span>' +
+          (x ? '<span class="pk-d" style="color:' + dc[1] + '">' + esc(dc[0]) + (x.characteristic && x.characteristic !== 'Standard' ? ' ' + esc(x.characteristic) : '') + '</span>' : '') + '</li>');
+      });
+    });
+    var head = '<div class="lq-peek-h">' + (pl ? '<b>' + mapsLabel(rows.length, pl.songs.length) + '</b>' + (lqPendingFor(d.id, it.k) ? '<span>· the change on its way</span>' : '') : '') + '<span class="sp"></span>' +
+      lqBtn('Close', 'data-lq-peek=""') + '</div>';
+    var body = pl ? (rows.length ? '<ol>' + rows.join('') + '</ol>' : '<div class="pk-msg">This playlist is empty.</div>')
+      : state.lq.peekErr === key ? '<div class="pk-msg">Couldn\u2019t read it from the headset. Press Sync now in game and try again.</div>' : '<div class="pk-msg">Loading\u2026</div>';
+    return '<div class="lq-peek" aria-label="Maps in ' + esc(it.title || it.file) + '">' + head + body + '</div>';
+  }
+  function lqPlRename(dev, k, raw) {
+    var v = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    if (!v) { toast('Type a name for the playlist.', 'warn'); return; }
+    state.lq.plRename = null; lqRender();
+    lqChange(dev, k, function (pl) { if (pl.playlistTitle === v) return false; pl.playlistTitle = v; return true; }).then(function (r) {
+      if (!r.same) { toast('Renamed to \u201c' + v + '\u201d. ' + lqDevName(dev) + ' shows it after its next sync.', 'ok'); track('lq-rename-pl'); }
+      lqRender();
+    }, function (err) { toast((err && err.message) || 'Couldn\u2019t rename it.', 'warn'); });
+  }
+  function lqDownload(dev, k) {
+    var it = lqQuestItems(dev).find(function (x) { return x.k === k; }), name = (it && it.file) || 'playlist.bplist';
+    lqLatest(dev, k).then(function (got) {
+      var url = URL.createObjectURL(new Blob([got.text], { type: 'application/json' })), a = document.createElement('a');
+      a.href = url; a.download = /\.bplist$/i.test(name) ? name : name + '.bplist'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      track('lq-download');
+    }, function (err) { toast((err && err.message) || 'Couldn\u2019t download it.', 'warn'); });
+  }
+  function lqCopyTo(dev, k, to) {
+    var t = lqTitleOf(dev, k);
+    lqLatest(dev, k).then(function (got) {
+      return libFetch('POST', libPath('/devices/' + encodeURIComponent(to) + '/playlists/new'), got.text).then(function (res) {
+        if (!res.ok) throw new Error((res.j && res.j.error) || 'Couldn\u2019t copy it.');
+        toast('Copied \u201c' + t + '\u201d to ' + lqDevName(to) + '. It arrives on its next sync.', 'ok'); track('lq-copy');
+        return lqRefresh();
+      });
+    }).then(null, function (err) { toast((err && err.message) || 'Couldn\u2019t copy it.', 'warn'); });
+  }
   function lqRow(d, it) {
     var lq = state.lq, id = esc(d.id) + '|' + esc(it.k), key = d.id + '|' + it.k, dn = esc(lqDevName(d.id));
     var editing = lqIsEditing(d.id, it.k), pw = lqPendingFor(d.id, it.k), removing = !!(pw && pw.remove);
@@ -7636,22 +7823,30 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!removing && baks.length) mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Restore a backup</div>' + baks.map(function (b) {
       return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + lqBakSize(b, curM, it.count), 'data-lq-restore="' + id + '|' + b.t + '"');
     }).join('');
+    if (!removing && !it.waiting) {
+      mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('rn') + 'Rename', 'data-lq-plrn="' + id + '"') + lqMi(lqIco('down') + 'Download .bplist', 'data-lq-dl="' + id + '"');
+      lq.devices.forEach(function (o) { if (o.id !== d.id) mi += lqMi(lqIco('copy') + 'Copy to ' + esc(lqDevName(o.id)), 'data-lq-copy="' + id + '|' + esc(o.id) + '"'); });
+    }
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
     var open = !!mi && lq.menuOpen === key;
     var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
     var gl = lqGlowFor(key), gd = gl ? ' style="animation-delay:-' + gl.ms + 'ms"' : '';
     var grip = lqCanDrag(d.id) && !removing ? '<button type="button" class="lq-grip" data-lq-grip="' + id + '" title="Drag to reorder" aria-label="Move ' + esc(name) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '';
-    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + '>' + grip + lqThumbHtml(key, lqThumbFor(d, it)) + '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
+    var row = '<div class="lq-pl' + (editing ? ' ed' : '') + (removing ? ' gone' : '') + (gl ? ' glow' : '') + '"' + gd + (!removing && !editing ? ' data-lq-row="' + id + '"' : '') + (!removing ? ' data-lq-pl="' + id + '"' : '') + '>' + grip + lqThumbHtml(key, lqThumbFor(d, it)) +
+      (lq.plRename === key ? '<div class="lq-ren"><input type="text" id="lqPlRenameIn" maxlength="120" value="' + esc(name) + '" aria-label="New name for ' + esc(name) + '" />' + lqBtn('Save', 'data-lq-plrnsave="' + id + '"', 'primary sm') + lqBtn('Cancel', 'data-lq-plrn=""') + '</div>'
+        : '<div class="lq-t"><span class="lq-n">' + esc(name) + '</span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>') +
       (gl && !editing ? '<span class="lq-added"' + gd + '>' + gl.label + '</span>' : '') + act +
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
+    if (lq.peek === key && !removing) row += lqPeekHtml(d, it, key, id);
     if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.' + lqSongsChk(d.id, typeof it.solo === 'number' ? it.solo : null) + '<div class="lq-row">' +
       lqBtn(lqIco('trash') + 'Delete', 'data-lq-delete="' + id + '"', 'ghost sm danger') + lqBtn('Keep it', 'data-lq-delask=""') + '</div></div>';
     return row;
   }
   function lqBtn(label, attrs, cls) { return '<button type="button" class="' + (cls || 'ghost sm') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
   function lqRender() {
-    if (lqDrag) { lqDrag.dirty = true; return; }   // not under a finger mid-drag; it draws when the drag ends
+    if (lqDrag) { lqDrag.dirty = true; return; }
+    try { lqAddToRender(); } catch (e) {}   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
@@ -7974,7 +8169,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (pk && !state.lq.busy) { lqPick(pk.getAttribute('data-lq-pick')); return; }
         var rw = e.target.closest('[data-lq-row]'), sel = window.getSelection ? String(window.getSelection()) : '';
         if (!rw || e.lqMenuClosed || state.lq.busy || state.pubBusy || sel || e.target.closest('.lq-menu, .lq-confirm, input, select, a')) return;
-        var rp0 = rw.getAttribute('data-lq-row').split('|'); track('lq-row-edit'); lqEdit(rp0[0], rp0[1]); return;
+        var rp0 = rw.getAttribute('data-lq-row').split('|'); lqPeek(rp0[0], rp0[1]); return;
       }
       if (t.disabled) return;
       if (t.closest('.lq-menu')) state.lq.menuOpen = null;   // picking anything in a menu closes it
@@ -7994,6 +8189,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-dupnew')) lqSendThis('new');
       else if (t.hasAttribute('data-lq-dupcancel')) { state.lq.dup = null; lqRender(); }
       else if (t.hasAttribute('data-lq-restoreopen')) { var r = t.getAttribute('data-lq-restoreopen'); state.lq.restoreOpen = state.lq.restoreOpen === r ? null : r; lqRender(); }
+      else if (t.hasAttribute('data-lq-peek')) { state.lq.peek = null; lqRender(); }
+      else if (t.hasAttribute('data-lq-plrn')) { state.lq.plRename = t.getAttribute('data-lq-plrn') || null; lqRender(); var pri = document.getElementById('lqPlRenameIn'); if (pri) { pri.focus(); pri.select(); } }
+      else if (t.hasAttribute('data-lq-plrnsave')) { var prs = t.getAttribute('data-lq-plrnsave').split('|'), prv = document.getElementById('lqPlRenameIn'); lqPlRename(prs[0], prs[1], prv ? prv.value : ''); }
+      else if (t.hasAttribute('data-lq-dl')) { var dls = t.getAttribute('data-lq-dl').split('|'); lqDownload(dls[0], dls[1]); }
+      else if (t.hasAttribute('data-lq-copy')) { var cps = t.getAttribute('data-lq-copy').split('|'); lqCopyTo(cps[0], cps[1], cps[2]); }
       else if (t.hasAttribute('data-lq-delask')) { state.lq.delAsk = t.getAttribute('data-lq-delask') || null; state.lq.delSongs = false; lqRender(); }
       else if (t.hasAttribute('data-lq-select')) { state.lq.sel = { dev: t.getAttribute('data-lq-select'), keys: {}, ask: false }; state.lq.delAsk = null; state.lq.menuOpen = null; state.lq.delSongs = false; track('lq-select'); lqRender(); }
       else if (t.hasAttribute('data-lq-selall')) { var sd = t.getAttribute('data-lq-selall'), fl0 = (state.lq.filter && state.lq.filter[sd]) || '', can = lqSortList(lqQuestItems(sd), fl0, sd).filter(function (x) { return lqPickable(sd, x); }); var allOn = can.length && lqSelKeys(sd).length >= can.length; state.lq.sel.keys = {}; if (!allOn) can.forEach(function (x) { state.lq.sel.keys[x.k] = 1; }); state.lq.sel.ask = false; lqRender(); }
@@ -8026,6 +8226,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }
       if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-lq-pick') && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); lqPick(e.target.getAttribute('data-lq-pick')); var again = document.querySelector('[data-lq-pick="' + (window.CSS && CSS.escape ? CSS.escape(e.target.getAttribute('data-lq-pick')) : '') + '"]'); if (again) again.focus(); return; }
       if (e.key === 'Escape' && state.lq.sel) { e.preventDefault(); state.lq.sel = null; lqRender(); return; }
+      if (e.target && e.target.id === 'lqPlRenameIn') {
+        if (e.key === 'Enter') { e.preventDefault(); var pk = (state.lq.plRename || '').split('|'); lqPlRename(pk[0], pk[1], e.target.value); }
+        else if (e.key === 'Escape') { e.preventDefault(); state.lq.plRename = null; lqRender(); }
+        return;
+      }
       if (!e.target || e.target.id !== 'lqRenameIn') return;
       if (e.key === 'Enter') { e.preventDefault(); lqRename(state.lq.renaming, e.target.value); }
       else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); state.lq.renaming = null; state.lq.renameDraft = null; lqRender(); }
@@ -8066,6 +8271,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (e.target && e.target.id === 'lqSendTo') { state.lq.sendTo = e.target.value; state.lq.dup = null; if (e.target.value !== 'all') state.lq.lastDev = e.target.value; lqRender(); }
     });
     var bar = document.getElementById('lqEditBar'); if (bar) bar.addEventListener('click', onClick);
+    var ats = document.getElementById('addToSel'); if (ats) ats.addEventListener('change', function () { lqAddToPick(this.value); });
+    // Desktop: drag a search result onto a headset playlist's row to add it there.
+    var PSM = 'application/x-playlist-studio-map';
+    el.resultList.addEventListener('dragstart', function (e) {
+      var row = e.target.closest && e.target.closest('.song-row'); if (!row || !row.dataset.key || !e.dataTransfer) return;
+      e.dataTransfer.setData(PSM, row.dataset.key); e.dataTransfer.effectAllowed = 'copy';
+    });
+    var dropRow = function (e) { var ty = e.dataTransfer && e.dataTransfer.types; if (!ty || Array.prototype.indexOf.call(ty, PSM) < 0) return null; return e.target.closest && e.target.closest('[data-lq-pl]'); };
+    var dropClear = function () { Array.prototype.forEach.call(document.querySelectorAll('.lq-pl.lq-dropping'), function (x) { x.classList.remove('lq-dropping'); }); };
+    document.addEventListener('dragover', function (e) { var r = dropRow(e); dropClear(); if (!r) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; r.classList.add('lq-dropping'); });
+    document.addEventListener('dragend', dropClear);
+    document.addEventListener('drop', function (e) {
+      var r = dropRow(e); dropClear(); if (!r) return;
+      e.preventDefault();
+      var pr = r.getAttribute('data-lq-pl').split('|'), ent = findFiltered(e.dataTransfer.getData(PSM));
+      lqAddTo(pr[0], pr[1], ent, 'drag');
+    });
     // My order: drag a row by its grip, or focus the grip and use the arrow keys.
     var gripRows = function (g) { var row = g.closest('.lq-pl'), list = row && row.parentElement; if (!list) return null; return { row: row, list: list, rows: Array.prototype.filter.call(list.children, function (x) { return x.classList.contains('lq-pl'); }) }; };
     document.addEventListener('pointerdown', function (e) {
@@ -10791,6 +11013,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (!btn && e.target.closest('a, button, input, select, label, .egg-bomb')) return;
       if (!btn && window.getSelection && String(window.getSelection() || '').trim()) return;
       var act = btn ? btn.dataset.act : row.classList.contains('in-pl') ? 'unadd' : 'add';
+      var tgo = state.lq && state.lq.addTo;
+      if (tgo && (act === 'add' || act === 'unadd')) { var te = findFiltered(row.dataset.key); if (te) { if (act === 'add') lqAddTo(tgo.dev, tgo.k, te, 'button'); else lqTakeOut(tgo.dev, tgo.k, te); } return; }
       if (act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) { if (state.viewMode === 'clan') track(clan.kind === 'as' ? 'asclan-add' : 'clan-add'); if (!btn) track('row-add'); renderAll(); } }
       else if (act === 'unadd') { if (basketIndex(row.dataset.key) >= 0) { removeBasket(row.dataset.key); track('row-unadd'); } }
       else if (act === 'preview') { var pe = findFiltered(row.dataset.key); if (pe) openPreview(pe); }
@@ -11287,7 +11511,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-key-show, lq-qr-show, lq-key-link (opened the QR code link), lq-open-key-link, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-key-show, lq-qr-show, lq-key-link, lq-peek, lq-add-to, lq-add-to-mine, lq-quick-add-<button|drag>, lq-quick-remove, lq-rename-pl, lq-download, lq-copy (opened the QR code link), lq-open-key-link, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Installed app: pwa-link (a link opened in the open window, also counted as a visit), pwa-open-file,
      file-import-<fresh|merge|replace>, share-import-<merge|replace>, combine-open-file;
