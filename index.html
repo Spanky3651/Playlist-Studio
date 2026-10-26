@@ -1281,6 +1281,13 @@ body.sd-lock{overflow:hidden}
 .sv-acc{text-align:right}
 .sv-acc b{display:block;font:700 20px var(--sans);color:#fff}
 .sv-acc span{font:12px var(--mono)}
+.sv-meta .sv-dot{margin:0 -6px}
+.sv-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sv-chip{font:600 12px var(--mono);padding:2px 8px;border-radius:10px;border:1px solid #2a3446;color:#c9d4e3;white-space:nowrap}
+.sv-chip.ap{color:#ff8fa0;border-color:#5a2632;background:rgba(255,77,109,.08)}
+.sv-chip.pp{color:#9cc2ff;border-color:#23406b;background:rgba(47,123,255,.08)}
+.sv-chip.ss{color:#ffd56b;border-color:#5a4a1e;background:rgba(255,213,107,.06)}
+.sv-btns{display:flex;gap:8px}
 .sv-rp{margin:0 16px 12px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#000}
 .sv-rp iframe{display:block;width:100%;aspect-ratio:16/9;max-height:70vh;border:0}
 .sv-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -1293,6 +1300,7 @@ body.sd-lock{overflow:hidden}
 @keyframes sv-shim{to{transform:translateX(100%)}}
 .sv-err{border:1px solid #4a1b26;border-radius:var(--r);background:#14080b;padding:18px 20px;color:#ffb3bf}
 @media(max-width:760px){.sd-head{gap:4px;padding:10px 12px}.sd-head h2{font-size:12px;letter-spacing:1.5px}.sd-link{font-size:12px;padding:6px}.sd-body{padding:12px}.sv-ranks{grid-template-columns:1fr}.sv-rk{border-right:0;border-bottom:1px solid var(--border)}.sv-two{grid-template-columns:1fr}.sv-row{grid-template-columns:44px minmax(0,1fr);gap:12px}.sv-row .sv-acc{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sv-row .sv-acc b{display:inline}.sv-row .ghost{grid-column:1/-1}}
+@media(max-width:760px){.sv-row{grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:center}.sv-cv{width:44px;height:44px}.sv-row .sv-acc{grid-column:auto;text-align:right;display:block}.sv-row .sv-acc b{display:block}.sv-row .sv-btns{grid-column:1/-1;display:none;margin-top:8px}.sv-row .sv-btns .ghost{grid-column:auto;flex:1;justify-content:center}.sv-sc{cursor:pointer}.sv-sc.open{background:#0c1422}.sv-sc.open .sv-btns{display:flex}}
 body.sd-lock .toast.show{z-index:950}
 
 /* ============ Layout v2: counts in headers, tabbed panels, compact rows, side by side ============ */
@@ -2735,7 +2743,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-25T20:38:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T00:21:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4229,13 +4237,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (r.mode && r.mode !== 'Standard') meta.push('<span>' + esc(r.mode) + '</span>');
       if (r.stars) meta.push('<span>' + r.stars.toFixed(2) + '&#9733;</span>');
       if (r.mods) String(r.mods).split(',').forEach(function (m) { if (m) meta.push('<span style="color:#00e5ff">' + esc(SV_MODS[m] || m) + '</span>'); });
-      if (r.blpp > 0) meta.push('<span style="color:#8fbaff">BL ' + svPts(r.blpp) + ' pp' + (r.blw >= 0.01 ? ' (' + svPts(r.blw) + ' weighted)' : '') + '</span>');
-      if (r.sspp > 0) meta.push('<span style="color:#ffd56b">SS ' + svPts(r.sspp) + ' pp</span>');
-      if (r.ap > 0) meta.push('<span style="color:#ff7a8c">AS ' + svPts(r.ap) + ' AP' + (r.cat ? ' &middot; ' + catName[r.cat] : '') + '</span>');
-      if (r.rank) meta.push('<span>' + svRank(r.rank) + ' on BL</span>');
-      if (now - r.t > 86400) meta.push('<span>' + new Date(r.t * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + '</span>');
+      if (r.t) meta.push('<span>' + (now - r.t > 86400 * 7 ? new Date(r.t * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : agoStr(r.t)) + '</span>');
+      // what the score earned, then where it ranks
+      var chips = [];
+      if (r.ap > 0) chips.push('<span class="sv-chip ap">' + svPts(r.ap) + ' AP' + (r.cat ? ' &middot; ' + catName[r.cat] : '') + '</span>');
+      if (r.blpp > 0) chips.push('<span class="sv-chip pp" title="BeatLeader' + (r.blw >= 0.01 ? ', ' + svPts(r.blw) + ' weighted' : '') + '">' + svPts(r.blpp) + ' pp</span>');
+      if (r.sspp > 0) chips.push('<span class="sv-chip ss">SS ' + svPts(r.sspp) + ' pp</span>');
+      if (r.rank) chips.push('<span class="sv-chip">' + svRank(r.rank) + ' on BL</span>');
       return '<div class="sv-sc"><div class="sv-row"><img class="sv-cv" style="--dc:' + d[1] + '" src="https://eu.cdn.beatsaver.com/' + esc(r.hash.toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
-        '<div style="min-width:0"><div class="sv-song">' + esc(r.song || '') + (r.sub ? ' <small style="color:var(--muted)">' + esc(r.sub) + '</small>' : '') + '</div><div class="sv-meta">' + meta.join('') + '</div></div>' +
+        '<div style="min-width:0"><div class="sv-song">' + esc(r.song || '') + (r.sub ? ' <small style="color:var(--muted)">' + esc(r.sub) + '</small>' : '') + '</div><div class="sv-meta">' + meta.join('<span class="sv-dot">&middot;</span>') + '</div>' + (chips.length ? '<div class="sv-chips">' + chips.join('') + '</div>' : '') + '</div>' +
         '<div class="sv-acc"><b>' + r.acc.toFixed(2) + '%</b><span class="' + (r.fc ? 'sv-up' : 'sv-dn') + '">' + (r.fc ? 'FC' : r.miss + (r.miss === 1 ? ' miss' : ' misses')) + '</span></div>' +
         '<div class="sv-btns">' + (r.lb && r.lb.song && r.lb.song.hash ? (inBasket(normalize(r.lb)) ? '<button type="button" class="ghost" disabled>&#10003; In playlist</button>' : '<button type="button" class="ghost" data-add="' + ri + '" title="Add this map to Your Playlist">+ Add</button>') : '') +
         '<button type="button" class="ghost" data-rp="' + esc(String(r.id)) + '">&#9654; Replay</button></div></div><div class="sv-rp" id="svrp-' + esc(String(r.id)) + '" hidden></div></div>';
@@ -4321,7 +4331,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (f.dataset.r === 'ranked') sv.rankedOnly = !sv.rankedOnly; else sv.range = f.dataset.r;
         svRender(); return;
       }
-      var b = e.target.closest('button[data-rp]'); if (!b) return;
+      var b = e.target.closest('button[data-rp]');
+      if (!b) {
+        // Phones: tap a score to show its Add and Replay buttons (one open at a time).
+        var sc = e.target.closest('.sv-sc');
+        if (!sc || e.target.closest('button, a, .sv-rp') || !window.matchMedia('(max-width: 760px)').matches) return;
+        var was = sc.classList.contains('open');
+        Array.prototype.forEach.call(svEl('sdBody').querySelectorAll('.sv-sc.open'), function (x) { x.classList.remove('open'); });
+        if (!was) { sc.classList.add('open'); track('stats-score-open'); }
+        return;
+      }
       var url = 'https://replay.beatleader.com/?scoreId=' + encodeURIComponent(b.dataset.rp);
       track('full-stats-replay');
       if (window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)').matches) { window.open(url, '_blank', 'noopener'); return; }
