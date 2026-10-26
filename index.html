@@ -2764,7 +2764,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T13:33:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T14:09:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4413,6 +4413,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     state.viewMode = 'search'; state.bsrLookup = false;
     if (state.source === 'beatsaver') return runFetchBeatSaver();
     if (state.fetching) return;
+    var bsRef = detectBsrRef(el.fSearch.value);
+    if (bsRef && bsRef.explicit) { track('bsr-hop'); return searchBeatSaverOnce(null, 'code'); }   // a BSR code is a BeatSaver map
     track('search-beatleader');
     autoBandForSearch();
     defaultOrderForSearch();
@@ -4442,6 +4444,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
     step().then(function () {
         state.raw = collected; state.fetched = true; state.lastSig = serverSig(f); el.barFill.style.width = '100%';
+        if (!collected.length && bsRef) {
+          // "555d0" alone could be a word, so BeatLeader went first; if it's a BeatSaver code, open it there
+          fetchBsMap(bsRef).then(function (map) {
+            if (map && map.versions && map.versions.length && state.source === 'beatleader' && !state.fetching && el.fSearch.value.trim().toLowerCase() === bsRef.val) {
+              track('bsr-hop-fallback'); searchBeatSaverOnce('!bsr ' + bsRef.val, 'code');
+            }
+          });
+        }
         if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched - try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
         else setStatus('Loaded ' + collected.length + ' maps', 'on');
         applyClientFilters();
@@ -4627,6 +4637,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.counterMeta.textContent = 'Searching BeatSaver…';
     if (isMobileView()) setMobileView('results');
     var collected = [], mapsSeen = 0, page = 0, capMaps = f.maxScan, total = null, totalPages = null, rateLimited = false, bsrMode = false;
+    var hop = state.bsHop; state.bsHop = null;
     function step() {
       return fetch(buildBeatSaverUrl(page, f)).then(function (r) {
         if (r.status === 429) { rateLimited = true; return null; }   // stop paging, keep what we have
@@ -4668,8 +4679,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (rateLimited && !collected.length) { setStatus('Rate-limited', 'err'); toast('BeatSaver rate-limited the search before any maps came back - wait a moment and Search again.', 'warn'); }
       else if (!collected.length) { setStatus('No maps found', 'err'); toast(bsrMode ? 'No BeatSaver map matched that code or link - double-check it.' : 'No BeatSaver maps matched - loosen the tags, clear a filter, or try a different search.', 'warn'); }
       else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited - search again to pull the rest.', 'warn'); }
-      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast(collected.length === 1 ? 'Found “' + collected[0].songName + '” - add it below.' : 'Found ' + collected.length + ' maps - add the ones you want below.', 'ok'); }
-      else setStatus('Loaded ' + mapsSeen + ' maps', 'on');
+      else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast((collected.length === 1 ? 'Found “' + collected[0].songName + '”' : 'Found ' + collected.length + ' maps') + (hop ? ' on BeatSaver (BSR codes are BeatSaver maps). Tap BeatLeader up top to go back.' : collected.length === 1 ? ' - add it below.' : ' - add the ones you want below.'), 'ok'); }
+      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); if (hop) toast('Searched BeatSaver for this one. Tap BeatLeader up top to go back.', 'ok'); }
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
       if (state.bsrAutoOpen && bsrMode && collected.length === 1) openPreview(collected[0]);
@@ -5343,6 +5354,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       b.classList.toggle('zero', n === 0 && b.dataset.ps !== 'any');
     });
   }
+  // An empty BeatLeader search with keywords: the map may just be unranked, so offer BeatSaver for this search.
+  function emptyBsBtn() {
+    var q = el.fSearch.value.trim();
+    return state.source === 'beatleader' && state.viewMode === 'search' && q ? ' <button type="button" class="ghost sm" id="emptySearchBs">Search BeatSaver for “' + esc(q.length > 40 ? q.slice(0, 40) + '…' : q) + '”</button>' : '';
+  }
   function renderResults() {
     var avail = resultsAvailable(), rows = collapseList(avail), list = el.resultList;
     var ra = document.getElementById('resultActions'); if (ra) ra.hidden = !state.fetched && !state.raw.length && !state.excludeHashes;
@@ -5362,9 +5378,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (!state.fetched) {
           msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b>.</p><p class="empty-alt">New here? <button type="button" class="link-btn" data-open-gallery>Start from a ready-made playlist</button></p>';
         } else if (el.fType.value === 'ranked') {
-          msg = '<p><b>No ranked maps matched.</b></p><p>Most community maps aren\'t ranked. Switch <b>Ranked status</b> to <b>All</b> to search the full catalog, or loosen your other filters.</p><p><button type="button" class="ghost sm" id="emptySwitchAll">Search all maps instead</button></p>';
+          msg = '<p><b>No ranked maps matched.</b></p><p>Most community maps aren\'t ranked. Switch <b>Ranked status</b> to <b>All</b> to search the full catalog, or loosen your other filters.</p><p><button type="button" class="ghost sm" id="emptySwitchAll">Search all maps instead</button>' + emptyBsBtn() + '</p>';
         } else {
-          msg = '<p><b>BeatLeader returned no maps.</b></p><p>Nothing matched this query. Try a different mapper or keyword, loosen your filters, or raise <b>Maps to scan</b>.</p>';
+          msg = '<p><b>BeatLeader returned no maps.</b></p><p>Nothing matched this query. Try a different mapper or keyword, loosen your filters, or raise <b>Maps to scan</b>.</p>' + (emptyBsBtn() ? '<p>' + emptyBsBtn() + '</p>' : '');
         }
       } else if (state.player && el.playStatus.value === 'nf' && (state.syncing || needsModifierSync())) {
         msg = '<p><b>Refreshing your scores…</b></p><p>Studio is re-reading your BeatLeader scores so it can tell which ones are No Fail runs. They show up here when it finishes.</p>';
@@ -5386,6 +5402,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       list.innerHTML = '<div class="empty"><div class="empty-ic">◇</div>' + msg + '</div>';
       var _sw = document.getElementById('emptySwitchAll');
       if (_sw) _sw.addEventListener('click', function () { el.fType.value = 'all'; rememberRankType(); runFetch(); });
+      var _bs = document.getElementById('emptySearchBs');
+      if (_bs) _bs.addEventListener('click', function () { track('bsr-hop-text'); searchBeatSaverOnce(null, 'text'); });
       return;
     }
     var MAX = 400, items = [], byHash = {};
@@ -5726,17 +5744,22 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var codes = raw.split(/[\s,]+/).map(function (c) { return c.replace(/^!?(?:bsr)?:?/i, ''); }).filter(function (c) { return /^[0-9a-f]{1,8}$/i.test(c); }).slice(0, 5);
     if (!codes.length) return;
     trackSoon('bsr-link');
+    state.bsrAutoOpen = codes.length === 1;
+    searchBeatSaverOnce('!bsr ' + codes.join(' or '));
+    return true;
+  }
+  // Search BeatSaver for this visit without changing the source the player picked for next time.
+  // why: 'code' (a BSR code typed on the BeatLeader tab) or 'text' (Search BeatSaver instead) adds a note.
+  function searchBeatSaverOnce(q, why) {
     if (state.source !== 'beatsaver') {
-      // Search BeatSaver for this visit without changing the source the player picked for next time.
       var saved = null; try { saved = localStorage.getItem(SRC_KEY); } catch (e) {}
       state.source = 'beatsaver'; state.raw = []; state.filtered = []; state.fetched = false; state.lastSig = null;
       applySourceUI();
       try { if (saved) localStorage.setItem(SRC_KEY, saved); else localStorage.removeItem(SRC_KEY); } catch (e) {}
-    }
-    el.fSearch.value = '!bsr ' + codes.join(' or ');
-    state.bsrAutoOpen = codes.length === 1;
+    } else why = null;
+    if (q != null) el.fSearch.value = q;
+    state.bsHop = why || null;
     runFetchBeatSaver();
-    return true;
   }
   function checkShareOnLoad() {
     var h = location.hash || ''; var m = h.match(/[#&]p=([^&]+)/); if (!m) return;
