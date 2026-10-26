@@ -1210,13 +1210,20 @@ body.anim .big-fetch::after{content:"";position:absolute;inset:0;border-radius:i
 body.anim .topbar::after{animation:fx-underline 4s ease-in-out infinite;}
 @keyframes fx-logo{0%,100%{filter:drop-shadow(0 0 2px rgba(255,45,85,.45))}50%{filter:drop-shadow(0 0 8px rgba(47,140,255,.7))}}
 body.anim .brand .logo{animation:fx-logo 4.6s ease-in-out infinite;}
-/* logo intro on load: the red and blue arcs draw in, then the play button pops */
+/* logo intro on load: the red and blue arcs draw in, then the play button kicks in on two beats while the sabers flash.
+   Hover or tap the logo to kick again. */
 @keyframes arc-draw{0%{stroke-dashoffset:1;opacity:0}12%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
-@keyframes tri-pop{0%,42%{transform:scale(0);opacity:0}74%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes tri-kick-in{0%{transform:scale(0);opacity:0}16%{transform:scale(1.2);opacity:1}34%{transform:scale(.96)}52%{transform:scale(1.14)}74%{transform:scale(.98)}100%{transform:scale(1);opacity:1}}
+@keyframes tri-kick{0%{transform:scale(1)}12%{transform:scale(1.2)}30%{transform:scale(.96)}48%{transform:scale(1.14)}70%{transform:scale(.98)}100%{transform:scale(1)}}
+@keyframes arc-kick{0%,100%{stroke-width:7}12%,48%{stroke-width:9.5}30%{stroke-width:7}}
+@keyframes arc-kick-in{0%,100%{stroke-width:7}16%,52%{stroke-width:9.5}34%{stroke-width:7}}
 body.anim .brand .logo .hr,body.anim .brand .logo .hb{stroke-dasharray:1;}
-body.anim .brand .logo .hr{animation:arc-draw .5s cubic-bezier(.4,.5,.2,1) .08s both;}
-body.anim .brand .logo .hb{animation:arc-draw .5s cubic-bezier(.4,.5,.2,1) .2s both;}
-body.anim .brand .logo .ptri{animation:tri-pop .55s cubic-bezier(.5,.05,.2,1) .5s both;}
+body.anim .brand .logo .hr{animation:arc-draw .5s cubic-bezier(.4,.5,.2,1) .08s both,arc-kick-in .8s ease-out .5s;}
+body.anim .brand .logo .hb{animation:arc-draw .5s cubic-bezier(.4,.5,.2,1) .2s both,arc-kick-in .8s ease-out .5s;}
+body.anim .brand .logo .ptri{animation:tri-kick-in .8s cubic-bezier(.2,.8,.3,1) .5s both;}
+body.anim .brand .logo.intro-done .ptri,body.anim .brand .logo.intro-done .hr,body.anim .brand .logo.intro-done .hb{animation:none;}
+body.anim .brand .logo.kick .ptri{animation:tri-kick .75s cubic-bezier(.2,.8,.3,1);}
+body.anim .brand .logo.kick .hr,body.anim .brand .logo.kick .hb{animation:arc-kick .75s ease-out;}
 /* Desktop: the effects switch is as tall as the buttons beside it */
 
 /* ---- fetch loading (functional feedback; shown regardless of the toggle) ---- */
@@ -2764,7 +2771,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T14:09:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T16:01:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -10938,6 +10945,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'X' || e.key === 'x') && !e.repeat) { e.preventDefault(); masterClear(); } });
     // The same fresh start from a triple tap (or triple click) on the logo, for phones.
     var logoTaps = [], logoEl = document.querySelector('.brand .logo');
+    if (logoEl) {
+      var logoKick = function () {
+        if (!document.body.classList.contains('anim')) return;
+        logoEl.classList.add('intro-done'); logoEl.classList.remove('kick'); void logoEl.offsetWidth; logoEl.classList.add('kick');
+      };
+      // once the load intro is over it must not replay when .kick comes and goes
+      setTimeout(function () { logoEl.classList.add('intro-done'); }, 1500);
+      logoEl.addEventListener('mouseenter', logoKick);
+      logoEl.addEventListener('click', logoKick);
+    }
     if (logoEl) logoEl.addEventListener('click', function () {
       var t = Date.now(); logoTaps = logoTaps.filter(function (x) { return t - x < 700; }); logoTaps.push(t);
       if (logoTaps.length >= 3) { logoTaps = []; masterClear(); track('clear-logo'); }
