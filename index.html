@@ -1896,6 +1896,26 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .pc-war[hidden]{display:none;}
 .pc-war-ic{font-size:19px;color:#ff8fa3;flex:none;}
 .pc-war-t{flex:1;min-width:0;} .pc-war-t b{display:block;color:#fff;font-size:14.5px;}
+.pc-who{display:inline-flex;align-items:center;gap:6px;font:13px var(--mono);color:var(--muted);background:none;border:1px solid transparent;border-radius:8px;padding:4px 8px;cursor:pointer;min-height:0;max-width:52%;}
+.pc-who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pc-who svg{width:13px;height:13px;flex:none;}
+.pc-who:hover,.pc-who[aria-expanded="true"]{border-color:var(--border-2);color:#fff;}
+#profilePanel{overflow:visible;} #profilePanel > .panel-head{position:relative;border-radius:var(--r) var(--r) 0 0;} #profilePanel.collapsed > .panel-head{border-radius:var(--r);}
+.pc-menu{position:absolute;right:12px;top:calc(100% - 4px);z-index:40;width:290px;max-width:calc(100vw - 40px);background:#0b111c;border:1px solid var(--border-2);border-radius:12px;padding:6px;box-shadow:0 14px 34px rgba(0,0,0,.65);cursor:default;}
+.pc-menu[hidden]{display:none;}
+.pc-menu .h{padding:8px 10px 7px;font-size:13px;color:#aab4c6;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.pc-menu .h b{display:block;color:#fff;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;}
+.pc-menu button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;color:#e9edf5;font:14px var(--sans);padding:9px 10px;border-radius:8px;cursor:pointer;min-height:0;}
+.pc-menu button:hover,.pc-menu button:focus-visible{background:#141c2a;outline:none;}
+.pc-menu button small{display:block;color:var(--muted);font-size:12.5px;}
+.pc-menu button.d{color:#ff9fb2;}
+.pc-menu svg{width:16px;height:16px;flex:none;margin-top:2px;}
+.pc-bye{margin:0 0 10px;border:1px solid rgba(255,77,109,.5);border-radius:11px;padding:11px 12px;background:linear-gradient(90deg,rgba(255,77,109,.10),rgba(255,77,109,.02));font-size:13.5px;color:#f3c6cf;}
+.pc-bye[hidden]{display:none;}
+.pc-bye b{display:block;color:#fff;font-size:14.5px;margin-bottom:2px;}
+.pc-bye .pcard-actions{margin:9px 0 0;}
+.pc-switch{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+.pc-switch[hidden]{display:none;}
 .pc-foot{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;margin-top:10px;font:13px var(--mono);color:#aab4c6;}
 .pc-foot > *:not([hidden]) ~ *:not([hidden])::before{content:"·";margin:0 9px;color:#5d6a80;}
 .pc-link{background:none;border:0;padding:4px 0;font:inherit;color:#8fbaff;cursor:pointer;min-height:0;}
@@ -2042,7 +2062,12 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 
     <!-- Your Profile (BeatLeader) -->
     <section class="panel" id="profilePanel">
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h2>Your Profile</h2><span class="count" id="profileState"></span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h2>Your Profile</h2><span class="count" id="profileState"></span><button type="button" class="pc-who" id="pcWho" aria-haspopup="menu" aria-expanded="false" hidden><span id="pcWhoName"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="pc-menu" id="pcMenu" role="menu" hidden>
+          <div class="h"><b id="pcMenuName"></b>BeatLeader · connected</div>
+          <button type="button" role="menuitem" id="pcSwitchBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/></svg><span>Switch player<small>Connect a different BeatLeader profile</small></span></button>
+          <button type="button" role="menuitem" class="d" id="pcByeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Disconnect<small>Clears your scores from this browser</small></span></button>
+        </div></div>
       <div class="panel-sub">Connect your <b>BeatLeader</b> profile to see your score on every map and filter by what you've played. Public data only - no login. <b>Stats</b> adds your ScoreSaber and AccSaber ranks, recent scores and replays.</div>
       <div class="panel-body">
         <div id="profileConnect">
@@ -2051,7 +2076,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button class="ghost sm" id="connectBtn">Connect</button>
           </div>
           <p class="muted hint-line">Type your BeatLeader <b>username</b> (e.g. <code>MSploit</code>), your ID, or paste your profile link (<code>beatleader.xyz/u/…</code>).</p>
-          <p class="muted hint-line">No BeatLeader profile yet? Skip this. Your scores appear here after you play with the BeatLeader mod.</p>
+          <p class="muted hint-line" id="pcNoBl">No BeatLeader profile yet? Skip this. Your scores appear here after you play with the BeatLeader mod.</p>
+          <div class="pc-switch" id="pcSwitchRow" hidden><span class="muted hint-line" id="pcSwitchNote" style="margin:0;flex:1 1 220px"></span><button type="button" class="ghost sm" id="pcSwitchCancel">Cancel</button></div>
         </div>
 <div id="profileCard" hidden>
           <div class="pcard">
@@ -2064,6 +2090,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button class="ghost sm" id="fullStatsBtn" type="button" title="Your BeatLeader, ScoreSaber and AccSaber ranks, recent scores and replays"><span class="ic">&#9636;</span> Stats</button>
           </div>
           <div class="pc-war" id="pcWar" role="status" hidden></div>
+          <div class="pc-bye" id="pcBye" role="alertdialog" aria-labelledby="pcByeT" hidden><b id="pcByeT"></b>Your playlist stays. Your synced scores leave this browser until you connect again.<div class="pcard-actions"><button class="ghost sm danger" id="disconnectBtn" type="button">Disconnect</button><button class="ghost sm" id="pcByeCancel" type="button">Cancel</button></div></div>
           <div class="pcard-actions">
             <button class="ghost sm" id="syncBtn">⟳ Sync scores</button>
             <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want - no search or import needed.">★ Build from my plays</button>
@@ -2080,7 +2107,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             </div>
             <p class="muted hint-line" id="topHint">Loads your highest-PP plays into the results, then hit <b>Add all</b> to build the playlist.</p>
           </div>
-          <div class="pc-foot" id="pcFoot"><button class="pc-link" id="ssSyncBtn" type="button" title="Pull your ScoreSaber scores so the played and FC filters cover both leaderboards. After the first pull, Sync scores keeps them up to date.">+ ScoreSaber plays</button><span class="ss-state" id="ssState" hidden></span><button class="pc-link danger" id="disconnectBtn" type="button">Disconnect</button></div>
+                    <div class="pc-foot" id="pcFoot"><button class="pc-link" id="ssSyncBtn" type="button" title="Pull your ScoreSaber scores so the played and FC filters cover both leaderboards. After the first pull, Sync scores keeps them up to date.">+ ScoreSaber plays</button><span class="ss-state" id="ssState" hidden></span></div>
           <div class="divider"></div>
           <div class="field" id="playStatusField" hidden><label class="field-label">Your play status <span class="info" data-tip="Filter results by your BeatLeader history. Near-miss FC = you've played it, didn't full-combo, but were close (few misses and a high would-be FC accuracy).">i</span></label>
             <select id="playStatus">
@@ -2906,7 +2933,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:25:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:31:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6634,6 +6661,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var linked = !!(p && p.ssId);
     b.textContent = '+ ScoreSaber plays'; b.hidden = linked;
     if (s) { s.textContent = msg != null ? msg : ''; s.hidden = !s.textContent; }
+    var ft = document.getElementById('pcFoot'); if (ft) ft.hidden = b.hidden && (!s || s.hidden);
   }
   function ssResolve() {
     var p = state.player;
@@ -10103,8 +10131,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function renderProfile() {
     if (el.profilePanel) el.profilePanel.classList.toggle('connected', !!state.player);
-    if (!state.player) {
-      el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(''); renderPcClans();
+    var who = document.getElementById('pcWho'), sw = document.getElementById('pcSwitchRow');
+    if (who) { who.hidden = !state.player || !!state.switching; document.getElementById('pcWhoName').textContent = state.player ? state.player.name : ''; document.getElementById('pcMenuName').textContent = state.player ? state.player.name : ''; }
+    if (sw) { sw.hidden = !(state.player && state.switching); if (state.player) document.getElementById('pcSwitchNote').textContent = 'Connecting someone else replaces ' + state.player.name + '\'s scores in this browser. Your playlist stays.'; }
+    var nb = document.getElementById('pcNoBl'); if (nb) nb.hidden = !!(state.player && state.switching);
+    if (!state.player || state.switching) {
+      el.profileConnect.hidden = false; el.profileCard.hidden = true; setProfileState(state.player ? 'Switching player' : ''); renderPcClans();
       renderPlayBar(); renderForYou(); updateLevelUI(); return;
     }
     el.profileConnect.hidden = true; el.profileCard.hidden = false;
@@ -10113,7 +10145,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.pcName.textContent = state.player.name;
     var n = Object.keys(state.scores).length;
     el.pcStats.textContent = '#' + (state.player.rank || '-') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
-    setProfileState(state.player.name);
+    setProfileState('');
     renderPlayBar(); renderForYou(); updateLevelUI(); ssUI(); pcRefresh(false);
   }
   // The play-history filter surfaced at the results (connected -> chips, else a
@@ -10201,6 +10233,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     setProfileState('Connecting…'); el.connectBtn.disabled = true;
     resolvePlayerToken(id)
       .then(function (p) {
+        if (state.player) clearPlayer();
+        state.switching = false;
         state.player = { id: p.id || id, name: p.name || 'Player', avatar: p.avatar || '',
           pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
           total: (p.scoreStats && p.scoreStats.totalPlayCount) || 0, ranked: (p.scoreStats && p.scoreStats.rankedPlayCount) || 0, syncedMaxTime: 0 };
@@ -10211,12 +10245,46 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       .catch(function () { setProfileState('Not found'); toast("Couldn't find that BeatLeader player - check the username, ID, or profile link.", 'err'); })
       .then(function () { el.connectBtn.disabled = false; });
   }
-  function disconnectPlayer() {
+  function clearPlayer() {
     state.player = null; state.scores = {}; state._scoreHashIdx = null; state.playIndex = {};
     if (state.viewMode === 'clan') { clan.token++; asc.token++; clan.open = false; clan.busy = false; asc.busy = false; }
     if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { state.viewMode = 'search'; state.raw = []; state.filtered = []; state.fetched = false; }
     try { localStorage.removeItem(PLAYER_KEY); localStorage.removeItem(PLAYS_KEY); } catch (e) {}
-    el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast('Disconnected.', 'ok');
+  }
+  function disconnectPlayer() {
+    var who = state.player ? state.player.name : '';
+    clearPlayer(); state.switching = false; pcMenu(false); pcBye(false);
+    el.playerInput.value = ''; renderProfile(); applyClientFilters(); toast(who ? 'Disconnected ' + who + '.' : 'Disconnected.', 'ok'); track('profile-disconnect');
+  }
+  // Account menu on the player's name: Switch player (connect someone else, keeping the current player
+  // until the new one is found) and Disconnect (behind a confirm card).
+  function pcMenu(on) {
+    var m = document.getElementById('pcMenu'), b = document.getElementById('pcWho'); if (!m || !b) return;
+    m.hidden = !on; b.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) { var f = m.querySelector('button'); if (f) f.focus(); }
+  }
+  function pcStartSwitch() {
+    if (!state.player) return;
+    pcMenu(false); pcBye(false); state.switching = true; el.playerInput.value = ''; renderProfile();
+    try { el.playerInput.focus({ preventScroll: true }); } catch (e) { el.playerInput.focus(); }
+    track('profile-switch');
+  }
+  function pcBye(on) {
+    var c = document.getElementById('pcBye'); if (!c) return;
+    if (on && state.player) document.getElementById('pcByeT').textContent = 'Disconnect ' + state.player.name + '?';
+    c.hidden = !on || !state.player;
+    if (on) { pcMenu(false); var d = document.getElementById('disconnectBtn'); if (d) d.focus(); }
+  }
+  function bindPcMenu() {
+    var who = document.getElementById('pcWho'), m = document.getElementById('pcMenu'); if (!who || !m) return;
+    who.addEventListener('click', function (e) { e.stopPropagation(); pcMenu(m.hidden); });
+    m.addEventListener('click', function (e) { e.stopPropagation(); });
+    document.getElementById('pcSwitchBtn').addEventListener('click', pcStartSwitch);
+    document.getElementById('pcByeBtn').addEventListener('click', function () { pcBye(true); });
+    document.getElementById('pcByeCancel').addEventListener('click', function () { pcBye(false); });
+    document.getElementById('pcSwitchCancel').addEventListener('click', function () { state.switching = false; el.playerInput.value = ''; renderProfile(); });
+    document.addEventListener('click', function () { if (!m.hidden) pcMenu(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) { pcMenu(false); who.focus(); } });
   }
   function syncScores(incremental) {
     if (!state.player || state.syncing) return Promise.resolve();
@@ -12246,7 +12314,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.playerInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') connectPlayer(); });
     el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); });
     el.buildPlaysBtn.addEventListener('click', buildFromPlays);
-    el.disconnectBtn.addEventListener('click', disconnectPlayer);
+    el.disconnectBtn.addEventListener('click', disconnectPlayer); bindPcMenu();
     ['pcClans', 'pcWar'].forEach(function (id) { var n = document.getElementById(id); if (n) n.addEventListener('click', pcClanClick); });
     setupStats();
     setupClan();
