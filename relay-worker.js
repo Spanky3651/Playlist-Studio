@@ -202,7 +202,7 @@ function finalize(pl, origin, id) {
 // ---------------------------------------------------------------- linked headsets
 function libCors(request) {
   const h = writeCors(request);
-  h["Access-Control-Allow-Headers"] = "Content-Type, X-Lib-Key, Authorization";
+  h["Access-Control-Allow-Headers"] = "Content-Type, X-Lib-Key, Authorization, X-Studio-Player";
   h["Access-Control-Expose-Headers"] = "X-Studio-Version";
   return h;
 }
@@ -631,6 +631,18 @@ async function linked(request, env, ctx, url) {
   if (!lib) return json({ error: "Not found" }, 404, cors);
   const key = request.headers.get("X-Lib-Key") || "";
   if (!key || !safeEqual(await sha256(key), lib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+  // Which public BeatLeader profile is connected in Studio for this library (X-Studio-Player: <id>|<name>),
+  // so the owner's stats page can list Studio Sync users. Sent on the library refresh, saved at most once a day.
+  const sp = !m[2] && request.method === "GET" ? (request.headers.get("X-Studio-Player") || "").match(/^(\d{3,25})\|(.{1,200})$/) : null;
+  if (sp) {
+    let nm = ""; try { nm = decodeURIComponent(sp[2]).replace(/[\u0000-\u001f]/g, "").slice(0, 60); } catch (e) {}
+    const pl = lib.player || {};
+    if (nm && (pl.id !== sp[1] || pl.name !== nm || nowSec() - (pl.t || 0) > 86400)) {
+      lib.player = { id: sp[1], name: nm, t: nowSec() };
+      const pw = putLib(env, id, lib);
+      if (ctx && ctx.waitUntil) ctx.waitUntil(pw); else await pw;
+    }
+  }
 
   // A headset's own playlists, as it last reported them, plus new ones Studio is creating.
   if (m[4]) {
@@ -876,15 +888,15 @@ function safeEqual(a, b) {
 }
 
 // ---------------------------------------------------------------- private stats page (/admin)
-// Counts only: how many headsets are linked and how many sync. No playlist names, headset names or ids leave
-// the Worker. The page is public but empty; the numbers need ADMIN_KEY, a Worker secret
+// How many headsets are linked and how many sync, plus the Studio Sync users by BeatLeader profile (only the
+// public profile Studio had connected). No playlist names or headset names leave the Worker. The page is public but empty; the numbers need ADMIN_KEY, a Worker secret
 // (npx wrangler secret put ADMIN_KEY), sent as "Authorization: Bearer <key>".
 let adminFails = [];   // times of recent wrong admin keys, kept in memory only
 async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
@@ -900,9 +912,9 @@ async function admin(request, env, url) {
   }
   if (url.pathname === "/admin/gc") {
     if (!env.GC_TOKEN) return json({ error: "GoatCounter isn't connected yet", setup: true }, 503, nocache);
-    try { return json(await gcStats(env, url.searchParams.get("range") || "7d", url.searchParams.get("fresh") === "1"), 200, nocache); }
+    try { return json(await gcStats(env, url.searchParams.get("range") || "7d", url.searchParams.get("fresh") === "1", url.searchParams.get("site") || ""), 200, nocache); }
     catch (e) {
-      if (e && e.message === "gc-auth") return json({ error: "GoatCounter refused the API key (" + e.gc + "). Check that GC_TOKEN has the Read statistics permission." }, 502, nocache);
+      if (e && e.message === "gc-auth") return json({ error: "GoatCounter refused the API key (" + e.gc + "). " + (url.searchParams.get("site") === "bl" ? "For the BeatLeader profile site, check that the key can read blprofile, or set GC_TOKEN_BL." : "Check that GC_TOKEN has the Read statistics permission.") }, 502, nocache);
       if (e && e.message === "gc-busy") return json({ error: "GoatCounter is rate limiting right now. Try again in a minute." }, 502, nocache);
       return json({ error: "GoatCounter didn't respond. Try again in a moment." }, 502, nocache);
     }
@@ -932,7 +944,7 @@ async function adminStats(env) {
     // Synced at least once, but not in the last 14 days.
     goneQuiet: 0,
     // Mod version, read from what each headset says it can do (no version number is sent yet).
-    modOld: 0, mod05: 0, mod07: 0, mod08: 0, modUnknown: 0,
+    modOld: 0, mod05: 0, mod07: 0, mod08: 0, modUnknown: 0, users: [], usersUnknown: 0,
     // Changes Studio queued that the headset hasn't picked up yet.
     pendingChanges: 0, pendingHeadsets: 0, pendingOldest: 0 };
   for (let i = 0; i < ids.length; i += 25) {
@@ -942,6 +954,7 @@ async function adminStats(env) {
       const devs = Array.isArray(lib.devices) ? lib.devices : [];
       st.hostedLinks += (lib.items || []).length;
       if (!devs.length) { st.librariesNoHeadset++; return; }
+      const user = { id: (lib.player && lib.player.id) || "", name: (lib.player && lib.player.name) || "", headsets: devs.length, last: 0, linked: 0, mod: "" };
       if (devs.length > 1) st.librariesMulti++;
       const seen = await withSeen(env, id, devs);
       const invs = await Promise.all(devs.map((d) => env.PLAYLISTS.get(invKey(id, d.id), "json")));
@@ -952,6 +965,8 @@ async function adminStats(env) {
       seen.forEach((d, j) => {
         st.headsets++;
         const s = d.seen || 0, added = d.added || 0;
+        if (s > user.last) user.last = s;
+        if (added && (!user.linked || added < user.linked)) user.linked = added;
         if (!s) st.neverSynced++;
         else {
           if (now - s < DAY) st.activeDay++;
@@ -967,19 +982,25 @@ async function adminStats(env) {
         if (now - added >= 14 * DAY) { st.retentionBase++; if (s && now - s < 7 * DAY) st.retained++; }
         if (s && now - s >= 14 * DAY) st.goneQuiet++;
         const f = inv && Array.isArray(inv.features) ? inv.features : null;
+        let mv = "";
         if (!inv) st.modUnknown++;
-        else if (f && f.includes("order")) st.mod08++;
-        else if (f && f.includes("delete-songs")) st.mod07++;
-        else if (f && (f.includes("restore") || f.includes("delete"))) st.mod05++;
-        else st.modOld++;
+        else if (f && f.includes("order")) { st.mod08++; mv = f.includes("missing") ? "0.9" : "0.8"; }
+        else if (f && f.includes("delete-songs")) { st.mod07++; mv = "0.7"; }
+        else if (f && (f.includes("restore") || f.includes("delete"))) { st.mod05++; mv = "0.5"; }
+        else { st.modOld++; mv = "older"; }
+        if (mv && mv !== "older" && (!user.mod || mv > user.mod)) user.mod = mv; else if (mv && !user.mod) user.mod = mv;
         const waiting = outs[j];
         if (waiting.length) {
           st.pendingChanges += waiting.length; st.pendingHeadsets++;
           for (const w of waiting) if (w.at && now - w.at > st.pendingOldest) st.pendingOldest = now - w.at;
         }
       });
+      if (user.name) st.users.push(user); else st.usersUnknown++;
     }));
   }
+  st.users.sort((a, b) => b.last - a.last);
+  // Profile pictures from the same BeatLeader cache as the Players tab.
+  try { const bl = await gcClans(env, st.users.filter((u) => u.id).slice(0, 60).map((u) => u.id)); st.users.forEach((u) => { const x = bl[u.id]; u.avatar = x ? gcAvatar(x.avatar) : ""; }); } catch (e) {}
   return st;
 }
 
@@ -992,7 +1013,9 @@ const ADMIN_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFwAAABcCAYAAA
 // GC_SITE (optional) is the GoatCounter code, playliststudio by default. ADMIN_ME (optional, comma-separated)
 // are your own BeatLeader names, hidden from the player list by default. ADMIN_CLANS (optional) are the
 // BeatLeader clan tags shown as clanmates, GENX and ROOT by default.
-const GC_RANGES = { today: 1, "7d": 7, "30d": 30, "90d": 90 };
+// The BeatLeader profile tab reads a second GoatCounter site: GC_SITE_BL (blprofile by default) with GC_TOKEN_BL,
+// or GC_TOKEN when both sites are under the same GoatCounter account.
+const GC_RANGES = { today: 1, "7d": 7, "30d": 30, "90d": 90, all: 730 };   // all time looks back up to two years
 const GC_CACHE_SEC = 300;
 let gcLast = 0;
 async function gcGet(env, path, params) {
@@ -1054,19 +1077,26 @@ function gcNote(seen, h) {
   const m = /^profile\//.test(h.path) ? seen.p : h.event ? seen.e : null; if (!m) return;
   const k = h.path; if (!m[k] || f < m[k]) m[k] = f;
 }
+// Profile pictures only from BeatLeader's and Steam's image hosts (the page's CSP allows just these).
+const GC_AVATAR_HOSTS = ["cdn.assets.beatleader.com", "cdn.assets.beatleader.xyz", "avatars.steamstatic.com", "avatars.akamai.steamstatic.com", "avatars.cloudflare.steamstatic.com"];
+function gcAvatar(u) {
+  try { const x = new URL(String(u || "")); return x.protocol === "https:" && GC_AVATAR_HOSTS.includes(x.hostname) ? x.toString() : ""; } catch (e) { return ""; }
+}
 async function gcClans(env, ids) {
   const out = {}; let fetched = 0;
   for (const id of ids) {
     const k = "gc:bl:" + id, c = await env.PLAYLISTS.get(k, "json");
-    if (c && nowSec() - c.t < 7 * 86400) { out[id] = c.tags; continue; }
-    if (fetched >= 15) continue;
+    if (c && c.avatar !== undefined && nowSec() - c.t < 7 * 86400) { out[id] = c; continue; }
+    if (c) out[id] = c;
+    if (fetched >= 25) continue;
     fetched++;
     try {
       const r = await fetch("https://api.beatleader.xyz/player/" + encodeURIComponent(id) + "?stats=false", { headers: { "User-Agent": "PlaylistStudioStats" } });
       if (!r.ok) continue;
       const p = await r.json(), tags = ((p && p.clans) || []).map((c2) => c2 && c2.tag).filter(Boolean).slice(0, 4);
-      out[id] = tags;
-      await env.PLAYLISTS.put(k, JSON.stringify({ t: nowSec(), tags }), { expirationTtl: 30 * 86400 });
+      const rec = { t: nowSec(), tags, avatar: gcAvatar(p && p.avatar) };
+      out[id] = rec;
+      await env.PLAYLISTS.put(k, JSON.stringify(rec), { expirationTtl: 30 * 86400 });
     } catch (e) {}
   }
   return out;
@@ -1084,8 +1114,29 @@ async function gcGithub(env) {
   await env.PLAYLISTS.put("gc:gh", JSON.stringify(out));
   return out;
 }
-async function gcStats(env, range, fresh) {
+// The BeatLeader profile page only counts views (a pixel per profile variant), so its tab gets the visit side:
+// views per day, which profile page, where from, countries, phone or computer.
+async function gcBlStats(env, range, fresh) {
+  const e = Object.assign({}, env, { GC_SITE: env.GC_SITE_BL || "blprofile", GC_TOKEN: env.GC_TOKEN_BL || env.GC_TOKEN });
+  const ck = "gc:cache:bl:" + range, cached = await env.PLAYLISTS.get(ck, "json");
+  if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
+  const now = nowSec(), DAY = 86400, n = GC_RANGES[range], today0 = Math.floor(now / DAY) * DAY;
+  const start = range === "today" ? today0 : today0 - (n - 1) * DAY, end = now;
+  const total = await gcGet(e, "/stats/total", { start: gcIso(start), end: gcIso(end) });
+  let prev = null; if (range !== "all") try { prev = await gcGet(e, "/stats/total", { start: gcIso(start - n * DAY), end: gcIso(start) }); } catch (x) {}
+  const hits = await gcHits(e, start, end);
+  const [refs, sizes, locations, browsers] = [await gcList(e, "toprefs", start, end, 15), await gcList(e, "sizes", start, end, 10), await gcList(e, "locations", start, end, 12), await gcList(e, "browsers", start, end, 10)];
+  let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
+  if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
+  const out = { site: "bl", generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
+    visitors: (total && total.total) || 0, prevVisitors: prev ? prev.total || 0 : null, days: dayList,
+    pages: hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count })), refs, sizes, locations, browsers };
+  await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
+  return out;
+}
+async function gcStats(env, range, fresh, site) {
   if (!GC_RANGES[range]) range = "7d";
+  if (site === "bl") return gcBlStats(env, range, fresh);
   const ck = "gc:cache:" + range, cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
   const now = nowSec(), DAY = 86400, n = GC_RANGES[range];
@@ -1093,7 +1144,7 @@ async function gcStats(env, range, fresh) {
   const start = range === "today" ? today0 : today0 - (n - 1) * DAY, end = now;
   const pstart = start - n * DAY;
   const total = await gcGet(env, "/stats/total", { start: gcIso(start), end: gcIso(end) });
-  let prev = null; try { prev = await gcGet(env, "/stats/total", { start: gcIso(pstart), end: gcIso(start) }); } catch (e) {}
+  let prev = null; if (range !== "all") try { prev = await gcGet(env, "/stats/total", { start: gcIso(pstart), end: gcIso(start) }); } catch (e) {}
   const hits = await gcHits(env, start, end);
   const [refs, campaigns, sizes, locations, browsers] = [await gcList(env, "toprefs", start, end, 15), await gcList(env, "campaigns", start, end, 15),
     await gcList(env, "sizes", start, end, 10), await gcList(env, "locations", start, end, 12), await gcList(env, "browsers", start, end, 10)];
@@ -1103,16 +1154,18 @@ async function gcStats(env, range, fresh) {
     const name = h.path.slice(8), m = /\((\d{3,25})\)\s*$/.exec(h.title || "");
     return { name, id: m ? m[1] : "", count: h.count, last: gcLastDay(h.days), first: seen.p[h.path] || gcFirstDay(h.days), me: me.includes(name.toLowerCase()) };
   }).sort((a, b) => (b.last || "").localeCompare(a.last || "") || b.count - a.count);
-  const clans = await gcClans(env, players.filter((p) => p.id && !p.me).slice(0, 60).map((p) => p.id));
-  players.forEach((p) => { p.clans = clans[p.id] || null; });
+  const bl = await gcClans(env, players.filter((p) => p.id).slice(0, 80).map((p) => p.id));
+  players.forEach((p) => { const x = bl[p.id]; p.clans = x && !p.me ? x.tags || null : null; p.avatar = x ? gcAvatar(x.avatar) : ""; });
   const events = hits.filter((h) => h.event && !/^profile\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
   const live = new Set(events.map((e) => e.name));
   const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k)).sort();
   const pages = hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count }));
   const gh = await gcGithub(env);
-  const out = { generated: now, range, start: gcDay(start), end: gcDay(end),
+  let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
+  if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
+  const out = { generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
     visitors: (total && total.total) || 0, eventVisitors: (total && total.total_events) || 0, prevVisitors: prev ? prev.total || 0 : null,
-    days: ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined })),
+    days: dayList,
     players, events, cold, pages, refs, campaigns, sizes, locations, browsers,
     pushes: gh.pushes.filter((d) => d >= gcDay(start)), releases: gh.releases, myClans: String(env.ADMIN_CLANS || "GENX,ROOT").split(",").map((x) => x.trim()).filter(Boolean) };
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
@@ -1190,6 +1243,10 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 .plist{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .prow{display:grid;grid-template-columns:minmax(0,1fr) 110px 120px 80px;gap:10px;align-items:center;padding:11px 16px;border-top:1px solid #141c2a;font-size:15px}
 .prow.head{border-top:0;font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600;padding-top:12px;padding-bottom:8px}
+.pwho{display:flex;align-items:center;gap:11px;min-width:0}
+.pav{position:relative;flex:none;width:36px;height:36px;border-radius:9px;background:#141c2a;border:1px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:15px;color:var(--muted);overflow:hidden}
+.pav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pname{min-width:0}
 .prow a{color:#cfe0ff;text-decoration:none;font-weight:700;overflow-wrap:anywhere}
 .prow a:hover{text-decoration:underline}
 .prow .n{text-align:right;font-weight:700}
@@ -1199,6 +1256,13 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 .more{margin-top:10px;padding:7px 12px;font-size:14px;font-weight:600}
 .when{color:var(--muted);font-size:14px;margin-top:18px}
 .funnel .bar{grid-template-columns:minmax(120px,190px) 1fr 110px}
+.bars.feat .bar{grid-template-columns:minmax(0,1.3fr) minmax(80px,1fr) 56px;margin:9px 0}
+.bar .fl{display:flex;flex-direction:column;white-space:normal;line-height:1.3;min-width:0}
+.bar .fl b{font-weight:700;color:var(--text)}
+.fd{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.fd code{font-size:12px;color:#8fa6c8}
+.coldlist{display:flex;flex-wrap:wrap;gap:8px}
+.coldlist span{border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:14px;color:var(--muted)}
 .funnel .num small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
 @media(max-width:700px){
   body{padding:18px 12px 40px}
@@ -1216,6 +1280,7 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
   .prow .n{grid-column:2;grid-row:1 / span 2}
   .chart svg{height:180px}
   .funnel .lab{white-space:normal}
+  .bars.feat .bar{grid-template-columns:minmax(0,1fr) 26% 44px}
   .ofv{display:none}
   .range span{display:none}
   .range button{padding:6px 11px;font-size:13.5px}
@@ -1237,9 +1302,10 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
 <button role="tab" data-tab="src" aria-selected="false"><span class="tab-long">Where they come from</span><span class="tab-short">Sources</span></button>
+<button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader profile</span><span class="tab-short">BL profile</span></button>
 <button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
 </div>
-<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="false">Today</button><button data-r="7d" aria-pressed="true">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button></div>
+<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
 
 <section data-sec="vis">
@@ -1264,8 +1330,8 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 <section data-sec="ply" class="hidden">
 <div class="grid">
 <div class="card hero"><div class="label">Players</div><div class="value" id="p-all">-</div><div class="note">connected a BeatLeader profile</div></div>
-<div class="card"><div class="label">New players</div><div class="value" id="p-new">-</div><div class="note">first time ever connecting</div></div>
-<div class="card"><div class="label">Came back</div><div class="value" id="p-back">-</div><div class="note">connected before this range too</div></div>
+<div class="card"><div class="label">New players</div><div class="value" id="p-new">-</div><div class="note" id="p-newn">first time ever connecting</div></div>
+<div class="card"><div class="label">Came back</div><div class="value" id="p-back">-</div><div class="note" id="p-backn">connected before this range too</div></div>
 <div class="card"><div class="label">Your clanmates</div><div class="value" id="p-clan">-</div><div class="note" id="p-clann"></div></div>
 </div>
 <h2>Who used it <small>tap a name to open their BeatLeader profile</small></h2>
@@ -1281,9 +1347,10 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 <div class="card"><div class="label">Not used</div><div class="value" id="f-cold">-</div><div class="note">seen before, nothing in this range</div></div>
 <div class="card"><div class="label">Problems</div><div class="value" id="f-prob">-</div><div class="note">script errors and failed loads</div></div>
 </div>
-<h2>Most used</h2><div class="bars" id="f-top"></div><button class="ghost more hidden" id="f-more">Show all</button>
-<h2>New in the last 30 days <small>features first used recently</small></h2><div class="bars" id="f-fresh"></div>
-<h2>Problems</h2><div class="bars" id="f-probs"></div>
+<h2>By area</h2><div class="bars" id="f-areas"></div>
+<h2>Most used</h2><div class="bars feat" id="f-top"></div><button class="ghost more hidden" id="f-more">Show all</button>
+<h2>New in the last 30 days <small>features first used recently</small></h2><div class="bars feat" id="f-fresh"></div>
+<h2>Problems</h2><div class="bars feat" id="f-probs"></div>
 <h2>Not used in this range <small>candidates to simplify or cut</small></h2><div class="bars" id="f-colds"></div>
 </section>
 
@@ -1299,6 +1366,25 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 <h2>Browsers</h2><div class="bars" id="s-br"></div>
 </section>
 
+<section data-sec="bl" class="hidden">
+<div id="b-msg" class="gcmsg hidden"></div>
+<div class="grid">
+<div class="card hero"><div class="label">Profile views</div><div class="value" id="b-vis">-</div><div class="note" id="b-visn"></div></div>
+<div class="card"><div class="label" id="b-todl">Today</div><div class="value" id="b-tod">-</div><div class="note" id="b-todn"></div></div>
+<div class="card"><div class="label">Busiest day</div><div class="value" id="b-best">-</div><div class="note" id="b-bestn"></div></div>
+<div class="card"><div class="label">On phones</div><div class="value" id="b-phone">-</div><div class="note">of views with a known screen size</div></div>
+</div>
+<h2 id="b-charth">Views per day</h2>
+<div class="chart"><svg id="b-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Profile views per day"></svg></div>
+<h2>Pages counted</h2><div class="bars" id="b-pages"></div>
+<div class="two">
+<div><h2>Where from</h2><div class="bars" id="b-refs"></div></div>
+<div><h2>Countries</h2><div class="bars" id="b-geo"></div></div>
+</div>
+<h2>Phone or computer</h2><div class="bars" id="b-dev"></div>
+<p class="when" id="b-when"></p>
+</section>
+
 <section data-sec="sync" class="hidden">
 <div class="grid">
 <div class="card hero"><div class="label">Active today</div><div class="value" id="activeDay"></div><div class="note">synced in the last 24 hours</div></div>
@@ -1311,6 +1397,9 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 <div class="card"><div class="label">Started, not linked</div><div class="value" id="librariesNoHeadset"></div><div class="note">opened linking but no headset yet</div></div>
 <div class="card hidden" id="dlCard"><div class="label">Mod downloads</div><div class="value" id="dlTotal"></div><div class="note">all Studio Sync releases on GitHub</div></div>
 </div>
+<h2>Studio Sync users <small>tap a name to open their BeatLeader profile</small></h2>
+<div class="plist" id="u-list"></div>
+<p class="when" id="u-note"></p>
 <div id="relWrap" class="hidden"><h2>Downloads per release</h2><div class="bars" id="relBars"></div></div>
 <h2>Keeping people</h2>
 <div class="grid">
@@ -1363,20 +1452,22 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
   }
 
   // ---- tabs and range ----
-  var tab = ls('studioStatsTab') || 'vis', range = ls('studioStatsRange') || '7d', gc = null, gcBusy = false, sync = null;
+  var tab = ls('studioStatsTab') || 'vis', range = 'today', gc = null, gcBusy = false, sync = null;
   function showTab(t) {
     if (!document.querySelector('[data-sec="' + t + '"]')) t = 'vis';
     tab = t; ls('studioStatsTab', t);
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
     $('range').classList.toggle('hidden', t === 'sync');
-    $('gcmsg').classList.toggle('hidden', t === 'sync' || !$('gcmsg').textContent);
-    $('gcwhen').classList.toggle('hidden', t === 'sync');
+    $('gcmsg').classList.toggle('hidden', t === 'sync' || t === 'bl' || !$('gcmsg').textContent);
+    $('gcwhen').classList.toggle('hidden', t === 'sync' || t === 'bl');
     if (t === 'vis' && gc) chart(gc, dailyWhere(BUILD));
+    if (t === 'bl') { if (bl && bl.range === range) chart(bl, null, BLIDS); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadBl(false); }
+    if (t !== 'bl' && t !== 'sync' && gc && gc.range !== range) loadGc(false);
   }
   function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
-  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); ls('studioStatsRange', range); showRange(); loadGc(false); });
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); showRange(); if (tab === 'bl') loadBl(false); else loadGc(false); });
 
   // ---- GoatCounter ----
   var BUILD = /^(export|quest-send|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|share-create)$/;
@@ -1387,7 +1478,7 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
   function sumWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name)) n += e.count; }); return n; }
   function maxWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name) && e.count > n) n = e.count; }); return n; }
   function dailyWhere(re) { var m = {}; gc.events.forEach(function (e) { if (re.test(e.name)) (e.days || []).forEach(function (d) { m[d[0]] = (m[d[0]] || 0) + d[1]; }); }); return m; }
-  function gcMsg(t) { var el = $('gcmsg'); el.innerHTML = t; el.classList.toggle('hidden', !t || tab === 'sync'); }
+  function gcMsg(t) { var el = $('gcmsg'); el.innerHTML = t; el.classList.toggle('hidden', !t || tab === 'sync' || tab === 'bl'); }
   function loadGc(fresh) {
     var key = getKey(); if (!key || gcBusy) return;
     gcBusy = true; gcMsg(gc ? '' : 'Loading GoatCounter...'); txt('gcwhen', 'Loading ' + $('range').querySelector('[aria-pressed="true"]').textContent + '...');
@@ -1410,7 +1501,7 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
     // Visitors
     txt('v-vis', fmt(d.visitors));
     if (d.prevVisitors != null && d.prevVisitors > 0) { var ch = Math.round((d.visitors - d.prevVisitors) / d.prevVisitors * 100); $('v-visn').innerHTML = '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + Math.abs(ch) + '%</span> vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before'; }
-    else txt('v-visn', d.range === 'today' ? 'so far today' : dshort(d.start) + ' to ' + dshort(d.end));
+    else txt('v-visn', d.range === 'today' ? 'so far today' : d.range === 'all' ? 'since ' + dshort(d.start) : dshort(d.start) + ' to ' + dshort(d.end));
     var last = d.days.length ? d.days[d.days.length - 1] : null;
     if (d.range === 'today') {
       var hr = (last && last.hourly) || [], best = -1, bi = 0; hr.forEach(function (n, i) { if (n > best) { best = n; bi = i; } });
@@ -1438,12 +1529,14 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
     txt('f-used', fmt(use.length)); txt('f-cold', fmt(d.cold.length)); txt('f-prob', fmt(probs.reduce(function (a, e) { return a + e.count; }, 0)));
     $('f-prob').classList.toggle('bad', probs.length > 0);
     var showAll = $('f-more').getAttribute('data-all') === '1';
-    bars('f-top', use.slice(0, showAll ? 999 : 15).map(function (e) { return ['<code>' + esc(e.name) + '</code>', e.count]; }));
+    var areas = {}; use.forEach(function (e) { var a = featInfo(e.name).area; areas[a] = (areas[a] || 0) + e.count; });
+    bars('f-areas', Object.keys(areas).map(function (a) { return [esc(a), areas[a]]; }).sort(function (a, b) { return b[1] - a[1]; }));
+    bars('f-top', use.slice(0, showAll ? 999 : 15).map(function (e) { return featRow(e); }));
     $('f-more').classList.toggle('hidden', use.length <= 15); $('f-more').textContent = showAll ? 'Show fewer' : 'Show all ' + use.length;
     var cut = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-    bars('f-fresh', use.filter(function (e) { return e.first && e.first >= cut; }).map(function (e) { return ['<code>' + esc(e.name) + '</code> <span class="note">since ' + dshort(e.first) + '</span>', e.count, 'g']; }), '', 'Nothing new in the last 30 days.');
-    bars('f-probs', probs.map(function (e) { return ['<code>' + esc(e.name) + '</code>', e.count, 'alt']; }), '', 'No problems in this range.');
-    $('f-colds').innerHTML = d.cold.length ? '<p class="empty">' + d.cold.map(function (n) { return '<code class="mono">' + esc(n) + '</code>'; }).join(' · ') + '</p>' : '<p class="empty">Every feature seen before was used in this range.</p>';
+    bars('f-fresh', use.filter(function (e) { return e.first && e.first >= cut; }).map(function (e) { var r = featRow(e, 'g'); r[0] = r[0].replace('</b>', '</b><span class="fd">first used ' + dshort(e.first) + '</span>'); return r; }), '', 'Nothing new in the last 30 days.');
+    bars('f-probs', probs.map(function (e) { return featRow(e, 'alt'); }), '', 'No problems in this range.');
+    $('f-colds').innerHTML = d.cold.length ? '<div class="coldlist">' + d.cold.map(function (n) { var f = featInfo(n); return '<span title="' + esc(f.desc + ' (' + n + ')') + '">' + esc(f.label) + '</span>'; }).join('') + '</div>' : '<p class="empty">Every feature seen before was used in this range.</p>';
     // Sources
     var camps = (d.campaigns || []), refs = (d.refs || []).filter(function (r) { return r.scheme !== 'c'; }), SE = /google|bing|duckduckgo|yahoo|yandex|ecosia|brave|startpage|baidu|qwant/i;
     txt('s-camp', fmt(camps.reduce(function (a, c) { return a + c.count; }, 0)));
@@ -1456,28 +1549,234 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
     renderReleases();
     txt('gcwhen', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + ' (UTC days). Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
   }
-  function chart(d, built) {
-    var svg = $('v-chart'), days = d.days, W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 200;
+  // ---- what each event means ----
+  // [area, short name, what the person did]. Names ending in * cover a family (the rest of the name is shown).
+  var FEAT = {
+    'search-beatleader': ['Search', 'Searched BeatLeader', 'Ran a search of the ranked BeatLeader catalog'],
+    'search-beatsaver': ['Search', 'Searched BeatSaver', 'Ran a search of BeatSaver by tags or text'],
+    'search-recommend': ['For You', 'Top pp gains search', 'Loaded the unplayed maps that add the most pp'],
+    'bsr-hop': ['Search', 'Searched a BSR code', 'Typed a BSR code into search and jumped to that map'],
+    'bsr-hop-fallback': ['Search', 'BSR code fallback', 'A BSR code search fell back to BeatSaver'],
+    'bsr-hop-text': ['Search', 'BSR code as text', 'Searched what looked like a BSR code as plain text'],
+    'diff-change': ['Search', 'Changed difficulties', 'Turned difficulty filters on or changed them'],
+    'pp-filter': ['Search', 'PP range filter', 'Used the PP Range panel'],
+    'level-*': ['Search', 'Star level chip', 'Picked a star level chip (Learning, Comfortable, Pushing...)'],
+    'level-auto-default': ['Search', 'Default star level', 'A new visitor got the 4 to 7 star starting level'],
+    'level-auto-me': ['Search', 'My level from profile', 'Studio set the star level from their scores'],
+    'newbie-easier': ['Search', 'Easier maps for a new player', 'Took the "show easier maps" offer'],
+    'newbie-hint-dismiss': ['Search', 'Closed new player tip', 'Dismissed the new player hint'],
+    'accsaber-load': ['Search', 'AccSaber Pools', 'Loaded an AccSaber ranked pool'],
+    'accsaber-cat-*': ['Search', 'AccSaber category', 'Picked an AccSaber category'],
+    'maps-like-this': ['Search', 'Maps like this', 'Found maps similar to one map'],
+    'nofail-chip': ['Search', 'No Fail runs chip', 'Filtered results to their No Fail runs'],
+    'nofail-quick': ['Search', 'No Fail quick list', 'Used the No Fail quick list'],
+    'density-*': ['Results', 'Row density', 'Switched between compact and roomy rows'],
+    'results-more': ['Results', 'Results menu', 'Opened the ... menu above the results'],
+    'results-more-head': ['Results', '+ Add on phones', 'Opened + Add in the Search Results header on a phone'],
+    'row-add': ['Playlist', 'Added a map', 'Added one map from the results to Your Playlist'],
+    'row-unadd': ['Playlist', 'Removed from a result row', 'Took a map back out from its result row'],
+    'row-replay': ['Results', 'Watched a replay', 'Opened a replay from a result row'],
+    'top-plays': ['Profile', 'Top plays to playlist', 'Loaded their top 25 to 500 pp plays'],
+    'build-from-plays': ['Profile', 'Built from my plays', 'Loaded every map they have played'],
+    'quick-add': ['Playlist', 'Quick Add', 'Pasted BSR codes, links or hashes into Quick Add'],
+    'undo': ['Playlist', 'Undo', 'Undid a playlist change'],
+    'redo': ['Playlist', 'Redo', 'Redid a playlist change'],
+    'sel-*': ['Playlist', 'Select mode', 'Used select mode on the playlist'],
+    'refine': ['Playlist', 'Refine Playlist', 'Used a Refine Playlist tool'],
+    'refresh-stars': ['Playlist', 'Refresh ratings', 'Refreshed star ratings for the playlist'],
+    'fill-data': ['Playlist', 'Fill data', 'Filled missing map data for imported maps'],
+    'session-ramp': ['Playlist', 'Warm-up order', 'Reordered the playlist from easy to hard'],
+    'playlist-name': ['Playlist', 'Named a playlist', 'Typed a name in the new Name field'],
+    'import': ['Playlist', 'Imported a .bplist', 'Opened a playlist file into Studio'],
+    'combine-open-*': ['Playlist', 'Combine playlists', 'Opened Combine playlists'],
+    'save-playlist': ['Library', 'Saved to library', 'Saved a playlist to the browser library'],
+    'load-playlist': ['Library', 'Opened from library', 'Opened a saved playlist'],
+    'library-backup': ['Library', 'Library backup', 'Downloaded a backup of their library'],
+    'library-restore': ['Library', 'Library restore', 'Restored a library backup'],
+    'export': ['Save and send', 'Downloaded a .bplist', 'Downloaded the playlist file'],
+    'export-tab-*': ['Save and send', 'Save and send tab', 'Switched tabs in Save and send'],
+    'quest-send': ['Save and send', 'Sent over USB', 'Sent the playlist to a Quest over a cable'],
+    'quest-connect': ['Save and send', 'Quest USB connect', 'Started connecting a Quest over USB'],
+    'quest-auth-wait': ['Save and send', 'Waiting on Quest allow', 'Waited for "Allow USB debugging" on the headset'],
+    'quest-no-answer': ['Problems', 'Quest USB no answer', 'The Quest didn\u2019t answer over USB'],
+    'quest-cancel': ['Save and send', 'Quest USB cancelled', 'Cancelled sending over USB'],
+    'cable-pitch': ['Studio Sync', 'Saw the Studio Sync pitch', 'Saw the "skip the cable" Studio Sync card'],
+    'cable-pitch-no': ['Studio Sync', 'Dismissed the pitch', 'Pressed Not now on the Studio Sync card'],
+    'share-create': ['Share', 'Made a share link', 'Created a share link for a playlist'],
+    'share-open': ['Share', 'Opened a share link', 'Opened someone\u2019s shared playlist link'],
+    'share-paste': ['Share', 'Pasted a share link', 'Pasted a share link into Studio'],
+    'link-load': ['Share', 'Loaded a playlist link', 'Loaded a playlist from a link'],
+    'link-load-failed': ['Problems', 'Playlist link failed', 'A playlist link couldn\u2019t be loaded'],
+    'pub-delete': ['Share', 'Deleted a hosted link', 'Removed a hosted sync link'],
+    'gallery-open': ['Starters', 'Opened the gallery', 'Opened the ready-made playlist gallery'],
+    'empty-gallery': ['Starters', 'Gallery from empty results', 'Opened the gallery from "No results yet"'],
+    'gallery-load': ['Starters', 'Loaded a starter playlist', 'Loaded a ready-made playlist'],
+    'gallery-*': ['Starters', 'Starter playlist', 'Picked a ready-made playlist'],
+    'connect-profile': ['Profile', 'Connected a profile', 'Connected their BeatLeader profile'],
+    'profile-switch': ['Profile', 'Switched player', 'Used Switch player in the account menu'],
+    'profile-disconnect': ['Profile', 'Disconnected', 'Disconnected their profile'],
+    'profile-clan-bl': ['Clans', 'BeatLeader clan chip', 'Opened their BeatLeader clan from the profile chip'],
+    'profile-clan-as': ['Clans', 'AccSaber clan chip', 'Opened their AccSaber clan from the profile chip'],
+    'profile-clan-war': ['Clans', 'Clan war banner', 'Pressed Fight on the clan war banner'],
+    'ss-sync': ['Profile', 'ScoreSaber pull', 'Pulled their ScoreSaber plays'],
+    'ss-sync-auto': ['Profile', 'ScoreSaber refresh', 'Sync scores also refreshed ScoreSaber'],
+    'stats-open': ['Stats', 'Opened Stats', 'Opened the Stats card'],
+    'stats-add': ['Stats', 'Added from Stats', 'Added a recent score\u2019s map from Stats'],
+    'stats-top-plays': ['Stats', 'Top 50 from Stats', 'Built from top 50 plays inside Stats'],
+    'stats-score-open': ['Stats', 'Opened a score', 'Expanded a recent score in Stats'],
+    'stats-versus': ['Stats', 'Versus from Stats', 'Opened "Maps they beat you on"'],
+    'versus-build': ['Stats', 'Versus list', 'Loaded the maps another player beats them on'],
+    'full-stats-replay': ['Stats', 'Replay from Stats', 'Watched a replay from Stats'],
+    'full-stats-share': ['Stats', 'Shared Stats', 'Shared a Stats card link'],
+    'stats-clan': ['Clans', 'Clan maps (old button)', 'Opened clan maps from the old Stats button'],
+    'stats-asclan': ['Clans', 'AccSaber clan (old button)', 'Opened the AccSaber clan from the old Stats button'],
+    'clan-open': ['Clans', 'BeatLeader clan view', 'Opened the BeatLeader clan maps view'],
+    'clan-scan': ['Clans', 'Clan maps scan', 'Loaded their clan\u2019s maps to defend or capture'],
+    'clan-recheck': ['Clans', 'Clan re-check', 'Re-checked the clan maps'],
+    'clan-switch': ['Clans', 'Switched clan', 'Picked another of their clans'],
+    'clan-switch-bl': ['Clans', 'To BeatLeader clan', 'Switched from AccSaber to the BeatLeader clan view'],
+    'clan-ss': ['Clans', 'Clan maps with SS', 'Looked at replay-without-SS chances'],
+    'clan-fail': ['Problems', 'Clan maps failed', 'BeatLeader didn\u2019t answer the clan scan'],
+    'asclan-open': ['Clans', 'AccSaber clan view', 'Opened the AccSaber clan view'],
+    'asclan-scan': ['Clans', 'AccSaber clan load', 'Loaded AccSaber missions and standings'],
+    'asclan-recheck': ['Clans', 'AccSaber re-check', 'Re-checked AccSaber'],
+    'asclan-switch': ['Clans', 'To AccSaber clan', 'Switched to the AccSaber clan view'],
+    'asclan-war': ['Clans', 'War maps', 'Opened the war maps card'],
+    'asclan-pick-*': ['Clans', 'Mission picks', 'Opened the map picks for a clan mission'],
+    'asclan-fail': ['Problems', 'AccSaber failed', 'AccSaber didn\u2019t answer the clan view'],
+    'foryou-*': ['For You', 'For You', 'Used a For You button'],
+    'foryou-connect': ['For You', 'Connect from For You', 'Connected from the For You card'],
+    'rank-up-plan': ['For You', 'Rank-up plan', 'Ran the rank-up planner'],
+    'tour-shown': ['First visit', 'Saw the welcome', 'Saw the welcome popup'],
+    'clear-logo': ['Other', 'Logo triple tap', 'Cleared everything with the logo triple tap'],
+    'egg-115': ['Other', 'Easter egg 115', 'Found the 115 easter egg'],
+    'egg-bomb': ['Other', 'Easter egg bomb', 'Found the bomb easter egg'],
+    'pwa-link': ['App', 'Link into the app', 'Opened a Studio link in the installed app'],
+    'pwa-open-file': ['App', 'Opened a .bplist file', 'Double-clicked a .bplist into the installed app'],
+    'onquest-open': ['Studio Sync', 'Opened a headset playlist', 'Opened a playlist that\u2019s on their Quest'],
+    'lq-link': ['Studio Sync', 'Linked a headset', 'Linked a Quest to Studio'],
+    'lq-unlink': ['Studio Sync', 'Unlinked a headset', 'Removed a linked Quest'],
+    'lq-first-sync': ['Studio Sync', 'First sync', 'A newly linked headset synced for the first time'],
+    'lq-first-ok': ['Studio Sync', 'First sync seen', 'Closed the "linked and synced" card'],
+    'lq-add': ['Studio Sync', 'Sent to headset', 'Sent a playlist to a linked Quest'],
+    'lq-add-to': ['Studio Sync', 'Added maps to a headset list', 'Added maps to a playlist on their Quest'],
+    'lq-add-to-mine': ['Studio Sync', 'Added to their own list', 'Added maps to one of their headset playlists'],
+    'lq-upload-*': ['Studio Sync', 'Upload to headset', 'Uploaded a playlist to the headset'],
+    'lq-edit': ['Studio Sync', 'Edited a headset playlist', 'Opened a Quest playlist to edit'],
+    'lq-done': ['Studio Sync', 'Done editing', 'Finished editing a headset playlist'],
+    'lq-autosave': ['Studio Sync', 'Autosave', 'Changes to a headset playlist saved by themselves'],
+    'lq-sendback': ['Studio Sync', 'Sent edits back', 'Sent edits back to the headset'],
+    'lq-arrived': ['Studio Sync', 'Changes arrived', 'The headset picked up their changes'],
+    'lq-order-sent': ['Studio Sync', 'New order sent', 'Reordered headset playlists'],
+    'lq-order-arrived': ['Studio Sync', 'New order arrived', 'The headset picked up a new playlist order'],
+    'lq-reorder': ['Studio Sync', 'Reordered', 'Dragged playlists into a new order'],
+    'lq-sort-*': ['Studio Sync', 'Sorted headset list', 'Sorted the headset playlist list'],
+    'lq-rename': ['Studio Sync', 'Renamed headset', 'Renamed a linked Quest'],
+    'lq-rename-pl': ['Studio Sync', 'Renamed a playlist', 'Renamed a playlist on the headset'],
+    'lq-restore': ['Studio Sync', 'Restored a playlist', 'Brought back a deleted or older playlist'],
+    'lq-copy': ['Studio Sync', 'Copied to another headset', 'Copied a playlist to their other Quest'],
+    'lq-download': ['Studio Sync', 'Downloaded from headset', 'Downloaded a headset playlist as a file'],
+    'lq-select': ['Studio Sync', 'Select mode', 'Selected several headset playlists'],
+    'lq-hide': ['Studio Sync', 'Hid the panel', 'Hid the Studio Sync panel'],
+    'lq-peek': ['Studio Sync', 'Peeked at a playlist', 'Looked inside a headset playlist'],
+    'lq-peek-remove': ['Studio Sync', 'Removed while peeking', 'Removed a map while peeking'],
+    'lq-quick-add-*': ['Studio Sync', 'Quick add to headset', 'Quick-added maps to a headset playlist'],
+    'lq-quick-remove': ['Studio Sync', 'Quick remove', 'Removed a map from a headset playlist'],
+    'lq-clean': ['Studio Sync', 'Clean up songs', 'Started cleaning songs in no playlist'],
+    'lq-clean-ask': ['Studio Sync', 'Clean up opened', 'Opened the clean up songs question'],
+    'lq-clean-cancel': ['Studio Sync', 'Clean up cancelled', 'Backed out of cleaning up songs'],
+    'lq-clean-done': ['Studio Sync', 'Clean up done', 'The headset deleted unused songs'],
+    'lq-gm-done': ['Studio Sync', 'Got missing songs', 'Downloaded missing songs to the headset'],
+    'lq-gm-cancel': ['Studio Sync', 'Missing songs cancelled', 'Cancelled getting missing songs'],
+    'lq-conflict*': ['Studio Sync', 'Edit conflict', 'Picked a side when the Quest and Studio both changed a list'],
+    'lq-open-*': ['Studio Sync', 'Opened Studio Sync', 'Opened the Studio Sync tab'],
+    'lq-key-show': ['Studio Sync', 'Showed library key', 'Showed their library key'],
+    'lq-key-link': ['Studio Sync', 'Second device link', 'Opened Studio Sync on another device with the key'],
+    'lq-qr-show': ['Studio Sync', 'Showed QR code', 'Showed the QR code for another device'],
+    'lq-rekey': ['Studio Sync', 'New library key', 'Made a new library key'],
+    'lq-migrate': ['Studio Sync', 'Library moved', 'Moved an old library to the new format'],
+    'lq-nudge-no': ['Studio Sync', 'Update nudge dismissed', 'Dismissed the "update Studio Sync" nudge'],
+    'lq-cancel': ['Studio Sync', 'Cancelled', 'Cancelled a Studio Sync action'],
+    'github-click': ['Links', 'GitHub link', 'Clicked through to the source on GitHub'],
+    'kofi-click': ['Links', 'Support me link', 'Clicked the Support me (Ko-fi) button'],
+    'mbf-link': ['Links', 'ModsBeforeFriday link', 'Clicked the ModsBeforeFriday link'],
+    'studiosync-download': ['Links', 'Studio Sync download', 'Clicked to download the Studio Sync mod'],
+    'studiosync-releases': ['Links', 'Studio Sync releases', 'Opened the Studio Sync releases page'],
+    'studiosync-update': ['Links', 'Studio Sync update', 'Clicked to update Studio Sync'],
+    'js-error': ['Problems', 'Page error', 'A script error on the page'],
+    'js-error-promise': ['Problems', 'Page error (async)', 'A script error from a background task'],
+  };
+  function featInfo(name) {
+    var x = FEAT[name], rest = '';
+    if (!x) { var best = ''; Object.keys(FEAT).forEach(function (k) { if (k.slice(-1) === '*' && name.indexOf(k.slice(0, -1)) === 0 && k.length > best.length) best = k; }); if (best) { x = FEAT[best]; rest = name.slice(best.length - 1).replace(/^-/, ''); } }
+    if (!x) return { area: PROB.test(name) ? 'Problems' : 'Other', label: name.replace(/-/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); }), desc: '', name: name };
+    return { area: x[0], label: x[1] + (rest ? ': ' + rest.replace(/-/g, ' ') : ''), desc: x[2], name: name };
+  }
+  function featRow(e, cls) {
+    var f = featInfo(e.name);
+    return ['<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + ' · <code>' + esc(e.name) + '</code></span></span>', e.count, cls || ''];
+  }
+  function chart(d, built, ids) {
+    ids = ids || { svg: 'v-chart', head: 'v-charth', leg: 'v-pushleg', what: 'Visitors', dots: true };
+    var svg = $(ids.svg), days = d.days, W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 200;
     svg.setAttribute('viewBox', '0 0 ' + W + ' 220');
     if (!days.length) { svg.innerHTML = ''; return; }
     if (d.range === 'today') {
       var hr = (days[days.length - 1].hourly || []).slice(0, 24); days = hr.map(function (n, i) { return { day: '', n: n, h: i }; });
-      $('v-charth').innerHTML = 'Visitors per hour <small>UTC</small>';
-    } else $('v-charth').innerHTML = 'Visitors per day <small>dots are days you pushed changes</small>';
+      $(ids.head).innerHTML = ids.what + ' per hour <small>UTC</small>';
+    } else $(ids.head).innerHTML = ids.what + ' per day' + (ids.dots ? ' <small>dots are days you pushed changes</small>' : '');
     var max = 4; days.forEach(function (x) { if (x.n > max) max = x.n; });
     max = Math.ceil(max / 4) * 4;
     var n = days.length, X = function (i) { return n === 1 ? W / 2 : 30 + i * (W - 50) / (n - 1); }, Y = function (v) { return H - 12 - v / max * (H - 30); };
     var g = '';
     for (var k = 0; k <= 4; k++) { var yy = Y(max * k / 4); g += '<line x1="30" x2="' + (W - 20) + '" y1="' + yy + '" y2="' + yy + '" stroke="#1f2a3d"/><text x="0" y="' + (yy + 4) + '" fill="#6b7890" font-size="11">' + Math.round(max * k / 4) + '</text>'; }
-    var pushes = d.range === 'today' ? [] : (d.pushes || []);
+    var pushes = d.range === 'today' || !ids.dots ? [] : (d.pushes || []);
     days.forEach(function (x, i) { if (pushes.indexOf(x.day) >= 0) g += '<line x1="' + X(i) + '" x2="' + X(i) + '" y1="12" y2="' + (H - 12) + '" stroke="#ffc23d" stroke-dasharray="3 4" opacity=".6"/><circle cx="' + X(i) + '" cy="14" r="5" fill="#ffc23d"><title>Pushed ' + dshort(x.day) + '</title></circle>'; });
     function path(vals) { return vals.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' '); }
     g += '<path d="' + path(days.map(function (x) { return x.n; })) + '" fill="none" stroke="#2f7bff" stroke-width="3" vector-effect="non-scaling-stroke"/>';
-    if (d.range !== 'today') g += '<path d="' + path(days.map(function (x) { return Math.min(x.n, built[x.day] || 0); })) + '" fill="none" stroke="#3ddc84" stroke-width="3" vector-effect="non-scaling-stroke"/>';
+    if (d.range !== 'today' && built) g += '<path d="' + path(days.map(function (x) { return Math.min(x.n, built[x.day] || 0); })) + '" fill="none" stroke="#3ddc84" stroke-width="3" vector-effect="non-scaling-stroke"/>';
     var labs = d.range === 'today' ? [[0, '12 AM'], [12, '12 PM'], [n - 1, (n - 1) + ':00']] : [[0, dshort(days[0].day)], [Math.floor((n - 1) / 2), dshort(days[Math.floor((n - 1) / 2)].day)], [n - 1, dshort(days[n - 1].day)]];
     labs.forEach(function (l, j) { g += '<text x="' + X(l[0]) + '" y="' + (H + 16) + '" fill="#9aa6b8" font-size="12" text-anchor="' + (j === 0 ? 'start' : j === 2 ? 'end' : 'middle') + '">' + esc(l[1]) + '</text>'; });
     svg.innerHTML = g;
-    $('v-pushleg').classList.toggle('hidden', !pushes.length);
+    if (ids.leg) $(ids.leg).classList.toggle('hidden', !pushes.length);
+  }
+  // ---- BeatLeader profile (second GoatCounter site) ----
+  var bl = null, blBusy = false, BLIDS = { svg: 'b-chart', head: 'b-charth', what: 'Views', dots: false };
+  function devSplit(sizes) { var dev = { Phone: 0, Tablet: 0, Computer: 0, Unknown: 0 }; (sizes || []).forEach(function (s) { var n = s.name.toLowerCase(); dev[/phone/.test(n) && !/tablet/.test(n) ? 'Phone' : /phone|tablet/.test(n) ? 'Tablet' : /monitor|computer|laptop|desktop/.test(n) ? 'Computer' : 'Unknown'] += s.count; }); return dev; }
+  function bMsg(t) { var el = $('b-msg'); el.innerHTML = t; el.classList.toggle('hidden', !t); }
+  function loadBl(fresh) {
+    var key = getKey(); if (!key || blBusy) return;
+    blBusy = true; if (!bl) bMsg('Loading your BeatLeader profile views...');
+    fetch('/admin/gc?site=bl&range=' + encodeURIComponent(range) + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      blBusy = false;
+      if (!res.ok) {
+        if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; }
+        bMsg(res.j.setup ? '<b>GoatCounter isn\u2019t connected yet.</b> Add GC_TOKEN to the Worker first (see the Visitors tab).' : esc(res.j.error || 'Couldn\u2019t load the BeatLeader profile site.'));
+        return;
+      }
+      bl = res.j; bMsg(''); renderBl();
+    }).catch(function () { blBusy = false; bMsg('Couldn\u2019t reach the Worker.'); });
+  }
+  function renderBl() {
+    var d = bl;
+    txt('b-vis', fmt(d.visitors));
+    if (d.prevVisitors != null && d.prevVisitors > 0) { var ch = Math.round((d.visitors - d.prevVisitors) / d.prevVisitors * 100); $('b-visn').innerHTML = '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '\u25B2 ' : '\u25BC ') + Math.abs(ch) + '%</span> vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before'; }
+    else txt('b-visn', d.range === 'all' ? 'since ' + dshort(d.start) : d.range === 'today' ? 'so far today' : dshort(d.start) + ' to ' + dshort(d.end));
+    var last = d.days.length ? d.days[d.days.length - 1] : null, best = null;
+    d.days.forEach(function (x) { if (!best || x.n > best.n) best = x; });
+    txt('b-tod', fmt(last ? last.n : 0)); txt('b-todn', 'views so far, UTC day');
+    txt('b-best', best && best.n ? fmt(best.n) : '-'); txt('b-bestn', best && best.n ? dshort(best.day) : 'no views yet');
+    var dev = devSplit(d.sizes), known = dev.Phone + dev.Tablet + dev.Computer;
+    txt('b-phone', known ? Math.round(dev.Phone / known * 100) + '%' : '-');
+    chart(d, null, BLIDS);
+    var PAGES = { '/msploit-profile': 'Your BeatLeader profile (all themes)' };
+    bars('b-pages', (d.pages || []).map(function (p) { var nm = PAGES[p.path] || p.title || p.path; return ['<span class="fl"><b>' + esc(nm) + '</b><span class="fd"><code>' + esc(p.path) + '</code></span></span>', p.count]; }), '', 'No profile views in this range.');
+    bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return [esc(r.name), r.count]; }), '', 'No referrers in this range.');
+    bars('b-geo', (d.locations || []).slice(0, 8).map(function (s2) { return [esc(s2.name || 'Unknown'), s2.count]; }));
+    bars('b-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
+    txt('b-when', 'GoatCounter (blprofile) ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
   }
   // ---- players ----
   var pf = { find: '', fnew: false, fclan: false, fme: ls('studioStatsHideMe') !== '0' }, pShown = 40;
@@ -1486,7 +1785,9 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
   function renderPlayers() {
     if (!gc) return;
     var all = gc.players.filter(function (p) { return !(pf.fme && p.me); }), start = gc.start;
-    var isNew = function (p) { return p.first && p.first >= start; };
+    var allTime = gc.range === 'all', cut = allTime ? new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10) : start;
+    var isNew = function (p) { return p.first && p.first >= cut; };
+    txt('p-newn', allTime ? 'first connected in the last 7 days' : 'first time ever connecting'); txt('p-backn', allTime ? 'first connected before that' : 'connected before this range too');
     txt('p-all', fmt(all.length)); txt('p-new', fmt(all.filter(isNew).length)); txt('p-back', fmt(all.filter(function (p) { return !isNew(p); }).length));
     txt('p-clan', fmt(all.filter(mine).length)); txt('p-clann', 'players in ' + ((gc.myClans || []).join(' or ') || 'your clans'));
     var q = pf.find.toLowerCase(), list = all.filter(function (p) { return (!q || p.name.toLowerCase().indexOf(q) >= 0) && (!pf.fnew || isNew(p)) && (!pf.fclan || mine(p)); });
@@ -1496,7 +1797,8 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
       var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
       var b = (p.me ? '<span class="pb me">YOU</span>' : isNew(p) ? '<span class="pb new">NEW</span>' : '<span class="pb back">BACK</span>') +
         (p.clans || []).map(function (t) { return '<span class="pb ' + ((gc.myClans || []).indexOf(t) >= 0 ? 'mine' : 'clan') + '">' + esc(t) + '</span>'; }).join('');
-      h += '<div class="prow"><span><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + '</span><span class="c-first">' + dshort(p.first) + '</span><span class="c-last">' + dago(p.last) + '</span><span class="n">' + fmt(p.count) + '</span></div>';
+      var av = '<span class="pav" aria-hidden="true">' + esc((p.name || '?').charAt(0).toUpperCase()) + (p.avatar && p.avatar.indexOf('https://') === 0 ? '<img src="' + esc(p.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
+      h += '<div class="prow"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + '</span></span><span class="c-first">' + dshort(p.first) + '</span><span class="c-last">' + dago(p.last) + '</span><span class="n">' + fmt(p.count) + '</span></div>';
     });
     $('p-list').innerHTML = h;
     $('p-more').classList.toggle('hidden', list.length <= pShown); $('p-more').textContent = 'Show ' + Math.min(40, list.length - pShown) + ' more';
@@ -1508,6 +1810,20 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
   $('p-more').addEventListener('click', function () { pShown += 40; renderPlayers(); });
   $('f-more').addEventListener('click', function () { this.setAttribute('data-all', this.getAttribute('data-all') === '1' ? '0' : '1'); renderGc(); });
   // ---- Studio Sync ----
+  function sago(sec) { if (!sec) return 'never synced'; var d = Math.floor((Date.now() / 1000 - sec) / 86400); return d <= 0 ? 'synced today' : d === 1 ? 'synced yesterday' : 'synced ' + d + ' days ago'; }
+  function renderUsers(s) {
+    var us = s.users || [], h = '<div class="prow head"><span>Player</span><span class="c-first">Linked</span><span class="c-last">Last sync</span><span class="n">Headsets</span></div>';
+    if (!us.length) h += '<div class="prow"><span class="empty">No Studio Sync users with a connected profile yet.</span></div>';
+    us.forEach(function (u) {
+      var url = u.id ? 'https://beatleader.com/u/' + encodeURIComponent(u.id) : '#';
+      var av = '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
+      var linked = u.linked ? new Date(u.linked * 1000).toISOString().slice(0, 10) : '';
+      h += '<div class="prow"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>' +
+        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last">' + sago(u.last) + '</span><span class="n">' + fmt(u.headsets) + '</span></div>';
+    });
+    $('u-list').innerHTML = h;
+    txt('u-note', (s.usersUnknown ? s.usersUnknown + (s.usersUnknown === 1 ? ' more player hasn\u2019t' : ' more players haven\u2019t') + ' opened Studio with a connected profile since this list started, so their name isn\u2019t known yet. ' : '') + 'Names come from the BeatLeader profile connected in Studio when it checks the headset list.');
+  }
   function renderReleases() {
     var rel = gc && gc.releases || [];
     $('dlCard').classList.toggle('hidden', !rel.length); $('relWrap').classList.toggle('hidden', !rel.length);
@@ -1539,18 +1855,20 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
       txt('goneQuiet', s.goneQuiet);
       txt('pendingChanges', s.pendingChanges);
       txt('pendingNote', s.pendingChanges ? 'on ' + s.pendingHeadsets + ' headset' + (s.pendingHeadsets === 1 ? '' : 's') + ', oldest ' + ago(s.pendingOldest) : 'nothing queued');
+      renderUsers(s);
       bars('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]]);
       txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
       $('out').classList.remove('hidden'); say('');
       renderReleases();
       if (first || !gc) loadGc(false);
+      if (tab === 'bl' && !bl) loadBl(false);
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
   $('go').addEventListener('click', loadSync);
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
-  $('refresh').addEventListener('click', function () { loadSync(); loadGc(true); });
+  $('refresh').addEventListener('click', function () { loadSync(); if (tab === 'bl') loadBl(true); else loadGc(true); });
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
-  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); }, 150); });
+  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); }, 150); });
   showRange(); showTab(tab);
   if (getKey()) { $('keyrow').classList.add('hidden'); loadSync(); }
 })();

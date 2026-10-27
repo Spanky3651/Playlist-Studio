@@ -2958,7 +2958,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T22:39:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T22:56:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6918,6 +6918,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (method !== 'GET') lqMut++;
     var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 20000);
     var h = { 'Content-Type': 'application/json' }; if (lib) h['X-Lib-Key'] = lib.key;
+    // The library refresh also says which public BeatLeader profile is connected, for the Studio Sync user list.
+    if (lib && method === 'GET' && path === '/lib/' + lib.id && state.player && /^\d{3,25}$/.test(String(state.player.id))) h['X-Studio-Player'] = state.player.id + '|' + encodeURIComponent(String(state.player.name || '').slice(0, 60));
     return fetch(PUB_BASE + path, { method: method, headers: h, body: body == null ? undefined : (typeof body === 'string' ? body : JSON.stringify(body)), signal: ctrl.signal }).then(function (r) {
       clearTimeout(t);
       var v = ''; try { v = r.headers.get('X-Studio-Version') || ''; } catch (e) {}   // a headset playlist's version (Worker)
