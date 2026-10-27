@@ -653,6 +653,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .ss-call b.t{display:block;color:#e6edf6;font-size:14.5px;margin-bottom:2px;}
 .ss-call .lq-row{margin-top:8px;}
 .lq-quest > .ss-call{margin:0 0 12px;}
+.ss-call[hidden],.ss-prog[hidden],.pv-onq[hidden]{display:none;}   /* their display:flex would otherwise beat the hidden attribute */
 .ss-prog{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:13px;color:var(--muted);}
 .ss-prog b{color:#e6edf6;} .ss-prog .seg{flex:1;display:flex;gap:6px;} .ss-prog .seg i{flex:1;height:6px;border-radius:3px;background:#1a2333;}
 .ss-prog .seg i.on{background:#3ddc84;} .ss-prog .seg i.now{background:#2f7bff;}
@@ -2838,7 +2839,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T20:09:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T20:12:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
