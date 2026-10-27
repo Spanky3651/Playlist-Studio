@@ -237,14 +237,25 @@ function statKey(lib, dev) { return "stat:" + lib + ":" + dev; }
 // A song clean up asked for in Studio and waiting for the headset, and what the last one did.
 function clnKey(lib, dev) { return "cln:" + lib + ":" + dev; }
 function clnrKey(lib, dev) { return "clnr:" + lib + ":" + dev; }
-const FEATURES = ["restore", "delete", "delete-songs", "storage", "cleanup", "order"];
+// Get missing songs asked for in Studio (0.9.0 and later) and what the last one did, like clean up.
+function gmKey(lib, dev) { return "gm:" + lib + ":" + dev; }
+function gmrKey(lib, dev) { return "gmr:" + lib + ":" + dev; }
+// Per-playlist auto-download switches changed in Studio and waiting for the headset: { t, set: { key: on } }.
+function adlKey(lib, dev) { return "adl:" + lib + ":" + dev; }
+// When Studio last queued anything for a headset (ms). The mod checks it every minute in the menu (/link/ping,
+// one read) and only runs a full sync when it moved, so changes show up without going back to the main menu.
+function chgKey(lib, dev) { return "chg:" + lib + ":" + dev; }
+function touch(env, lib, dev) { return putTtl(env, chgKey(lib, dev), String(Date.now())); }
+const FEATURES = ["restore", "delete", "delete-songs", "storage", "cleanup", "order", "missing", "autodl"];
 function bytesField(v) { return Number.isSafeInteger(v) && v >= 0 ? Math.min(v, 1e15) : -1; }
 function countField(v) { return Number.isInteger(v) && v >= 0 ? Math.min(v, 1e7) : 0; }
 function cleanStats(b) {
   return { songs: countField(b.songs), songBytes: bytesField(b.songBytes), loose: countField(b.loose), looseBytes: bytesField(b.looseBytes),
     looseFav: countField(b.looseFav), looseFavBytes: bytesField(b.looseFavBytes), wip: countField(b.wip), wipBytes: bytesField(b.wipBytes),
     total: bytesField(b.total), free: bytesField(b.free),
-    mod: String(b.mod || "").replace(/[^\w.-]/g, "").slice(0, 20), game: String(b.game || "").replace(/[^\w.-]/g, "").slice(0, 30), at: nowSec() };
+    mod: String(b.mod || "").replace(/[^\w.-]/g, "").slice(0, 20), game: String(b.game || "").replace(/[^\w.-]/g, "").slice(0, 30), at: nowSec(),
+    ...(Number.isInteger(b.missing) ? { missing: countField(b.missing), missingBy: (Array.isArray(b.missingBy) ? b.missingBy : []).slice(0, 300)
+      .filter((e) => Array.isArray(e) && validFile(e[0]) && Number.isInteger(e[1]) && e[1] > 0).map((e) => [e[0], Math.min(e[1], 100000)]) } : {}) };
 }
 async function withSeen(env, lib, devices) {
   const seen = await Promise.all(devices.map((d) => env.PLAYLISTS.get(seenKey(lib, d.id))));
@@ -316,6 +327,12 @@ async function linked(request, env, ctx, url) {
     }
 
     const dev = await env.PLAYLISTS.get("dev:" + th, "json");
+    // The mod's once-a-minute check while in the menu: two reads, no writes.
+    if (path === "/link/ping" && request.method === "GET") {
+      if (!dev) return json({ error: "unlinked" }, 401, cors);
+      const chg = +(await env.PLAYLISTS.get(chgKey(dev.lib, dev.id))) || 0;
+      return json({ chg }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+    }
     const lib = dev ? await env.PLAYLISTS.get("lib:" + dev.lib, "json") : null;
     const me = lib && (lib.devices || []).find((d) => d.th === th);
     if (!dev || !lib || !me) {
@@ -358,6 +375,19 @@ async function linked(request, env, ctx, url) {
         const cln = await env.PLAYLISTS.get(clnKey(dev.lib, me.id), "json");
         if (cln && cln.id) extra.cleanup = { id: cln.id };
       }
+      const fileOf = new Map(inv.items.map((it) => [it.k, it.file]));
+      // Auto-download switches set in Studio, as file names, until the headset says it took them.
+      if (feats.includes("autodl")) {
+        const adl = await env.PLAYLISTS.get(adlKey(dev.lib, me.id), "json");
+        if (adl && adl.t > (inv.adlApplied || 0) && adl.set)
+          extra.autodl = { t: adl.t, set: Object.keys(adl.set).filter((k) => fileOf.has(k)).map((k) => ({ file: fileOf.get(k), on: !!adl.set[k] })) };
+      }
+      if (feats.includes("missing")) {
+        const gm = await env.PLAYLISTS.get(gmKey(dev.lib, me.id), "json");
+        if (gm && gm.id) extra.getMissing = gm.all ? { id: gm.id, all: true } : { id: gm.id, files: (gm.ks || []).map((k) => fileOf.get(k)).filter(Boolean) };
+      }
+      // Where the change counter stood at this sync; the mod's minute check compares against it.
+      extra.chg = +(await env.PLAYLISTS.get(chgKey(dev.lib, me.id))) || 0;
       return json(Object.assign({ library: dev.lib, device: me.name, playlists, writes }, extra), 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
 
@@ -372,12 +402,12 @@ async function linked(request, env, ctx, url) {
         const prev = byFile.get(it.file);
         const have = !!(prev && prev.sha === it.sha && prev.have);
         if (!have) need.push(it.file);
-        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), ...soloField(it.solo), sha: it.sha, have, at: have ? prev.at : nowSec(), ...(have && prev.v ? { v: prev.v } : {}), backups: cleanBackups(it.backups) });
+        items.push({ k: await fileKey(it.file), file: it.file, title: String(it.title || "").slice(0, 200), count: Math.max(0, Math.min(100000, it.count | 0)), ...mapsField(it.maps), ...soloField(it.solo), ...(typeof it.auto === "boolean" ? { auto: it.auto } : {}), sha: it.sha, have, at: have ? prev.at : nowSec(), ...(have && prev.v ? { v: prev.v } : {}), backups: cleanBackups(it.backups) });
       }
       // Drop stored copies of playlists that are gone from the headset.
       const keep = new Set(items.map((it) => it.file));
       const gone = old.items.filter((it) => !keep.has(it.file));
-      const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []) || (p && p.maps) !== it.maps || (p && p.solo) !== it.solo; });
+      const backupsChanged = items.some((it) => { const p = byFile.get(it.file); return JSON.stringify(it.backups) !== JSON.stringify((p && p.backups) || []) || (p && p.maps) !== it.maps || (p && p.solo) !== it.solo || (p && p.auto) !== it.auto; });
       // Playlists deleted on the headset that it can still bring back, and what this mod version can do.
       const deleted = [];
       for (const d of (Array.isArray(body.deleted) ? body.deleted : []).slice(0, MAX_DELETED)) {
@@ -388,11 +418,13 @@ async function linked(request, env, ctx, url) {
       const features = (Array.isArray(body.features) ? body.features : []).filter((f) => FEATURES.includes(f));
       // The "My order" (the time Studio saved it) the headset last put in game.
       const ordApplied = Number.isSafeInteger(body.order) && body.order > 0 ? Math.min(body.order, nowSec() + 60) : (old.ordApplied || 0);
-      const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged || ordApplied !== (old.ordApplied || 0) ||
+      // The Studio auto-download change (its time) the headset last took.
+      const adlApplied = Number.isSafeInteger(body.autodl) && body.autodl > 0 ? Math.min(body.autodl, nowSec() + 60) : (old.adlApplied || 0);
+      const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged || ordApplied !== (old.ordApplied || 0) || adlApplied !== (old.adlApplied || 0) ||
         JSON.stringify(deleted) !== JSON.stringify(old.deleted || []) || JSON.stringify(features) !== JSON.stringify(old.features || []);
       if (changed) {
         await Promise.all(gone.map((it) => env.PLAYLISTS.delete("invb:" + dev.lib + ":" + me.id + ":" + it.k)));
-        await putTtl(env, invKey(dev.lib, me.id), Object.assign({ items, deleted, features, updated: nowSec() }, ordApplied ? { ordApplied } : {}));
+        await putTtl(env, invKey(dev.lib, me.id), Object.assign({ items, deleted, features, updated: nowSec() }, ordApplied ? { ordApplied } : {}, adlApplied ? { adlApplied } : {}));
       }
       return json({ need }, 200, cors);
     }
@@ -412,7 +444,7 @@ async function linked(request, env, ctx, url) {
     }
 
     if (path === "/link/stats" && request.method === "POST") {
-      const body = await readJson(request, 4000);
+      const body = await readJson(request, 8000);
       if (!body) return json({ error: "Expected stats" }, 400, cors);
       await putTtl(env, statKey(dev.lib, me.id), cleanStats(body));
       return json({ ok: true }, 200, cors);
@@ -427,6 +459,18 @@ async function linked(request, env, ctx, url) {
       if (!(prev && prev.id === cm[1]))
         await putTtl(env, clnrKey(dev.lib, me.id), { id: cm[1], at: nowSec(), asked: (cln && cln.at) || 0, deleted: countField(body.deleted), bytes: Math.max(0, bytesField(body.bytes)), kept: countField(body.kept) });
       if (cln && cln.id === cm[1]) await env.PLAYLISTS.delete(clnKey(dev.lib, me.id));
+      return json({ ok: true }, 200, cors);
+    }
+
+    const gma = path.match(/^\/link\/getmissing\/([A-Za-z0-9]{6,16})\/ack$/);
+    if (gma && request.method === "POST") {
+      const body = (await readJson(request, 2000)) || {};
+      const gm = await env.PLAYLISTS.get(gmKey(dev.lib, me.id), "json");
+      const prev = await env.PLAYLISTS.get(gmrKey(dev.lib, me.id), "json");
+      if ((!gm || gm.id !== gma[1]) && !(prev && prev.id === gma[1])) return json({ error: "Not found" }, 404, cors);
+      if (!(prev && prev.id === gma[1]))
+        await putTtl(env, gmrKey(dev.lib, me.id), { id: gma[1], at: nowSec(), asked: (gm && gm.at) || 0, downloaded: countField(body.downloaded), notFound: countField(body.notFound) });
+      if (gm && gm.id === gma[1]) await env.PLAYLISTS.delete(gmKey(dev.lib, me.id));
       return json({ ok: true }, 200, cors);
     }
 
@@ -501,6 +545,7 @@ async function linked(request, env, ctx, url) {
     const prevOrd = (await env.PLAYLISTS.get(ordKey(om[1], om[2]), "json")) || {};
     const t = Math.max(nowSec(), (prevOrd.t || 0) + 1);
     await putTtl(env, ordKey(om[1], om[2]), { ks, t });
+    await touch(env, om[1], om[2]);
     return json({ order: ks, t }, 200, cors);
   }
   // POST /lib/<id>/devices/<dev>/cleanup asks the headset to clean up songs no playlist uses; DELETE takes it back.
@@ -513,6 +558,7 @@ async function linked(request, env, ctx, url) {
     if (!(clib.devices || []).some((x) => x.id === cl[2])) return json({ error: "Not found" }, 404, cors);
     if (request.method === "DELETE") {
       await env.PLAYLISTS.delete(clnKey(cl[1], cl[2]));
+      await touch(env, cl[1], cl[2]);
       return json({ cleanup: null }, 200, cors);
     }
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, cors);
@@ -521,8 +567,63 @@ async function linked(request, env, ctx, url) {
     if (!(cinv.features || []).includes("cleanup")) return json({ error: "Update Studio Sync on the headset to clean up songs from here" }, 409, cors);
     const old = await env.PLAYLISTS.get(clnKey(cl[1], cl[2]), "json");
     const cln = old && old.id ? old : { id: randomId(10), at: nowSec() };
-    if (cln !== old) await putTtl(env, clnKey(cl[1], cl[2]), cln);
+    if (cln !== old) { await putTtl(env, clnKey(cl[1], cl[2]), cln); await touch(env, cl[1], cl[2]); }
     return json({ cleanup: cln }, 200, cors);
+  }
+  // POST /lib/<id>/devices/<dev>/getmissing { ks: [playlist keys] } or { all: true } asks the headset to download the
+  // songs those playlists are missing; DELETE takes it back.
+  const gmm = path.match(/^\/lib\/([A-Za-z0-9]{6,16})\/devices\/([A-Za-z0-9]{6,16})\/getmissing$/);
+  if (gmm) {
+    const glib = await env.PLAYLISTS.get("lib:" + gmm[1], "json");
+    if (!glib) return json({ error: "Not found" }, 404, cors);
+    const gkey = request.headers.get("X-Lib-Key") || "";
+    if (!gkey || !safeEqual(await sha256(gkey), glib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+    if (!(glib.devices || []).some((x) => x.id === gmm[2])) return json({ error: "Not found" }, 404, cors);
+    if (request.method === "DELETE") {
+      await env.PLAYLISTS.delete(gmKey(gmm[1], gmm[2]));
+      await touch(env, gmm[1], gmm[2]);
+      return json({ getMissing: null }, 200, cors);
+    }
+    if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, cors);
+    if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    const ginv = (await env.PLAYLISTS.get(invKey(gmm[1], gmm[2]), "json")) || {};
+    if (!(ginv.features || []).includes("missing")) return json({ error: "Update Studio Sync on the headset to get missing songs from here" }, 409, cors);
+    const body = (await readJson(request, 20000)) || {};
+    const known = new Set((ginv.items || []).map((x) => x.k));
+    const ks = [...new Set((Array.isArray(body.ks) ? body.ks : []).filter((x) => typeof x === "string" && known.has(x)))].slice(0, MAX_INVENTORY);
+    if (!body.all && !ks.length) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
+    // A request still waiting grows to cover both; "all" covers everything.
+    const old = await env.PLAYLISTS.get(gmKey(gmm[1], gmm[2]), "json");
+    const all = !!body.all || !!(old && old.all);
+    const gm = { id: old && old.id ? old.id : randomId(10), at: old && old.at ? old.at : nowSec(), ...(all ? { all: true } : { ks: [...new Set(((old && old.ks) || []).concat(ks))].slice(0, MAX_INVENTORY) }) };
+    await putTtl(env, gmKey(gmm[1], gmm[2]), gm);
+    await touch(env, gmm[1], gmm[2]);
+    return json({ getMissing: gm }, 200, cors);
+  }
+  // PUT /lib/<id>/devices/<dev>/autodl { set: { key: true|false } } turns auto-download on or off for playlists.
+  const adm = path.match(/^\/lib\/([A-Za-z0-9]{6,16})\/devices\/([A-Za-z0-9]{6,16})\/autodl$/);
+  if (adm) {
+    const alib = await env.PLAYLISTS.get("lib:" + adm[1], "json");
+    if (!alib) return json({ error: "Not found" }, 404, cors);
+    const akey = request.headers.get("X-Lib-Key") || "";
+    if (!akey || !safeEqual(await sha256(akey), alib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+    if (!(alib.devices || []).some((x) => x.id === adm[2])) return json({ error: "Not found" }, 404, cors);
+    if (request.method !== "PUT") return json({ error: "Method not allowed" }, 405, cors);
+    if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    const ainv = (await env.PLAYLISTS.get(invKey(adm[1], adm[2]), "json")) || {};
+    if (!(ainv.features || []).includes("autodl")) return json({ error: "Update Studio Sync on the headset to change auto-download from here" }, 409, cors);
+    const body = (await readJson(request, 20000)) || {};
+    const known = new Set((ainv.items || []).map((x) => x.k));
+    const set = {};
+    for (const [k, v] of Object.entries(body.set && typeof body.set === "object" ? body.set : {})) if (known.has(k) && typeof v === "boolean") set[k] = v;
+    if (!Object.keys(set).length) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
+    // Changes the headset hasn't taken yet stay in; newer ones win. Always later than the last, like the order.
+    const prev = (await env.PLAYLISTS.get(adlKey(adm[1], adm[2]), "json")) || {};
+    const keep = prev.set && (prev.t || 0) > (ainv.adlApplied || 0) ? prev.set : {};
+    const adl = { t: Math.max(nowSec(), (prev.t || 0) + 1), set: Object.assign({}, keep, set) };
+    await putTtl(env, adlKey(adm[1], adm[2]), adl);
+    await touch(env, adm[1], adm[2]);
+    return json({ autodl: adl }, 200, cors);
   }
   const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|delete|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
@@ -560,7 +661,7 @@ async function linked(request, env, ctx, url) {
       else if (opts.remove) { w.remove = true; if (opts.songs) w.songs = true; }
       else { await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body)); w.v = await plVersion(body); }
       out.items.push(w);
-      if (!opts.later) await putTtl(env, outKey(id, dv.id), out);
+      if (!opts.later) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id); }
       return w;
     };
     const noSongs = () => !(inv.features || []).includes("delete-songs");
@@ -570,7 +671,7 @@ async function linked(request, env, ctx, url) {
         for (const it of old) it.v = await plVersion(await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k));
         await putTtl(env, invKey(id, dv.id), inv);
       }
-      const items = inv.items.map((it) => { const v = latestV(it.file, it); return Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), soloField(it.solo), { ready: !!it.have, at: it.at }, v ? { v } : {}, { backups: it.backups || [] }); });
+      const items = inv.items.map((it) => { const v = latestV(it.file, it); return Object.assign({ k: it.k, file: it.file, title: it.title, count: it.count }, mapsField(it.maps), soloField(it.solo), typeof it.auto === "boolean" ? { auto: it.auto } : {}, { ready: !!it.have, at: it.at }, v ? { v } : {}, { backups: it.backups || [] }); });
       const deleted = (inv.deleted || []).map((d) => ({ k: d.k, file: d.file, title: d.title, backups: d.backups }));
       const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
       const ord = (await env.PLAYLISTS.get(ordKey(id, dv.id), "json")) || {};
@@ -581,6 +682,15 @@ async function linked(request, env, ctx, url) {
         const [cln, clnr] = await Promise.all([env.PLAYLISTS.get(clnKey(id, dv.id), "json"), env.PLAYLISTS.get(clnrKey(id, dv.id), "json")]);
         if (cln) more.cleanup = cln;
         if (clnr) more.cleanupDone = clnr;
+      }
+      if (feats.includes("missing")) {
+        const [gm, gmr] = await Promise.all([env.PLAYLISTS.get(gmKey(id, dv.id), "json"), env.PLAYLISTS.get(gmrKey(id, dv.id), "json")]);
+        if (gm) more.getMissing = gm;
+        if (gmr) more.getMissingDone = gmr;
+      }
+      if (feats.includes("autodl")) {
+        const adl = await env.PLAYLISTS.get(adlKey(id, dv.id), "json");
+        Object.assign(more, { autodlApplied: inv.adlApplied || 0 }, adl ? { autodl: adl } : {});
       }
       return json(Object.assign({ items, deleted, features: feats, pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen, order: Array.isArray(ord.ks) ? ord.ks : [] }, more), 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
@@ -610,7 +720,7 @@ async function linked(request, env, ctx, url) {
         await queue(hit.k, hit.file, hit.title, false, null, { remove: true, songs: !!body.songs, later: true });
         done.push(kk);
       }
-      if (done.length) await putTtl(env, outKey(id, dv.id), out);
+      if (done.length) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id); }
       return json({ deleted: done, missing, pending: pendingList() }, 200, cors);
     }
     let k = m[5] && m[5] !== "new" ? m[5] : "";
@@ -627,6 +737,7 @@ async function linked(request, env, ctx, url) {
       for (const w of prev) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
       out.items = out.items.filter((x) => x.k !== k);
       await putTtl(env, outKey(id, dv.id), out);
+      await touch(env, id, dv.id);
       return json({ pending: pendingList() }, 200, cors);
     }
     if (m[6] === "/restore" && request.method === "POST" && del) {
@@ -695,6 +806,7 @@ async function linked(request, env, ctx, url) {
     }
     lib.items = items;
     await putLib(env, id, lib);
+    await Promise.all((lib.devices || []).map((d) => touch(env, id, d.id)));
     return json({ items, devices: publicDevices(lib) }, 200, cors);
   }
 
