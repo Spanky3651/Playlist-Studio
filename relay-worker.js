@@ -1054,8 +1054,13 @@ async function gcHits(env, start, end) {
   }
   return out;
 }
+// One entry broken down further, like a country into its states and regions.
+async function gcDetail(env, page, id, start, end, limit) {
+  try { const j = await gcGet(env, "/stats/" + page + "/" + encodeURIComponent(id), { start: gcIso(start), end: gcIso(end), limit: limit || 20 }); return ((j && j.stats) || []).map((s) => ({ name: s.name || "", count: s.count || 0 })); }
+  catch (e) { if (e.message === "gc-auth") throw e; return null; }
+}
 async function gcList(env, page, start, end, limit) {
-  try { const j = await gcGet(env, "/stats/" + page, { start: gcIso(start), end: gcIso(end), limit: limit || 20 }); return ((j && j.stats) || []).map((s) => ({ name: s.name || "", count: s.count || 0, scheme: s.ref_scheme || "" })); }
+  try { const j = await gcGet(env, "/stats/" + page, { start: gcIso(start), end: gcIso(end), limit: limit || 20 }); return ((j && j.stats) || []).map((s) => ({ id: s.id != null ? String(s.id) : "", name: s.name || "", count: s.count || 0, scheme: s.ref_scheme || "" })); }
   catch (e) { if (e.message === "gc-auth") throw e; return null; }
 }
 function gcFirstDay(days) { for (const d of days || []) if (d[1] > 0) return d[0]; return null; }
@@ -1125,7 +1130,9 @@ async function gcBlStats(env, range, fresh) {
   const total = await gcGet(e, "/stats/total", { start: gcIso(start), end: gcIso(end) });
   let prev = null; if (range !== "all") try { prev = await gcGet(e, "/stats/total", { start: gcIso(start - n * DAY), end: gcIso(start) }); } catch (x) {}
   const hits = await gcHits(e, start, end);
-  const [refs, sizes, locations, browsers] = [await gcList(e, "toprefs", start, end, 15), await gcList(e, "sizes", start, end, 10), await gcList(e, "locations", start, end, 12), await gcList(e, "browsers", start, end, 10)];
+  const [refs, sizes, locations, browsers] = [await gcList(e, "toprefs", start, end, 15), await gcList(e, "sizes", start, end, 10), await gcList(e, "locations", start, end, 25), await gcList(e, "browsers", start, end, 10)];
+  // States and regions for the busiest countries (GoatCounter has no city level).
+  for (const c of (locations || []).filter((x) => x.id && x.count > 0).slice(0, 10)) c.regions = await gcDetail(e, "locations", c.id, start, end, 20);
   let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
   if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
   const out = { site: "bl", generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
@@ -1261,6 +1268,17 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 .bar .fl b{font-weight:700;color:var(--text)}
 .fd{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
 .fd code{font-size:12px;color:#8fa6c8}
+.value.sm{font-size:22px;line-height:1.25;margin-top:6px}
+.geo details{border-top:1px solid #141c2a}
+.geo details:first-child{border-top:0}
+.geo summary{list-style:none;cursor:pointer}
+.geo summary::-webkit-details-marker{display:none}
+.geo summary .lab::before{content:"▸";display:inline-block;width:16px;color:var(--muted);transition:transform .15s}
+.geo details[open] summary .lab::before{transform:rotate(90deg)}
+.geo summary.nokids .lab::before{content:"";}
+.geo .sub{padding:0 0 8px 18px}
+.geo .sub .bar{font-size:14px;margin:4px 0}
+.geo .sub .fill{background:#5b8fe0}
 .coldlist{display:flex;flex-wrap:wrap;gap:8px}
 .coldlist span{border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:14px;color:var(--muted)}
 .funnel .num small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
@@ -1377,10 +1395,16 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 <h2 id="b-charth">Views per day</h2>
 <div class="chart"><svg id="b-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Profile views per day"></svg></div>
 <h2>Pages counted</h2><div class="bars" id="b-pages"></div>
-<div class="two">
-<div><h2>Where from</h2><div class="bars" id="b-refs"></div></div>
-<div><h2>Countries</h2><div class="bars" id="b-geo"></div></div>
+<h2>Where viewers are <small>country, then state or region</small></h2>
+<div class="grid">
+<div class="card"><div class="label">Countries</div><div class="value" id="b-ncty">-</div><div class="note">with at least one view</div></div>
+<div class="card"><div class="label">Top country</div><div class="value sm" id="b-tcty">-</div><div class="note" id="b-tctyn"></div></div>
+<div class="card"><div class="label">Top state or region</div><div class="value sm" id="b-treg">-</div><div class="note" id="b-tregn"></div></div>
 </div>
+<div class="bars geo" id="b-geo"></div>
+<h2>States and regions <small>all countries together</small></h2><div class="bars" id="b-regs"></div>
+<p class="when" id="b-geonote"></p>
+<h2>Where from</h2><div class="bars" id="b-refs"></div>
 <h2>Phone or computer</h2><div class="bars" id="b-dev"></div>
 <p class="when" id="b-when"></p>
 </section>
@@ -1774,9 +1798,30 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
     var PAGES = { '/msploit-profile': 'Your BeatLeader profile (all themes)' };
     bars('b-pages', (d.pages || []).map(function (p) { var nm = PAGES[p.path] || p.title || p.path; return ['<span class="fl"><b>' + esc(nm) + '</b><span class="fd"><code>' + esc(p.path) + '</code></span></span>', p.count]; }), '', 'No profile views in this range.');
     bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return [esc(r.name), r.count]; }), '', 'No referrers in this range.');
-    bars('b-geo', (d.locations || []).slice(0, 8).map(function (s2) { return [esc(s2.name || 'Unknown'), s2.count]; }));
+    renderGeo(d);
     bars('b-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
     txt('b-when', 'GoatCounter (blprofile) ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
+  }
+  function renderGeo(d) {
+    var locs = (d.locations || []).filter(function (c) { return c.count > 0; }), el = $('b-geo'), all = [], known = false;
+    txt('b-ncty', fmt(locs.filter(function (c) { return c.name && !/unknown/i.test(c.name); }).length));
+    if (!locs.length) { el.innerHTML = '<p class="empty">No views in this range.</p>'; txt('b-tcty', '-'); txt('b-tctyn', ''); txt('b-treg', '-'); txt('b-tregn', ''); $('b-regs').innerHTML = '<p class="empty">No views in this range.</p>'; txt('b-geonote', ''); return; }
+    var max = Math.max.apply(null, locs.map(function (c) { return c.count; }).concat([1])), top = locs[0];
+    txt('b-tcty', top.name || 'Unknown'); txt('b-tctyn', fmt(top.count) + ' views \u00b7 ' + Math.round(top.count / Math.max(1, d.visitors) * 100) + '% of all');
+    el.innerHTML = locs.map(function (c, i) {
+      var regs = (c.regions || []).filter(function (r) { return r.count > 0; }), real = regs.filter(function (r) { return r.name && !/unknown/i.test(r.name); });
+      if (real.length) known = true;
+      regs.forEach(function (r) { if (r.name && !/unknown/i.test(r.name)) all.push({ name: r.name, country: c.name, count: r.count }); });
+      var row = '<div class="bar"><span class="lab">' + esc(c.name && !/unknown/i.test(c.name) ? c.name : 'Unknown') + '</span><span class="track"><span class="fill" style="width:' + Math.max(2, Math.round(c.count / max * 100)) + '%"></span></span><span class="num">' + fmt(c.count) + '</span></div>';
+      if (!real.length) return '<details><summary class="nokids">' + row + '</summary></details>';
+      var rmax = Math.max.apply(null, regs.map(function (r) { return r.count; }).concat([1]));
+      return '<details' + (i === 0 ? ' open' : '') + '><summary>' + row + '</summary><div class="sub">' + regs.map(function (r) { return '<div class="bar"><span class="lab">' + esc(r.name && !/unknown/i.test(r.name) ? r.name : 'Region unknown') + '</span><span class="track"><span class="fill" style="width:' + Math.max(2, Math.round(r.count / rmax * 100)) + '%"></span></span><span class="num">' + fmt(r.count) + '</span></div>'; }).join('') + '</div></details>';
+    }).join('');
+    all.sort(function (a, b) { return b.count - a.count; });
+    if (all.length) { txt('b-treg', all[0].name); txt('b-tregn', all[0].country + ' \u00b7 ' + fmt(all[0].count) + ' views'); }
+    else { txt('b-treg', '-'); txt('b-tregn', 'no region data yet'); }
+    bars('b-regs', all.slice(0, 12).map(function (r) { return ['<span class="fl"><b>' + esc(r.name) + '</b><span class="fd">' + esc(r.country) + '</span></span>', r.count]; }), '', 'No state or region data in this range.');
+    txt('b-geonote', known ? 'Tap a country to see its states or regions. GoatCounter stops at state or region, there\u2019s no city level.' : 'GoatCounter only has the country for these views. If you want states and regions, check that region is turned on in your blprofile site\u2019s GoatCounter settings (what data to collect).');
   }
   // ---- players ----
   var pf = { find: '', fnew: false, fclan: false, fme: ls('studioStatsHideMe') !== '0' }, pShown = 40;
