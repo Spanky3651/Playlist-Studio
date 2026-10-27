@@ -886,7 +886,7 @@ async function admin(request, env, url) {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
       "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
-  if (url.pathname !== "/admin/stats" || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
+  if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
   // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
@@ -897,6 +897,15 @@ async function admin(request, env, url) {
   if (!m || !env.PLAYLISTS || !safeEqual(await sha256(m[1]), await sha256(env.ADMIN_KEY))) {
     adminFails.push(t);
     return json({ error: "Wrong key" }, 401, nocache);
+  }
+  if (url.pathname === "/admin/gc") {
+    if (!env.GC_TOKEN) return json({ error: "GoatCounter isn't connected yet", setup: true }, 503, nocache);
+    try { return json(await gcStats(env, url.searchParams.get("range") || "7d", url.searchParams.get("fresh") === "1"), 200, nocache); }
+    catch (e) {
+      if (e && e.message === "gc-auth") return json({ error: "GoatCounter refused the API key (" + e.gc + "). Check that GC_TOKEN has the Read statistics permission." }, 502, nocache);
+      if (e && e.message === "gc-busy") return json({ error: "GoatCounter is rate limiting right now. Try again in a minute." }, 502, nocache);
+      return json({ error: "GoatCounter didn't respond. Try again in a moment." }, 502, nocache);
+    }
   }
   return json(await adminStats(env), 200, nocache);
 }
@@ -976,12 +985,146 @@ async function adminStats(env) {
 
 // Studio Sync icon (the same one as on the BeatLeader profile card), 92 px PNG.
 const ADMIN_LOGO = "data:image/png;base64,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";
+// ---------------------------------------------------------------- GoatCounter for the stats page (/admin/gc)
+// Visitors, players, features and sources from GoatCounter, read with an API key that only the Worker holds
+// (npx wrangler secret put GC_TOKEN). The page asks for it with the same ADMIN_KEY as the Studio Sync numbers.
+// GoatCounter allows 4 API calls a second, so calls are spaced out and each range is cached for 5 minutes.
+// GC_SITE (optional) is the GoatCounter code, playliststudio by default. ADMIN_ME (optional, comma-separated)
+// are your own BeatLeader names, hidden from the player list by default. ADMIN_CLANS (optional) are the
+// BeatLeader clan tags shown as clanmates, GENX and ROOT by default.
+const GC_RANGES = { today: 1, "7d": 7, "30d": 30, "90d": 90 };
+const GC_CACHE_SEC = 300;
+let gcLast = 0;
+async function gcGet(env, path, params) {
+  const site = String(env.GC_SITE || "playliststudio").replace(/[^a-z0-9-]/gi, "");
+  const qs = new URLSearchParams();
+  Object.keys(params || {}).forEach((k) => { if (params[k] != null && params[k] !== "") qs.set(k, String(params[k])); });
+  for (let tries = 0; tries < 3; tries++) {
+    const wait = 270 - (Date.now() - gcLast);
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    gcLast = Date.now();
+    const r = await fetch("https://" + site + ".goatcounter.com/api/v0" + path + (qs.toString() ? "?" + qs : ""), {
+      headers: { Authorization: "Bearer " + env.GC_TOKEN, "Content-Type": "application/json", "User-Agent": "PlaylistStudioStats" } });
+    if (r.status === 429) { const s = Math.min(5, Number(r.headers.get("X-Rate-Limit-Reset")) || 1); await new Promise((x) => setTimeout(x, s * 1000)); continue; }
+    if (r.status === 401 || r.status === 403) throw Object.assign(new Error("gc-auth"), { gc: r.status });
+    if (!r.ok) throw Object.assign(new Error("gc-http"), { gc: r.status });
+    return r.json();
+  }
+  throw Object.assign(new Error("gc-busy"), { gc: 429 });
+}
+function gcDay(t) { return new Date(t * 1000).toISOString().slice(0, 10); }
+function gcIso(t) { return new Date(t * 1000).toISOString().slice(0, 19) + "Z"; }
+// Every path in the range with its per-day counts. /stats/hits returns the busiest 100; the rest come
+// by excluding the ones already seen.
+async function gcHits(env, start, end) {
+  const out = [], seen = new Set();
+  for (let page = 0; page < 8; page++) {
+    const j = await gcGet(env, "/stats/hits", { start: gcIso(start), end: gcIso(end), limit: 100, group: "day", exclude_paths: [...seen].join(",") });
+    let fresh = 0;
+    for (const h of (j && j.hits) || []) {
+      if (seen.has(h.path_id)) continue;
+      seen.add(h.path_id); fresh++;
+      out.push({ id: h.path_id, path: h.path || "", title: h.title || "", event: !!h.event, count: h.count || 0,
+        days: (h.stats || []).map((s) => [s.day, s.daily || 0]) });
+    }
+    if (!j || !j.more || !fresh) break;
+  }
+  return out;
+}
+async function gcList(env, page, start, end, limit) {
+  try { const j = await gcGet(env, "/stats/" + page, { start: gcIso(start), end: gcIso(end), limit: limit || 20 }); return ((j && j.stats) || []).map((s) => ({ name: s.name || "", count: s.count || 0, scheme: s.ref_scheme || "" })); }
+  catch (e) { if (e.message === "gc-auth") throw e; return null; }
+}
+function gcFirstDay(days) { for (const d of days || []) if (d[1] > 0) return d[0]; return null; }
+function gcLastDay(days) { let l = null; for (const d of days || []) if (d[1] > 0) l = d[0]; return l; }
+// First time each player and event ever showed up, kept in KV so "new player" and "never used" work for any
+// range. The first run looks back over the whole year once to fill it in.
+async function gcSeen(env, hits, now) {
+  let seen = await env.PLAYLISTS.get("gc:seen", "json");
+  if (!seen) {
+    seen = { p: {}, e: {} };
+    try { for (const h of await gcHits(env, now - 365 * 86400, now)) gcNote(seen, h); } catch (e) { if (e.message === "gc-auth") throw e; }
+  }
+  for (const h of hits) gcNote(seen, h);
+  await env.PLAYLISTS.put("gc:seen", JSON.stringify(seen));
+  return seen;
+}
+function gcNote(seen, h) {
+  const f = gcFirstDay(h.days); if (!f) return;
+  const m = /^profile\//.test(h.path) ? seen.p : h.event ? seen.e : null; if (!m) return;
+  const k = h.path; if (!m[k] || f < m[k]) m[k] = f;
+}
+async function gcClans(env, ids) {
+  const out = {}; let fetched = 0;
+  for (const id of ids) {
+    const k = "gc:bl:" + id, c = await env.PLAYLISTS.get(k, "json");
+    if (c && nowSec() - c.t < 7 * 86400) { out[id] = c.tags; continue; }
+    if (fetched >= 15) continue;
+    fetched++;
+    try {
+      const r = await fetch("https://api.beatleader.xyz/player/" + encodeURIComponent(id) + "?stats=false", { headers: { "User-Agent": "PlaylistStudioStats" } });
+      if (!r.ok) continue;
+      const p = await r.json(), tags = ((p && p.clans) || []).map((c2) => c2 && c2.tag).filter(Boolean).slice(0, 4);
+      out[id] = tags;
+      await env.PLAYLISTS.put(k, JSON.stringify({ t: nowSec(), tags }), { expirationTtl: 30 * 86400 });
+    } catch (e) {}
+  }
+  return out;
+}
+async function gcGithub(env) {
+  const c = await env.PLAYLISTS.get("gc:gh", "json");
+  if (c && nowSec() - c.t < 3600) return c;
+  const gh = (p) => fetch("https://api.github.com/repos/" + p, { headers: { "User-Agent": "PlaylistStudioStats", Accept: "application/vnd.github+json" } }).then((r) => r.ok ? r.json() : null).catch(() => null);
+  const since = gcIso(nowSec() - 95 * 86400);
+  const [commits, rels] = await Promise.all([gh("Spanky3651/Playlist-Studio/commits?per_page=100&since=" + since), gh("Spanky3651/Studio-Sync/releases?per_page=20")]);
+  const out = { t: nowSec(), pushes: [], releases: [] };
+  if (Array.isArray(commits)) { const d = new Set(); for (const x of commits) { const at = x && x.commit && x.commit.committer && x.commit.committer.date; if (at) d.add(at.slice(0, 10)); } out.pushes = [...d].sort(); }
+  if (Array.isArray(rels)) out.releases = rels.filter((r) => r && !r.draft).map((r) => ({ tag: r.tag_name || r.name || "", at: (r.published_at || "").slice(0, 10), downloads: (r.assets || []).reduce((a, x) => a + (x.download_count || 0), 0) }));
+  if (!commits && !rels && c) return c;   // GitHub said no (rate limit): keep the last good copy
+  await env.PLAYLISTS.put("gc:gh", JSON.stringify(out));
+  return out;
+}
+async function gcStats(env, range, fresh) {
+  if (!GC_RANGES[range]) range = "7d";
+  const ck = "gc:cache:" + range, cached = await env.PLAYLISTS.get(ck, "json");
+  if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
+  const now = nowSec(), DAY = 86400, n = GC_RANGES[range];
+  const today0 = Math.floor(now / DAY) * DAY;
+  const start = range === "today" ? today0 : today0 - (n - 1) * DAY, end = now;
+  const pstart = start - n * DAY;
+  const total = await gcGet(env, "/stats/total", { start: gcIso(start), end: gcIso(end) });
+  let prev = null; try { prev = await gcGet(env, "/stats/total", { start: gcIso(pstart), end: gcIso(start) }); } catch (e) {}
+  const hits = await gcHits(env, start, end);
+  const [refs, campaigns, sizes, locations, browsers] = [await gcList(env, "toprefs", start, end, 15), await gcList(env, "campaigns", start, end, 15),
+    await gcList(env, "sizes", start, end, 10), await gcList(env, "locations", start, end, 12), await gcList(env, "browsers", start, end, 10)];
+  const seen = await gcSeen(env, hits, now);
+  const me = String(env.ADMIN_ME || "MSploit").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+  const players = hits.filter((h) => /^profile\//.test(h.path)).map((h) => {
+    const name = h.path.slice(8), m = /\((\d{3,25})\)\s*$/.exec(h.title || "");
+    return { name, id: m ? m[1] : "", count: h.count, last: gcLastDay(h.days), first: seen.p[h.path] || gcFirstDay(h.days), me: me.includes(name.toLowerCase()) };
+  }).sort((a, b) => (b.last || "").localeCompare(a.last || "") || b.count - a.count);
+  const clans = await gcClans(env, players.filter((p) => p.id && !p.me).slice(0, 60).map((p) => p.id));
+  players.forEach((p) => { p.clans = clans[p.id] || null; });
+  const events = hits.filter((h) => h.event && !/^profile\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
+  const live = new Set(events.map((e) => e.name));
+  const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k)).sort();
+  const pages = hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count }));
+  const gh = await gcGithub(env);
+  const out = { generated: now, range, start: gcDay(start), end: gcDay(end),
+    visitors: (total && total.total) || 0, eventVisitors: (total && total.total_events) || 0, prevVisitors: prev ? prev.total || 0 : null,
+    days: ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined })),
+    players, events, cold, pages, refs, campaigns, sizes, locations, browsers,
+    pushes: gh.pushes.filter((d) => d >= gcDay(start)), releases: gh.releases, myClans: String(env.ADMIN_CLANS || "GENX,ROOT").split(",").map((x) => x.trim()).filter(Boolean) };
+  await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
+  return out;
+}
+
 const ADMIN_PAGE = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>Studio Sync Stats</title>
+<meta name="robots" content="noindex"><title>Studio Stats</title>
 <link rel="icon" type="image/png" href="${ADMIN_LOGO}">
 <style>
-:root{--bg:#000;--card:#0b0f17;--line:#1f2a3d;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--red:#ff2740;--green:#3ddc84;}
+:root{--bg:#000;--card:#0b0f17;--line:#1f2a3d;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,'Segoe UI',Arial,sans-serif;padding:24px 16px 48px}
 main{max-width:980px;margin:0 auto}
@@ -990,42 +1133,173 @@ h1{font-size:26px;margin:0}
 .brand img{width:44px;height:44px;border-radius:11px;box-shadow:0 0 16px rgba(47,123,255,.25);flex:none}
 .sub{color:var(--muted);font-size:15px;margin:0 0 22px}
 .keyrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-input{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 13px;font-size:16px}
-button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:11px 18px;font-size:16px;font-weight:700;cursor:pointer}
+input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 13px;font-size:16px;font-family:inherit}
+.keyrow input{min-width:220px}
+button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:11px 18px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
 button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
 .msg{color:var(--muted);font-size:15px;min-height:22px;margin:0 0 16px}
 .msg.err{color:#ff8a98}
 .msg:empty{display:none}
-/* Inside Playlist Studio's drawer (?embed=1) the drawer has its own title, so the page's title goes */
 .embed body{padding-top:16px}
 .embed .brand,.embed .top .sub{display:none}
-.embed .top{justify-content:flex-end;margin-bottom:14px}
+.embed .top{justify-content:flex-end;margin-bottom:10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;min-width:0}
 .label{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
-.value{font-size:34px;font-weight:800;margin-top:2px}
+.value{font-size:34px;font-weight:800;margin-top:2px;overflow-wrap:anywhere}
 .note{font-size:14px;color:var(--muted)}
+.up{color:var(--green);font-weight:700}.down{color:#ff8a98;font-weight:700}
 .hero .value{color:var(--green)}
-h2{font-size:18px;margin:26px 0 10px}
+.value.bad{color:#ff8a98}
+h2{font-size:18px;margin:26px 0 10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h2 small{font-size:14px;color:var(--muted);font-weight:500}
 .bars{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.bar{display:grid;grid-template-columns:130px 1fr 44px;align-items:center;gap:10px;margin:6px 0;font-size:15px}
+.bar{display:grid;grid-template-columns:minmax(110px,200px) 1fr 56px;align-items:center;gap:10px;margin:6px 0;font-size:15px}
+.bar .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar code,.mono{font:13.5px ui-monospace,Consolas,monospace;color:#cfe0ff}
 .track{height:14px;background:#111827;border-radius:7px;overflow:hidden}
-.fill{height:100%;border-radius:7px;background:var(--blue)}
-.fill.alt{background:var(--red)}
+.fill{height:100%;border-radius:7px;background:var(--blue);display:block}
+.fill.alt{background:var(--red)}.fill.g{background:var(--green)}.fill.a{background:var(--amber)}
 .num{text-align:right;font-weight:700}
-.hidden{display:none}
-.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.empty{color:var(--muted);font-size:15px;margin:2px 0}
+.hidden{display:none !important}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .top .sub{margin:0}
-.tools{display:flex;gap:8px;margin-top:4px}
+.tools{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
 .tools button{padding:7px 12px;font-size:14px;font-weight:600}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:10px 14px;font-size:15.5px;font-weight:700;white-space:nowrap;flex:none}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--blue)}
+.range{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap;align-items:center}
+.range span{color:var(--muted);font-size:14px;margin-right:4px}
+.range button,.chip{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:7px 13px;font-size:14px;font-weight:600;border-radius:20px}
+.range button[aria-pressed="true"],.chip[aria-pressed="true"]{border-color:var(--blue);color:#fff;background:rgba(47,123,255,.16)}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.chart svg{width:100%;height:220px;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.alert{display:flex;gap:10px;align-items:flex-start;background:rgba(255,39,64,.08);border:1px solid rgba(255,39,64,.45);border-radius:12px;padding:11px 14px;font-size:15px;margin:0 0 16px;color:#ffc2cb}
+.alert b{color:#fff}
+.gcmsg{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--muted);font-size:15px}
+.gcmsg b{color:var(--text)}
+.gcmsg code{color:#cfe0ff}
+.pf{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.pf input{min-width:180px;padding:9px 12px;font-size:15px}
+.plist{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) 110px 120px 80px;gap:10px;align-items:center;padding:11px 16px;border-top:1px solid #141c2a;font-size:15px}
+.prow.head{border-top:0;font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600;padding-top:12px;padding-bottom:8px}
+.prow a{color:#cfe0ff;text-decoration:none;font-weight:700;overflow-wrap:anywhere}
+.prow a:hover{text-decoration:underline}
+.prow .n{text-align:right;font-weight:700}
+.pb{font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;border:1px solid;white-space:nowrap;display:inline-block}
+.pb.new{color:#9ff0c4;border-color:#1d4a33;background:#06140d}.pb.back{color:#8fbaff;border-color:#1f3456}
+.pb.clan{color:var(--muted);border-color:var(--line)}.pb.mine{color:#ffd28a;border-color:#4a3a1c}.pb.me{color:var(--muted);border-color:var(--line);border-style:dashed}
+.more{margin-top:10px;padding:7px 12px;font-size:14px;font-weight:600}
+.when{color:var(--muted);font-size:14px;margin-top:18px}
+.funnel .bar{grid-template-columns:minmax(120px,190px) 1fr 110px}
+.funnel .num small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
+@media(max-width:700px){
+  body{padding:18px 12px 40px}
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .card{padding:12px 14px}
+  .value{font-size:28px}
+  .two{grid-template-columns:1fr}
+  .bar{grid-template-columns:minmax(0,1fr) 34% 48px;gap:8px;font-size:14.5px}
+  .funnel .bar{grid-template-columns:minmax(0,1fr) 30% 84px}
+  .bars{padding:12px 14px}
+  .prow{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:11px 14px}
+  .prow.head{display:none}
+  .prow .c-first{display:none}
+  .prow .c-last{grid-column:1;grid-row:2;color:var(--muted);font-size:13.5px}
+  .prow .n{grid-column:2;grid-row:1 / span 2}
+  .chart svg{height:180px}
+  .funnel .lab{white-space:normal}
+  .ofv{display:none}
+  .range span{display:none}
+  .range button{padding:6px 11px;font-size:13.5px}
+  .tab-long{display:none}
+}
+.tab-short{display:none}
+@media(max-width:700px){.tab-short{display:inline}}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
 </style></head><body><main>
-<div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Sync stats</h1></div>
-<p class="sub">Headsets linked to Playlist Studio and how many keep syncing. Counts only.</p></div>
+<div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio stats</h1></div>
+<p class="sub">Visitors, players and features from GoatCounter, and headsets from Studio Sync.</p></div>
 <div class="tools hidden" id="tools"><button id="refresh" class="ghost">Refresh</button><button id="forget" class="ghost">Forget key</button></div></div>
 <div class="keyrow" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
+<div class="tabs" role="tablist" id="tabs">
+<button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
+<button role="tab" data-tab="ply" aria-selected="false">Players</button>
+<button role="tab" data-tab="feat" aria-selected="false">Features</button>
+<button role="tab" data-tab="src" aria-selected="false"><span class="tab-long">Where they come from</span><span class="tab-short">Sources</span></button>
+<button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
+</div>
+<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="false">Today</button><button data-r="7d" aria-pressed="true">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button></div>
+<div id="gcmsg" class="gcmsg hidden"></div>
+
+<section data-sec="vis">
+<div id="alert" class="alert hidden"></div>
+<div class="grid">
+<div class="card hero"><div class="label">Visitors</div><div class="value" id="v-vis">-</div><div class="note" id="v-visn"></div></div>
+<div class="card"><div class="label" id="v-todl">Today</div><div class="value" id="v-tod">-</div><div class="note" id="v-todn"></div></div>
+<div class="card"><div class="label">Built a playlist</div><div class="value" id="v-built">-</div><div class="note" id="v-builtn"></div></div>
+<div class="card"><div class="label">Connected a profile</div><div class="value" id="v-conn">-</div><div class="note" id="v-connn"></div></div>
+</div>
+<h2 id="v-charth">Visitors per day <small>dots are days you pushed changes</small></h2>
+<div class="chart"><svg id="v-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Visitors per day"></svg>
+<div class="legend"><span><i style="background:var(--blue)"></i>Visitors</span><span><i style="background:var(--green)"></i>Built a playlist</span><span id="v-pushleg"><i style="background:var(--amber);border-radius:50%"></i>Push to GitHub</span></div></div>
+<div class="two" style="margin-top:4px">
+<div><h2>Phone or computer</h2><div class="bars" id="v-dev"></div></div>
+<div><h2>Countries</h2><div class="bars" id="v-geo"></div></div>
+</div>
+<h2>From visit to playlist <small>about, since each step counts people per event</small></h2>
+<div class="bars funnel" id="v-fun"></div>
+</section>
+
+<section data-sec="ply" class="hidden">
+<div class="grid">
+<div class="card hero"><div class="label">Players</div><div class="value" id="p-all">-</div><div class="note">connected a BeatLeader profile</div></div>
+<div class="card"><div class="label">New players</div><div class="value" id="p-new">-</div><div class="note">first time ever connecting</div></div>
+<div class="card"><div class="label">Came back</div><div class="value" id="p-back">-</div><div class="note">connected before this range too</div></div>
+<div class="card"><div class="label">Your clanmates</div><div class="value" id="p-clan">-</div><div class="note" id="p-clann"></div></div>
+</div>
+<h2>Who used it <small>tap a name to open their BeatLeader profile</small></h2>
+<div class="pf"><input id="p-find" type="search" placeholder="Find a player" aria-label="Find a player"><button class="chip" id="p-fnew" aria-pressed="false">New only</button><button class="chip" id="p-fclan" aria-pressed="false">Clanmates</button><button class="chip" id="p-fme" aria-pressed="true">Hide me</button></div>
+<div class="plist" id="p-list"></div>
+<button class="ghost more hidden" id="p-more">Show more</button>
+<p class="when">Names come from the profile connects Studio sends to GoatCounter. Someone who only browses without connecting stays anonymous.</p>
+</section>
+
+<section data-sec="feat" class="hidden">
+<div class="grid">
+<div class="card"><div class="label">Features used</div><div class="value" id="f-used">-</div><div class="note">different events in this range</div></div>
+<div class="card"><div class="label">Not used</div><div class="value" id="f-cold">-</div><div class="note">seen before, nothing in this range</div></div>
+<div class="card"><div class="label">Problems</div><div class="value" id="f-prob">-</div><div class="note">script errors and failed loads</div></div>
+</div>
+<h2>Most used</h2><div class="bars" id="f-top"></div><button class="ghost more hidden" id="f-more">Show all</button>
+<h2>New in the last 30 days <small>features first used recently</small></h2><div class="bars" id="f-fresh"></div>
+<h2>Problems</h2><div class="bars" id="f-probs"></div>
+<h2>Not used in this range <small>candidates to simplify or cut</small></h2><div class="bars" id="f-colds"></div>
+</section>
+
+<section data-sec="src" class="hidden">
+<div class="grid">
+<div class="card hero"><div class="label">From your links</div><div class="value" id="s-camp">-</div><div class="note">visits with a utm tag</div></div>
+<div class="card"><div class="label">From search engines</div><div class="value" id="s-search">-</div><div class="note">Google, Bing, DuckDuckGo and others</div></div>
+<div class="card"><div class="label">From other sites</div><div class="value" id="s-sites">-</div><div class="note">links on Reddit, Discord, BeatLeader...</div></div>
+</div>
+<h2>Your campaigns <small>utm_campaign</small></h2><div class="bars" id="s-camps"></div>
+<h2>Sites sending people</h2><div class="bars" id="s-refs"></div>
+<h2>Landing on</h2><div class="bars" id="s-pages"></div>
+<h2>Browsers</h2><div class="bars" id="s-br"></div>
+</section>
+
+<section data-sec="sync" class="hidden">
 <div class="grid">
 <div class="card hero"><div class="label">Active today</div><div class="value" id="activeDay"></div><div class="note">synced in the last 24 hours</div></div>
 <div class="card hero"><div class="label">Active this week</div><div class="value" id="activeWeek"></div><div class="note">last 7 days</div></div>
@@ -1035,7 +1309,9 @@ h2{font-size:18px;margin:26px 0 10px}
 <div class="card"><div class="label">Players</div><div class="value" id="players"></div><div class="note" id="multiNote"></div></div>
 <div class="card"><div class="label">Playlists shared</div><div class="value" id="sharedPlaylists"></div><div class="note">from headsets to Studio</div></div>
 <div class="card"><div class="label">Started, not linked</div><div class="value" id="librariesNoHeadset"></div><div class="note">opened linking but no headset yet</div></div>
+<div class="card hidden" id="dlCard"><div class="label">Mod downloads</div><div class="value" id="dlTotal"></div><div class="note">all Studio Sync releases on GitHub</div></div>
 </div>
+<div id="relWrap" class="hidden"><h2>Downloads per release</h2><div class="bars" id="relBars"></div></div>
 <h2>Keeping people</h2>
 <div class="grid">
 <div class="card hero"><div class="label">Retention</div><div class="value" id="retention"></div><div class="note" id="retentionNote"></div></div>
@@ -1045,7 +1321,9 @@ h2{font-size:18px;margin:26px 0 10px}
 <h2>Mod versions</h2><div class="bars" id="modBars"></div>
 <h2>New headsets per week</h2><div class="bars" id="linksBars"></div>
 <h2>Headsets by last sync</h2><div class="bars" id="activeBars"></div>
-<p class="sub" id="when" style="margin-top:16px"></p>
+<p class="when" id="when"></p>
+</section>
+<p class="when" id="gcwhen"></p>
 </div>
 </main>
 <script>
@@ -1053,49 +1331,193 @@ h2{font-size:18px;margin:26px 0 10px}
   var embedded = /[?&]embed=1/.test(location.search);
   if (embedded) {
     document.documentElement.classList.add('embed');
-    // Esc pressed in here closes Playlist Studio's drawer too.
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') try { parent.postMessage('studio-sync-stats-close', 'https://spanky3651.github.io'); } catch (x) {} });
   }
   var K = 'studioSyncAdminKey', keyIn = document.getElementById('key'), msg = document.getElementById('msg');
-  function getKey() { try { return localStorage.getItem(K) || ''; } catch (e) { return ''; } }
-  function setKey(v) { try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) {} }
-  function txt(id, v) { document.getElementById(id).textContent = v; }
-  // With a working key the key box goes away; Refresh and Forget key sit by the title instead.
-  function signedIn(on) {
-    document.getElementById('keyrow').classList.toggle('hidden', on);
-    document.getElementById('tools').classList.toggle('hidden', !on);
-    if (!on) document.getElementById('out').classList.add('hidden');
-  }
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; }
+  function getKey() { return ls(K) || ''; }
+  function setKey(v) { ls(K, v || null); }
+  function $(id) { return document.getElementById(id); }
+  function txt(id, v) { $(id).textContent = v; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
+  function signedIn(on) { $('keyrow').classList.toggle('hidden', on); $('tools').classList.toggle('hidden', !on); if (!on) $('out').classList.add('hidden'); }
   function say(t, err) { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); }
-  function bars(id, data, alt) {
-    var max = Math.max.apply(null, data.concat([1])), el = document.getElementById(id);
-    el.textContent = '';
-    data.forEach(function (n, i) {
-      var row = document.createElement('div'); row.className = 'bar';
-      var lab = document.createElement('span'); lab.textContent = i === 0 ? 'This week' : i === 1 ? 'Last week' : i + ' weeks ago';
-      var tr = document.createElement('span'); tr.className = 'track';
-      var f = document.createElement('span'); f.className = 'fill' + (alt ? ' alt' : ''); f.style.display = 'block'; f.style.width = Math.round(n / max * 100) + '%';
-      tr.appendChild(f);
-      var num = document.createElement('span'); num.className = 'num'; num.textContent = n;
-      row.appendChild(lab); row.appendChild(tr); row.appendChild(num); el.appendChild(row);
-    });
+  // rows: [label html, count, fill class, shown number text]
+  function bars(id, rows, cls, emptyText) {
+    var el = $(id);
+    if (!rows.length) { el.innerHTML = '<p class="empty">' + esc(emptyText || 'Nothing yet in this range.') + '</p>'; return; }
+    var max = Math.max.apply(null, rows.map(function (r) { return r[1]; }).concat([1]));
+    el.innerHTML = rows.map(function (r) {
+      return '<div class="bar"><span class="lab">' + r[0] + '</span><span class="track"><span class="fill ' + (r[2] || cls || '') + '" style="width:' + Math.max(r[1] ? 2 : 0, Math.round(r[1] / max * 100)) + '%"></span></span><span class="num">' + (r[3] != null ? r[3] : fmt(r[1])) + '</span></div>';
+    }).join('');
   }
+  function weekBars(id, data, alt) { bars(id, data.map(function (n, i) { return [i === 0 ? 'This week' : i === 1 ? 'Last week' : i + ' weeks ago', n, alt ? 'alt' : '']; })); }
   function ago(sec) { var h = Math.floor(sec / 3600); return h < 1 ? 'under an hour' : h < 48 ? h + ' hour' + (h === 1 ? '' : 's') : Math.floor(h / 24) + ' days'; }
-  // Labeled bars for counts that aren't weeks.
-  function rows(id, data) {
-    var max = Math.max.apply(null, data.map(function (d) { return d[1]; }).concat([1])), el = document.getElementById(id);
-    el.textContent = '';
-    data.forEach(function (d) {
-      var row = document.createElement('div'); row.className = 'bar';
-      var lab = document.createElement('span'); lab.textContent = d[0];
-      var tr = document.createElement('span'); tr.className = 'track';
-      var f = document.createElement('span'); f.className = 'fill'; f.style.display = 'block'; f.style.width = Math.round(d[1] / max * 100) + '%';
-      tr.appendChild(f);
-      var num = document.createElement('span'); num.className = 'num'; num.textContent = d[1];
-      row.appendChild(lab); row.appendChild(tr); row.appendChild(num); el.appendChild(row);
-    });
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function dshort(d) { if (!d) return '-'; var p = d.split('-'); return MON[+p[1] - 1] + ' ' + (+p[2]); }
+  function dago(d) {
+    if (!d) return '-';
+    var t = Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)), n = Math.floor((Date.now() - t) / 86400000);
+    return n <= 0 ? 'today' : n === 1 ? 'yesterday' : n + ' days ago';
   }
-  function load() {
+
+  // ---- tabs and range ----
+  var tab = ls('studioStatsTab') || 'vis', range = ls('studioStatsRange') || '7d', gc = null, gcBusy = false, sync = null;
+  function showTab(t) {
+    if (!document.querySelector('[data-sec="' + t + '"]')) t = 'vis';
+    tab = t; ls('studioStatsTab', t);
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
+    $('range').classList.toggle('hidden', t === 'sync');
+    $('gcmsg').classList.toggle('hidden', t === 'sync' || !$('gcmsg').textContent);
+    $('gcwhen').classList.toggle('hidden', t === 'sync');
+    if (t === 'vis' && gc) chart(gc, dailyWhere(BUILD));
+  }
+  function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); ls('studioStatsRange', range); showRange(); loadGc(false); });
+
+  // ---- GoatCounter ----
+  var BUILD = /^(export|quest-send|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|share-create)$/;
+  var SEARCH = /^(search-beatleader|search-beatsaver|search-recommend)$/;
+  var ADD = /^(row-add|top-plays|build-from-plays|quick-add|gallery-load|stats-top-plays|versus-build)$/;
+  var PROB = /(^js-error|fail)/;
+  function ev(name) { var x = null; (gc.events || []).forEach(function (e) { if (e.name === name) x = e; }); return x; }
+  function sumWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name)) n += e.count; }); return n; }
+  function maxWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name) && e.count > n) n = e.count; }); return n; }
+  function dailyWhere(re) { var m = {}; gc.events.forEach(function (e) { if (re.test(e.name)) (e.days || []).forEach(function (d) { m[d[0]] = (m[d[0]] || 0) + d[1]; }); }); return m; }
+  function gcMsg(t) { var el = $('gcmsg'); el.innerHTML = t; el.classList.toggle('hidden', !t || tab === 'sync'); }
+  function loadGc(fresh) {
+    var key = getKey(); if (!key || gcBusy) return;
+    gcBusy = true; gcMsg(gc ? '' : 'Loading GoatCounter...'); txt('gcwhen', 'Loading ' + $('range').querySelector('[aria-pressed="true"]').textContent + '...');
+    fetch('/admin/gc?range=' + encodeURIComponent(range) + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      gcBusy = false;
+      if (!res.ok) {
+        txt('gcwhen', '');
+        if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; }
+        if (res.j.setup) gcMsg('<b>GoatCounter isn’t connected yet.</b> Make an API key in GoatCounter (your name at the top, then API, with permission to read statistics), then in the Playlist-Studio <code>worker</code> folder run <code>npx wrangler secret put GC_TOKEN</code> and paste it.');
+        else gcMsg(esc(res.j.error || 'Couldn’t load GoatCounter.'));
+        return;
+      }
+      gc = res.j; gcMsg(''); renderGc();
+    }).catch(function () { gcBusy = false; txt('gcwhen', ''); gcMsg('Couldn’t reach the Worker.'); });
+  }
+  function renderGc() {
+    var d = gc, built = Math.min(d.visitors, sumWhere(BUILD)), conn = ev('connect-profile');
+    // Visitors
+    txt('v-vis', fmt(d.visitors));
+    if (d.prevVisitors != null && d.prevVisitors > 0) { var ch = Math.round((d.visitors - d.prevVisitors) / d.prevVisitors * 100); $('v-visn').innerHTML = '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + Math.abs(ch) + '%</span> vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before'; }
+    else txt('v-visn', d.range === 'today' ? 'so far today' : dshort(d.start) + ' to ' + dshort(d.end));
+    var last = d.days.length ? d.days[d.days.length - 1] : null;
+    if (d.range === 'today') {
+      var hr = (last && last.hourly) || [], best = -1, bi = 0; hr.forEach(function (n, i) { if (n > best) { best = n; bi = i; } });
+      txt('v-todl', 'Busiest hour'); txt('v-tod', best > 0 ? (bi % 12 || 12) + (bi < 12 ? ' AM' : ' PM') : '-'); txt('v-todn', best > 0 ? best + ' visitors, UTC' : 'no visits yet');
+    } else { txt('v-todl', 'Today'); txt('v-tod', fmt(last ? last.n : 0)); txt('v-todn', 'visitors so far, UTC day'); }
+    txt('v-built', fmt(built)); txt('v-builtn', 'downloaded, sent or synced' + (d.visitors ? ' · ' + Math.round(built / d.visitors * 100) + '% of visitors' : ''));
+    txt('v-conn', fmt(conn ? conn.count : 0)); txt('v-connn', d.visitors ? Math.round((conn ? conn.count : 0) / d.visitors * 100) + '% of visitors' : '');
+    var errs = ev('js-error'), al = $('alert');
+    if (errs && errs.days && errs.days.length > 2) {
+      var ds = errs.days, lastE = ds[ds.length - 1][1], prevE = ds[ds.length - 2][1], rest = ds.slice(0, -2).map(function (x) { return x[1]; }), avg = rest.length ? rest.reduce(function (a, b) { return a + b; }, 0) / rest.length : 0, peak = Math.max(lastE, prevE);
+      if (peak >= 5 && peak >= 3 * Math.max(avg, 1)) { al.innerHTML = '<span>⚠</span><span><b>js-error jumped to ' + peak + ' ' + (peak === lastE ? 'today' : 'yesterday') + '</b> (usually about ' + Math.round(avg) + ' a day). See Problems on the Features tab.</span>'; al.classList.remove('hidden'); }
+      else al.classList.add('hidden');
+    } else al.classList.add('hidden');
+    chart(d, dailyWhere(BUILD));
+    var dev = { Phone: 0, Tablet: 0, Computer: 0, Unknown: 0 };
+    (d.sizes || []).forEach(function (s) { var n = s.name.toLowerCase(); dev[/phone/.test(n) && !/tablet/.test(n) ? 'Phone' : /phone|tablet/.test(n) ? 'Tablet' : /monitor|computer|laptop|desktop/.test(n) ? 'Computer' : 'Unknown'] += s.count; });
+    bars('v-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
+    bars('v-geo', (d.locations || []).slice(0, 8).map(function (s) { return [esc(s.name || 'Unknown'), s.count]; }));
+    var F = [['Visited', d.visitors], ['Connected a profile', conn ? conn.count : 0], ['Searched', maxWhere(SEARCH)], ['Added maps', maxWhere(ADD)], ['Downloaded or sent', built]];
+    var top = Math.max(1, d.visitors);
+    $('v-fun').innerHTML = F.map(function (f, i) { var p = Math.min(100, Math.round(f[1] / top * 100)); return '<div class="bar"><span class="lab">' + f[0] + '</span><span class="track"><span class="fill' + (i === F.length - 1 ? ' g' : '') + '" style="width:' + p + '%"></span></span><span class="num">' + fmt(f[1]) + '<small>' + p + '%<span class="ofv"> of visitors</span></small></span></div>'; }).join('');
+    renderPlayers();
+    // Features
+    var evs = d.events.slice().sort(function (a, b) { return b.count - a.count; }), probs = evs.filter(function (e) { return PROB.test(e.name); }), use = evs.filter(function (e) { return !PROB.test(e.name); });
+    txt('f-used', fmt(use.length)); txt('f-cold', fmt(d.cold.length)); txt('f-prob', fmt(probs.reduce(function (a, e) { return a + e.count; }, 0)));
+    $('f-prob').classList.toggle('bad', probs.length > 0);
+    var showAll = $('f-more').getAttribute('data-all') === '1';
+    bars('f-top', use.slice(0, showAll ? 999 : 15).map(function (e) { return ['<code>' + esc(e.name) + '</code>', e.count]; }));
+    $('f-more').classList.toggle('hidden', use.length <= 15); $('f-more').textContent = showAll ? 'Show fewer' : 'Show all ' + use.length;
+    var cut = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    bars('f-fresh', use.filter(function (e) { return e.first && e.first >= cut; }).map(function (e) { return ['<code>' + esc(e.name) + '</code> <span class="note">since ' + dshort(e.first) + '</span>', e.count, 'g']; }), '', 'Nothing new in the last 30 days.');
+    bars('f-probs', probs.map(function (e) { return ['<code>' + esc(e.name) + '</code>', e.count, 'alt']; }), '', 'No problems in this range.');
+    $('f-colds').innerHTML = d.cold.length ? '<p class="empty">' + d.cold.map(function (n) { return '<code class="mono">' + esc(n) + '</code>'; }).join(' · ') + '</p>' : '<p class="empty">Every feature seen before was used in this range.</p>';
+    // Sources
+    var camps = (d.campaigns || []), refs = (d.refs || []).filter(function (r) { return r.scheme !== 'c'; }), SE = /google|bing|duckduckgo|yahoo|yandex|ecosia|brave|startpage|baidu|qwant/i;
+    txt('s-camp', fmt(camps.reduce(function (a, c) { return a + c.count; }, 0)));
+    txt('s-search', fmt(refs.filter(function (r) { return SE.test(r.name); }).reduce(function (a, r) { return a + r.count; }, 0)));
+    txt('s-sites', fmt(refs.filter(function (r) { return !SE.test(r.name) && r.name; }).reduce(function (a, r) { return a + r.count; }, 0)));
+    bars('s-camps', camps.map(function (c) { return [esc(c.name || '(none)'), c.count, 'g']; }), '', 'No tagged links used in this range.');
+    bars('s-refs', refs.filter(function (r) { return r.name; }).map(function (r) { return [esc(r.name), r.count]; }));
+    bars('s-pages', (d.pages || []).slice(0, 10).map(function (p) { return ['<span class="mono">' + esc(p.path || '/') + '</span>', p.count]; }));
+    bars('s-br', (d.browsers || []).slice(0, 8).map(function (b) { return [esc(b.name || 'Unknown'), b.count]; }));
+    renderReleases();
+    txt('gcwhen', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + ' (UTC days). Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
+  }
+  function chart(d, built) {
+    var svg = $('v-chart'), days = d.days, W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 200;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' 220');
+    if (!days.length) { svg.innerHTML = ''; return; }
+    if (d.range === 'today') {
+      var hr = (days[days.length - 1].hourly || []).slice(0, 24); days = hr.map(function (n, i) { return { day: '', n: n, h: i }; });
+      $('v-charth').innerHTML = 'Visitors per hour <small>UTC</small>';
+    } else $('v-charth').innerHTML = 'Visitors per day <small>dots are days you pushed changes</small>';
+    var max = 4; days.forEach(function (x) { if (x.n > max) max = x.n; });
+    max = Math.ceil(max / 4) * 4;
+    var n = days.length, X = function (i) { return n === 1 ? W / 2 : 30 + i * (W - 50) / (n - 1); }, Y = function (v) { return H - 12 - v / max * (H - 30); };
+    var g = '';
+    for (var k = 0; k <= 4; k++) { var yy = Y(max * k / 4); g += '<line x1="30" x2="' + (W - 20) + '" y1="' + yy + '" y2="' + yy + '" stroke="#1f2a3d"/><text x="0" y="' + (yy + 4) + '" fill="#6b7890" font-size="11">' + Math.round(max * k / 4) + '</text>'; }
+    var pushes = d.range === 'today' ? [] : (d.pushes || []);
+    days.forEach(function (x, i) { if (pushes.indexOf(x.day) >= 0) g += '<line x1="' + X(i) + '" x2="' + X(i) + '" y1="12" y2="' + (H - 12) + '" stroke="#ffc23d" stroke-dasharray="3 4" opacity=".6"/><circle cx="' + X(i) + '" cy="14" r="5" fill="#ffc23d"><title>Pushed ' + dshort(x.day) + '</title></circle>'; });
+    function path(vals) { return vals.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' '); }
+    g += '<path d="' + path(days.map(function (x) { return x.n; })) + '" fill="none" stroke="#2f7bff" stroke-width="3" vector-effect="non-scaling-stroke"/>';
+    if (d.range !== 'today') g += '<path d="' + path(days.map(function (x) { return Math.min(x.n, built[x.day] || 0); })) + '" fill="none" stroke="#3ddc84" stroke-width="3" vector-effect="non-scaling-stroke"/>';
+    var labs = d.range === 'today' ? [[0, '12 AM'], [12, '12 PM'], [n - 1, (n - 1) + ':00']] : [[0, dshort(days[0].day)], [Math.floor((n - 1) / 2), dshort(days[Math.floor((n - 1) / 2)].day)], [n - 1, dshort(days[n - 1].day)]];
+    labs.forEach(function (l, j) { g += '<text x="' + X(l[0]) + '" y="' + (H + 16) + '" fill="#9aa6b8" font-size="12" text-anchor="' + (j === 0 ? 'start' : j === 2 ? 'end' : 'middle') + '">' + esc(l[1]) + '</text>'; });
+    svg.innerHTML = g;
+    $('v-pushleg').classList.toggle('hidden', !pushes.length);
+  }
+  // ---- players ----
+  var pf = { find: '', fnew: false, fclan: false, fme: ls('studioStatsHideMe') !== '0' }, pShown = 40;
+  $('p-fme').setAttribute('aria-pressed', pf.fme ? 'true' : 'false');
+  function mine(p) { return (p.clans || []).some(function (t) { return (gc.myClans || []).indexOf(t) >= 0; }); }
+  function renderPlayers() {
+    if (!gc) return;
+    var all = gc.players.filter(function (p) { return !(pf.fme && p.me); }), start = gc.start;
+    var isNew = function (p) { return p.first && p.first >= start; };
+    txt('p-all', fmt(all.length)); txt('p-new', fmt(all.filter(isNew).length)); txt('p-back', fmt(all.filter(function (p) { return !isNew(p); }).length));
+    txt('p-clan', fmt(all.filter(mine).length)); txt('p-clann', 'players in ' + ((gc.myClans || []).join(' or ') || 'your clans'));
+    var q = pf.find.toLowerCase(), list = all.filter(function (p) { return (!q || p.name.toLowerCase().indexOf(q) >= 0) && (!pf.fnew || isNew(p)) && (!pf.fclan || mine(p)); });
+    var h = '<div class="prow head"><span>Player</span><span class="c-first">First seen</span><span class="c-last">Last seen</span><span class="n">Connects</span></div>';
+    if (!list.length) h += '<div class="prow"><span class="empty">No players match.</span></div>';
+    list.slice(0, pShown).forEach(function (p) {
+      var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
+      var b = (p.me ? '<span class="pb me">YOU</span>' : isNew(p) ? '<span class="pb new">NEW</span>' : '<span class="pb back">BACK</span>') +
+        (p.clans || []).map(function (t) { return '<span class="pb ' + ((gc.myClans || []).indexOf(t) >= 0 ? 'mine' : 'clan') + '">' + esc(t) + '</span>'; }).join('');
+      h += '<div class="prow"><span><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + '</span><span class="c-first">' + dshort(p.first) + '</span><span class="c-last">' + dago(p.last) + '</span><span class="n">' + fmt(p.count) + '</span></div>';
+    });
+    $('p-list').innerHTML = h;
+    $('p-more').classList.toggle('hidden', list.length <= pShown); $('p-more').textContent = 'Show ' + Math.min(40, list.length - pShown) + ' more';
+  }
+  $('p-find').addEventListener('input', function () { pf.find = this.value.trim(); pShown = 40; renderPlayers(); });
+  [['p-fnew', 'fnew'], ['p-fclan', 'fclan'], ['p-fme', 'fme']].forEach(function (x) {
+    $(x[0]).addEventListener('click', function () { pf[x[1]] = !pf[x[1]]; this.setAttribute('aria-pressed', pf[x[1]] ? 'true' : 'false'); if (x[1] === 'fme') ls('studioStatsHideMe', pf.fme ? '1' : '0'); pShown = 40; renderPlayers(); });
+  });
+  $('p-more').addEventListener('click', function () { pShown += 40; renderPlayers(); });
+  $('f-more').addEventListener('click', function () { this.setAttribute('data-all', this.getAttribute('data-all') === '1' ? '0' : '1'); renderGc(); });
+  // ---- Studio Sync ----
+  function renderReleases() {
+    var rel = gc && gc.releases || [];
+    $('dlCard').classList.toggle('hidden', !rel.length); $('relWrap').classList.toggle('hidden', !rel.length);
+    if (!rel.length) return;
+    txt('dlTotal', fmt(rel.reduce(function (a, r) { return a + r.downloads; }, 0)));
+    var rows = rel.slice(0, 6).map(function (r) { return [esc(r.tag) + (r.at ? ' <span class="note">' + dshort(r.at) + '</span>' : ''), r.downloads]; });
+    if (sync) rows.push(['Headsets linked', sync.headsets, 'g']);
+    bars('relBars', rows);
+  }
+  function loadSync() {
     var key = keyIn.value.trim() || getKey();
     if (!key) { say('Enter your admin key.', true); return; }
     say('Loading...');
@@ -1103,28 +1525,33 @@ h2{font-size:18px;margin:26px 0 10px}
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
       if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); } say(res.j.error || 'Couldn’t load stats.', true); return; }
+      var first = !getKey() || !sync;
       setKey(key); keyIn.value = ''; signedIn(true);
-      var s = res.j, players = s.libraries - s.librariesNoHeadset;
+      var s = sync = res.j, players = s.libraries - s.librariesNoHeadset;
       txt('activeDay', s.activeDay); txt('activeWeek', s.activeWeek); txt('activeMonth', s.activeMonth);
       txt('headsets', s.headsets); txt('neverNote', s.neverSynced ? s.neverSynced + ' never synced' : 'all have synced at least once');
       txt('newWeek', s.newWeek); txt('newMonthNote', s.newMonth + ' in the last 30 days');
       txt('players', players); txt('multiNote', s.librariesMulti ? s.librariesMulti + ' with more than one headset' : 'one headset each');
       txt('sharedPlaylists', s.sharedPlaylists); txt('librariesNoHeadset', s.librariesNoHeadset);
-      bars('linksBars', s.linksByWeek); bars('activeBars', s.activeByWeek, true);
+      weekBars('linksBars', s.linksByWeek); weekBars('activeBars', s.activeByWeek, true);
       txt('retention', s.retentionBase ? Math.round(s.retained / s.retentionBase * 100) + '%' : '-');
       txt('retentionNote', s.retentionBase ? s.retained + ' of ' + s.retentionBase + ' headsets linked 2+ weeks ago synced this week' : 'no headsets linked 2+ weeks ago yet');
       txt('goneQuiet', s.goneQuiet);
       txt('pendingChanges', s.pendingChanges);
       txt('pendingNote', s.pendingChanges ? 'on ' + s.pendingHeadsets + ' headset' + (s.pendingHeadsets === 1 ? '' : 's') + ', oldest ' + ago(s.pendingOldest) : 'nothing queued');
-      rows('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]]);
-      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn\u2019t set).'));
-      document.getElementById('out').classList.remove('hidden'); say('');
+      bars('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]]);
+      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
+      $('out').classList.remove('hidden'); say('');
+      renderReleases();
+      if (first || !gc) loadGc(false);
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
-  document.getElementById('go').addEventListener('click', load);
-  keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') load(); });
-  document.getElementById('refresh').addEventListener('click', load);
-  document.getElementById('forget').addEventListener('click', function () { setKey(''); signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
-  if (getKey()) { document.getElementById('keyrow').classList.add('hidden'); load(); }
+  $('go').addEventListener('click', loadSync);
+  keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
+  $('refresh').addEventListener('click', function () { loadSync(); loadGc(true); });
+  $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
+  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); }, 150); });
+  showRange(); showTab(tab);
+  if (getKey()) { $('keyrow').classList.add('hidden'); loadSync(); }
 })();
 </script></body></html>`;
