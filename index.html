@@ -2837,7 +2837,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T17:30:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T17:39:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6817,6 +6817,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       return libFetch('POST', '/lib/' + encodeURIComponent(lib.id) + '/claim', { code: code }, lib).then(function (res) {
         if (res.ok) {
           lqApply(res.j); inp.value = ''; state.lq.showLink = false;
+          if (res.j.device) ssFirstWant(res.j.device.id);
           toast('Linked ' + ((res.j.device && res.j.device.name) || 'your Quest') + '. Your headset’s playlists show up here after its first sync.', 'ok'); track('lq-link');
           setTimeout(lqRefresh, 8000);
         } else if (res.status === 404 && res.j && /code/i.test(res.j.error || '')) toast(res.j.error, 'warn');
@@ -8474,15 +8475,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('ssStep1Done').hidden = !dl || open;
     document.getElementById('ssStep1Body').hidden = dl && !open;
   }
-  function ssFirstAcked(devId) { try { return !!(JSON.parse(localStorage.getItem(SS_FIRST) || '{}') || {})[devId]; } catch (e) { return false; } }
-  function ssFirstAck(devId) {
-    var m = {}; try { m = JSON.parse(localStorage.getItem(SS_FIRST) || '{}') || {}; } catch (e) {}
-    m[devId] = 1; try { localStorage.setItem(SS_FIRST, JSON.stringify(m)); } catch (e) {}
-  }
-  // After a newly linked headset's first sync (linked in the last week, not dismissed): what to do next.
+  // 'w' = linked in this browser, card still to show; 1 = Got it.
+  function ssFirstMap() { try { return JSON.parse(localStorage.getItem(SS_FIRST) || '{}') || {}; } catch (e) { return {}; } }
+  function ssFirstSet(devId, v) { var m = ssFirstMap(); m[devId] = v; try { localStorage.setItem(SS_FIRST, JSON.stringify(m)); } catch (e) {} }
+  function ssFirstWant(devId) { if (devId && !ssFirstMap()[devId]) ssFirstSet(devId, 'w'); }
+  function ssFirstAck(devId) { ssFirstSet(devId, 1); }
+  // After the first sync of a headset linked in this browser (not one that was already linked): what to do next.
   function ssFirstHtml(d) {
     var q = state.lq.quest[d.id];
-    if (!q || !q.updated || !d.added || Date.now() / 1000 - d.added > 7 * 86400 || ssFirstAcked(d.id)) return '';
+    if (!q || !q.updated || ssFirstMap()[d.id] !== 'w') return '';
     if (!ssFirstHtml.seen) ssFirstHtml.seen = {};
     if (!ssFirstHtml.seen[d.id]) { ssFirstHtml.seen[d.id] = 1; track('lq-first-sync'); }
     var n = lqQuestItems(d.id).length, dn = esc(lqDevName(d.id));
