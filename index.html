@@ -592,6 +592,14 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-peek .pk-n small{color:var(--muted);margin-left:6px;}
 .lq-peek .pk-d{font:12px var(--mono);flex:none;}
 .lq-peek .pk-msg{font-size:13px;color:var(--muted);padding:6px 2px;}
+.lq-peek .pk-grip{flex:none;display:grid;place-items:center;width:22px;height:30px;min-width:0;min-height:0;margin:0 -4px 0 -4px;padding:0;border:0;border-radius:6px;background:none;box-shadow:none;color:#5d6f8a;cursor:grab;touch-action:none;}
+.lq-peek .pk-grip svg{width:16px;height:16px;}
+.lq-peek .pk-grip:hover,.lq-peek .pk-grip:focus-visible{color:#cfe0ff;background:none;border:0;box-shadow:none;}
+.lq-peek ol.lq-dragging{user-select:none;}
+.lq-peek ol.lq-dragging li:not(.lq-drag){transition:transform .15s ease;}
+.lq-peek li.lq-drag{position:relative;z-index:5;background:#0d1626;box-shadow:0 8px 22px rgba(0,0,0,.65);border-radius:6px;cursor:grabbing;}
+.lq-peek li.lq-drag .pk-grip{cursor:grabbing;color:#cfe0ff;}
+.lq-peek .pk-note{font-size:12px;color:var(--muted);}
 .lq-pl.lq-dropping{outline:2px dashed #2f8cff;outline-offset:-3px;background:#0c1626;}
 .lq-pl .lq-ren{display:flex;gap:6px;flex:1;min-width:0;align-items:center;}
 .lq-pl .lq-ren input{flex:1;min-width:0;padding:7px 10px;font-size:14px;}
@@ -2771,7 +2779,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-26T16:01:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T10:52:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7778,20 +7786,61 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     lqLatest(dev, k).then(function () { lqRender(); }, function (err) { state.lq.peekErr = key; lqRender(); });
   }
   function lqPeekHtml(d, it, key, id) {
-    var c = lqPeekCache[key], pl = c && c.pl, rows = [];
-    if (pl) pl.songs.forEach(function (sg) {
-      var ds = Array.isArray(sg.difficulties) && sg.difficulties.length ? sg.difficulties : [null];
-      ds.forEach(function (x) {
-        var dn = x ? BplistExporter.mapDifficultyName(x.name) : '', dc = SV_DIFF[dn] || [dn, '#8792a6'];
-        rows.push('<li><img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(sg.songName || sg.hash || '') + (sg.levelAuthorName ? '<small>' + esc(sg.levelAuthorName) + '</small>' : '') + '</span>' +
-          (x ? '<span class="pk-d" style="color:' + dc[1] + '">' + esc(dc[0]) + (x.characteristic && x.characteristic !== 'Standard' ? ' ' + esc(x.characteristic) : '') + '</span>' : '') + '</li>');
-      });
+    var c = lqPeekCache[key], pl = c && c.pl, rows = [], nMaps = 0;
+    var edHere = state.lq.editing && state.lq.editing.dev === d.id && state.lq.editing.k === it.k;
+    var canMove = pl && pl.songs.length > 1 && !edHere && !state.lq.busy;
+    if (pl) pl.songs.forEach(function (sg, si) {
+      var ds = Array.isArray(sg.difficulties) && sg.difficulties.length ? sg.difficulties : [];
+      nMaps += ds.length || 1;
+      var dh = ds.map(function (x) {
+        var dn = BplistExporter.mapDifficultyName(x.name), dc = SV_DIFF[dn] || [dn, '#8792a6'];
+        return '<span style="color:' + dc[1] + '">' + esc(dc[0]) + (x.characteristic && x.characteristic !== 'Standard' ? ' ' + esc(x.characteristic) : '') + '</span>';
+      }).join(' · ');
+      var nm = sg.songName || sg.hash || '';
+      rows.push('<li>' + (canMove ? '<button type="button" class="pk-grip" data-lq-pkgrip="' + esc(key) + '|' + si + '" title="Drag to reorder" aria-label="Move ' + esc(nm) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '') +
+        '<img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(nm) + (sg.levelAuthorName ? '<small>' + esc(sg.levelAuthorName) + '</small>' : '') + '</span>' +
+        (dh ? '<span class="pk-d">' + dh + '</span>' : '') + '</li>');
     });
-    var head = '<div class="lq-peek-h">' + (pl ? '<b>' + mapsLabel(rows.length, pl.songs.length) + '</b>' + (lqPendingFor(d.id, it.k) ? '<span>· the change on its way</span>' : '') : '') + '<span class="sp"></span>' +
+    var pkNote = lqPkSave[key] ? '<span class="pk-note">· saving the new order\u2026</span>' : edHere ? '<span class="pk-note">· open in the editor, reorder it there</span>' : canMove ? '<span class="pk-note">· drag to reorder</span>' : '';
+    var head = '<div class="lq-peek-h">' + (pl ? '<b>' + mapsLabel(nMaps, pl.songs.length) + '</b>' + (lqPendingFor(d.id, it.k) ? '<span>· the change on its way</span>' : '') + pkNote : '') + '<span class="sp"></span>' +
       lqBtn('Close', 'data-lq-peek=""') + '</div>';
     var body = pl ? (rows.length ? '<ol>' + rows.join('') + '</ol>' : '<div class="pk-msg">This playlist is empty.</div>')
       : state.lq.peekErr === key ? '<div class="pk-msg">Couldn\u2019t read it from the headset. Press Sync now in game and try again.</div>' : '<div class="pk-msg">Loading\u2026</div>';
     return '<div class="lq-peek" aria-label="Maps in ' + esc(it.title || it.file) + '">' + head + body + '</div>';
+  }
+  // Reorder in the peek: move the song in the shown copy right away, send the order once you stop for a moment.
+  var lqPkSave = {}, lqPkTimer = {};
+  function lqPkMove(key, from, to) {
+    var c = lqPeekCache[key], pl = c && c.pl; if (!pl || to < 0 || to >= pl.songs.length || from === to) return;
+    var sg = pl.songs.splice(from, 1)[0]; pl.songs.splice(to, 0, sg);
+    var want = pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); });
+    lqPkSave[key] = want; lqRender();
+    clearTimeout(lqPkTimer[key]);
+    lqPkTimer[key] = setTimeout(function () { lqPkSend(key); }, 900);
+  }
+  function lqPkSend(key) {
+    var want = lqPkSave[key]; if (!want) return;
+    var pr = key.split('|'), dev = pr[0], k = pr[1];
+    lqChange(dev, k, function (pl) {
+      var cur = lqPkSave[key] || want, at = {};
+      cur.forEach(function (h, i) { if (!(h in at)) at[h] = i; });
+      var before = pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); }).join();
+      // songs added elsewhere since keep their place after the ones you moved
+      pl.songs = pl.songs.map(function (x, i) { return { x: x, i: i }; }).sort(function (a, b) {
+        var ha = String(a.x.hash || '').toLowerCase(), hb = String(b.x.hash || '').toLowerCase();
+        var ia = ha in at ? at[ha] : cur.length + a.i, ib = hb in at ? at[hb] : cur.length + b.i;
+        return ia - ib || a.i - b.i;
+      }).map(function (o) { return o.x; });
+      return pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); }).join() !== before;
+    }).then(function (r) {
+      if (lqPkSave[key] === want) delete lqPkSave[key];
+      if (!r.same) { toast('New order sent. ' + lqDevName(dev) + ' gets it on its next sync.', 'ok'); track('lq-peek-reorder'); }
+      lqRender();
+    }, function (err) {
+      if (lqPkSave[key] === want) delete lqPkSave[key];
+      toast((err && err.message) || 'Couldn\u2019t send the new order.', 'warn');
+      lqLatest(dev, k).then(function () { lqRender(); }, function () { lqRender(); });
+    });
   }
   function lqPlRename(dev, k, raw) {
     var v = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 120);
@@ -8320,6 +8369,26 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     // My order: drag a row by its grip, or focus the grip and use the arrow keys.
     var gripRows = function (g) { var row = g.closest('.lq-pl'), list = row && row.parentElement; if (!list) return null; return { row: row, list: list, rows: Array.prototype.filter.call(list.children, function (x) { return x.classList.contains('lq-pl'); }) }; };
+    var pkRows = function (g) { var row = g.closest('li'), list = row && row.parentElement; if (!list) return null; return { row: row, list: list, rows: Array.prototype.slice.call(list.children) }; };
+    var pkKey = function (g) { var a = g.getAttribute('data-lq-pkgrip'); return a.slice(0, a.lastIndexOf('|')); };
+    document.addEventListener('pointerdown', function (e) {
+      var g = e.target.closest && e.target.closest('[data-lq-pkgrip]'); if (!g || e.button > 0 || lqDrag) return;
+      var r = pkRows(g); if (!r) return;
+      e.preventDefault();
+      var from = r.rows.indexOf(r.row);
+      lqDrag = { pk: pkKey(g), row: r.row, list: r.list, rows: r.rows, from: from, to: from, y0: e.clientY, id: e.pointerId,
+        mids: r.rows.map(function (x) { var b = x.getBoundingClientRect(); return b.top + b.height / 2; }), h: r.row.getBoundingClientRect().height };
+      try { g.setPointerCapture(e.pointerId); } catch (x) {}
+      r.row.classList.add('lq-drag'); r.list.classList.add('lq-dragging');
+    });
+    document.addEventListener('keydown', function (e) {
+      var g = e.target.closest && e.target.closest('[data-lq-pkgrip]'); if (!g || lqDrag) return;
+      var step = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0; if (!step) return;
+      e.preventDefault();
+      var key = pkKey(g), i = +g.getAttribute('data-lq-pkgrip').slice(key.length + 1);
+      lqPkMove(key, i, i + step);
+      var g2 = document.querySelector('[data-lq-pkgrip="' + key + '|' + (i + step) + '"]'); if (g2) g2.focus();
+    });
     document.addEventListener('pointerdown', function (e) {
       var g = e.target.closest && e.target.closest('[data-lq-grip]'); if (!g || e.button > 0 || lqDrag) return;
       var r = gripRows(g); if (!r) return;
@@ -8348,6 +8417,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       lqDrag = null;
       d.rows.forEach(function (x) { x.style.transform = ''; });
       d.row.classList.remove('lq-drag'); d.list.classList.remove('lq-dragging');
+      if (d.pk) { if (d.to !== d.from) lqPkMove(d.pk, d.from, d.to); else if (d.dirty) lqRender(); return; }
       if (d.to !== d.from) lqMove(d.dev, d.from, d.to); else if (d.dirty) lqRender();
     };
     document.addEventListener('pointerup', dragEnd);
