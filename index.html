@@ -2274,7 +2274,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="asc">Low → High</option>
             </select></div>
           <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull before filtering in your browser. Higher = more thorough but slower - BeatLeader pages 100 at a time, BeatSaver 20. 2,500 is the default; drop to 300 for a quick pull.">i</span></label>
-            <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="2500" /></div>
+            <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="1000" /></div>
         </div>
         <div class="scan-chips" id="scanChips">
           <button type="button" data-scan="300">300</button>
@@ -2906,7 +2906,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:25:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:18:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -3890,6 +3890,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var SYNC_KEY = 'playlistStudio.sync.v1';
   var SRC_KEY = 'playlistStudio.source.v1';
   var RTYPE_KEY = 'playlistStudio.rankType.v1';
+  // Maps to scan: 1,000 by default to keep API calls down; a pick the player makes sticks, even after Reset.
+  var SCAN_KEY = 'playlistStudio.maxScan.v1';
   var BS_API = 'https://api.beatsaver.com';
 
   // CORS relays: the Worker first, and the one that answers is pinned for the rest of the scan.
@@ -4022,7 +4024,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return {
       type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value,
       rankView: el.rankInline ? el.rankInline.value : 'all',
-      maxScan: clamp(num(el.fMaxScan, 2500), 20, 20000),
+      maxScan: clamp(num(el.fMaxScan, 1000), 20, 20000),
       starMin: clamp(num(el.starMinNum, 0), 0, 15), starMax: clamp(num(el.starMaxNum, 15), 0, 15),
       mapperTerms: mapperTerms, mapperExclude: mapperExclude, search: el.fSearch.value.trim(), modes: checkedValues('modeChips'),
       diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
@@ -9484,7 +9486,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function applyPreset(p) {
     el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc'; state.sortTouched = true;
-    el.fMaxScan.value = p.maxScan || '2500'; el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
+    el.fMaxScan.value = p.maxScan || savedMaxScan(); el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
     state.bandAuto = (parseFloat(el.starMinNum.value) <= 0 && parseFloat(el.starMaxNum.value) >= 15); markLvl(null);
     el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
     el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fNjsMin.value = p.njsMin || ''; el.fNjsMax.value = p.njsMax || ''; el.fDurMin.value = p.durMin || '';
@@ -10115,7 +10117,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // The play-history filter surfaced at the results (connected -> chips, else a
   // prompt to connect). Keeps the chip in sync with the profile-panel dropdown.
   function updateScanHint() {
-    var v = clamp(num(el.fMaxScan, 2500), 20, 20000);
+    var v = clamp(num(el.fMaxScan, 1000), 20, 20000);
     Array.prototype.forEach.call(el.scanChips.querySelectorAll('button'), function (b) { b.classList.toggle('active', parseInt(b.dataset.scan, 10) === v); });
     var pages = Math.ceil(v / PAGE_SIZE), big = v > 5000;
     var speed = v <= 500 ? ' · quick' : (v <= 5000 ? ' · a few seconds' : ' · big scan - slower, leans on the public relays');
@@ -11754,6 +11756,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   // ---- reset ----------------------------------------------------------------
   // Ranked status is a standing choice: whatever you pick is remembered, and every reset returns to it.
+  function savedMaxScan() {
+    var v = null; try { v = localStorage.getItem(SCAN_KEY); } catch (e) {}
+    var n = parseInt(v, 10); return n >= 20 && n <= 20000 ? String(n) : '1000';
+  }
+  function rememberMaxScan() {
+    var n = parseInt(el.fMaxScan.value, 10); if (!(n >= 20 && n <= 20000)) return;
+    try { localStorage.setItem(SCAN_KEY, String(n)); } catch (e) {}
+  }
   function savedRankType() {
     var v = null; try { v = localStorage.getItem(RTYPE_KEY); } catch (e) {}
     return /^(ranked|unranked|nominated|qualified|all)$/.test(v || '') ? v : 'ranked';
@@ -11765,7 +11775,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function resetFilters(silent) {
     el.starMinNum.value = '0'; el.starMaxNum.value = '15'; el.fMapper.value = ''; el.fMapperExclude.value = ''; el.fSearch.value = '';
     ['fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) { el[k].value = ''; });
-    el.fType.value = savedRankType(); el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = '2500'; state.sortTouched = false;
+    el.fType.value = savedRankType(); el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = savedMaxScan(); state.sortTouched = false;
     el.bsMinRating.value = ''; el.bsAge.value = 'any';
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
@@ -12254,8 +12264,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     el.playConnectJump.addEventListener('click', focusProfileConnect);
     // Maps-to-scan quick picks + live hint
-    el.scanChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-scan]'); if (b) { el.fMaxScan.value = b.dataset.scan; updateScanHint(); if (state.raw.length) updateStale(); } });
+    el.scanChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-scan]'); if (b) { el.fMaxScan.value = b.dataset.scan; rememberMaxScan(); updateScanHint(); if (state.raw.length) updateStale(); } });
     el.fMaxScan.addEventListener('input', updateScanHint);
+    el.fMaxScan.addEventListener('change', rememberMaxScan);
 
     // star
     el.starMin.addEventListener('input', function () { setStar('min', parseFloat(el.starMin.value)); });
@@ -12301,7 +12312,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', function () { ssSync(false); });
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]p=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]p=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
   }
 
   // ---- a refresh comes back where you were ------------------------------------
