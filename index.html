@@ -648,6 +648,27 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-dropzone .lq-list{margin-bottom:0;}
 .lq-drophint{margin:6px 2px 12px;font-size:12.5px;color:var(--muted-2);}
 .lq-drophint code{font-size:12px;}
+.ss-call{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:1px solid #1f4d3a;border-radius:12px;background:linear-gradient(90deg,rgba(34,224,161,.10),rgba(34,224,161,0) 80%),#06100c;font-size:13.5px;color:var(--muted);line-height:1.55;}
+.ss-call .ic{flex:none;width:30px;height:30px;border-radius:50%;background:#0d2a1f;color:#3ddc84;display:grid;place-items:center;font-size:15px;}
+.ss-call b.t{display:block;color:#e6edf6;font-size:14.5px;margin-bottom:2px;}
+.ss-call .lq-row{margin-top:8px;}
+.lq-quest > .ss-call{margin:0 0 12px;}
+.ss-prog{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:13px;color:var(--muted);}
+.ss-prog b{color:#e6edf6;} .ss-prog .seg{flex:1;display:flex;gap:6px;} .ss-prog .seg i{flex:1;height:6px;border-radius:3px;background:#1a2333;}
+.ss-prog .seg i.on{background:#3ddc84;} .ss-prog .seg i.now{background:#2f7bff;}
+.ss-steps>li.done::before{content:'\2713';background:#0d2a1f;border-color:#1f6b4a;color:#3ddc84;font-size:14px;}
+.ss-steps>li.now::before{background:#173a7a;border-color:#2f7bff;color:#fff;}
+.ss-st{display:inline-block;margin-left:8px;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;vertical-align:1px;}
+.ss-st.ok{background:#0d2a1f;color:#3ddc84;} .ss-st.now{background:#10203d;color:#7fb0ff;}
+.ss-steps>li>b:first-child .ss-st{font-size:12px;}
+.lq-nudge{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin:0 0 10px;padding:9px 12px;border:1px dashed #2a3850;border-radius:12px;background:#070b12;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.lq-nudge b{color:#e6edf6;} .lq-nudge .sp{flex:1;} .lq-nudge a.ss-btn{padding:6px 12px;font-size:13px;}
+.onq-chip{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#10203d;color:#9cc2ff;white-space:nowrap;}
+.pv-onq{margin:0 0 12px;padding:10px 12px;border:1px solid #1c2738;border-radius:10px;background:#070b12;font-size:13.5px;color:var(--muted);}
+.pv-onq .h{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7fb0ff;margin-bottom:6px;}
+.pv-onq ul{list-style:none;margin:0;padding:0;}
+.pv-onq li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;border-top:1px solid #111a28;color:#e6edf6;}
+.pv-onq li:first-child{border-top:0;} .pv-onq li small{color:var(--muted);} .pv-onq li .sp{flex:1;}
 .lq-stats{margin:0 0 10px;padding:12px 14px 11px;border:1px solid #1c2738;border-radius:12px;background:#070b12;}
 .lq-st-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:9px;}
 .lq-st-h b{color:#e6edf6;font-size:14.5px;font-weight:600;} .lq-st-h .sp{flex:1;}
@@ -2675,6 +2696,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
                 </div>
                 <div class="quest-dest" id="questDestRow" hidden><label for="questDest">Folder</label><input type="text" id="questDest" spellcheck="false" /></div>
                 <div class="quest-log" id="questLog" aria-live="polite"></div>
+                <div class="ss-call" id="ssCablePitch" hidden><span class="ic">&#10003;</span><div><b class="t">Sent. Next time, skip the cable.</b>The free Studio Sync mod sends playlists from here to your Quest over Wi-Fi, downloads missing songs for you, and lets you edit the playlists already on the headset. Setup takes about two minutes.<div class="lq-row"><button type="button" class="primary sm" id="ssCableGo">Set up Studio Sync</button><button type="button" class="ghost sm" id="ssCableNo">Not now</button></div></div></div>
                 <p class="ss-tip" id="ssTipQuest"><b>Skip the cable:</b> the free <a href="#studio-sync" data-ss-open="export">Studio Sync mod</a> sends playlists from here to your Quest over the internet.</p>
                 <p class="panel-sub" style="margin-top:12px;">Plug your Quest into this computer with a USB cable and use Chrome or Edge. Developer mode needs to be on, which modding already did. Studio finds your PlaylistManager folder on the headset and drops the playlist in. Restart Beat Saber to see a new playlist.</p>
                 <p class="panel-sub"><b>First time:</b> put the headset on after you pick it. It asks <b>Allow USB debugging?</b> for this browser. Tick <b>Always allow from this computer</b> and tap <b>Allow</b>. This is separate from SideQuest or adb on this PC, so it shows up once even if those already work.</p>
@@ -2689,13 +2711,17 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <div class="panel-body">
               <p class="lq-steps lq-status" id="lqStatus" hidden></p>
               <div class="lq-link" id="lqLinkBox">
+                <div class="ss-prog" id="ssProg" hidden></div>
                 <ol class="ss-steps">
-                  <li><b>Install the mod</b>
+                  <li id="ssStep1"><b>Install the mod<span id="ssStep1St"></span></b>
+                    <p id="ssStep1Done" hidden>Installed it with ModsBeforeFriday or QuestPatcher? Go on to step 2. <button type="button" class="lq-a" id="ssStep1Show">Show the install steps again</button></p>
+                    <div id="ssStep1Body">
                     <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.4.0/StudioSync-1.04.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.4.0 &middot; Beat Saber 1.40.8 &middot; 1.8 MB</a></div>
                     <p>On a PC or Android phone, open <a href="https://lauriethefish.github.io/ModsBeforeFriday/" target="_blank" rel="noopener" data-gc="mbf-link">ModsBeforeFriday</a> in Chrome or Edge and plug in your Quest. Choose <b>Upload Files</b> and pick the <code>.qmod</code>. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.</p>
                     <p class="ss-hmd" id="ssHmd" hidden>You're in the headset browser, so do this step from a PC or phone.</p>
+                    </div>
                   </li>
-                  <li><b>Link your headset</b>
+                  <li id="ssStep2"><b>Link your headset<span id="ssStep2St"></span></b>
                     <p>In game, open the <b>Mods</b> tab in the panel left of song select, pick <b>Studio Sync</b> and press <b>Link</b>. Type the 6-character code it shows.</p>
                     <div class="lq-row"><input type="text" id="lqCode" maxlength="7" placeholder="ABC234" autocomplete="off" spellcheck="false" /><button type="button" class="primary" id="lqLinkBtn">Link headset</button></div>
                     <div class="lq-alt" id="lqImport"><p><b>Already linked on your computer?</b> No need to link again. <button type="button" class="lq-a" id="lqKeyShow">Use its key instead</button></p>
@@ -2811,7 +2837,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T11:57:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T17:30:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2905,6 +2931,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <button class="ghost sm" id="previewClose" title="Close (Esc)">✕</button>
     </div>
     <div class="modal-body">
+      <div class="pv-onq" id="previewOnQuest" hidden></div>
       <div class="preview-status" id="previewStatus"></div>
       <div class="preview-score" id="previewScore" hidden></div>
 
@@ -5456,9 +5483,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var MAX = 400, items = [], byHash = {};
     // the same song already in Your Playlist at another difficulty gets a badge
     state.basket.forEach(function (b) { if (b.hash) { var h = b.hash.toLowerCase(); (byHash[h] = byHash[h] || []).push(b); } });
+    if (libGet() && state.lq && state.lq.devices.length) lqIdxSoon();
     rows.slice(0, MAX).forEach(function (e) {
       var tgt = state.lq && state.lq.addTo, added = tgt ? lqInTarget(e) : inBasket(e), k = keyOf(e);
-      items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '" draggable="true">' + coverImg(e) + infoBlock(e, true, added ? '' : otherDiffBadge(e, byHash)) +
+      items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '" draggable="true">' + coverImg(e) + infoBlock(e, true, lqOnChip(e) + (added ? '' : otherDiffBadge(e, byHash))) +
         '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
         (added ? '<button class="row-btn added" data-act="unadd" title="In your playlist - click to take it out">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>' });
@@ -6479,6 +6507,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       qlog('Done. ' + (existed ? 'Updated' : 'Added') + ' "' + playlist.playlistTitle + '" on your Quest. Restart Beat Saber to see it.', 'ok');
       toast((existed ? 'Updated' : 'Sent') + ' "' + playlist.playlistTitle + '" on your Quest.', 'ok');
       track('quest-send');
+      ssCablePitch(true);
     }).catch(function (e) {
       var msg = (e && e.message) || String(e), kind = classifyUsbError(e);
       track(msg === 'NO_DIR' ? 'quest-error-no-folder' : msg === 'AUTH_CANCEL' ? '' : msg === 'AUTH_TIMEOUT' ? 'quest-error-not-approved' : msg === 'NO_ANSWER' ? 'quest-error-no-answer'
@@ -6761,6 +6790,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       Object.keys(state.lq.quest).forEach(function (k) { if (!devs.some(function (d) { return d.id === k; })) delete state.lq.quest[k]; });
       lqFollowMoves();
       lqCheckConflict();
+      lqIdxMemo = null; if (state.raw && state.raw.length) lqIdxSoon();
     });
   }
   function lqRefresh() {
@@ -7519,7 +7549,92 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return o;
   }
   function lqSigOf(keys) { return Object.keys(keys).sort().join(','); }
-  function lqBodyPut(dev, k, at, pl) { var keys = lqKeysOf(pl && pl.songs); return (lqBodies[dev + '|' + k] = { at: at, keys: keys, sig: lqSigOf(keys), m: Object.keys(keys).length, n: pl && Array.isArray(pl.songs) ? pl.songs.length : 0 }); }
+  var LQ_IDX_KEY = 'playlistStudio.lqMapIdx.v1', lqIdx = null, lqIdxMemo = null, lqIdxQ = [], lqIdxBusy = 0, lqIdxTried = {};
+  function lqIdxStore() { if (!lqIdx) { try { lqIdx = JSON.parse(localStorage.getItem(LQ_IDX_KEY) || '{}') || {}; } catch (e) { lqIdx = {}; } } return lqIdx; }
+  var lqIdxSave = debounce(function () { try { localStorage.setItem(LQ_IDX_KEY, JSON.stringify(lqIdxStore())); } catch (e) {} }, 400);
+  // "hash:Expert,ExpertPlus OneSaber;hash:..." for one headset playlist.
+  function lqIdxPut(dev, k, at, songs) {
+    if (!at || !Array.isArray(songs)) return;
+    var parts = [];
+    songs.forEach(function (sg) {
+      if (!sg || !sg.hash) return;
+      var ds = (Array.isArray(sg.difficulties) ? sg.difficulties : []).filter(Boolean).map(function (d) { var m = String(d.characteristic || 'Standard'); return BplistExporter.mapDifficultyName(d.name) + (m.toLowerCase() === 'standard' ? '' : ' ' + m); });
+      parts.push(String(sg.hash).toLowerCase() + ':' + ds.join(','));
+    });
+    lqIdxStore()[dev + '|' + k] = { at: at, s: parts.join(';') };
+    lqIdxMemo = null; lqIdxSave();
+  }
+  // Read the playlists the index is missing or has an older copy of, two at a time, then redraw.
+  function lqIdxNeed() {
+    if (!libGet() || !lqActive() || !state.lq.devices.length) return;
+    var st = lqIdxStore(), live = {};
+    state.lq.devices.forEach(function (d) {
+      lqQuestItems(d.id).forEach(function (it) {
+        var key = d.id + '|' + it.k; live[key] = 1;
+        if (!it.ready || it.waiting || !it.at || (st[key] && st[key].at === it.at) || lqIdxTried[key + '|' + it.at]) return;
+        if (lqThumbTried[key + '|' + it.at] === 'q') return;   // the cover read is on its way and fills it
+        lqIdxTried[key + '|' + it.at] = 1; lqIdxQ.push({ dev: d.id, k: it.k, at: it.at });
+      });
+    });
+    var gone = Object.keys(st).filter(function (key) { return !live[key] && state.lq.devices.some(function (d) { return key.indexOf(d.id + '|') === 0 && state.lq.quest[d.id]; }); });
+    if (gone.length) { gone.forEach(function (key) { delete st[key]; }); lqIdxMemo = null; lqIdxSave(); }
+    lqIdxPump();
+  }
+  function lqIdxPump() {
+    while (lqIdxBusy < 2 && lqIdxQ.length && libGet()) (function (job) {
+      lqIdxBusy++;
+      libFetch('GET', libPath('/devices/' + encodeURIComponent(job.dev) + '/playlists/' + job.k), null, null, true).then(function (res) {
+        var pl = null; try { pl = JSON.parse(res.text); } catch (e) {}
+        if (res.ok && pl && Array.isArray(pl.songs)) lqIdxPut(job.dev, job.k, job.at, pl.songs);
+      }, function () {}).then(function () { lqIdxBusy--; if (!lqIdxQ.length && !lqIdxBusy) lqIdxRedraw(); lqIdxPump(); });
+    })(lqIdxQ.shift());
+  }
+  // Built only once it's used (search results or a map preview), after the panel's redraw, so covers being read fill it
+  // instead of a second read.
+  var lqIdxSoon = debounce(function () { lqIdxNeed(); }, 1500);
+  var lqIdxRedraw = debounce(function () { if (state.raw && state.raw.length) renderResults(); pvOnQuest(); }, 200);
+  // Headset playlists with this map: [{ title, diffs: [...], devs: [names], dev, k }], same title on several headsets merged.
+  function lqIdxFind(hash) {
+    if (!hash || !libGet() || !lqActive() || !state.lq.devices.length) return [];
+    if (!lqIdxMemo) {
+      lqIdxMemo = {};
+      var st = lqIdxStore();
+      state.lq.devices.forEach(function (d) {
+        lqQuestItems(d.id).forEach(function (it) {
+          var c = st[d.id + '|' + it.k]; if (!c || !c.s) return;
+          c.s.split(';').forEach(function (part) {
+            var i = part.indexOf(':'), h = part.slice(0, i); if (!h) return;
+            (lqIdxMemo[h] = lqIdxMemo[h] || []).push({ dev: d.id, k: it.k, title: it.title || String(it.file || '').replace(/\.bplist$/i, ''), diffs: part.slice(i + 1) ? part.slice(i + 1).split(',') : [] });
+          });
+        });
+      });
+    }
+    var out = [], byT = {};
+    (lqIdxMemo[String(hash).toLowerCase()] || []).forEach(function (x) {
+      var t = byT[x.title + '|' + x.diffs.join(',')];
+      if (t) { if (t.devs.indexOf(lqDevName(x.dev)) < 0) t.devs.push(lqDevName(x.dev)); return; }
+      t = byT[x.title + '|' + x.diffs.join(',')] = { title: x.title, diffs: x.diffs, devs: [lqDevName(x.dev)], dev: x.dev, k: x.k };
+      out.push(t);
+    });
+    return out;
+  }
+  function lqOnChip(e) {
+    var hits = lqIdxFind(e && e.hash); if (!hits.length) return '';
+    var devs = []; hits.forEach(function (h) { h.devs.forEach(function (n) { if (devs.indexOf(n) < 0) devs.push(n); }); });
+    return '<span class="onq-chip" title="In ' + esc(hits.map(function (h) { return h.title; }).join(', ')) + '">on ' + esc(devs.length === 1 ? devs[0] : 'Quest') + ' \u00b7 ' + hits.length + '</span>';
+  }
+  // The map preview: the headset playlists this map is in, with Open to edit one.
+  function pvOnQuest() {
+    var box = document.getElementById('previewOnQuest'); if (!box) return;
+    var e = state.previewEntry, hits = e && el.previewModal.classList.contains('show') ? lqIdxFind(e.hash) : [];
+    box.hidden = !hits.length;
+    box.innerHTML = hits.length ? '<div class="h">On your headset' + (state.lq.devices.length > 1 ? 's' : '') + '</div><ul>' + hits.map(function (h) {
+      var dc = h.diffs.map(function (d) { var b = d.split(' ')[0], c = SV_DIFF[b] || [b, '#8792a6']; return '<span class="onq-chip" style="color:' + c[1] + '">' + esc(c[0] + (d.indexOf(' ') > 0 ? d.slice(d.indexOf(' ')) : '')) + '</span>'; }).join(' ');
+      return '<li><span>' + esc(h.title) + '</span>' + dc + '<small>' + esc(h.devs.join(', ')) + '</small><span class="sp"></span>' +
+        '<button type="button" class="ghost sm" data-pv-open="' + esc(h.dev + '|' + h.k) + '">Open</button></li>';
+    }).join('') + '</ul>' : '';
+  }
+  function lqBodyPut(dev, k, at, pl) { if (at && pl) lqIdxPut(dev, k, at, pl.songs); var keys = lqKeysOf(pl && pl.songs); return (lqBodies[dev + '|' + k] = { at: at, keys: keys, sig: lqSigOf(keys), m: Object.keys(keys).length, n: pl && Array.isArray(pl.songs) ? pl.songs.length : 0 }); }
   // Maps in a headset playlist (each difficulty counts, like Your Playlist). The headset reports songs; a mod
   // that also reports maps wins, otherwise Studio counts them from the file it read for the cover. null = not known yet.
   function lqMaps(devId, it) {
@@ -8181,6 +8296,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     status.textContent = down ? 'Can\'t reach the Studio Sync service right now. You can still install the mod; linking and sending work again once the service is back.' : 'Loading your linked headsets…';
     var linkBox = document.getElementById('lqLinkBox');
     linkBox.hidden = loading || (!!lib && down) || (linked && !lq.showLink);
+    ssSetupRender(!linkBox.hidden && !linked);
     var linkBtn = document.getElementById('lqLinkBtn'); linkBtn.disabled = !!lq.busy || down; linkBtn.textContent = lq.busy ? 'Working…' : (lq.devices.length ? 'Link another headset' : 'Link headset');
     document.getElementById('lqSub').hidden = linked;
     document.getElementById('ssHide').hidden = !!lib;
@@ -8251,6 +8367,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
     // On your Quest: one quiet row per playlist, Edit plus a "..." menu
     var qh = '';
+    if (linked) lq.devices.forEach(function (d) { qh += ssFirstHtml(d); });
     if (linked) {
       lq.devices.forEach(function (d) {
         var q = lq.quest[d.id], all = lqQuestItems(d.id), fl = (lq.filter && lq.filter[d.id]) || '', items = lqSortList(all, fl, d.id);
@@ -8258,6 +8375,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         qh += '<div class="lq-sec"><span class="lq-h">On ' + esc(dnm) + '</span>' + (all.length ? '<span class="lq-cnt">' + all.length + '</span>' : '') +
           '<span class="lq-sync">' + (lqSeen(d.id) ? 'synced ' + esc(lqAgoMin(lqSeen(d.id))) : '') + '</span>' +
           (lqCan(d.id, 'delete') && all.length > 1 && !(lq.sel && lq.sel.dev === d.id) ? lqBtn('Select', 'data-lq-select="' + esc(d.id) + '" title="Pick several playlists to delete at once"', 'ghost sm lq-selbtn') : '') + lqBtn(lqIco('up') + 'Add playlist', 'data-lq-add="' + esc(d.id) + '" title="Send a .bplist file from this computer to ' + esc(lqDevName(d.id)) + '"', 'ghost sm lq-addbtn') + lqBtn(lqIco('refresh'), 'data-lq-refresh title="Refresh" aria-label="Refresh"', 'ghost lq-ib') + '</div>';
+        qh += ssNudgeHtml(d);
         qh += lqStatsHtml(d);
         qh += lqAskHtml(d.id);
         if (lq.sel && lq.sel.dev === d.id) {
@@ -8332,6 +8450,63 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     t.innerHTML = linked ? 'Your Quest is linked. <a href="#studio-sync" data-ss-open="export">Send to Quest in Studio Sync</a> skips the cable.'
       : '<b>Skip the cable:</b> the free <a href="#studio-sync" data-ss-open="export">Studio Sync mod</a> sends playlists from here to your Quest over the internet.';
   }
+  // (1) Right after a cable send: Studio Sync does the same over Wi-Fi. Shown until "Not now" (then never again on
+  // this browser), never once a headset is linked.
+  var SS_CABLE_NO = 'playlistStudio.ssCableNo.v1';
+  function ssCablePitch(show) {
+    var c = document.getElementById('ssCablePitch'), tip = document.getElementById('ssTipQuest'); if (!c) return;
+    var linked = !!(libGet() && state.lq && state.lq.devices.length);
+    var on = !!show && !linked && !lsFlag(SS_CABLE_NO);
+    c.hidden = !on; if (tip) tip.hidden = on;
+    if (on) track('cable-pitch');
+  }
+  // (2) Setup progress: a download click marks step 1 done and points to step 2.
+  var SS_SETUP = 'playlistStudio.ssSetup.v1', SS_FIRST = 'playlistStudio.ssFirst.v1';
+  function ssSetupGet() { try { return JSON.parse(localStorage.getItem(SS_SETUP) || '{}') || {}; } catch (e) { return {}; } }
+  function ssSetupRender(show) {
+    var prog = document.getElementById('ssProg'), s1 = document.getElementById('ssStep1'), s2 = document.getElementById('ssStep2'); if (!prog || !s1 || !s2) return;
+    var st = ssSetupGet(), dl = show && st.dl > 0, open = !!(state.lq && state.lq.showInstall);
+    prog.hidden = !show;
+    if (show) prog.innerHTML = '<span><b>Setup</b> \u00b7 step ' + (dl ? 2 : 1) + ' of 3</span><span class="seg"><i class="' + (dl ? 'on' : 'now') + '"></i><i class="' + (dl ? 'now' : '') + '"></i><i></i></span>';
+    s1.classList.toggle('done', dl); s1.classList.toggle('now', show && !dl); s2.classList.toggle('now', dl);
+    document.getElementById('ssStep1St').innerHTML = dl ? '<span class="ss-st ok">Downloaded ' + esc(lqAgoMin(st.dl)) + '</span>' : '';
+    document.getElementById('ssStep2St').innerHTML = dl ? '<span class="ss-st now">Next</span>' : '';
+    document.getElementById('ssStep1Done').hidden = !dl || open;
+    document.getElementById('ssStep1Body').hidden = dl && !open;
+  }
+  function ssFirstAcked(devId) { try { return !!(JSON.parse(localStorage.getItem(SS_FIRST) || '{}') || {})[devId]; } catch (e) { return false; } }
+  function ssFirstAck(devId) {
+    var m = {}; try { m = JSON.parse(localStorage.getItem(SS_FIRST) || '{}') || {}; } catch (e) {}
+    m[devId] = 1; try { localStorage.setItem(SS_FIRST, JSON.stringify(m)); } catch (e) {}
+  }
+  // After a newly linked headset's first sync (linked in the last week, not dismissed): what to do next.
+  function ssFirstHtml(d) {
+    var q = state.lq.quest[d.id];
+    if (!q || !q.updated || !d.added || Date.now() / 1000 - d.added > 7 * 86400 || ssFirstAcked(d.id)) return '';
+    if (!ssFirstHtml.seen) ssFirstHtml.seen = {};
+    if (!ssFirstHtml.seen[d.id]) { ssFirstHtml.seen[d.id] = 1; track('lq-first-sync'); }
+    var n = lqQuestItems(d.id).length, dn = esc(lqDevName(d.id));
+    return '<div class="ss-call"><span class="ic">&#10003;</span><div><b class="t">' + dn + ' is linked and synced</b>' +
+      (n ? 'Its ' + n + ' playlist' + (n === 1 ? ' is' : 's are') + ' below' + (lqCan(d.id, 'storage') ? ', and its storage shows on the card' : '') + '. ' : '') +
+      'Next: build a playlist in Your Playlist and press <b>Send to Quest</b>' + (n ? ', or press <b>Edit</b> on one below' : '') + '.' +
+      '<div class="lq-row">' + lqBtn('Got it', 'data-lq-firstok="' + esc(d.id) + '"') + '</div></div></div>';
+  }
+  // (3) A headset on an older Studio Sync, once a newer release with storage and order is out.
+  var SS_NUDGE = 'playlistStudio.ssNudge.v1';
+  function ssVer(tag) { var m = String(tag || '').match(/(\d+)\.(\d+)\.(\d+)/); return m ? +m[1] * 1e6 + +m[2] * 1e3 + +m[3] : 0; }
+  function ssNudgeHtml(d) {
+    var q = state.lq.quest[d.id]; if (!q || !q.updated || !Array.isArray(q.features) || lqCan(d.id, 'order') || ssVer(ssRel.tag) < ssVer('0.8.0')) return '';
+    var m = {}; try { m = JSON.parse(localStorage.getItem(SS_NUDGE) || '{}') || {}; } catch (e) {}
+    if (m[d.id] === ssRel.tag) return '';
+    var v = esc(String(ssRel.tag).replace(/^v/i, ''));
+    return '<div class="lq-nudge"><span><b>' + esc(lqDevName(d.id)) + ' is on an older Studio Sync.</b> Update to ' + v + ' for storage, Clean up songs and in-game order.</span><span class="sp"></span>' +
+      '<a class="ss-btn" href="' + esc(ssRel.url) + '" target="_blank" rel="noopener" data-gc="studiosync-update">Get ' + v + '</a>' + lqBtn('Not now', 'data-lq-nudgeno="' + esc(d.id) + '"') + '</div>';
+  }
+  function ssNudgeNo(devId) {
+    var m = {}; try { m = JSON.parse(localStorage.getItem(SS_NUDGE) || '{}') || {}; } catch (e) {}
+    m[devId] = ssRel.tag; try { localStorage.setItem(SS_NUDGE, JSON.stringify(m)); } catch (e) {}
+    track('lq-nudge-no'); lqRender();
+  }
   function ssOpen(src) {
     var panel = document.getElementById('lqPanel'); if (!panel) return;
     lsFlagSet(LQ_HIDE, false); lsFlagSet(LQ_WANT, true);
@@ -8373,6 +8548,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       ssRel = { tag: String(j.tag_name || ssRel.tag).slice(0, 24), game: m ? m[1] : '', url: a.browser_download_url, page: String(j.html_url || '').indexOf(SS_REPO + '/') === 0 ? j.html_url : SS_REPO + '/releases', size: +a.size || 0 };
       try { sessionStorage.setItem(SS_REL_KEY, JSON.stringify(ssRel)); } catch (e) {}
       ssApplyRel();
+      lqRender();   // an update nudge can depend on the release
     }, function () {});
   }
   // The link in the QR code: Studio with the library key after the # (browsers never send that part to a server).
@@ -8481,6 +8657,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-dupcancel')) { state.lq.dup = null; lqRender(); }
       else if (t.hasAttribute('data-lq-restoreopen')) { var r = t.getAttribute('data-lq-restoreopen'); state.lq.restoreOpen = state.lq.restoreOpen === r ? null : r; lqRender(); }
       else if (t.hasAttribute('data-lq-peek')) { state.lq.peek = null; lqRender(); }
+      else if (t.hasAttribute('data-lq-firstok')) { ssFirstAck(t.getAttribute('data-lq-firstok')); track('lq-first-ok'); lqRender(); }
+      else if (t.hasAttribute('data-lq-nudgeno')) ssNudgeNo(t.getAttribute('data-lq-nudgeno'));
       else if (t.hasAttribute('data-lq-sthide')) lqStatsHide(t.getAttribute('data-lq-sthide'), true);
       else if (t.hasAttribute('data-lq-stshow')) lqStatsHide(t.getAttribute('data-lq-stshow'), false);
       else if (t.hasAttribute('data-lq-clean')) { var cdv = t.getAttribute('data-lq-clean'); state.lq.cleanAsk = state.lq.cleanAsk === cdv ? null : cdv; if (state.lq.cleanAsk) track('lq-clean-ask'); lqRender(); }
@@ -8681,6 +8859,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var panel = document.getElementById('lqPanel');
     if (!libGet() && !lsFlag(LQ_WANT) && !lsFlag(LQ_BETA) && collapseApi && !Object.prototype.hasOwnProperty.call(collapseApi.store, 'lqPanel')) panel.classList.add('collapsed');
     document.getElementById('ssHide').addEventListener('click', ssHide);
+    document.getElementById('ssDlBtn').addEventListener('click', function () {
+      var st = ssSetupGet(); st.dl = Math.floor(Date.now() / 1000); try { localStorage.setItem(SS_SETUP, JSON.stringify(st)); } catch (e) {}
+      state.lq.showInstall = false; setTimeout(lqRender, 0);
+    });
+    document.getElementById('ssStep1Show').addEventListener('click', function () { state.lq.showInstall = true; lqRender(); });
+    document.getElementById('ssCableGo').addEventListener('click', function () { document.getElementById('ssCablePitch').hidden = true; var tp = document.getElementById('ssTipQuest'); if (tp) tp.hidden = false; ssOpen('cable'); });
+    document.getElementById('ssCableNo').addEventListener('click', function () { lsFlagSet(SS_CABLE_NO, true); ssCablePitch(false); track('cable-pitch-no'); });
     document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-ss-open]'); if (!a) return; e.preventDefault(); ssOpen(a.getAttribute('data-ss-open')); });
     var fromHash = function () {
       if (location.hash !== '#studio-sync') return;
@@ -9690,6 +9875,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!el.previewModal.classList.contains('show')) state._previewReturnFocus = document.activeElement;
     el.previewModal.classList.add('show'); el.previewModal.setAttribute('aria-hidden', 'false');
     el.previewTitle.textContent = entry.songName + (entry.mapper ? ' - ' + entry.mapper : '');
+    state.previewEntry = entry; pvOnQuest(); lqIdxNeed();
     // your score line (from synced BeatLeader history)
     if (state.player) {
       var ps = scoreFor(entry);
@@ -9723,6 +9909,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       el.previewViewer.href = 'https://allpoland.github.io/ArcViewer/?id=' + res.id; el.previewViewer.style.display = '';
     });
   }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-pv-open]'); if (!b) return;
+    var pr = b.getAttribute('data-pv-open').split('|'); closePreview(); track('onquest-open');
+    if (isMobileView()) setMobileView('playlist');
+    lqEdit(pr[0], pr[1]);
+  });
   function closePreview() {
     state.previewGen = (state.previewGen || 0) + 1;   // invalidate any in-flight BeatSaver lookup
     el.previewModal.classList.remove('show'); el.previewModal.setAttribute('aria-hidden', 'true');
@@ -11865,7 +12057,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
-     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-key-show, lq-qr-show, lq-key-link, lq-peek, lq-add-to, lq-add-to-mine, lq-quick-add-<button|drag>, lq-quick-remove, lq-rename-pl, lq-download, lq-copy (opened the QR code link), lq-open-key-link, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine, lq-order-sent, lq-order-arrived, lq-stats-hide, lq-stats-show, lq-clean-ask, lq-clean, lq-clean-cancel, lq-clean-done; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
+     lq-autosave, lq-upload-<button|drop>, lq-upload-replace, lq-upload-second, lq-rename, lq-row-edit, lq-sort-<mine|az|recent>, lq-reorder, lq-key-show, lq-qr-show, lq-key-link, lq-peek, lq-add-to, lq-add-to-mine, lq-quick-add-<button|drag>, lq-quick-remove, lq-rename-pl, lq-download, lq-copy (opened the QR code link), lq-open-key-link, lq-done, lq-arrived, lq-conflict, lq-conflict-sent (a newer version was sent from elsewhere), lq-conflict-quest, lq-conflict-mine, lq-order-sent, lq-order-arrived, lq-stats-hide, lq-stats-show, lq-clean-ask, lq-clean, lq-clean-cancel, lq-clean-done, cable-pitch (shown after a USB send), cable-pitch-no, lq-open-cable, lq-first-sync, lq-first-ok, studiosync-update, lq-nudge-no, onquest-open; a deep link is .../Playlist-Studio/#studio-sync (add utm tags before the #);
      Footer and errors (GoatCounter helpers in <head>): github-click, kofi-click, js-error, js-error-promise;
      Installed app: pwa-link (a link opened in the open window, also counted as a visit), pwa-open-file,
      file-import-<fresh|merge|replace>, share-import-<merge|replace>, combine-open-file;
