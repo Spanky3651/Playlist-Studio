@@ -55,7 +55,9 @@ Already know the maps you want? Skip searching. Paste one or more **BSR codes**,
 
 ### Build a playlist
 - Two-panel builder: **Search Results → Your Playlist** (the playlist is what gets exported)
-- Add one at a time, **Add all**, **Add top N**, or **⚄ Random**
+- Add one at a time, **Add all**, **Add top N**, or **⚄ Random** (on phones these live under **+ Add** in the Search Results header)
+- **Name** it right at the top of Your Playlist. A new list you haven't named shows a suggested name from its maps (like "Unplayed 5.3-8.3★ (Oct 27)"), and the first download or send keeps that name so it doesn't change later. Playlists you open from a file, the library, a share link or your headset always keep their own name.
+- Exported playlists say they were built with Playlist Studio and link back to it in the description (only while the description is the automatic one)
 - **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard)
 - **Undo and redo** any change to Your Playlist (adds, removes, reorders, shuffles, sorts, imports) with the **Undo** / **Redo** buttons or **Ctrl+Z** / **Ctrl+Y**
 - **Clear playlist** empties the list and resets its name, cover and sync to a fresh start - with a one-tap **Undo clear** if you didn't mean it (Ctrl+Z brings the name and cover back too)

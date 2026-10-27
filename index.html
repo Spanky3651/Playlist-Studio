@@ -1574,6 +1574,28 @@ body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s
 .ra-tog:checked{background:var(--blue);}
 .ra-tog:checked::after{left:20px;background:#fff;}
 .ra-tog:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+.pl-name{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:#0a0e15;}
+.pl-name[hidden]{display:none;}
+.pl-name-lbl{font:600 12px var(--mono);letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);flex:none;}
+.pl-name-in{flex:1 1 auto;min-width:0;padding:7px 10px;font-size:15px;font-weight:600;}
+.pl-name-in::placeholder{color:#8fa0bb;font-weight:500;}
+.pl-name-tag{flex:none;font:600 11.5px var(--mono);letter-spacing:.4px;color:#8fbaff;border:1px solid rgba(47,140,255,.4);background:rgba(47,140,255,.08);border-radius:6px;padding:2px 7px;}
+.pl-name-tag[hidden]{display:none;}
+.ra-ph{display:none !important;}
+.ra-head-btn{display:none;}
+@media(max-width:720px){
+  .ra-ph{display:flex !important;}
+  #resultActions.list-actions{padding:0;border:0;}
+  #resultActions .ra-main{display:none;}
+  .ra-head-btn:not([hidden]){display:inline-flex;align-items:center;gap:6px;margin-left:8px;flex:none;}
+  .panel-head:has(> #resultCount) h2{white-space:nowrap;letter-spacing:.6px;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .ra-head-btn svg{width:14px;height:14px;}
+  .ra-head-btn.on{border-color:var(--blue);color:#fff;background:rgba(30,107,255,.14);}
+  .fy-tools .fy-sub.collapsed{display:none;}
+  .fy-tools:not(:has(> .fy-sub:not(.collapsed))){display:none;}
+  body.vm-rec #fyTools:not([hidden]){display:grid;}
+  body.vm-rec #recPanel.collapsed{display:block;}
+}
 .play-chip{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
 .play-chip .pc-n{font-size:11.5px;color:#6c7689;background:#121722;border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums;}
 .play-chip.active .pc-n{color:#d6e5ff;background:rgba(30,107,255,.3);}
@@ -2041,25 +2063,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </div>
     <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> - tech, speed, genres - incl. unranked.</span></p>
 
-    <!-- Intro -->
-    <details class="intro" id="introPanel">
-      <summary class="intro-summary"><span>How it works</span><svg class="intro-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="intro-body">
-        <p><b>Playlist Studio</b> is a free Beat Saber playlist tool and builder that runs right in your browser. Pick a search source, filter, <b>Search</b>, add the maps you want to <b>Your Playlist</b>, then export a <code>.bplist</code>. Two sources: <b>BeatLeader</b> for scores, PP and your play history, or <b>BeatSaver</b> to browse by tags and genres. You're not stuck with everything that matches, so cherry-pick, mix results from several searches, drag rows to reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>. New to mods? The <a href="https://bsmg.wiki/" target="_blank" rel="noopener" data-track="bsmg-link">BSMG wiki</a> walks you through installing them on PC and Quest.</p>
-        <div class="flow">
-          <div class="step"><span class="num">1</span> Filter &amp; Search</div>
-          <span class="arrow">→</span>
-          <div class="step"><span class="num">2</span> Add picks</div>
-          <span class="arrow">→</span>
-          <div class="step"><span class="num">3</span> Drag to reorder &amp; cover</div>
-          <span class="arrow">→</span>
-          <div class="step"><span class="num">4</span> Export</div>
-        </div>
-        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b>, and you can add your <b>ScoreSaber</b> plays from Your Profile. BeatSaver search connects directly.</span></div>
-        <div class="callout intro-ss"><span class="ci">◈</span><span><b>On Quest?</b> The free <a href="#studio-sync" data-ss-open="intro">Studio Sync mod</a> sends playlists straight to your headset with no cable, and lets you edit the ones already on it from here.</span></div>
-      </div>
-    </details>
-
     <!-- Your Profile (BeatLeader) -->
     <section class="panel" id="profilePanel">
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h2>Your Profile</h2><span class="count" id="profileState"></span><button type="button" class="pc-who" id="pcWho" aria-haspopup="menu" aria-expanded="false" hidden><span id="pcWhoName"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -2122,6 +2125,25 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         </div>
       </div>
     </section>
+
+    <!-- Intro -->
+    <details class="intro" id="introPanel">
+      <summary class="intro-summary"><span>How it works</span><svg class="intro-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="intro-body">
+        <p><b>Playlist Studio</b> is a free Beat Saber playlist tool and builder that runs right in your browser. Pick a search source, filter, <b>Search</b>, add the maps you want to <b>Your Playlist</b>, then export a <code>.bplist</code>. Two sources: <b>BeatLeader</b> for scores, PP and your play history, or <b>BeatSaver</b> to browse by tags and genres. You're not stuck with everything that matches, so cherry-pick, mix results from several searches, drag rows to reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>. New to mods? The <a href="https://bsmg.wiki/" target="_blank" rel="noopener" data-track="bsmg-link">BSMG wiki</a> walks you through installing them on PC and Quest.</p>
+        <div class="flow">
+          <div class="step"><span class="num">1</span> Filter &amp; Search</div>
+          <span class="arrow">→</span>
+          <div class="step"><span class="num">2</span> Add picks</div>
+          <span class="arrow">→</span>
+          <div class="step"><span class="num">3</span> Drag to reorder &amp; cover</div>
+          <span class="arrow">→</span>
+          <div class="step"><span class="num">4</span> Export</div>
+        </div>
+        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b>, and you can add your <b>ScoreSaber</b> plays from Your Profile. BeatSaver search connects directly.</span></div>
+        <div class="callout intro-ss"><span class="ci">◈</span><span><b>On Quest?</b> The free <a href="#studio-sync" data-ss-open="intro">Studio Sync mod</a> sends playlists straight to your headset with no cable, and lets you edit the ones already on it from here.</span></div>
+      </div>
+    </details>
 
     <!-- Tags (BeatSaver) -->
     <section class="panel bs-only">
@@ -2481,7 +2503,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     <div class="work-area">
       <!-- Results -->
       <section class="panel list-panel">
-        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count rc-pill" id="resultCount" aria-live="polite"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
+        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count rc-pill" id="resultCount" aria-live="polite"></span><button type="button" class="ghost sm ra-head-btn" id="resMoreHead" aria-haspopup="true" aria-expanded="false" aria-controls="resMore" title="Add maps from these results, and more list options" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
         <div class="res-meta" id="resMeta" hidden></div>
         <div class="clan-bar" id="clanBar" hidden></div>
         <div class="list-actions" id="resultActions" hidden>
@@ -2493,6 +2515,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           </div>
           <div class="ra-more" id="resMore" hidden>
             <div class="ra-grab" aria-hidden="true"></div>
+            <div class="ra-item ra-fill ra-ph"><span class="ra-i">+</span><button type="button" class="ra-t ra-link" id="raTopM" data-close>Add top</button><span class="ra-r"><input type="number" id="raTopNM" min="1" max="500" step="1" value="20" title="How many of the top results to add" aria-label="How many to add" /> maps</span></div>
+            <button type="button" class="ra-item ra-ph" id="raRandM" data-close><span class="ra-i">⚄</span><span class="ra-t">Add random</span><span class="ra-r" id="raRandNM">20 maps</span></button>
             <button type="button" class="ra-item" id="addAllBtn" disabled data-close><span class="ra-i">+</span><span class="ra-t">Add all</span><span class="ra-r" id="addAllN"></span></button>
             <div class="ra-item ra-fill"><span class="ra-i">⏱</span><button type="button" class="ra-t ra-link" id="fillRuntimeBtn" disabled data-close title="Top up Your Playlist with maps from these results until it reaches about this many minutes.">Fill playlist to</button><span class="ra-r"><input type="number" id="fillMins" min="1" max="300" step="1" value="20" title="Target playlist length in minutes" aria-label="Minutes" /> min</span></div>
             <button type="button" class="ra-item" id="hideFromBtn" data-close title="Load a .bplist and hide its maps from these results - great for building a 'new stuff only' set."><span class="ra-i">⊘</span><span class="ra-t">Skip maps from a playlist file</span></button>
@@ -2583,6 +2607,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <!-- Your Playlist -->
         <section class="panel list-panel playlist-panel">
           <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
+          <div class="pl-name" id="plNameRow" hidden><label class="pl-name-lbl" for="plNameIn">Name</label><input type="text" id="plNameIn" class="pl-name-in" maxlength="80" autocomplete="off" spellcheck="false" /><span class="pl-name-tag" id="plNameTag" title="Studio picked this name from your maps. It's used when you save or send the playlist. Type to rename it." hidden>Suggested</span></div>
           <div class="list-actions">
             <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
             <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
@@ -2933,7 +2958,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:31:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T22:20:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5202,6 +5227,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function resetPlaylistIdentity() {
     // Metadata written into the .bplist
     if (el.metaTitle) el.metaTitle.value = DEFAULT_TITLE;
+    state.titleFixed = false;
     if (el.metaDescription) el.metaDescription.value = ''; state.descAuto = true;
     // Cover → back to the default generated art
     if (el.coverText) el.coverText.value = '';
@@ -5226,7 +5252,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     flushCover();
     return {
       basket: state.basket.slice(),
-      title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value,
+      title: el.metaTitle.value, titleFixed: !!state.titleFixed, author: el.metaAuthor.value, description: el.metaDescription.value,
       coverText: el.coverText.value, coverSubtitle: el.coverSubtitle.value,
       coverStyle: state.coverStyle, coverAccent: state.coverAccent, coverSeed: state.coverSeed,
       coverTextPos: state.coverTextPos, coverTextColor: state.coverTextColor,
@@ -5238,7 +5264,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function restorePlaylist(s) {
     state.basket = s.basket.slice();
-    el.metaTitle.value = s.title; el.metaAuthor.value = s.author; el.metaDescription.value = s.description;
+    el.metaTitle.value = s.title; state.titleFixed = !!s.titleFixed; el.metaAuthor.value = s.author; el.metaDescription.value = s.description;
     el.coverText.value = s.coverText; el.coverSubtitle.value = s.coverSubtitle;
     state.coverStyle = s.coverStyle; state.coverAccent = s.coverAccent; state.coverSeed = s.coverSeed;
     state.coverTextPos = s.coverTextPos; el.coverTextPos.value = s.coverTextPos;
@@ -5373,7 +5399,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var sessionTimer = null, sessionLast = 0;
   function writeSession() {
     clearTimeout(sessionTimer); sessionTimer = null; sessionLast = Date.now();
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, pub: state.publish || null, lq: lqSessionLink() })); } catch (e) {}
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ entries: state.basket, ppAcc: state.ppAcc, ppMod: state.ppMod, meta: { title: el.metaTitle.value, titleFixed: !!state.titleFixed, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, pub: state.publish || null, lq: lqSessionLink() })); } catch (e) {}
   }
   function saveSession() {
     if (sessionTimer) return;   // already scheduled; it writes whatever is current when it runs
@@ -5389,7 +5415,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (s && s.ppMod) { state.ppMod = s.ppMod; buildGlobalPpMods(); }
       if (s && Array.isArray(s.entries) && s.entries.length) {
         state.basket = s.entries; state.publish = s.pub || null;
-        if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; state.descAuto = (s.meta.descAuto !== undefined) ? !!s.meta.descAuto : isAutoDesc(s.meta.description || ''); }
+        if (s.meta) { if (s.meta.title) el.metaTitle.value = s.meta.title; state.titleFixed = !!s.meta.titleFixed; if (s.meta.author) el.metaAuthor.value = s.meta.author; if (s.meta.description) el.metaDescription.value = s.meta.description; state.descAuto = (s.meta.descAuto !== undefined) ? !!s.meta.descAuto : isAutoDesc(s.meta.description || ''); }
         var rl = s.lq && s.lq.ed && s.lq.ed.dev && s.lq.ed.k && state.lq ? s.lq : null;
         if (rl) {
           state.lq.editing = { dev: rl.ed.dev, k: rl.ed.k, file: rl.ed.file, title: rl.ed.title || rl.ed.file, at: rl.ed.at || 0, sent: rl.ed.sent || '', v: rl.ed.v || '', also: Array.isArray(rl.ed.also) ? rl.ed.also.filter(function (t) { return t && t.dev && t.k; }) : [] };
@@ -5532,6 +5558,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function renderResults() {
     var avail = resultsAvailable(), rows = collapseList(avail), list = el.resultList;
     var ra = document.getElementById('resultActions'); if (ra) ra.hidden = !state.fetched && !state.raw.length && !state.excludeHashes;
+    var rh = document.getElementById('resMoreHead'); if (rh) rh.hidden = !ra || ra.hidden;
     var cbar = document.getElementById('clanBar'); if (cbar && !cbar.hidden && state.viewMode !== 'clan') { cbar.hidden = true; cbar.innerHTML = ''; }
     var chid = document.getElementById('cbHidden');
     if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status & Sort).' : ''; }
@@ -5620,8 +5647,39 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     Object.keys(old).forEach(function (k) { if (old[k].parentNode === list) list.removeChild(old[k]); });
     if (tail) list.insertAdjacentHTML('beforeend', tail);
   }
+  // ---- playlist name ----
+  // A new playlist that nobody named shows a suggested name built from its maps. The first download,
+  // send or host writes that suggestion in, so the name stays put afterwards. A playlist opened from a
+  // file, the library, a share link or the headset always keeps its own name (state.titleFixed), and so
+  // does one being edited on the headset, even if its name happens to be the old default.
+  function plIsUnnamed() {
+    var t = el.metaTitle ? el.metaTitle.value.trim() : '';
+    return (!t || t === DEFAULT_TITLE) && !state.titleFixed && !(state.lq && state.lq.editing);
+  }
+  function plSuggestedName() {
+    var b = state.basket, st = playlistStats(), lead = '';
+    if (state.player && b.length && b.every(function (e) { return e.difficultyName; }) && !b.some(function (e) { return scoreFor(e); })) lead = 'Unplayed ';
+    var core = st && st.rated >= Math.ceil(b.length / 2) ? (st.min === st.max ? st.min.toFixed(1) : st.min.toFixed(1) + '-' + st.max.toFixed(1)) + '★' : (lead ? b.length + ' maps' : 'Mix of ' + b.length + ' maps');
+    var d = ''; try { d = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch (e) {}
+    return lead + core + (d ? ' (' + d + ')' : '');
+  }
+  function plLockName() {
+    if (!state.basket.length || !plIsUnnamed()) return;
+    el.metaTitle.value = plSuggestedName();
+    try { el.metaTitle.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) { updateCover(); }
+    plNameSync();
+  }
+  function plNameSync() {
+    var row = document.getElementById('plNameRow'), inp = document.getElementById('plNameIn'), tag = document.getElementById('plNameTag');
+    if (!row || !inp || !el.metaTitle) return;
+    row.hidden = !state.basket.length;
+    var un = plIsUnnamed();
+    if (document.activeElement !== inp) inp.value = un ? '' : el.metaTitle.value.trim();
+    inp.placeholder = un && state.basket.length ? plSuggestedName() : 'Playlist name';
+    if (tag) tag.hidden = !(un && state.basket.length && !inp.value.trim());
+  }
   function renderBasket() {
-    noteBasketChange();
+    noteBasketChange(); plNameSync();
     var list = el.basketList, n = state.basket.length;
     el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) + rtPart() : '';
     if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> - click a row or hit <b>+ Add all</b>.</p></div>'; plAfterRender(); return; }
@@ -5803,7 +5861,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function buildAutoDesc() {
     var st = playlistStats();
     var starPart = st ? (st.min === st.max ? st.min.toFixed(1) + '★' : st.min.toFixed(1) + '★–' + st.max.toFixed(1) + '★') : 'unranked';
-    return mapsLabel(state.basket.length) + rtPart() + ' · ' + starPart + '. Built with Playlist Studio (BeatLeader).';
+    return mapsLabel(state.basket.length) + rtPart() + ' · ' + starPart + '. Built with Playlist Studio: https://spanky3651.github.io/Playlist-Studio/?utm_source=bplist&utm_campaign=playlist-credit';
   }
   function isAutoDesc(text) { return !text || !String(text).trim() || /Built with Playlist Studio/.test(text); }
   function refreshAutoDesc() {
@@ -5827,7 +5885,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.exportValidation.innerHTML = items.map(function (i) { return '<div class="valitem ' + i.level + '"><span class="ico">' + i.ico + '</span><span>' + i.msg + '</span></div>'; }).join('');
     renderQuestUI(); renderPubUI();
   }
-  function renderAll() { renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); featRefresh(); saveSession(); if (typeof lqRender === 'function') lqRender(); }
+  function renderAll() { if (document.body) document.body.classList.toggle('vm-rec', state.viewMode === 'recommend'); renderResults(); renderBasket(); renderSummary(); renderControls(); renderExport(); if (!state.usingCustom) updateCover(); updateRefineUI(); featRefresh(); saveSession(); if (typeof lqRender === 'function') lqRender(); }
   // Lighter path for playlist-order changes (reorder / shuffle / sort): membership
   // is unchanged, so the (expensive) Search Results list doesn't need re-rendering.
   function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); featRefresh(); saveSession(); }
@@ -5900,7 +5958,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var before = state.basket.length;
     payload.s.forEach(function (row) { var h = row && row[0]; if (!h) return; addEntryStrict({ leaderboardId: '', hash: h, songName: 'Loading\u2026', subName: '', mapper: '', author: '', bpm: 0, duration: 0, cover: '', stars: 0, difficultyName: row[1] || '', modeName: row[2] || 'Standard', nps: 0, notes: 0, techRating: 0, accRating: 0, passRating: 0 }); });
     var added = state.basket.length - before;
-    if (payload.t && (!el.metaTitle.value.trim() || el.metaTitle.value.trim() === DEFAULT_TITLE)) { el.metaTitle.value = payload.t; state.descAuto = state.descAuto; }
+    if (payload.t && (!el.metaTitle.value.trim() || el.metaTitle.value.trim() === DEFAULT_TITLE)) { el.metaTitle.value = payload.t; state.titleFixed = true; state.descAuto = state.descAuto; }
     renderAll();
     if (added) { toast('Imported ' + added + ' map' + (added === 1 ? '' : 's') + ' from a share link. Filling in details\u2026', 'ok'); if (typeof enrichImported === 'function') enrichImported(); }
     else toast('Those maps are already in your playlist.', 'warn');
@@ -6422,13 +6480,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var f = getFilters(), uniq = uniqueHashes(state.basket);
     var autoDesc = buildAutoDesc();
     var rawTitle = el.metaTitle.value.trim();
-    var derivedTitle = uniq + '-map mix · ' + (f.type === 'unranked' ? 'unranked' : f.starMin.toFixed(1) + '–' + f.starMax.toFixed(1) + '★');
     var syncURL = getSyncUrl();
-    var meta = { title: (!rawTitle || rawTitle === DEFAULT_TITLE) ? derivedTitle : rawTitle, author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: state.descAuto ? autoDesc : (el.metaDescription.value.trim() || autoDesc), image: state.coverDataUrl || '', syncURL: syncURL };
+    var meta = { title: plIsUnnamed() ? plSuggestedName() : (rawTitle || (state.lq && state.lq.editing && state.lq.editing.title) || DEFAULT_TITLE), author: el.metaAuthor.value.trim() || DEFAULT_AUTHOR, description: state.descAuto ? autoDesc : (el.metaDescription.value.trim() || autoDesc), image: state.coverDataUrl || '', syncURL: syncURL };
     return { meta: meta, songs: songs, syncURL: syncURL };
   }
   function doDownload() {
     if (!state.basket.length) return;
+    plLockName();
     var x = exportParts();
     if (el.syncEnable.checked && !x.syncURL) toast('Sync is on but the host URL is incomplete - exporting without a syncURL.', 'warn');
     try { BplistExporter.download(x.meta, x.songs); var c = state.basket.length; setStatus('Exported ' + mapsLabel(c), 'on'); toast('Downloaded ' + c + '-map .bplist' + (x.syncURL ? ' (with sync URL).' : '.'), 'ok'); track('export'); }
@@ -6580,6 +6638,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var why = webusbCheck();
     if (why) { qlog(why, 'err'); toast(why, 'err'); return; }
     QS.busy = true; renderQuestUI();
+    plLockName();
     var x = exportParts(), playlist = BplistExporter.build(x.meta, x.songs);
     var fname = BplistExporter.fileName(playlist.playlistTitle), bytes = new TextEncoder().encode(BplistExporter.toJSON(playlist));
     var destInput = document.getElementById('questDest');
@@ -6786,6 +6845,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!state.pubAvailable || state.pubBusy) return;
     if (!state.basket.length) { toast('Add maps to Your Playlist first.', 'warn'); return; }
     var pub = state.publish; if (pub) applyPublishToSync();
+    plLockName();
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to host. A smaller cover image usually fixes it.', 'warn'); return; }
     state.pubBusy = true; renderPubUI();
@@ -7027,6 +7087,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqSendThis(mode) {
     if (!state.basket.length) { toast('Add maps to Your Playlist first.', 'warn'); return; }
     var devs = lqSendDevs(); if (!devs.length || state.lq.busy) return;
+    plLockName();
     var x = exportParts(), body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return; }
     // Replacing one already there: a generated cover doesn't replace the headset's (new playlists still get it).
@@ -9566,7 +9627,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var cover = { usingCustom: state.usingCustom, style: state.coverStyle, accent: state.coverAccent,
       seed: state.coverSeed || 0, textPos: state.coverTextPos, textColor: state.coverTextColor, text: el.coverText.value, subtitle: el.coverSubtitle.value, src: state.coverSrc };
     if (state.usingCustom) { cover.dataUrl = state.customBaseUrl || state.coverDataUrl; cover.customEditable = !!state.customBaseUrl; }
-    return { meta: { title: el.metaTitle.value, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
+    return { meta: { title: el.metaTitle.value, titleFixed: !!state.titleFixed, author: el.metaAuthor.value, description: el.metaDescription.value, descAuto: state.descAuto }, entries: state.basket, cover: cover,
       sync: { enabled: !!el.syncEnable.checked, url: el.syncUrl.value }, pub: state.publish || null,
       quest: state.lq ? lqQuestEntry() : null };
   }
@@ -9586,7 +9647,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     track('load-playlist');
     resetPlaylistIdentity();               // clean slate first so nothing leaks from the previous list
     state.basket = (p.entries || []).slice();
-    if (p.meta) { el.metaTitle.value = p.meta.title || DEFAULT_TITLE; if (p.meta.author) el.metaAuthor.value = p.meta.author; el.metaDescription.value = p.meta.description || ''; state.descAuto = (p.meta.descAuto !== undefined) ? !!p.meta.descAuto : isAutoDesc(p.meta.description || ''); }
+    if (p.meta) { el.metaTitle.value = p.meta.title || DEFAULT_TITLE; state.titleFixed = !!(p.meta.titleFixed || (p.meta.title && p.meta.title !== DEFAULT_TITLE)); if (p.meta.author) el.metaAuthor.value = p.meta.author; el.metaDescription.value = p.meta.description || ''; state.descAuto = (p.meta.descAuto !== undefined) ? !!p.meta.descAuto : isAutoDesc(p.meta.description || ''); }
     state._coverSig = null;
     var cv = p.cover;
     if (cv) {
@@ -9644,7 +9705,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       // Only a FRESH import adopts the file's identity (title/author/description/cover/sync).
       // Merging into an existing playlist appends songs but leaves the current identity intact.
       if (wasEmpty) {
-        if (pl.playlistTitle) el.metaTitle.value = pl.playlistTitle;
+        // An imported list always keeps its name; one without a title takes its file name.
+        el.metaTitle.value = pl.playlistTitle || String(file.name || '').replace(/\.(bplist|json)$/i, '') || DEFAULT_TITLE; state.titleFixed = true;
         if (pl.playlistAuthor) el.metaAuthor.value = pl.playlistAuthor;
         el.metaDescription.value = pl.playlistDescription || ''; state.descAuto = isAutoDesc(pl.playlistDescription || '');
         var importedSync = pl.customData && typeof pl.customData.syncURL === 'string' ? pl.customData.syncURL.trim() : '';
@@ -12026,8 +12088,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function firstVisitIntro() {
     try {
       if (!localStorage.getItem('playlistStudio.introSeen.v1')) {
-        var ip = document.getElementById('introPanel');
-        if (ip) ip.open = true;
         localStorage.setItem('playlistStudio.introSeen.v1', '1');
       }
     } catch (e) {}
@@ -12190,14 +12250,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     (function () {
       var btn = document.getElementById('resMoreBtn'), menu = document.getElementById('resMore'), scrim = document.getElementById('resMoreScrim');
       if (!btn || !menu) return;
+      var head = document.getElementById('resMoreHead'), topM = document.getElementById('raTopM'), topNM = document.getElementById('raTopNM'), randM = document.getElementById('raRandM'), randNM = document.getElementById('raRandNM');
+      var mirror = function () {
+        var n = clamp(num(el.addTopN, 20), 1, 500);
+        if (topNM && document.activeElement !== topNM) topNM.value = n;
+        if (randNM) randNM.textContent = n + (n === 1 ? ' map' : ' maps');
+        if (topM) topM.disabled = el.addTopBtn.disabled; if (randM) randM.disabled = el.addRandomBtn.disabled;
+      };
       var open = function (on) {
+        if (on) mirror();
         menu.hidden = !on; if (scrim) scrim.hidden = !on; btn.setAttribute('aria-expanded', on ? 'true' : 'false'); btn.classList.toggle('on', on);
+        if (head) { head.setAttribute('aria-expanded', on ? 'true' : 'false'); head.classList.toggle('on', on); }
         document.body.classList.toggle('ra-sheet-open', on);
       };
+      if (head) head.addEventListener('click', function (e) { e.stopPropagation(); open(menu.hidden); if (!menu.hidden) track('results-more-head'); });
+      if (topNM) topNM.addEventListener('input', function () { el.addTopN.value = topNM.value; el.addTopN.dispatchEvent(new Event('input', { bubbles: true })); mirror(); });
+      if (topM) topM.addEventListener('click', function () { if (!el.addTopBtn.disabled) el.addTopBtn.click(); });
+      if (randM) randM.addEventListener('click', function () { if (!el.addRandomBtn.disabled) el.addRandomBtn.click(); });
       btn.addEventListener('click', function (e) { e.stopPropagation(); open(menu.hidden); if (!menu.hidden) track('results-more'); });
       if (scrim) scrim.addEventListener('click', function () { open(false); });
       menu.addEventListener('click', function (e) { if (e.target.closest('[data-close]') && !e.target.closest('input')) setTimeout(function () { open(false); }, 0); });
-      document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) open(false); });
+      document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn && !(head && head.contains(e.target))) open(false); });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { open(false); btn.focus(); } });
     })();
     el.fillRuntimeBtn.addEventListener('click', fillToRuntime);
@@ -12356,7 +12429,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.coverSubtitle.addEventListener('input', updateCover);
     el.coverTextColor.addEventListener('change', function () { state.coverTextColor = el.coverTextColor.value; updateCover(true); });
     el.coverTextPos.addEventListener('change', function () { state.coverTextPos = el.coverTextPos.value; updateCover(true); });
-    el.metaTitle.addEventListener('input', function () { updateCover(); });
+    el.metaTitle.addEventListener('input', function () { updateCover(); plNameSync(); });
+    (function () {
+      var inp = document.getElementById('plNameIn'); if (!inp) return;
+      inp.addEventListener('input', function () {
+        var v = inp.value.trim();
+        if (v) state.titleFixed = true;
+        el.metaTitle.value = v || DEFAULT_TITLE;
+        if (!v && !(state.lq && state.lq.editing)) state.titleFixed = false;
+        updateCover(); plNameSync();
+      });
+      inp.addEventListener('change', function () { track('playlist-name'); saveSession(); });
+      inp.addEventListener('blur', plNameSync);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') inp.blur(); });
+    })();
     el.metaDescription.addEventListener('input', function () { state.descAuto = !el.metaDescription.value.trim(); if (state.descAuto) refreshAutoDesc(); saveSession(); });
     // Any change made in Cover Art makes the cover yours: only then do edits send it to the headset.
     var covPanel = document.getElementById('coverPanel'), covMine = function () { state.coverSrc = 'user'; };
