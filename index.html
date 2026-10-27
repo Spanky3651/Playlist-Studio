@@ -1320,7 +1320,7 @@ body.sd-lock{overflow:hidden}
 .sd-x{width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0}
 .sd-body{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
 .sd-body>*{flex-shrink:0}
-/* Studio Sync stats drawer (five quick clicks on the Quest tab in Save and send): the Worker's private /admin page */
+/* Studio Sync stats drawer (five quick clicks on the Studio Sync tab in Save and send): the Worker's private /admin page */
 .sd.ssa .sd-body{padding:0;gap:0}
 .sd.ssa iframe{flex:1;width:100%;border:0;background:#000}
 .sd.ssa a.sd-link{text-decoration:none}
@@ -2661,7 +2661,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="panel-head tg-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Save and send</h2><span class="count" id="sendWhere"></span></div>
           <div class="tg-tabs" role="tablist" aria-label="Save and send">
             <button type="button" role="tab" class="tg-tab" data-tg="exportPanel">Download</button>
-            <button type="button" role="tab" class="tg-tab" data-tg="lqPanel" hidden>Quest</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="lqPanel" hidden>Studio Sync</button>
             <button type="button" role="tab" class="tg-tab" data-tg="syncPanel">Sync link</button>
             <button type="button" role="tab" class="tg-tab" data-tg="sharePanel">Share link</button>
             <button type="button" role="tab" class="tg-tab" data-tg="libraryPanel">Library</button>
@@ -2677,7 +2677,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <div class="export-note"><b>Songs download in game.</b> The file lists the songs, it doesn't contain them. In game, open the playlist and use PlaylistManager's download button to grab the ones you don't have.</div>
               <div class="plat-tabs" id="platTabs" data-needs-usb role="tablist" aria-label="Where do you play?">
                 <button type="button" data-plat="pc" class="on" role="tab">PC</button>
-                <button type="button" data-plat="quest" role="tab">Quest</button>
+                <button type="button" data-plat="quest" role="tab" title="Send over a USB cable">Quest (USB)</button>
               </div>
               <div class="plat-pane" id="platPc">
               <div class="export-row">
@@ -2838,7 +2838,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T19:08:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T20:09:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -2852,7 +2852,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
   <div class="sd-body" id="sdBody"></div>
 </aside>
 
-<!-- ============ STUDIO SYNC STATS (private; opened by five quick clicks on the Quest tab) ============ -->
+<!-- ============ STUDIO SYNC STATS (private; opened by five quick clicks on the Studio Sync tab) ============ -->
 <div class="sd-back" id="ssaBack"></div>
 <aside class="sd ssa" id="ssaPanel" aria-label="Studio Sync stats" aria-hidden="true">
   <div class="sd-head">
@@ -6627,7 +6627,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // The box stays hidden until the Worker says hosting is set up, so nothing changes
   // for players before it is deployed.
   var PUB_BASE = 'https://playlist-replay.msploit.workers.dev';
-  // ---- Studio Sync stats: five quick clicks on Save and send's Quest tab slide in the Worker's private
+  // ---- Studio Sync stats: five quick clicks on Save and send's Studio Sync tab slide in the Worker's private
   // stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
   (function () {
     var clicks = [], panel = document.getElementById('ssaPanel'), back = document.getElementById('ssaBack');
