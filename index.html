@@ -2077,7 +2077,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             </div>
             <p class="muted hint-line" id="topHint">Loads your highest-PP plays into the results, then hit <b>Add all</b> to build the playlist.</p>
           </div>
-          <details class="pc-more" id="pcMore"><summary>More: ScoreSaber plays, Disconnect</summary>
+          <details class="pc-more" id="pcMore"><summary id="pcMoreSum">More: ScoreSaber plays, Disconnect</summary>
             <div class="ss-row"><button class="ghost sm" id="ssSyncBtn" type="button" title="Pull your ScoreSaber scores so the played and FC filters cover both leaderboards. After the first pull, Sync scores keeps them up to date.">+ ScoreSaber plays</button><span class="muted ss-state" id="ssState"></span></div>
             <div class="pcard-actions"><button class="ghost sm danger" id="disconnectBtn">Disconnect</button></div>
           </details>
@@ -2906,7 +2906,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:18:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T21:21:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6630,8 +6630,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var b = document.getElementById('ssSyncBtn'), s = document.getElementById('ssState'); if (!b) return;
     var p = state.player;
     b.disabled = !p || !!state.ssSyncing;
-    b.textContent = p && p.ssId ? '⟳ ScoreSaber' : '+ ScoreSaber plays';
-    if (s) s.textContent = msg != null ? msg : (p && p.ssId ? 'ScoreSaber: ' + (p.ssCount || 0) + ' plays merged' : '');
+    // After the first pull, Sync scores keeps ScoreSaber current, so the button is only for that first pull.
+    var linked = !!(p && p.ssId), sum = document.getElementById('pcMoreSum');
+    b.textContent = '+ ScoreSaber plays'; b.style.display = linked ? 'none' : '';
+    if (sum) sum.textContent = linked ? 'More: Disconnect' : 'More: ScoreSaber plays, Disconnect';
+    if (s) s.textContent = msg != null ? msg : (linked ? 'ScoreSaber: ' + (p.ssCount || 0) + ' plays merged · updates with Sync scores' : '');
   }
   function ssResolve() {
     var p = state.player;
