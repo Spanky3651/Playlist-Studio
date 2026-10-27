@@ -2793,7 +2793,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T11:10:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T11:13:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7652,6 +7652,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var ks = lqSortList(lqQuestItems(dev), '', dev).map(function (x) { return x.k; });
     if (from < 0 || to < 0 || from >= ks.length || to >= ks.length || from === to) return;
     ks.splice(to, 0, ks.splice(from, 1)[0]);
+    // ones waiting to be deleted keep their saved place, so Undo puts them back where they were
+    var old = lqOrderOf(dev), going = ks.filter(function (k) { return lqGoing(dev, k); });
+    if (going.length) {
+      ks = ks.filter(function (k) { return !lqGoing(dev, k); });
+      going.map(function (k) { return { k: k, i: old.indexOf(k) }; }).sort(function (a, b) { return a.i - b.i; })
+        .forEach(function (g) { ks.splice(g.i < 0 ? ks.length : Math.min(g.i, ks.length), 0, g.k); });
+    }
     lqOrderSave(dev, ks);
     track('lq-reorder');
   }
@@ -7664,8 +7671,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var pos = {}; lqOrderOf(devId).forEach(function (k, i) { pos[k] = i + 1; });
       list.sort(function (a, b) { return (pos[a.k] || 0) - (pos[b.k] || 0); });
     }
-    return list;
+    // waiting to be deleted: at the bottom, out of the way
+    var stay = [], going = [];
+    list.forEach(function (it) { (lqGoing(devId, it.k) ? going : stay).push(it); });
+    return stay.concat(going);
   }
+  function lqGoing(devId, k) { var pw = devId && lqPendingFor(devId, k); return !!(pw && pw.remove); }
   function lqFilterHtml(devId, fl, nm) {
     var srt = lqSortGet(), dv = esc(devId), o = function (v, t) { return '<option value="' + v + '"' + (srt === v ? ' selected' : '') + '>' + t + '</option>'; };
     return '<div class="lq-filter"><input type="text" id="lqFilter-' + dv + '" data-lq-filter="' + dv + '" value="' + esc(fl) + '" placeholder="Filter playlists" aria-label="Filter playlists on ' + esc(nm) + '" autocomplete="off" spellcheck="false" />' +
