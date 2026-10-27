@@ -91,19 +91,27 @@ Connect your profile and a **For You** card sits at the top of the results colum
 **Stats** in the profile card opens your BeatLeader, ScoreSaber and AccSaber ranks side by side, with rank movement, the gap to the next player, recent scores with in-app replays, and a share link (`?stats=<id>`). **+ Add** on any recent score drops that map into Your Playlist, and **Build from top 50 plays** loads that player's best plays as results, which is handy on a friend's shared link. On someone else's card, **Maps [name] beats you on** compares their top 300 ranked plays with yours and loads the maps where their accuracy is higher, closest gaps first, with their accuracy shown next to yours on each row.
 
 ### Clan maps (BeatLeader Global Map)
-In a BeatLeader clan? Your own Stats card gets a **Clan maps** button. On every ranked map, a clan's total is its members' best scores sorted by pp, each worth 80% of the one above, and the highest total owns the map. Only your first clan gets your scores. The view has two lists, both built from BeatLeader's live clan data:
+In a BeatLeader clan? Its tag shows as a chip under your name in **Your Profile**. Tap it to open the clan view. On every ranked map, a clan's total is its members' best scores sorted by pp, each worth 80% of the one above, and the highest total owns the map. Only your first clan gets your scores. The view has two lists, both built from BeatLeader's live clan data:
 - **Defend**: maps your clan holds by a thin lead, ranked by how much of that lead *your* realistic run would add. Maps where your clan has few scores are where one run moves the number.
 - **Capture**: maps another clan owns, with the exact score and accuracy you'd need (no modifiers or Slower Song), where you'd land in your clan's list, and the clanmate who is closest, including "replay without SS" chances.
 
 Your realistic run is your 75th percentile accuracy on no-mod ranked scores near each map's stars, only where you have enough plays to judge. The header shows your clan's rank, maps held, how many members count for it, the net change since yesterday and, from your second visit, the maps gained and lost since your last one. In more than one clan? Pick another one to see it as a what-if. Your usual filters still apply, and rows add to Your Playlist like any other result.
 
-### AccSaber clan missions
-In an AccSaber clan? Your own Stats card also gets an **AccSaber clan** button. AccSaber clans don't own maps. They earn standing from three weekly clan missions (and, during a season, from wars), so this view shows your clan's missions for the week with live progress, what you need to do to count as helping, and map picks that move each one:
+### AccSaber clan: season race, wars and missions
+In an AccSaber clan? It gets a chip in **Your Profile** too, with your clan's season rank. AccSaber clans don't own maps. They earn standing from three weekly clan missions (and, during a season, from wars), so this view shows your clan's missions for the week with live progress, what you need to do to count as helping, and map picks that move each one:
 - **New scores** (Clan scores, Everyone sets scores, and the Standard, Tech and True Acc pushes): ranked AccSaber maps you haven't cleared near your usual complexity, plus old scores below your usual accuracy. A first clear or a better score both count.
 - **Clan playtime**: short maps near your level, played or not, since every finished play counts.
 - **Clan XP drive**: short first clears, because a first clear pays the full XP bonus. It shows about how much XP each one pays you.
 
-Your usual level comes from your own AccSaber scores in each category. Picks stay at or below the top of the range you've cleared, and maps you've only played with Slower Song are pushed down because AccSaber doesn't count SS runs. Switch between the BeatLeader and AccSaber clan views from either header. Wars aren't covered yet.
+Your usual level comes from your own AccSaber scores in each category. Picks stay at or below the top of the range you've cleared, and maps you've only played with Slower Song are pushed down because AccSaber doesn't count SS runs. Switch between the BeatLeader and AccSaber clan views from either header.
+
+The top of the view shows your clan's season rank and standing (base plus earned), how far you are from the clan above, the clans around you, and the wars running on AccSaber, with your BeatLeader clan flagged if it's in one. With no war on, a **War ready** card shows your skill and who you'd be allowed to target.
+
+When your clan is in a war, the chip turns red and a banner appears under your name (it shows from the countdown until the war ends, and never otherwise). The clan view then shows:
+- **The board**: both sides' stake left, damage per hour for the last day, your guard, who has hit you, the latest hits, and the enemies you can hit, closest to breaking first.
+- **War maps**: the war's maps ranked by the best hit you could land at your usual accuracy. A hit lands on an enemy whose score you beat, or who has no score there, if their skill is at least 80% of yours. Each map shows how many enemies you beat, your biggest hit, enemies with no score, and chips. Damage numbers are estimates from the war's own rules.
+
+During the prep countdown the war maps are already listed, so you can practice them before hits count.
 
 ### Preview before you commit
 - ▶ on any row opens an in-app preview - the map rendered in [ArcViewer](https://allpoland.github.io/ArcViewer/) (notes + audio) plus a BeatSaver audio clip, with links out to BeatSaver and the full viewer.
