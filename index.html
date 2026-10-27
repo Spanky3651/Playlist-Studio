@@ -600,6 +600,20 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-peek li.lq-drag{position:relative;z-index:5;background:#0d1626;box-shadow:0 8px 22px rgba(0,0,0,.65);border-radius:6px;cursor:grabbing;}
 .lq-peek li.lq-drag .pk-grip{cursor:grabbing;color:#cfe0ff;}
 .lq-peek .pk-note{font-size:12px;color:var(--muted);}
+.lq-peek .pk-sum{font-size:12.5px;color:#c6d2e3;}
+.lq-peek li{flex-wrap:wrap;}
+.lq-peek .pk-d{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 10px;max-width:60%;}
+.lq-peek .pk-dx{white-space:nowrap;}
+.lq-peek .pk-st{color:#e6c35c;margin-left:4px;}
+.lq-peek .pk-sc{margin-left:6px;font-weight:600;}
+.lq-peek .pk-sc.fc{color:#3ddc84;} .lq-peek .pk-sc.ms{color:#ff7a8a;} .lq-peek .pk-sc.nw{color:#7fa7d9;font-weight:500;}
+.lq-peek .pk-md{margin-left:4px;font-size:11px;color:#9fb0c8;border:1px solid #2a3850;border-radius:4px;padding:0 3px;}
+.lq-peek .pk-x{flex:none;display:grid;place-items:center;width:26px;height:26px;min-width:0;min-height:0;padding:0;border:0;border-radius:6px;background:none;box-shadow:none;color:#5d6f8a;font-size:17px;line-height:1;}
+.lq-peek .pk-x:hover,.lq-peek .pk-x:focus-visible{color:#ff7a8a;background:#1a1016;border:0;box-shadow:none;}
+.lq-peek li.pk-gone .pk-n,.lq-peek li.pk-gone .pk-d,.lq-peek li.pk-gone img{opacity:.38;}
+.lq-peek li.pk-gone .pk-n{text-decoration:line-through;}
+.lq-peek .pk-gone-l{font-size:12px;color:#ff9aa6;}
+@media (max-width:640px){.lq-peek .pk-d{order:5;max-width:none;width:100%;justify-content:flex-start;padding-left:62px;margin-top:-4px;}}
 .lq-pl.lq-dropping{outline:2px dashed #2f8cff;outline-offset:-3px;background:#0c1626;}
 .lq-pl .lq-ren{display:flex;gap:6px;flex:1;min-width:0;align-items:center;}
 .lq-pl .lq-ren input{flex:1;min-width:0;padding:7px 10px;font-size:14px;}
@@ -2779,7 +2793,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T10:52:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T11:10:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7786,23 +7800,38 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     lqLatest(dev, k).then(function () { lqRender(); }, function (err) { state.lq.peekErr = key; lqRender(); });
   }
   function lqPeekHtml(d, it, key, id) {
-    var c = lqPeekCache[key], pl = c && c.pl, rows = [], nMaps = 0;
+    var c = lqPeekCache[key], pl = c && c.pl, rows = [], nMaps = 0, sv0 = lqPkSave[key], seenH = {}, secs = 0, unk = 0, smin = 99, smax = 0;
     var edHere = state.lq.editing && state.lq.editing.dev === d.id && state.lq.editing.k === it.k;
     var canMove = pl && pl.songs.length > 1 && !edHere && !state.lq.busy;
     if (pl) pl.songs.forEach(function (sg, si) {
       var ds = Array.isArray(sg.difficulties) && sg.difficulties.length ? sg.difficulties : [];
-      nMaps += ds.length || 1;
+      if (!(sv0 && sv0.del[String(sg.hash || '').toLowerCase()])) nMaps += ds.length || 1;
+      var h = String(sg.hash || '').toLowerCase(), inf = lqPkInfo[h], gone = !!(sv0 && sv0.del[h]);
+      if (!seenH[h]) { seenH[h] = 1; if (inf && inf.d) secs += inf.d; else if (!gone) unk++; }
       var dh = ds.map(function (x) {
-        var dn = BplistExporter.mapDifficultyName(x.name), dc = SV_DIFF[dn] || [dn, '#8792a6'];
-        return '<span style="color:' + dc[1] + '">' + esc(dc[0]) + (x.characteristic && x.characteristic !== 'Standard' ? ' ' + esc(x.characteristic) : '') + '</span>';
-      }).join(' · ');
+        var dn = BplistExporter.mapDifficultyName(x.name), dc = SV_DIFF[dn] || [dn, '#8792a6'], mode = x.characteristic || 'Standard';
+        var st = lqPkStars(h, dn, mode); if (st > 0 && !gone) { smin = Math.min(smin, st); smax = Math.max(smax, st); }
+        return '<span class="pk-dx"><span style="color:' + dc[1] + '">' + esc(dc[0]) + (mode !== 'Standard' ? ' ' + esc(mode) : '') + '</span>' +
+          (st > 0 ? '<span class="pk-st">' + st.toFixed(2) + '★</span>' : '') + lqPkScore(h, dn, mode) + '</span>';
+      }).join('');
       var nm = sg.songName || sg.hash || '';
+      if (gone) {
+        rows.push('<li class="pk-gone"><img src="https://eu.cdn.beatsaver.com/' + esc(h) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(nm) + '</span><span class="pk-gone-l">Removed</span>' +
+          lqBtn(lqIco('undo') + 'Undo', 'data-lq-pkundo="' + esc(key) + '|' + esc(h) + '"', 'ghost sm') + '</li>');
+        return;
+      }
       rows.push('<li>' + (canMove ? '<button type="button" class="pk-grip" data-lq-pkgrip="' + esc(key) + '|' + si + '" title="Drag to reorder" aria-label="Move ' + esc(nm) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '') +
         '<img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(nm) + (sg.levelAuthorName ? '<small>' + esc(sg.levelAuthorName) + '</small>' : '') + '</span>' +
-        (dh ? '<span class="pk-d">' + dh + '</span>' : '') + '</li>');
+        (dh ? '<span class="pk-d">' + dh + '</span>' : '') +
+        (canMove || (pl.songs.length === 1 && !edHere && !state.lq.busy) ? '<button type="button" class="pk-x" data-lq-pkrm="' + esc(key) + '|' + esc(h) + '" title="Remove from this playlist" aria-label="Remove ' + esc(nm) + '">\u00d7</button>' : '') + '</li>');
     });
-    var pkNote = lqPkSave[key] ? '<span class="pk-note">· saving the new order\u2026</span>' : edHere ? '<span class="pk-note">· open in the editor, reorder it there</span>' : canMove ? '<span class="pk-note">· drag to reorder</span>' : '';
-    var head = '<div class="lq-peek-h">' + (pl ? '<b>' + mapsLabel(nMaps, pl.songs.length) + '</b>' + (lqPendingFor(d.id, it.k) ? '<span>· the change on its way</span>' : '') + pkNote : '') + '<span class="sp"></span>' +
+    if (pl) lqPkNeed(pl);
+    var sum = [];
+    if (secs) sum.push((unk ? '\u2248' : '') + fmtDur(secs));
+    if (smax > 0) sum.push(smin === smax ? smin.toFixed(1) + '★' : smin.toFixed(1) + ' to ' + smax.toFixed(1) + '★');
+    var pkNote = (sum.length ? '<span class="pk-sum">· ' + sum.join(' · ') + '</span>' : '') + (lqPkSave[key] ? '<span class="pk-note">· ' + (Object.keys(lqPkSave[key].del).length ? 'sending in a few seconds\u2026' : 'saving the new order\u2026') + '</span>' : edHere ? '<span class="pk-note">· open in the editor, reorder it there</span>' : canMove ? '<span class="pk-note">· drag to reorder</span>' : '');
+    var nSongs = pl ? pl.songs.filter(function (x) { return !(sv0 && sv0.del[String(x.hash || '').toLowerCase()]); }).length : 0;
+    var head = '<div class="lq-peek-h">' + (pl ? '<b>' + mapsLabel(nMaps, nSongs) + '</b>' + (lqPendingFor(d.id, it.k) ? '<span>· the change on its way</span>' : '') + pkNote : '') + '<span class="sp"></span>' +
       lqBtn('Close', 'data-lq-peek=""') + '</div>';
     var body = pl ? (rows.length ? '<ol>' + rows.join('') + '</ol>' : '<div class="pk-msg">This playlist is empty.</div>')
       : state.lq.peekErr === key ? '<div class="pk-msg">Couldn\u2019t read it from the headset. Press Sync now in game and try again.</div>' : '<div class="pk-msg">Loading\u2026</div>';
@@ -7810,21 +7839,77 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   // Reorder in the peek: move the song in the shown copy right away, send the order once you stop for a moment.
   var lqPkSave = {}, lqPkTimer = {};
+  function lqPkState(key) {
+    var c = lqPeekCache[key], pl = c && c.pl; if (!pl) return null;
+    var sv = lqPkSave[key] || { del: {} };
+    sv.order = pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); });
+    sv.n = (sv.n || 0) + 1;
+    return lqPkSave[key] = sv;
+  }
+  function lqPkLater(key) {
+    var sv = lqPkSave[key]; clearTimeout(lqPkTimer[key]);
+    lqPkTimer[key] = setTimeout(function () { lqPkSend(key); }, sv && Object.keys(sv.del).length ? 4000 : 900);
+  }
+  var lqPkInfo = {}, lqPkAsk = {};
+  function lqPkNeed(pl) {
+    var hs = [];
+    pl.songs.forEach(function (x) { var h = String(x.hash || '').toLowerCase(); if (/^[0-9a-f]{40}$/.test(h) && !lqPkInfo[h] && !lqPkAsk[h]) { lqPkAsk[h] = 1; hs.push(h); } });
+    if (!hs.length) return;
+    setTimeout(function () {
+      var chunks = []; for (var i = 0; i < hs.length; i += 50) chunks.push(hs.slice(i, i + 50));
+      chunks.reduce(function (p, ch) {
+        return p.then(function () {
+          return fetchTimeout(BS_API + '/maps/hash/' + ch.join(','), 10000).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); }).then(function (j) {
+            var by = {};
+            if (j && j.versions) by[ch[0]] = j; else if (j) Object.keys(j).forEach(function (k) { by[k.toLowerCase()] = j[k]; });
+            ch.forEach(function (h) {
+              var m = by[h], inf = { d: 0, s: {} };
+              if (m) {
+                var vs = m.versions || [], v = vs.filter(function (x) { return x && x.hash && x.hash.toLowerCase() === h; })[0] || vs[0] || {};
+                inf.d = (m.metadata && m.metadata.duration) || 0;
+                (v.diffs || []).forEach(function (d) { if (d.blStars > 0) inf.s[d.difficulty + '|' + d.characteristic] = d.blStars; });
+              }
+              lqPkInfo[h] = inf;
+            });
+          }, function () { ch.forEach(function (h) { setTimeout(function () { delete lqPkAsk[h]; }, 120000); }); });   // BeatSaver down: try again in a while, not on every redraw
+        });
+      }, Promise.resolve()).then(function () { if (state.lq.peek && hs.some(function (h) { return lqPkInfo[h]; })) lqRender(); });
+    }, 0);
+  }
+  function lqPkStars(h, dn, mode) {
+    var inf = lqPkInfo[h], k = h + '|' + dn + '|' + mode, pe = state.playIndex && state.playIndex[k];
+    return (inf && inf.s[dn + '|' + mode]) || (pe && pe.stars) || 0;
+  }
+  function lqPkScore(h, dn, mode) {
+    if (!state.player) return '';
+    var sc = state.scores[h + '|' + dn + '|' + mode];
+    if (!sc) return '<span class="pk-sc nw" title="You haven\u2019t played this one">new</span>';
+    var acc = ((sc.a || 0) * 100).toFixed(2) + '%', md = (String(sc.md || '').match(/\b(SS|FS|SF)\b/) || [])[1];
+    var tag = isNF(sc) ? 'NF ' : sc.fc ? 'FC ' : sc.m ? sc.m + '\u00d7 ' : '';
+    return '<span class="pk-sc ' + (sc.fc && !isNF(sc) ? 'fc' : sc.m || isNF(sc) ? 'ms' : '') + '" title="Your best: ' + acc + (sc.fc ? ', full combo' : sc.m ? ', ' + sc.m + ' miss' + (sc.m === 1 ? '' : 'es') : '') + (md ? ' on ' + SV_MODS[md] : '') + '">' + tag + acc + '</span>' +
+      (md ? '<span class="pk-md">' + md + '</span>' : '');
+  }
   function lqPkMove(key, from, to) {
     var c = lqPeekCache[key], pl = c && c.pl; if (!pl || to < 0 || to >= pl.songs.length || from === to) return;
     var sg = pl.songs.splice(from, 1)[0]; pl.songs.splice(to, 0, sg);
-    var want = pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); });
-    lqPkSave[key] = want; lqRender();
-    clearTimeout(lqPkTimer[key]);
-    lqPkTimer[key] = setTimeout(function () { lqPkSend(key); }, 900);
+    lqPkState(key); lqRender(); lqPkLater(key);
+  }
+  function lqPkRemove(key, h, undo) {
+    var sv = lqPkState(key); if (!sv) return;
+    if (undo) delete sv.del[h]; else sv.del[h] = 1;
+    lqRender(); lqPkLater(key);
+    if (!undo) track('lq-peek-remove');
   }
   function lqPkSend(key) {
     var want = lqPkSave[key]; if (!want) return;
-    var pr = key.split('|'), dev = pr[0], k = pr[1];
+    var pr = key.split('|'), dev = pr[0], k = pr[1], nDel = 0, n0 = want.n;
     lqChange(dev, k, function (pl) {
-      var cur = lqPkSave[key] || want, at = {};
+      var sv = lqPkSave[key] || want, cur = sv.order, at = {};
       cur.forEach(function (h, i) { if (!(h in at)) at[h] = i; });
       var before = pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); }).join();
+      var c0 = pl.songs.length;
+      pl.songs = pl.songs.filter(function (x) { return !sv.del[String(x.hash || '').toLowerCase()]; });
+      nDel = c0 - pl.songs.length;
       // songs added elsewhere since keep their place after the ones you moved
       pl.songs = pl.songs.map(function (x, i) { return { x: x, i: i }; }).sort(function (a, b) {
         var ha = String(a.x.hash || '').toLowerCase(), hb = String(b.x.hash || '').toLowerCase();
@@ -7833,11 +7918,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }).map(function (o) { return o.x; });
       return pl.songs.map(function (x) { return String(x.hash || '').toLowerCase(); }).join() !== before;
     }).then(function (r) {
-      if (lqPkSave[key] === want) delete lqPkSave[key];
-      if (!r.same) { toast('New order sent. ' + lqDevName(dev) + ' gets it on its next sync.', 'ok'); track('lq-peek-reorder'); }
+      if (lqPkSave[key] === want && want.n === n0) delete lqPkSave[key];
+      if (!r.same) { toast((nDel ? 'Removed ' + songsLabel(nDel) + '. ' : 'New order sent. ') + lqDevName(dev) + ' gets it on its next sync.', 'ok'); track(nDel ? 'lq-peek-removed' : 'lq-peek-reorder'); }
       lqRender();
     }, function (err) {
-      if (lqPkSave[key] === want) delete lqPkSave[key];
+      if (lqPkSave[key] === want && want.n === n0) delete lqPkSave[key];
       toast((err && err.message) || 'Couldn\u2019t send the new order.', 'warn');
       lqLatest(dev, k).then(function () { lqRender(); }, function () { lqRender(); });
     });
@@ -8269,6 +8354,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-dupcancel')) { state.lq.dup = null; lqRender(); }
       else if (t.hasAttribute('data-lq-restoreopen')) { var r = t.getAttribute('data-lq-restoreopen'); state.lq.restoreOpen = state.lq.restoreOpen === r ? null : r; lqRender(); }
       else if (t.hasAttribute('data-lq-peek')) { state.lq.peek = null; lqRender(); }
+      else if (t.hasAttribute('data-lq-pkrm') || t.hasAttribute('data-lq-pkundo')) {
+        var pa = t.getAttribute('data-lq-pkrm') || t.getAttribute('data-lq-pkundo'), cut = pa.lastIndexOf('|');
+        lqPkRemove(pa.slice(0, cut), pa.slice(cut + 1), t.hasAttribute('data-lq-pkundo'));
+        var nx = document.querySelector('[data-lq-pkundo="' + pa + '"], [data-lq-pkrm="' + pa + '"]'); if (nx) nx.focus();
+      }
       else if (t.hasAttribute('data-lq-plrn')) { state.lq.plRename = t.getAttribute('data-lq-plrn') || null; lqRender(); var pri = document.getElementById('lqPlRenameIn'); if (pri) { pri.focus(); pri.select(); } }
       else if (t.hasAttribute('data-lq-plrnsave')) { var prs = t.getAttribute('data-lq-plrnsave').split('|'), prv = document.getElementById('lqPlRenameIn'); lqPlRename(prs[0], prs[1], prv ? prv.value : ''); }
       else if (t.hasAttribute('data-lq-dl')) { var dls = t.getAttribute('data-lq-dl').split('|'); lqDownload(dls[0], dls[1]); }
@@ -8376,7 +8466,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var r = pkRows(g); if (!r) return;
       e.preventDefault();
       var from = r.rows.indexOf(r.row);
-      lqDrag = { pk: pkKey(g), row: r.row, list: r.list, rows: r.rows, from: from, to: from, y0: e.clientY, id: e.pointerId,
+      lqDrag = { pk: pkKey(g), row: r.row, list: r.list, rows: r.rows, from: from, to: from, y0: e.clientY, lastY: e.clientY, st0: r.list.scrollTop, id: e.pointerId,
         mids: r.rows.map(function (x) { var b = x.getBoundingClientRect(); return b.top + b.height / 2; }), h: r.row.getBoundingClientRect().height };
       try { g.setPointerCapture(e.pointerId); } catch (x) {}
       r.row.classList.add('lq-drag'); r.list.classList.add('lq-dragging');
@@ -8399,8 +8489,29 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       try { g.setPointerCapture(e.pointerId); } catch (x) {}
       r.row.classList.add('lq-drag'); r.list.classList.add('lq-dragging');
     });
+    // Peek drag: the list scrolls under a finger held near its top or bottom edge.
+    var pkDragMove = function (d) {
+      var ds = d.list.scrollTop - d.st0, dy = d.lastY - d.y0, c = d.mids[d.from] + dy + ds, to = d.from;
+      d.row.style.transform = 'translateY(' + (dy + ds) + 'px)';
+      while (to > 0 && c < d.mids[to - 1]) to--;
+      while (to < d.rows.length - 1 && c > d.mids[to + 1]) to++;
+      d.to = to;
+      d.rows.forEach(function (x, i) {
+        if (x === d.row) return;
+        var sh = d.from < to && i > d.from && i <= to ? -d.h : d.from > to && i >= to && i < d.from ? d.h : 0;
+        x.style.transform = sh ? 'translateY(' + sh + 'px)' : '';
+      });
+      var b = d.list.getBoundingClientRect(), edge = 36;
+      d.v = d.lastY < b.top + edge ? -Math.min(14, Math.ceil((b.top + edge - d.lastY) / 3)) : d.lastY > b.bottom - edge ? Math.min(14, Math.ceil((d.lastY - b.bottom + edge) / 3)) : 0;
+      if (d.v && !d.raf) d.raf = requestAnimationFrame(function () {
+        d.raf = null; if (lqDrag !== d || !d.v) return;
+        var st = d.list.scrollTop; d.list.scrollTop += d.v;
+        if (d.list.scrollTop !== st) pkDragMove(d);
+      });
+    };
     document.addEventListener('pointermove', function (e) {
       var d = lqDrag; if (!d || e.pointerId !== d.id) return;
+      if (d.pk) { d.lastY = e.clientY; pkDragMove(d); return; }
       var dy = e.clientY - d.y0, c = d.mids[d.from] + dy, to = d.from;
       d.row.style.transform = 'translateY(' + dy + 'px)';
       while (to > 0 && c < d.mids[to - 1]) to--;
@@ -8417,7 +8528,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       lqDrag = null;
       d.rows.forEach(function (x) { x.style.transform = ''; });
       d.row.classList.remove('lq-drag'); d.list.classList.remove('lq-dragging');
-      if (d.pk) { if (d.to !== d.from) lqPkMove(d.pk, d.from, d.to); else if (d.dirty) lqRender(); return; }
+      if (d.pk) { if (d.raf) cancelAnimationFrame(d.raf); d.v = 0; var keep = d.list.scrollTop; if (d.to !== d.from) lqPkMove(d.pk, d.from, d.to); else if (d.dirty) lqRender(); var ol = document.querySelector('#lqQuest .lq-peek ol'); if (ol) ol.scrollTop = keep; return; }
       if (d.to !== d.from) lqMove(d.dev, d.from, d.to); else if (d.dirty) lqRender();
     };
     document.addEventListener('pointerup', dragEnd);
