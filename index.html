@@ -2717,7 +2717,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
                   <li id="ssStep1"><b>Install the mod<span id="ssStep1St"></span></b>
                     <p id="ssStep1Done" hidden>Installed it with ModsBeforeFriday or QuestPatcher? Go on to step 2. <button type="button" class="lq-a" id="ssStep1Show">Show the install steps again</button></p>
                     <div id="ssStep1Body">
-                    <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.4.0/StudioSync-1.04.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.4.0 &middot; Beat Saber 1.40.8 &middot; 1.8 MB</a></div>
+                    <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.9.0/StudioSync-1.40.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.9.0 &middot; Beat Saber 1.40.8</a></div>
                     <p>On a PC or Android phone, open <a href="https://lauriethefish.github.io/ModsBeforeFriday/" target="_blank" rel="noopener" data-gc="mbf-link">ModsBeforeFriday</a> in Chrome or Edge and plug in your Quest. Choose <b>Upload Files</b> and pick the <code>.qmod</code>. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.</p>
                     <p class="ss-hmd" id="ssHmd" hidden>You're in the headset browser, so do this step from a PC or phone.</p>
                     </div>
@@ -2838,7 +2838,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T18:23:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T19:08:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6730,16 +6730,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // a linked library, the Quest browser, the Export panel's Quest tab, or an explicit open
   // (the Quest tab tip, the "Playing on Quest?" note, the In-Game Sync line, the footer, #studio-sync).
   // "Not on Quest? Hide" wins over the automatic signals; an explicit open clears it.
-  var LQ_WANT = 'playlistStudio.lq.want', LQ_HIDE = 'playlistStudio.lq.hide', LQ_BETA = 'playlistStudio.lq.beta', LQ_NEXT = 'playlistStudio.lq.next';
+  var LQ_WANT = 'playlistStudio.lq.want', LQ_HIDE = 'playlistStudio.lq.hide', LQ_BETA = 'playlistStudio.lq.beta';
   var LQ_QUEST_UA = /OculusBrowser|Quest/i.test(navigator.userAgent || '');
   function lsFlag(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
   function lsFlagSet(k, on) { try { if (on) localStorage.setItem(k, '1'); else localStorage.removeItem(k); } catch (e) {} }
   function lqFlagsFromUrl() {
     var q = null; try { q = new URLSearchParams(location.search).get('studiosync'); } catch (e) {}
     if (q === '1') { lsFlagSet(LQ_WANT, true); lsFlagSet(LQ_HIDE, false); } else if (q === '0') { lsFlagSet(LQ_HIDE, true); lsFlagSet(LQ_WANT, false); lsFlagSet(LQ_BETA, false); }
-    // ?ssnext=1 turns on the Studio Sync 0.9 parts in this browser before 0.9.0 is the latest release (testing); ?ssnext=0 turns them off.
-    var nx = null; try { nx = new URLSearchParams(location.search).get('ssnext'); } catch (e) {}
-    if (nx === '1' || nx === '0') lsFlagSet(LQ_NEXT, nx === '1');
+    try { localStorage.removeItem('playlistStudio.lq.next'); } catch (e) {}   // the 0.9 test switch, no longer used
     return q === '1' || q === '0';
   }
   lqFlagsFromUrl();
@@ -7198,10 +7196,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // count as changes on their way like playlist sends do.
   function lqOrderWaiting(devId) { var q = state.lq.quest[devId]; return !!(q && lqCan(devId, 'order') && (q.orderT || 0) > (q.orderApplied || 0)); }
   function lqCleanWaiting(devId) { var q = state.lq.quest[devId]; return !!(q && lqCan(devId, 'cleanup') && q.cleanup && q.cleanup.id); }
-  // Studio Sync 0.9 (missing songs per playlist, Get missing from here, per-playlist auto-download) stays hidden until
-  // 0.9.0 is the latest release on GitHub, so nobody sees it on a test build. ?ssnext=1 shows it early in one browser.
-  function ssNextOn() { return ssVer(ssRel.tag) >= ssVer('0.9.0') || lsFlag(LQ_NEXT); }
-  function lqNext(devId, f) { return lqCan(devId, f) && ssNextOn(); }
+  // Studio Sync 0.9: missing songs per playlist, Get missing from here, per-playlist auto-download.
+  function lqNext(devId, f) { return lqCan(devId, f); }
   function lqGmWaiting(devId) { var q = state.lq.quest[devId]; return !!(q && lqNext(devId, 'missing') && q.getMissing && q.getMissing.id); }
   function lqAdlWaiting(devId) { var q = state.lq.quest[devId]; return !!(q && lqNext(devId, 'autodl') && q.autodl && (q.autodl.t || 0) > (q.autodlApplied || 0)); }
   function lqWaitN(devId) { var q = state.lq.quest[devId]; return (q && Array.isArray(q.pending) ? q.pending.length : 0) + (lqOrderWaiting(devId) ? 1 : 0) + (lqCleanWaiting(devId) ? 1 : 0) + (lqGmWaiting(devId) ? 1 : 0) + (lqAdlWaiting(devId) ? 1 : 0); }
@@ -8573,11 +8569,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var SS_NUDGE = 'playlistStudio.ssNudge.v1';
   function ssVer(tag) { var m = String(tag || '').match(/(\d+)\.(\d+)\.(\d+)/); return m ? +m[1] * 1e6 + +m[2] * 1e3 + +m[3] : 0; }
   function ssNudgeHtml(d) {
-    var q = state.lq.quest[d.id]; if (!q || !q.updated || !Array.isArray(q.features) || lqCan(d.id, 'order') || ssVer(ssRel.tag) < ssVer('0.8.0')) return '';
+    var q = state.lq.quest[d.id]; if (!q || !q.updated || !Array.isArray(q.features)) return '';
+    var old8 = !lqCan(d.id, 'order') && ssVer(ssRel.tag) >= ssVer('0.8.0'), old9 = !lqCan(d.id, 'missing') && ssVer(ssRel.tag) >= ssVer('0.9.0');
+    if (!old8 && !old9) return '';
     var m = {}; try { m = JSON.parse(localStorage.getItem(SS_NUDGE) || '{}') || {}; } catch (e) {}
     if (m[d.id] === ssRel.tag) return '';
     var v = esc(String(ssRel.tag).replace(/^v/i, ''));
-    return '<div class="lq-nudge"><span><b>' + esc(lqDevName(d.id)) + ' is on an older Studio Sync.</b> Update to ' + v + ' for storage, Clean up songs and in-game order.</span><span class="sp"></span>' +
+    return '<div class="lq-nudge"><span><b>' + esc(lqDevName(d.id)) + ' is on an older Studio Sync.</b> Update to ' + v + ' for ' + (old8 ? 'storage, Clean up songs, in-game order and download progress in the menu' : 'download progress in the menu, missing songs and auto-download per playlist from here') + '.</span><span class="sp"></span>' +
       '<a class="ss-btn" href="' + esc(ssRel.url) + '" target="_blank" rel="noopener" data-gc="studiosync-update">Get ' + v + '</a>' + lqBtn('Not now', 'data-lq-nudgeno="' + esc(d.id) + '"') + '</div>';
   }
   function ssNudgeNo(devId) {
@@ -8610,7 +8608,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   // The download follows the latest GitHub release, so a new mod version needs no Studio change.
   var SS_REPO = 'https://github.com/Spanky3651/Studio-Sync', SS_REL_KEY = 'playlistStudio.ss.release';
-  var ssRel = { tag: 'v0.4.0', game: '1.40.8', url: SS_REPO + '/releases/download/v0.4.0/StudioSync-1.04.8.qmod', page: SS_REPO + '/releases', size: 1890673 }, ssRelTried = false;
+  var ssRel = { tag: 'v0.9.0', game: '1.40.8', url: SS_REPO + '/releases/download/v0.9.0/StudioSync-1.40.8.qmod', page: SS_REPO + '/releases', size: 0 }, ssRelTried = false;
   function ssApplyRel() {
     var a = document.getElementById('ssDlBtn'), v = document.getElementById('ssVer'); if (!a || !v) return;
     a.href = ssRel.url; v.href = ssRel.page;
