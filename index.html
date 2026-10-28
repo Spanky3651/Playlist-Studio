@@ -694,7 +694,26 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 @media (hover:none){.lq-drophint{display:none;}.lq-dropzone{margin-bottom:10px;}}
 @media(max-width:720px){.lq-cov{width:36px;height:36px;}.lq-pl{padding-left:10px;}.lq-pl .lq-lbl{display:none;}.lq-pl [data-lq-edit]{width:36px;height:36px;padding:0;justify-content:center;}}
 .lq-st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
-.lq-miss{color:#ffb547;white-space:nowrap;} .lq-noadl{white-space:nowrap;}
+.lq-miss{color:#ffb547;white-space:nowrap;}
+.lq-favlist{border-color:#4a2134;background:linear-gradient(90deg,#14080e,#060c16 55%);}
+.lq-favlist .lq-pl{border-top:0;}
+.lq-fav-th{width:40px;height:40px;border-radius:8px;flex:none;display:grid;place-items:center;background:#2a0f1b;border:1px solid #6b2740;color:#ff5c8a;font-size:19px;line-height:1;}
+.lq-fav-th svg{width:19px;height:19px;color:#7fb0ff;}
+.lq-fav-th.re{background:#0f1d36;border-color:#23406f;}
+.lq-fav-tag{font-size:11px;color:#ff8fb0;border:1px solid #6b2740;border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:2px;font-weight:500;}
+.lq-favlist.gone{border-color:#23406f;background:#0c1527;}
+.lq-favlist .lq-peek{margin-top:0;}
+.lq-fav-off{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border:1px dashed #2a3850;border-radius:12px;background:#070b12;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.lq-fav-off .ic{color:#5d6f8a;font-size:18px;}
+.lq-heart{flex:none;display:grid;place-items:center;width:28px;height:28px;min-width:0;min-height:0;padding:0;border:0;border-radius:7px;background:none;box-shadow:none;color:#3f4f68;font-size:17px;line-height:1;cursor:pointer;}
+.lq-heart.on{color:#ff5c8a;}
+.lq-heart:hover,.lq-heart:focus-visible{background:#1a1220;border:0;box-shadow:none;}
+.lq-peek li.off .pk-n{opacity:.5;}
+.lq-fav-st{font-size:12px;flex:none;}
+.lq-fav-more{display:block;margin:6px auto 2px;}
+.lq-mi-n{margin-left:auto;padding-left:10px;color:var(--muted);font-size:12px;}
+.row-btn.fav{color:#3f4f68;font-size:16px;}
+.row-btn.fav.on{color:#ff5c8a;} .lq-noadl{white-space:nowrap;}
 .lq-dot2{width:7px;height:7px;border-radius:50%;background:#ffb84d;flex:none;}
 .lq-dot2.new{background:#5b9bff;}
 .lq-dot2.ok{background:#3ddc84;}
@@ -2626,6 +2645,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
           <div class="pl-name" id="plNameRow" hidden><label class="pl-name-lbl" for="plNameIn">Name</label><input type="text" id="plNameIn" class="pl-name-in" maxlength="80" autocomplete="off" spellcheck="false" /><span class="pl-name-tag" id="plNameTag" title="Studio picked this name from your maps. It's used when you save or send the playlist. Type to rename it." hidden>Suggested</span></div>
           <div class="list-actions">
+            <button class="ghost sm" id="favAddBtn" type="button" hidden title="Add every favorite on your Quest to this playlist">♥ Add favorites</button>
             <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
             <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
             <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
@@ -2975,7 +2995,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T16:04Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T20:23Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5698,13 +5718,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function renderBasket() {
     noteBasketChange(); plNameSync();
     var list = el.basketList, n = state.basket.length;
+    var fab = document.getElementById('favAddBtn'); if (fab) fab.hidden = !lqFavDev();
     el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) + rtPart() : '';
     if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> - click a row or hit <b>+ Add all</b>.</p></div>'; plAfterRender(); return; }
-    var last = n - 1, items = [];
+    var last = n - 1, items = [], fd = lqFavDev(), fdn = fd ? esc(lqDevName(fd)) : '';
     state.basket.forEach(function (e) {
-      var k = keyOf(e);
+      var k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
       items.push({ key: k, html: '<div class="song-row bk" draggable="true" data-key="' + esc(k) + '"><span class="bk-grip" title="Drag to reorder" aria-hidden="true">⠿</span><span class="bk-idx"></span>' + coverImg(e) + infoBlock(e) +
-        '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) + '<div class="reorder-col">' +
+        '<div class="row-actions">' + (fd ? '<button class="row-btn fav' + (fon ? ' on' : '') + '" data-act="fav" aria-pressed="' + !!fon + '" title="' + (fon ? 'A favorite on ' + fdn + '. Click to unfavorite' : 'Favorite on ' + fdn) + '">' + (fon ? '♥' : '♡') + '</button>' : '') +
+        '<button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) + '<div class="reorder-col">' +
           '<button class="reorder" data-act="up" title="Move up">▲</button>' +
           '<button class="reorder" data-act="down" title="Move down">▼</button></div>' +
           '<button class="row-btn rm" data-act="remove" title="Remove">×</button>' +
@@ -6976,7 +6998,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var before = {}, beforeX = {};
     devs.forEach(function (d) {
       var q = state.lq.quest[d.id]; before[d.id] = q && Array.isArray(q.pending) ? q.pending.slice() : null;
-      beforeX[d.id] = { ord: lqOrderWaiting(d.id) ? q.orderT : 0, cl: lqCleanWaiting(d.id) ? q.cleanup.id : '', gm: lqGmWaiting(d.id) ? q.getMissing.id : '' };
+      beforeX[d.id] = { ord: lqOrderWaiting(d.id) ? q.orderT : 0, cl: lqCleanWaiting(d.id) ? q.cleanup.id : '', gm: lqGmWaiting(d.id) ? q.getMissing.id : '', fav: lqFavWaitN(d.id) && !lqFavQ[d.id] ? q.favPending.t : 0 };
     });
     return Promise.all(devs.map(function (d) {
       return libFetch('GET', libPath('/devices/' + encodeURIComponent(d.id) + '/playlists')).then(function (res) {
@@ -6986,7 +7008,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (state.lq.cleanAsk === d.id && (!lqCan(d.id, 'cleanup') || lqCleanWaiting(d.id))) state.lq.cleanAsk = null;
         var bx = beforeX[d.id] || {}, dn = lqDevName(d.id), cdn = res.j.cleanupDone;
         var ordIn = bx.ord && (res.j.orderApplied || 0) >= bx.ord, clIn = bx.cl && cdn && cdn.id === bx.cl;
+        lqFavOverlay(d.id);
         var gdn = res.j.getMissingDone, gmIn = bx.gm && gdn && gdn.id === bx.gm;
+        if (bx.fav && (res.j.favApplied || 0) >= bx.fav && !gmIn) { toast('Your favorite changes are on ' + dn + '.', 'ok'); track('lq-fav-arrived'); }
         if (gmIn) { toast(gdn.downloaded ? dn + ' downloaded ' + gdn.downloaded.toLocaleString() + ' missing song' + (gdn.downloaded === 1 ? '' : 's') + (gdn.notFound ? ' (' + gdn.notFound.toLocaleString() + ' not on BeatSaver)' : '') + '.' : dn + ' had no missing songs to download' + (gdn.notFound ? ' (' + gdn.notFound.toLocaleString() + ' not on BeatSaver)' : '') + '.', 'ok'); track('lq-gm-done'); }
         if (clIn) { toast(cdn.deleted ? 'Clean up on ' + dn + ' deleted ' + cdn.deleted.toLocaleString() + ' song' + (cdn.deleted === 1 ? '' : 's') + (cdn.bytes ? ' and freed ' + lqBytes(cdn.bytes) : '') + '.' : 'Clean up on ' + dn + ' found nothing to delete.', 'ok'); track('lq-clean-done'); }
         else if (ordIn) { toast(landed ? 'Your changes are on ' + dn + ', including the new order.' : 'Your new order is on ' + dn + '.', 'ok'); track('lq-order-arrived'); }
@@ -7407,7 +7431,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqNext(devId, f) { return lqCan(devId, f); }
   function lqGmWaiting(devId) { var q = state.lq.quest[devId]; return !!(q && lqNext(devId, 'missing') && q.getMissing && q.getMissing.id); }
   function lqAdlWaiting(devId) { var q = state.lq.quest[devId]; return !!(q && lqNext(devId, 'autodl') && q.autodl && (q.autodl.t || 0) > (q.autodlApplied || 0)); }
-  function lqWaitN(devId) { var q = state.lq.quest[devId]; return (q && Array.isArray(q.pending) ? q.pending.length : 0) + (lqOrderWaiting(devId) ? 1 : 0) + (lqCleanWaiting(devId) ? 1 : 0) + (lqGmWaiting(devId) ? 1 : 0) + (lqAdlWaiting(devId) ? 1 : 0); }
+  function lqWaitN(devId) { var q = state.lq.quest[devId]; return (q && Array.isArray(q.pending) ? q.pending.length : 0) + (lqOrderWaiting(devId) ? 1 : 0) + (lqCleanWaiting(devId) ? 1 : 0) + (lqGmWaiting(devId) ? 1 : 0) + (lqAdlWaiting(devId) ? 1 : 0) + (lqFavWaitN(devId) ? 1 : 0); }
   // Songs a headset playlist lists that aren't downloaded, from the headset's last storage report (0 when unknown).
   function lqMissOf(devId, it) {
     var q = state.lq.quest[devId], by = q && q.stats && Array.isArray(q.stats.missingBy) ? q.stats.missingBy : null; if (!by || !it) return 0;
@@ -7449,6 +7473,203 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         toast('Auto-download ' + (on ? 'on' : 'off') + ' for “' + lqTitleOf(devId, k) + '” on the next sync.', 'ok'); track(on ? 'lq-adl-on' : 'lq-adl-off');
       } else toast((res.j && res.j.error) || 'Couldn’t change that right now.', 'warn');
     }, function () { toast('Couldn’t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  // ---- in-game favorites (Studio Sync 0.10) ----
+  // The headset shares its favorites as song hashes. Studio shows them as a list pinned above the headset's playlists, keeps
+  // copies so they can come back after a reset, and sends favorite and unfavorite changes one song at a time, so a heart changed
+  // in game and another changed here both stay. Everything here needs the headset to report "favorites" and to share them.
+  var LQ_FAVKEEP = 'playlistStudio.lqFavKeep.v1';
+  var lqFavInfo = {}, lqFavAsk = {}, lqFavMemo = {}, lqFavQ = {}, lqFavT = {};
+  function lqFavData(devId) { var q = state.lq.quest[devId]; return q && lqCan(devId, 'favorites') && q.favorites ? q.favorites : null; }
+  function lqFavShared(devId) { var f = lqFavData(devId); return !!(f && f.shared); }
+  function lqFavPend(devId) { var q = state.lq.quest[devId], p = q && q.favPending; return p && p.set && (p.t || 0) > (q.favApplied || 0) ? p.set : null; }
+  function lqFavWaitN(devId) { var p = lqFavPend(devId); return p ? Object.keys(p).length : 0; }
+  function lqFavSet(devId) {
+    var f = lqFavData(devId); if (!f) return null;
+    var m = lqFavMemo[devId]; if (m && m.f === f) return m;
+    return (lqFavMemo[devId] = { f: f, has: new Set(f.hs || []), miss: new Set(f.miss || []) });
+  }
+  function lqIsFav(devId, h) {
+    h = String(h || '').toLowerCase();
+    var p = lqFavPend(devId); if (p && Object.prototype.hasOwnProperty.call(p, h)) return !!p[h];
+    var m = lqFavSet(devId); return !!(m && m.has.has(h));
+  }
+  // The songs the list shows: the headset's favorites plus ones on their way to it.
+  function lqFavList(devId) {
+    var m = lqFavSet(devId); if (!m) return [];
+    var p = lqFavPend(devId) || {}, out = Array.from(m.has);
+    Object.keys(p).forEach(function (h) { if (p[h] && !m.has.has(h)) out.push(h); });
+    return out;
+  }
+  function lqFavOn(devId) { return lqFavList(devId).filter(function (h) { return lqIsFav(devId, h); }); }
+  // Where hearts in Your Playlist point: the headset being edited, else the one Send to Quest goes to, if it shares favorites.
+  function lqFavDev() {
+    if (!state.lq || !libGet() || !state.lq.devices.length) return null;
+    var ed = state.lq.editing, d = ed ? ed.dev : (lqSendDevs()[0] || null);
+    return d && lqFavShared(d) ? d : null;
+  }
+  // Song names from BeatSaver, 50 at a time.
+  function lqFavNeed(hs, then) {
+    var need = hs.filter(function (h) { return !lqFavInfo[h] && !lqFavAsk[h]; });
+    if (!need.length) { if (then) then(); return; }
+    need.forEach(function (h) { lqFavAsk[h] = 1; });
+    var chunks = []; for (var i = 0; i < need.length; i += 50) chunks.push(need.slice(i, i + 50));
+    chunks.reduce(function (p, ch) {
+      return p.then(function () {
+        return fetchTimeout(BS_API + '/maps/hash/' + ch.join(','), 10000).then(function (r) { if (r.status === 404) return {}; if (!r.ok) throw new Error('http'); return r.json(); }).then(function (j) {
+          var by = {};
+          if (j && j.versions) by[ch[0]] = j; else if (j) Object.keys(j).forEach(function (k) { by[k.toLowerCase()] = j[k]; });
+          ch.forEach(function (h) { var mp = by[h], md = (mp && mp.metadata) || {}; lqFavInfo[h] = mp ? { n: md.songName || mp.name || '', a: md.songAuthorName || '', m: md.levelAuthorName || '', key: mp.id || '' } : { n: '', gone: true }; });
+        }, function () { ch.forEach(function (h) { setTimeout(function () { delete lqFavAsk[h]; }, 120000); }); });
+      });
+    }, Promise.resolve()).then(function () { if (then) then(); else lqRender(); });
+  }
+  function lqFavSig() {
+    var d = lqFavDev(); if (!d) return '';
+    var f = lqFavData(d); return d + '|' + (f.at || 0) + '|' + (f.n || 0) + '|' + JSON.stringify(lqFavPend(d) || 0);
+  }
+  function lqFavName(h) { var i = lqFavInfo[h]; return i ? (i.n || (i.gone ? 'Not on BeatSaver' : 'Unknown song')) : ''; }
+  // A heart: shown right away, sent a moment later so a quick run of taps goes as one change.
+  function lqFavToggle(devId, h, on) {
+    h = String(h || '').toLowerCase(); if (!/^[0-9a-f]{40}$/.test(h)) return;
+    var q = state.lq.quest[devId]; if (!q || !lqFavShared(devId)) return;
+    (lqFavQ[devId] = lqFavQ[devId] || {})[h] = on;
+    lqFavOverlay(devId);
+    track(on ? 'lq-fav-on' : 'lq-fav-off');
+    clearTimeout(lqFavT[devId]); lqFavT[devId] = setTimeout(function () { lqFavSend(devId); }, 700);
+    lqRender(); renderBasket();
+  }
+  // Taps not sent yet stay on top of whatever the last refresh brought.
+  function lqFavOverlay(devId) {
+    var q = state.lq.quest[devId], loc = lqFavQ[devId]; if (!q || !loc) return;
+    var m = lqFavSet(devId); if (!m) return;
+    if (!lqFavPend(devId)) q.favPending = { t: (q.favApplied || 0) + 1, set: {} };
+    var set = q.favPending.set;
+    Object.keys(loc).forEach(function (h) { if (loc[h] === m.has.has(h)) delete set[h]; else set[h] = loc[h]; });
+  }
+  function lqFavSend(devId) {
+    var set = lqFavQ[devId]; if (!set || !Object.keys(set).length) return;
+    delete lqFavQ[devId];
+    libFetch('PUT', libPath('/devices/' + encodeURIComponent(devId) + '/favorites'), { set: set }).then(function (res) {
+      var q = state.lq.quest[devId];
+      if (res.ok && res.j) { if (q) { q.favPending = res.j.favPending || null; q.favApplied = res.j.favApplied || q.favApplied || 0; lqFavOverlay(devId); } }
+      else { toast((res.j && res.j.error) || 'Couldn\u2019t change your favorites right now.', 'warn'); lqRefresh(); }
+      lqRender(); renderBasket();
+    }, function () { toast('Couldn\u2019t reach the sync service.', 'warn'); lqRefresh(); });
+  }
+  // The favorites as a playlist: one entry per song (every difficulty, pick them in Your Playlist as usual).
+  function lqFavBplist(devId, then) {
+    var hs = lqFavOn(devId);
+    if (!hs.length) { toast('No favorites to use yet.', 'warn'); return; }
+    if (hs.some(function (h) { return !lqFavInfo[h]; })) toast('Getting ' + hs.length + ' favorite' + (hs.length === 1 ? '' : 's') + ' ready\u2026', 'ok');
+    lqFavNeed(hs, function () {
+      var songs = hs.map(function (h) { var i = lqFavInfo[h] || {}, sg = { hash: h }; if (i.key) sg.key = i.key; if (i.n) sg.songName = i.n; if (i.m) sg.levelAuthorName = i.m; return sg; })
+        .sort(function (a, b) { return String(a.songName || '\uffff').localeCompare(String(b.songName || '\uffff')); });
+      then({ playlistTitle: 'Favorites', playlistAuthor: (el.metaAuthor && el.metaAuthor.value) || '', playlistDescription: 'In-game favorites from ' + lqDevName(devId) + '.', songs: songs });
+    });
+  }
+  function lqFavFile(pl) { return new File([JSON.stringify(pl)], 'Favorites.bplist', { type: 'application/json' }); }
+  function lqFavPlaylist(devId) {
+    lqFavBplist(devId, function (pl) { dropTag = 'favorites'; handleDroppedPlaylist(lqFavFile(pl)); track('lq-fav-playlist'); if (isMobileView()) setMobileView('playlist'); });
+  }
+  function lqFavAddAll() {
+    var d = lqFavDev(); if (!d) return;
+    lqFavBplist(d, function (pl) { importBplistFile(lqFavFile(pl)); track('lq-fav-add'); });
+  }
+  function lqFavDownload(devId) {
+    lqFavBplist(devId, function (pl) {
+      var url = URL.createObjectURL(new Blob([JSON.stringify(pl, null, 2)], { type: 'application/json' })), a = document.createElement('a');
+      a.href = url; a.download = ('Favorites - ' + lqDevName(devId)).replace(/[\\/:*?"<>|]/g, '') + '.bplist'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      track('lq-fav-download');
+    });
+  }
+  function lqFavGetMissing(devId) {
+    if (state.lq.busy) return;
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/getmissing'), { favorites: true }).then(function (res) {
+      if (res.ok && res.j && res.j.getMissing) {
+        var q = state.lq.quest[devId]; if (q) q.getMissing = res.j.getMissing;
+        toast('Your favorites\u2019 missing songs download on ' + lqDevName(devId) + '\u2019s next sync.', 'ok'); track('lq-fav-gm');
+      } else toast((res.j && res.j.error) || 'Couldn\u2019t ask for the missing songs right now.', 'warn');
+    }, function () { toast('Couldn\u2019t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  // Copy adds every favorite to the other headset; it never removes any there.
+  function lqFavCopy(devId, to) {
+    var hs = lqFavOn(devId); if (!hs.length || state.lq.busy) return;
+    var set = {}; hs.forEach(function (h) { set[h] = true; });
+    lqBusy(true);
+    libFetch('PUT', libPath('/devices/' + encodeURIComponent(to) + '/favorites'), { set: set }).then(function (res) {
+      if (res.ok && res.j) {
+        var q2 = state.lq.quest[to]; if (q2) { q2.favPending = res.j.favPending || null; q2.favApplied = res.j.favApplied || q2.favApplied || 0; }
+        var nn = res.j.favPending ? Object.keys(res.j.favPending.set).filter(function (h) { return res.j.favPending.set[h]; }).length : 0;
+        toast(nn ? nn.toLocaleString() + ' favorite' + (nn === 1 ? '' : 's') + ' go to ' + lqDevName(to) + ' on its next sync. Favorites it already has stay as they are.' : lqDevName(to) + ' already has all of them.', 'ok'); track('lq-fav-copy');
+      } else toast((res.j && res.j.error) || 'Couldn\u2019t copy them right now.', 'warn');
+    }, function () { toast('Couldn\u2019t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  // Restore puts back every favorite of one of Studio's copies; it adds only.
+  function lqFavRestore(devId, t) {
+    if (state.lq.busy) return;
+    var q = state.lq.quest[devId], b = q && (q.favBackups || []).find(function (x) { return x.t === +t; });
+    lqBusy(true);
+    libFetch('POST', libPath('/devices/' + encodeURIComponent(devId) + '/favorites/restore'), { t: +t }).then(function (res) {
+      if (res.ok && res.j) {
+        if (q) { q.favPending = res.j.favPending || null; q.favApplied = res.j.favApplied || q.favApplied || 0; }
+        var nn = res.j.favPending ? Object.keys(res.j.favPending.set).filter(function (h) { return res.j.favPending.set[h]; }).length : 0;
+        toast(nn ? nn.toLocaleString() + ' favorite' + (nn === 1 ? '' : 's') + (b ? ' from ' + lqWhen(b.t) : '') + ' go back to ' + lqDevName(devId) + ' on its next sync.' : lqDevName(devId) + ' already has every one of them.', 'ok'); track('lq-fav-restore');
+      } else toast((res.j && res.j.error) || 'Couldn\u2019t restore them right now.', 'warn');
+    }, function () { toast('Couldn\u2019t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  function lqFavKeepMap() { try { return JSON.parse(localStorage.getItem(LQ_FAVKEEP) || '{}') || {}; } catch (e) { return {}; } }
+  function lqFavKept(devId, t) { return lqFavKeepMap()[devId] === t; }
+  function lqFavKeep(devId, t) { var m = lqFavKeepMap(); m[devId] = +t; try { localStorage.setItem(LQ_FAVKEEP, JSON.stringify(m)); } catch (e) {} track('lq-fav-keep'); lqRender(); }
+  function lqFavHtml(d) {
+    var f = lqFavData(d.id); if (!f) return '';
+    var q = state.lq.quest[d.id] || {}, dn = esc(lqDevName(d.id)), dv = esc(d.id);
+    if (!f.shared) return '<div class="lq-fav-off"><span class="ic">\u2661</span><span>Favorites aren\u2019t shared from ' + dn + '. Turn them on in <b>Sharing...</b> in the Studio Sync tab to see and edit them here.</span></div>';
+    var bs = q.favBackups || [], b0 = bs[0], on = lqFavOn(d.id), n = on.length;
+    // Empty now, but Studio has a copy with songs in it: most likely a reinstall or cleared game data.
+    if (!f.n && b0 && b0.n > 0 && !lqFavWaitN(d.id) && !lqFavKept(d.id, b0.t))
+      return '<div class="lq-list lq-favlist gone"><div class="lq-pl"><span class="lq-fav-th re">' + lqIco('hist') + '</span><div class="lq-t"><span class="lq-n">Your favorites are gone from ' + dn + '</span><span class="lq-m">It has none now. Studio saved ' + b0.n.toLocaleString() + ' on ' + esc(lqWhen(b0.t)) + '.</span></div>' +
+        lqBtn('Restore ' + b0.n.toLocaleString(), 'data-lq-favrs="' + dv + '|' + b0.t + '"', 'primary sm') + lqBtn('Keep empty', 'data-lq-favkeep="' + dv + '|' + b0.t + '"') + '</div></div>';
+    var m = lqFavSet(d.id), miss = on.filter(function (h) { return m.miss.has(h); }).length, wait = lqFavWaitN(d.id);
+    var open = !!(state.lq.favOpen && state.lq.favOpen[d.id]), mk = 'fav:' + d.id, mOpen = state.lq.menuOpen === mk;
+    var meta = [n.toLocaleString() + ' song' + (n === 1 ? '' : 's')];
+    if (miss) meta.push('<span class="lq-miss">' + miss.toLocaleString() + ' not downloaded</span>');
+    if (wait) meta.push('<span class="lq-st lq-new"><span class="lq-dot2 new"></span>' + wait + ' change' + (wait === 1 ? '' : 's') + ' waiting</span>');
+    else if (b0 && n) meta.push('backed up ' + esc(lqAgoMin(b0.t)));
+    var mi = '<div class="lq-ph">Favorites</div>';
+    if (n) mi += lqMi(lqIco('up') + 'Make a playlist from favorites', 'data-lq-favpl="' + dv + '"');
+    if (miss && lqCan(d.id, 'missing') && !lqGmWaiting(d.id)) mi += lqMi(lqIco('down') + 'Get the ' + miss.toLocaleString() + ' missing song' + (miss === 1 ? '' : 's'), 'data-lq-favgm="' + dv + '"');
+    if (n) state.lq.devices.forEach(function (o) { if (o.id !== d.id && lqFavShared(o.id)) mi += lqMi(lqIco('copy') + 'Copy favorites to ' + esc(lqDevName(o.id)), 'data-lq-favcopy="' + dv + '|' + esc(o.id) + '"'); });
+    if (n) mi += lqMi(lqIco('down') + 'Download favorites .bplist', 'data-lq-favdl="' + dv + '"');
+    if (bs.length) mi += '<div class="lq-hr"></div><div class="lq-ph">Restore from a backup</div>' + bs.map(function (b) {
+      return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span><span class="lq-mi-n">' + b.n.toLocaleString() + ' song' + (b.n === 1 ? '' : 's') + '</span>', 'data-lq-favrs="' + dv + '|' + b.t + '"');
+    }).join('');
+    var h = '<div class="lq-list lq-favlist"><div class="lq-pl lq-fav"><span class="lq-fav-th" aria-hidden="true">\u2665</span><div class="lq-t"><span class="lq-n">Favorites<span class="lq-fav-tag">in game</span></span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
+      lqBtn(open ? 'Close' : 'Open', 'data-lq-favopen="' + dv + '" aria-expanded="' + open + '"') +
+      '<button type="button" class="ghost lq-ib' + (mOpen ? ' on' : '') + '" data-lq-menu="' + esc(mk) + '" title="More" aria-label="More for favorites" aria-haspopup="menu" aria-expanded="' + mOpen + '">' + lqIco('more') + '</button>' +
+      (mOpen ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
+    if (open) h += lqFavPeekHtml(d);
+    return h + '</div>';
+  }
+  function lqFavPeekHtml(d) {
+    var hs = lqFavList(d.id), m = lqFavSet(d.id), p = lqFavPend(d.id) || {}, all = !!(state.lq.favAll && state.lq.favAll[d.id]), dn = esc(lqDevName(d.id));
+    var nm = function (h) { return lqFavName(h).toLowerCase() || '\uffff' + h; };
+    hs.sort(function (a, b) { var x = nm(a), y = nm(b); return x < y ? -1 : x > y ? 1 : 0; });
+    var shown = all ? hs : hs.slice(0, 200);
+    lqFavNeed(shown);
+    var rows = shown.map(function (h) {
+      var i = lqFavInfo[h], on = lqIsFav(d.id, h), pend = Object.prototype.hasOwnProperty.call(p, h);
+      var st = pend ? '<span class="lq-wait">' + (on ? 'adding' : 'removing') + ' on next sync</span>' : m.miss.has(h) ? '<span class="lq-miss">not downloaded</span>' : '';
+      return '<li' + (on ? '' : ' class="off"') + '><button type="button" class="lq-heart' + (on ? ' on' : '') + '" data-lq-favh="' + esc(d.id) + '|' + h + '|' + (on ? 0 : 1) + '" aria-pressed="' + on + '" title="' + (on ? 'Unfavorite on ' : 'Favorite on ') + dn + '">' + (on ? '\u2665' : '\u2661') + '</button>' +
+        '<img src="https://eu.cdn.beatsaver.com/' + h + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + (i ? esc(lqFavName(h)) + (i.m ? '<small>' + esc(i.m) + '</small>' : '') : '<span class="lq-m">Loading\u2026</span>') + '</span>' +
+        (st ? '<span class="lq-fav-st">' + st + '</span>' : '') + '</li>';
+    });
+    var n = lqFavOn(d.id).length;
+    return '<div class="lq-peek" aria-label="Favorites on ' + dn + '"><div class="lq-peek-h"><b>' + n.toLocaleString() + ' favorite' + (n === 1 ? '' : 's') + '</b><span class="pk-note">· the heart favorites or unfavorites a song on ' + dn + '</span></div>' +
+      (rows.length ? '<ol>' + rows.join('') + '</ol>' : '<div class="pk-msg">No favorites on ' + dn + ' yet. Favorite songs in game, or with the heart on songs in Your Playlist.</div>') +
+      (!all && hs.length > shown.length ? lqBtn('Show all ' + hs.length.toLocaleString(), 'data-lq-favall="' + esc(d.id) + '"', 'ghost sm lq-fav-more') : '') + '</div>';
   }
   function lqBytes(n) {
     if (!(n >= 0)) return '?';
@@ -8520,6 +8741,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (lqDrag) { lqDrag.dirty = true; return; }
     try { lqAddToRender(); } catch (e) {}   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
+    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); }   // hearts in Your Playlist follow the headset
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
     panel.hidden = !lqShown();
@@ -8669,18 +8891,21 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           var wParts = [];
           if (wOrd) wParts.push('the new playlist order');
           if (wCl) wParts.push('a song clean up');
-          var wGm = lqGmWaiting(d.id), wAd = lqAdlWaiting(d.id);
+          var wGm = lqGmWaiting(d.id), wAd = lqAdlWaiting(d.id), wFv = lqFavWaitN(d.id);
+          if (wFv) wParts.push(wFv === 1 ? '1 favorite change' : wFv + ' favorite changes');
           if (wGm) wParts.push('getting missing songs');
           if (wAd) wParts.push('auto-download changes');
           if (pp) wParts.push(pp === 1 ? (function () { var w0 = q.pending[0]; return esc(w0.title || String(w0.file || '').replace(/\.bplist$/i, '')); })() : pp + ' playlist changes');
           var wHead = pn === 1 && wOrd ? 'New playlist order on its way to ' + esc(dnm) : pn === 1 && wCl ? 'Song clean up on its way to ' + esc(dnm) : pn + ' change' + (pn === 1 ? '' : 's') + ' on ' + (pn === 1 ? 'its' : 'their') + ' way to ' + esc(dnm);
-          var wWhat = '';
+          var wWhat = '', wOne = pn === 1 && !wAd && !(wFv > 1);
           if (pn === 1 && wGm) wHead = 'Getting missing songs is on its way to ' + esc(dnm);
           if (pn === 1 && wAd) wHead = 'Auto-download changes are on their way to ' + esc(dnm);
-          if ((wOrd || wCl || wGm || wAd) && pn > 1) { var wJn = wParts.length > 1 ? wParts.slice(0, -1).join(', ') + ' and ' + wParts[wParts.length - 1] : wParts[0]; wWhat = wJn.charAt(0).toUpperCase() + wJn.slice(1) + '. '; }
+          if (pn === 1 && wFv) wHead = (wFv === 1 ? 'A favorite change is' : wFv + ' favorite changes are') + ' on ' + (wFv === 1 ? 'its' : 'their') + ' way to ' + esc(dnm);
+          if ((wOrd || wCl || wGm || wAd || wFv) && pn > 1) { var wJn = wParts.length > 1 ? wParts.slice(0, -1).join(', ') + ' and ' + wParts[wParts.length - 1] : wParts[0]; wWhat = wJn.charAt(0).toUpperCase() + wJn.slice(1) + '. '; }
           qh += '<div class="lq-waitbar" role="status"><span class="lq-wb-ic">' + lqIco('send') + '</span><span class="lq-wb-t"><b>' + wHead + '</b>' + wWhat +
-            (pn === 1 ? 'It arrives' : 'They arrive') + ' on the next sync. Press <span class="lq-kbd">Sync now</span> in the Studio Sync tab to get ' + (pn === 1 ? 'it' : 'them') + ' sooner.</span></div>';
+            (wOne ? 'It arrives' : 'They arrive') + ' on the next sync. Press <span class="lq-kbd">Sync now</span> in the Studio Sync tab to get ' + (wOne ? 'it' : 'them') + ' sooner.</span></div>';
         }
+        qh += lqFavHtml(d);
         if (all.length >= 8 || fl) qh += lqFilterHtml(d.id, fl, dnm);
         qh += '<div class="lq-dropzone" data-lq-drop="' + esc(d.id) + '">';
         if ((!q || !q.updated) && !all.length) qh += '<p class="lq-steps">Waiting for the headset to share its playlists. Press <b>Sync now</b> in the Studio Sync tab, then Refresh.</p>';
@@ -8778,12 +9003,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function ssVer(tag) { var m = String(tag || '').match(/(\d+)\.(\d+)\.(\d+)/); return m ? +m[1] * 1e6 + +m[2] * 1e3 + +m[3] : 0; }
   function ssNudgeHtml(d) {
     var q = state.lq.quest[d.id]; if (!q || !q.updated || !Array.isArray(q.features)) return '';
-    var old8 = !lqCan(d.id, 'order') && ssVer(ssRel.tag) >= ssVer('0.8.0'), old9 = !lqCan(d.id, 'missing') && ssVer(ssRel.tag) >= ssVer('0.9.0');
-    if (!old8 && !old9) return '';
+    var old8 = !lqCan(d.id, 'order') && ssVer(ssRel.tag) >= ssVer('0.8.0'), old9 = !lqCan(d.id, 'missing') && ssVer(ssRel.tag) >= ssVer('0.9.0'), old10 = !lqCan(d.id, 'favorites') && ssVer(ssRel.tag) >= ssVer('0.10.0');
+    if (!old8 && !old9 && !old10) return '';
     var m = {}; try { m = JSON.parse(localStorage.getItem(SS_NUDGE) || '{}') || {}; } catch (e) {}
     if (m[d.id] === ssRel.tag) return '';
     var v = esc(String(ssRel.tag).replace(/^v/i, ''));
-    return '<div class="lq-nudge"><span><b>' + esc(lqDevName(d.id)) + ' is on an older Studio Sync.</b> Update to ' + v + ' for ' + (old8 ? 'storage, Clean up songs, in-game order and download progress in the menu' : 'download progress in the menu, missing songs and auto-download per playlist from here') + '.</span><span class="sp"></span>' +
+    return '<div class="lq-nudge"><span><b>' + esc(lqDevName(d.id)) + ' is on an older Studio Sync.</b> Update to ' + v + ' for ' + (old8 ? 'storage, Clean up songs, in-game order and download progress in the menu' : old9 ? 'download progress in the menu, missing songs and auto-download per playlist from here' : 'your in-game favorites here: see them, back them up and favorite songs from Studio') + '.</span><span class="sp"></span>' +
       '<a class="ss-btn" href="' + esc(ssRel.url) + '" target="_blank" rel="noopener" data-gc="studiosync-update">Get ' + v + '</a>' + lqBtn('Not now', 'data-lq-nudgeno="' + esc(d.id) + '"') + '</div>';
   }
   function ssNudgeNo(devId) {
@@ -8950,6 +9175,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-cleango')) lqCleanup(t.getAttribute('data-lq-cleango'));
       else if (t.hasAttribute('data-lq-cleancancel')) lqCleanCancel(t.getAttribute('data-lq-cleancancel'));
       else if (t.hasAttribute('data-lq-gm')) lqGetMissing(t.getAttribute('data-lq-gm'), null);
+      else if (t.hasAttribute('data-lq-favopen')) { var fo = t.getAttribute('data-lq-favopen'); state.lq.favOpen = state.lq.favOpen || {}; state.lq.favOpen[fo] = !state.lq.favOpen[fo]; if (state.lq.favOpen[fo]) track('lq-fav-open'); lqRender(); }
+      else if (t.hasAttribute('data-lq-favall')) { state.lq.favAll = state.lq.favAll || {}; state.lq.favAll[t.getAttribute('data-lq-favall')] = 1; lqRender(); }
+      else if (t.hasAttribute('data-lq-favh')) { var fh = t.getAttribute('data-lq-favh').split('|'); lqFavToggle(fh[0], fh[1], fh[2] === '1'); }
+      else if (t.hasAttribute('data-lq-favpl')) lqFavPlaylist(t.getAttribute('data-lq-favpl'));
+      else if (t.hasAttribute('data-lq-favgm')) lqFavGetMissing(t.getAttribute('data-lq-favgm'));
+      else if (t.hasAttribute('data-lq-favcopy')) { var fc = t.getAttribute('data-lq-favcopy').split('|'); lqFavCopy(fc[0], fc[1]); }
+      else if (t.hasAttribute('data-lq-favdl')) lqFavDownload(t.getAttribute('data-lq-favdl'));
+      else if (t.hasAttribute('data-lq-favrs')) { var fr = t.getAttribute('data-lq-favrs').split('|'); lqFavRestore(fr[0], fr[1]); }
+      else if (t.hasAttribute('data-lq-favkeep')) { var fk = t.getAttribute('data-lq-favkeep').split('|'); lqFavKeep(fk[0], fk[1]); }
       else if (t.hasAttribute('data-lq-gm1')) { var g1 = t.getAttribute('data-lq-gm1').split('|'); lqGetMissing(g1[0], g1[1]); }
       else if (t.hasAttribute('data-lq-gmcancel')) lqGmCancel(t.getAttribute('data-lq-gmcancel'));
       else if (t.hasAttribute('data-lq-adl')) { var ad = t.getAttribute('data-lq-adl').split('|'); lqAutoSet(ad[0], ad[1], ad[2] === '1'); }
@@ -12327,6 +12561,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     })();
     el.fillRuntimeBtn.addEventListener('click', fillToRuntime);
     el.shuffleBtn.addEventListener('click', shuffleBasket);
+    var favAddBtn = document.getElementById('favAddBtn'); if (favAddBtn) favAddBtn.addEventListener('click', lqFavAddAll);
     el.sortPlaylistBtn.addEventListener('click', sortBasketByStar);
     if (el.rampByChips) el.rampByChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-by]'); if (!c) return; rampBy = c.getAttribute('data-ramp-by'); setChipOn(el.rampByChips, c); renderRampPreview(); });
     if (el.rampDirChips) el.rampDirChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-dir]'); if (!c) return; rampDir = c.getAttribute('data-ramp-dir'); setChipOn(el.rampDirChips, c); renderRampPreview(); });
@@ -12381,6 +12616,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (act === 'up') moveBasket(key, -1);
       else if (act === 'down') moveBasket(key, 1);
       else if (act === 'preview') { var bi = basketIndex(key); if (bi >= 0) openPreview(state.basket[bi]); }
+      else if (act === 'fav') { var fi = basketIndex(key), fdv = lqFavDev(); if (fi >= 0 && fdv) lqFavToggle(fdv, state.basket[fi].hash, !lqIsFav(fdv, state.basket[fi].hash)); }
       else if (act === 'more') { if (bkMenuKey === key) bkMenuClose(); else bkMenuOpen(key, btn); }
     });
     el.basketList.addEventListener('dragstart', function (e) {

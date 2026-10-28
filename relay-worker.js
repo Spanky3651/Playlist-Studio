@@ -253,7 +253,53 @@ function adlKey(lib, dev) { return "adl:" + lib + ":" + dev; }
 // one read) and only runs a full sync when it moved, so changes show up without going back to the main menu.
 function chgKey(lib, dev) { return "chg:" + lib + ":" + dev; }
 function touch(env, lib, dev) { return putTtl(env, chgKey(lib, dev), String(Date.now())); }
-const FEATURES = ["restore", "delete", "delete-songs", "storage", "cleanup", "order", "missing", "autodl"];
+const FEATURES = ["restore", "delete", "delete-songs", "storage", "cleanup", "order", "missing", "autodl", "favorites"];
+// In-game favorites a headset shares (Studio Sync 0.10.0 and later): { shared, hs: song hashes, miss: the ones not
+// downloaded, sig, n, at }. Only written when something changed.
+const MAX_FAVS = 3000, FAV_BACKUPS = 5;
+function favKey(lib, dev) { return "fav:" + lib + ":" + dev; }
+// Studio's own copies of a headset's favorites, newest first, so they can come back after a reset: [{ t, n, sig, hs }].
+function favbKey(lib, dev) { return "favb:" + lib + ":" + dev; }
+// Favorite and unfavorite changes from Studio waiting for the headset: { t, set: { hash: true|false } }.
+function favpKey(lib, dev) { return "favp:" + lib + ":" + dev; }
+function isHash(h) { return typeof h === "string" && /^[0-9a-f]{40}$/.test(h); }
+function cleanHashes(v, max) { return [...new Set((Array.isArray(v) ? v : []).map((x) => String(x || "").toLowerCase()).filter(isHash))].slice(0, max || MAX_FAVS); }
+// What the headset reported, kept apart from the inventory. A new copy goes into the backups whenever the list changes,
+// at most one an hour unless the list really changed (most of its songs gone), and the biggest copy is never the one dropped.
+async function saveFavorites(env, lib, dev, f) {
+  const shared = f.shared !== false;
+  const hs = shared ? cleanHashes(f.hashes).sort() : [];
+  const have = new Set(hs);
+  const old = await env.PLAYLISTS.get(favKey(lib, dev), "json");
+  const miss = !shared ? [] : (Array.isArray(f.missing) ? cleanHashes(f.missing) : ((old && old.miss) || [])).filter((h) => have.has(h)).sort();
+  const sig = shared ? (await sha256("fav:" + hs.join(","))).slice(0, 16) : "";
+  if (!old || old.shared !== shared || old.sig !== sig || (old.miss || []).join(",") !== miss.join(","))
+    await putTtl(env, favKey(lib, dev), { shared, hs, miss, sig, n: hs.length, at: nowSec() });
+  if (!shared || !hs.length) return;
+  const bs = (await env.PLAYLISTS.get(favbKey(lib, dev), "json")) || [];
+  if (bs.length && bs[0].sig === sig) return;
+  const snap = { t: nowSec(), n: hs.length, sig, hs };
+  const top = bs[0], kept = top ? top.hs.filter((h) => have.has(h)).length : 0;
+  if (top && nowSec() - top.t < 3600 && kept >= top.n * 0.8) bs[0] = snap;
+  else bs.unshift(snap);
+  while (bs.length > FAV_BACKUPS) {
+    const big = bs.reduce((m, b, i) => (b.n > bs[m].n ? i : m), 0);
+    bs.splice(big === bs.length - 1 ? bs.length - 2 : bs.length - 1, 1);
+  }
+  await putTtl(env, favbKey(lib, dev), bs);
+}
+// Merge favorite changes into the ones still waiting, dropping any that only put back what the headset already has.
+async function queueFavorites(env, lib, dev, inv, set) {
+  const fav = (await env.PLAYLISTS.get(favKey(lib, dev), "json")) || { hs: [] };
+  const have = new Set(fav.hs || []);
+  const prev = (await env.PLAYLISTS.get(favpKey(lib, dev), "json")) || {};
+  const merged = Object.assign({}, prev.set && (prev.t || 0) > (inv.favApplied || 0) ? prev.set : {}, set);
+  for (const h of Object.keys(merged)) if (merged[h] === have.has(h)) delete merged[h];
+  if (!Object.keys(merged).length) { await env.PLAYLISTS.delete(favpKey(lib, dev)); return null; }
+  const favp = { t: Math.max(nowSec(), (prev.t || 0) + 1), set: merged };
+  await putTtl(env, favpKey(lib, dev), favp);
+  return favp;
+}
 function bytesField(v) { return Number.isSafeInteger(v) && v >= 0 ? Math.min(v, 1e15) : -1; }
 function countField(v) { return Number.isInteger(v) && v >= 0 ? Math.min(v, 1e7) : 0; }
 function cleanStats(b) {
@@ -417,7 +463,12 @@ async function linked(request, env, ctx, url) {
       }
       if (feats.includes("missing")) {
         const gm = await env.PLAYLISTS.get(gmKey(dev.lib, me.id), "json");
-        if (gm && gm.id) extra.getMissing = gm.all ? { id: gm.id, all: true } : { id: gm.id, files: (gm.ks || []).map((k) => fileOf.get(k)).filter(Boolean) };
+        if (gm && gm.id) extra.getMissing = Object.assign(gm.all ? { id: gm.id, all: true } : { id: gm.id, files: (gm.ks || []).map((k) => fileOf.get(k)).filter(Boolean) }, gm.favs ? { favorites: true } : {});
+      }
+      // Favorite and unfavorite changes from Studio, until the headset says it took them.
+      if (feats.includes("favorites")) {
+        const favp = await env.PLAYLISTS.get(favpKey(dev.lib, me.id), "json");
+        if (favp && favp.set && favp.t > (inv.favApplied || 0)) extra.favorites = { t: favp.t, set: Object.keys(favp.set).map((h) => [h, !!favp.set[h]]) };
       }
       // Where the change counter stood at this sync; the mod's minute check compares against it.
       extra.chg = +(await env.PLAYLISTS.get(chgKey(dev.lib, me.id))) || 0;
@@ -425,7 +476,7 @@ async function linked(request, env, ctx, url) {
     }
 
     if (path === "/link/inventory" && request.method === "POST") {
-      const body = await readJson(request, 200000);
+      const body = await readJson(request, 400000);
       if (!body || !Array.isArray(body.items)) return json({ error: "Expected { items: [] }" }, 400, cors);
       const old = (await env.PLAYLISTS.get(invKey(dev.lib, me.id), "json")) || { items: [] };
       const byFile = new Map(old.items.map((it) => [it.file, it]));
@@ -453,11 +504,14 @@ async function linked(request, env, ctx, url) {
       const ordApplied = Number.isSafeInteger(body.order) && body.order > 0 ? Math.min(body.order, nowSec() + 60) : (old.ordApplied || 0);
       // The Studio auto-download change (its time) the headset last took.
       const adlApplied = Number.isSafeInteger(body.autodl) && body.autodl > 0 ? Math.min(body.autodl, nowSec() + 60) : (old.adlApplied || 0);
-      const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged || ordApplied !== (old.ordApplied || 0) || adlApplied !== (old.adlApplied || 0) ||
+      // The Studio favorites change (its time) the headset last took.
+      const favApplied = Number.isSafeInteger(body.favApplied) && body.favApplied > 0 ? Math.min(body.favApplied, nowSec() + 60) : (old.favApplied || 0);
+      if (features.includes("favorites") && body.favorites && typeof body.favorites === "object") await saveFavorites(env, dev.lib, me.id, body.favorites);
+      const changed = gone.length || need.length || items.length !== old.items.length || backupsChanged || ordApplied !== (old.ordApplied || 0) || adlApplied !== (old.adlApplied || 0) || favApplied !== (old.favApplied || 0) ||
         JSON.stringify(deleted) !== JSON.stringify(old.deleted || []) || JSON.stringify(features) !== JSON.stringify(old.features || []);
       if (changed) {
         await Promise.all(gone.map((it) => env.PLAYLISTS.delete("invb:" + dev.lib + ":" + me.id + ":" + it.k)));
-        await putTtl(env, invKey(dev.lib, me.id), Object.assign({ items, deleted, features, updated: nowSec() }, ordApplied ? { ordApplied } : {}, adlApplied ? { adlApplied } : {}));
+        await putTtl(env, invKey(dev.lib, me.id), Object.assign({ items, deleted, features, updated: nowSec() }, ordApplied ? { ordApplied } : {}, adlApplied ? { adlApplied } : {}, favApplied ? { favApplied } : {}));
       }
       return json({ need }, 200, cors);
     }
@@ -630,11 +684,14 @@ async function linked(request, env, ctx, url) {
     const body = (await readJson(request, 20000)) || {};
     const known = new Set((ginv.items || []).map((x) => x.k));
     const ks = [...new Set((Array.isArray(body.ks) ? body.ks : []).filter((x) => typeof x === "string" && known.has(x)))].slice(0, MAX_INVENTORY);
-    if (!body.all && !ks.length) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
-    // A request still waiting grows to cover both; "all" covers everything.
+    // Favorites' missing songs (0.10.0 and later), on their own or with playlists.
+    const favs = !!body.favorites;
+    if (favs && !(ginv.features || []).includes("favorites")) return json({ error: "Update Studio Sync on the headset to get its favorites' songs from here" }, 409, cors);
+    if (!body.all && !ks.length && !favs) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
+    // A request still waiting grows to cover both; "all" covers every playlist.
     const old = await env.PLAYLISTS.get(gmKey(gmm[1], gmm[2]), "json");
     const all = !!body.all || !!(old && old.all);
-    const gm = { id: old && old.id ? old.id : randomId(10), at: old && old.at ? old.at : nowSec(), ...(all ? { all: true } : { ks: [...new Set(((old && old.ks) || []).concat(ks))].slice(0, MAX_INVENTORY) }) };
+    const gm = { id: old && old.id ? old.id : randomId(10), at: old && old.at ? old.at : nowSec(), ...(all ? { all: true } : { ks: [...new Set(((old && old.ks) || []).concat(ks))].slice(0, MAX_INVENTORY) }), ...(favs || (old && old.favs) ? { favs: true } : {}) };
     await putTtl(env, gmKey(gmm[1], gmm[2]), gm);
     await touch(env, gmm[1], gmm[2]);
     return json({ getMissing: gm }, 200, cors);
@@ -667,6 +724,38 @@ async function linked(request, env, ctx, url) {
     await putTtl(env, adlKey(adm[1], adm[2]), adl);
     await touch(env, adm[1], adm[2]);
     return json({ autodl: adlView(adl, ainv) }, 200, cors);
+  }
+  // PUT /lib/<id>/devices/<dev>/favorites { set: { hash: true|false } } favorites or unfavorites songs on the headset;
+  // POST .../favorites/restore { t } puts back every favorite of one of Studio's copies (adds only, removes nothing).
+  const fvm = path.match(/^\/lib\/([A-Za-z0-9]{6,16})\/devices\/([A-Za-z0-9]{6,16})\/favorites(\/restore)?$/);
+  if (fvm) {
+    const flib = await env.PLAYLISTS.get("lib:" + fvm[1], "json");
+    if (!flib) return json({ error: "Not found" }, 404, cors);
+    const fkey = request.headers.get("X-Lib-Key") || "";
+    if (!fkey || !safeEqual(await sha256(fkey), flib.hk)) return json({ error: "Wrong library key" }, 403, cors);
+    if (!(flib.devices || []).some((x) => x.id === fvm[2])) return json({ error: "Not found" }, 404, cors);
+    if (request.method !== (fvm[3] ? "POST" : "PUT")) return json({ error: "Method not allowed" }, 405, cors);
+    if (!(await allowWrite(request, env, "lib", LIB_WRITE_LIMIT))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
+    const finv = (await env.PLAYLISTS.get(invKey(fvm[1], fvm[2]), "json")) || {};
+    if (!(finv.features || []).includes("favorites")) return json({ error: "Update Studio Sync on the headset to change its favorites from here" }, 409, cors);
+    const fav = await env.PLAYLISTS.get(favKey(fvm[1], fvm[2]), "json");
+    if (!fav || !fav.shared) return json({ error: "Favorites aren't shared from that headset. Turn them on in Sharing in the Studio Sync tab." }, 409, cors);
+    const set = {};
+    if (fvm[3]) {
+      const body = (await readJson(request, 2000)) || {};
+      const bs = (await env.PLAYLISTS.get(favbKey(fvm[1], fvm[2]), "json")) || [];
+      const b = bs.find((x) => x.t === Number(body.t));
+      if (!b) return json({ error: "That copy of your favorites is gone" }, 404, cors);
+      for (const h of b.hs) set[h] = true;
+    } else {
+      const body = (await readJson(request, 200000)) || {};
+      const src = body.set && typeof body.set === "object" ? body.set : {};
+      for (const h of Object.keys(src).slice(0, MAX_FAVS)) if (isHash(h) && typeof src[h] === "boolean") set[h] = src[h];
+      if (!Object.keys(set).length) return json({ error: "Expected { set: { hash: true|false } }" }, 400, cors);
+    }
+    const favp = await queueFavorites(env, fvm[1], fvm[2], finv, set);
+    await touch(env, fvm[1], fvm[2]);
+    return json({ favPending: favp, favApplied: finv.favApplied || 0 }, 200, cors);
   }
   const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|delete|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
@@ -746,6 +835,12 @@ async function linked(request, env, ctx, url) {
       if (feats.includes("autodl")) {
         const adl = await env.PLAYLISTS.get(adlKey(id, dv.id), "json");
         Object.assign(more, { autodlApplied: inv.adlApplied || 0 }, adl ? { autodl: adlView(adl, inv) } : {});
+      }
+      if (feats.includes("favorites")) {
+        const [fav, favp, favb] = await Promise.all([env.PLAYLISTS.get(favKey(id, dv.id), "json"), env.PLAYLISTS.get(favpKey(id, dv.id), "json"), env.PLAYLISTS.get(favbKey(id, dv.id), "json")]);
+        Object.assign(more, { favApplied: inv.favApplied || 0, favBackups: (favb || []).map((b) => ({ t: b.t, n: b.n })) },
+          fav ? { favorites: { shared: !!fav.shared, hs: fav.hs || [], miss: fav.miss || [], n: fav.n || 0, at: fav.at || 0 } } : {},
+          favp && favp.t > (inv.favApplied || 0) ? { favPending: favp } : {});
       }
       return json(Object.assign({ items, deleted, features: feats, pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen, order: Array.isArray(ord.ks) ? ord.ks : [] }, more), 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
@@ -2131,6 +2226,17 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'lq-stats-hide': ['Studio Sync', 'Hid headset stats', 'Hid the play stats on headset playlists'],
     'lq-stats-show': ['Studio Sync', 'Showed headset stats', 'Showed the play stats on headset playlists'],
     'lq-gm': ['Studio Sync', 'Get missing songs', 'Asked the headset to download every missing song'],
+    'lq-fav-open': ['Studio Sync', 'Opened favorites', 'Looked at their in-game favorites'],
+    'lq-fav-on': ['Studio Sync', 'Favorited a song', 'Favorited a song on the headset from Studio'],
+    'lq-fav-off': ['Studio Sync', 'Unfavorited a song', 'Unfavorited a song on the headset from Studio'],
+    'lq-fav-add': ['Studio Sync', 'Added favorites', 'Added their favorites to Your Playlist'],
+    'lq-fav-playlist': ['Studio Sync', 'Playlist from favorites', 'Made a playlist from their favorites'],
+    'lq-fav-gm': ['Studio Sync', 'Got favorites\u2019 songs', 'Asked the headset to download missing favorites'],
+    'lq-fav-copy': ['Studio Sync', 'Copied favorites', 'Copied favorites to their other Quest'],
+    'lq-fav-download': ['Studio Sync', 'Downloaded favorites', 'Downloaded their favorites as a .bplist'],
+    'lq-fav-restore': ['Studio Sync', 'Restored favorites', 'Put back favorites from Studio\u2019s copy'],
+    'lq-fav-keep': ['Studio Sync', 'Kept favorites empty', 'Dismissed the restore favorites card'],
+    'lq-fav-arrived': ['Studio Sync', 'Favorites changed', 'The headset took favorite changes from Studio'],
     'lq-gm-one': ['Studio Sync', 'Get one playlist\\u2019s songs', 'Asked the headset to download one playlist\\u2019s missing songs'],
     'tab-lqPanel': ['Studio Sync', 'Studio Sync tab', 'Switched to the Studio Sync tab under Your Playlist'],
     'tab-syncPanel': ['Save and send', 'Sync link tab', 'Switched to the Sync link tab under Your Playlist'],
