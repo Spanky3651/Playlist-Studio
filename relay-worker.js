@@ -1357,10 +1357,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
 <button role="tab" data-tab="src" aria-selected="false">Sources</button>
+<button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
 <button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader profile</span><span class="tab-short">BL profile</span></button>
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
-<button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
 </div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
