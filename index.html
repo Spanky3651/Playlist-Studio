@@ -1731,6 +1731,10 @@ body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s
   .toast{left:auto;right:24px;transform:translateY(140%);max-width:440px;}
   .toast.show{transform:translateY(0);}
 }
+  /* "Show me" from the stats page: a pulsing outline around the control a feature lives on */
+  .spot-pulse{outline:3px solid #ffc23d !important;outline-offset:4px;border-radius:10px;animation:spotPulse 1.1s ease-in-out 4}
+  @keyframes spotPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,194,61,0)}50%{box-shadow:0 0 0 8px rgba(255,194,61,.28)}}
+  @media (prefers-reduced-motion:reduce){.spot-pulse{animation:none}}
 </style>
 <style>
 /* Ko-fi support button (shared across MSploit tools) */
@@ -2958,7 +2962,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-27T22:56:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T01:46:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6811,7 +6815,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     back.addEventListener('click', close);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
     // Esc pressed inside the stats page arrives as a message from the Worker's page.
-    window.addEventListener('message', function (e) { if (e.origin === PUB_BASE && e.data === 'studio-sync-stats-close' && panel.classList.contains('open')) close(); });
+    window.addEventListener('message', function (e) {
+      if (e.origin !== PUB_BASE) return;
+      if (e.data === 'studio-sync-stats-close' && panel.classList.contains('open')) close();
+      if (typeof e.data === 'string' && e.data.indexOf('studio-spot:') === 0 && window.__studioSpots) { close(); window.__studioSpots.show(e.data.slice(12)); }
+    });
   })();
   function pubFetch(method, path, body, key) {
     var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 20000);
@@ -12508,6 +12516,47 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     [0, 300, 900, 1800, 3000].forEach(function (ms) { setTimeout(go, ms); });
   }
   function isMobileView() { return window.matchMedia('(max-width:720px)').matches; }
+
+  // ---- "Show me" (?spot=<id>, or a message from the stats drawer) -------------------------------
+  // Each spot is [control to outline, panel or tab to open first, phone view]. The stats page links here, and its
+  // screenshot script uses the same list, so the pictures and the live outline always point at the same place.
+  var SPOTS = {
+    'source': ['#sourceSwitch', null, 'filters'], 'search-beatleader': ['#fetchBtn2', null, 'filters'], 'level': ['#lvlChips', null, 'filters'],
+    'presets': ['#presetPanel', '#presetPanel', 'filters'], 'accsaber': ['#accPanel', '#accPanel', 'filters'], 'pp-range': ['#ppPanel', '#ppPanel', 'filters'],
+    'profile': ['#profilePanel', null, 'filters'], 'for-you': ['#forYouPanel', null, 'results'], 'quick-add': ['#panelQuickAdd', '#panelQuickAdd', 'playlist'],
+    'play-filter': ['#playFilterBar', null, 'results'], 'results': ['#resultList', null, 'results'], 'export': ['#downloadBtn', null, null],
+    'playlist': ['#basketList', null, 'playlist'], 'playlist-tools': ['#shuffleBtn', null, 'playlist'],
+    'stats-tab': ['.tg-tab[data-tg="statsPanel"]', '#statsPanel', 'playlist'], 'prune-tab': ['.tg-tab[data-tg="panelRefine"]', '#panelRefine', 'playlist'],
+    'ramp-tab': ['.tg-tab[data-tg="rampPanel"]', '#rampPanel', 'playlist'], 'info-tab': ['.tg-tab[data-tg="infoPanel"]', '#infoPanel', 'playlist'],
+    'cover-tab': ['.tg-tab[data-tg="coverPanel"]', '#coverPanel', 'playlist'], 'download-tab': ['.tg-tab[data-tg="exportPanel"]', '#exportPanel', 'playlist'],
+    'quest-usb': ['#platTabs', '#exportPanel', 'playlist'], 'sync-tab': ['.tg-tab[data-tg="syncPanel"]', '#syncPanel', 'playlist'],
+'share-tab': ['.tg-tab[data-tg="sharePanel"]', '#sharePanel', 'playlist'],
+    'share-copy': ['#shareCopyBtn', '#sharePanel', 'playlist'], 'library-tab': ['.tg-tab[data-tg="libraryPanel"]', '#libraryPanel', 'playlist'],
+    'save': ['#savePlaylistBtn', '#libraryPanel', 'playlist'], 'combine': ['#combineBtn', '#libraryPanel', 'playlist'],
+    'gallery': ['#galleryBtn', '#libraryPanel', 'playlist'], 'backup': ['#libBackupBtn', '#libraryPanel', 'playlist'],
+    'studio-sync': ['.tg-tab[data-tg="lqPanel"]', '#lqPanel', 'playlist', 'lq'], 'lq-link': ['#lqLinkBox', '#lqPanel', 'playlist', 'lq']
+  };
+  function spotShow(id) {
+    var s = SPOTS[id]; if (!s) return false;
+    if (s[3] === 'lq') { lsFlagSet(LQ_HIDE, false); lsFlagSet(LQ_WANT, true); lqRender(); }
+    if (s[2] && isMobileView()) setMobileView(s[2]);
+    var panel = s[1] ? document.querySelector(s[1]) : null;
+    if (panel) openPanel(panel);
+    setTimeout(function () {
+      var t = document.querySelector(s[0]); if (!t || !t.getClientRects().length) t = panel; if (!t) return;
+      try { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      Array.prototype.forEach.call(document.querySelectorAll('.spot-pulse'), function (x) { x.classList.remove('spot-pulse'); });
+      t.classList.add('spot-pulse'); setTimeout(function () { t.classList.remove('spot-pulse'); }, 6000);
+    }, panel ? 450 : 150);
+    return true;
+  }
+  window.__studioSpots = { list: SPOTS, show: spotShow };
+  (function () {
+    var id = null; try { id = new URLSearchParams(location.search).get('spot'); } catch (e) {}
+    if (!id || !SPOTS[id]) return;
+    try { var u = new URL(location.href); u.searchParams.delete('spot'); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) {}
+    window.addEventListener('load', function () { setTimeout(function () { spotShow(id); }, 700); });
+  })();
 
   // ---- tabbed panels: Save and send, and the playlist tools --------------------------------
   // The sections inside keep their ids and their own code; a tab shows one of them. The tools group

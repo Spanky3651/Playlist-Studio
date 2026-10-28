@@ -896,7 +896,7 @@ async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
   if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
@@ -1174,7 +1174,7 @@ async function gcSiteStats(env, key, range, fresh, tz) {
   if (tool) {
     out.eventVisitors = (total && total.total_events) || 0;
     out.campaigns = campaigns;
-    out.events = hits.filter((h) => h.event).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count }));
+    out.events = hits.filter((h) => h.event).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, days: h.days }));
   }
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
@@ -1213,11 +1213,14 @@ async function gcStats(env, range, fresh, site, tz) {
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
-// Small site icons for the stats page lists (Gemini, Reddit, Chrome...). Icons are public, so this needs no key.
-// Each one comes from Google's icon service once and stays in the Cloudflare cache for a week; only plain
-// host names or short https page addresses are accepted, and only images are passed on.
+// Small site icons and country flags for the stats page lists (Gemini, Reddit, Chrome, flags...). They're public,
+// so this needs no key. Each one is fetched once (site icons from Google's icon service, flags from the flag-icons
+// package) and stays in the Cloudflare cache for a week; only plain host names, short https page addresses or
+// two-letter country codes are accepted, and only images are passed on.
+const GC_FLAGS = "https://cdn.jsdelivr.net/npm/flag-icons@7.5.0/flags/4x3/";
 async function gcIcon(url) {
-  const d = String(url.searchParams.get("d") || "").toLowerCase(), u = String(url.searchParams.get("u") || "");
+  const d = String(url.searchParams.get("d") || "").toLowerCase(), u = String(url.searchParams.get("u") || ""), f = String(url.searchParams.get("f") || "").toLowerCase();
+  if (/^[a-z]{2}$/.test(f)) return gcFlag(f);
   let q = "";
   if (d.length <= 100 && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d)) q = "domain=" + encodeURIComponent(d);
   else if (u.length <= 200 && /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(\/[a-z0-9._~\/-]*)?$/i.test(u)) q = "domain_url=" + encodeURIComponent(u);
@@ -1229,6 +1232,19 @@ async function gcIcon(url) {
   const type = (g && g.headers.get("Content-Type")) || "";
   if (!g || !g.ok || !/^image\/(png|x-icon|vnd\.microsoft\.icon|gif|webp|jpeg)$/.test(type)) return new Response("", { status: 404, headers: { "Cache-Control": "public, max-age=86400" } });
   r = new Response(await g.arrayBuffer(), { headers: { "Content-Type": type, "Cache-Control": "public, max-age=604800", "X-Content-Type-Options": "nosniff" } });
+  if (cache) await cache.put(key, r.clone());
+  return r;
+}
+async function gcFlag(cc) {
+  const cache = typeof caches !== "undefined" ? caches.default : null, key = new Request("https://studio-icons.invalid/flag/" + cc);
+  let r = cache ? await cache.match(key) : null;
+  if (r) return r;
+  let g = null; try { g = await fetch(GC_FLAGS + cc + ".svg"); } catch (e) {}
+  const body = g && g.ok ? await g.text() : "";
+  if (!/^\s*<svg[\s>]/.test(body) || /<script|on[a-z]+\s*=|javascript:|<foreignObject/i.test(body) || body.length > 200000) return new Response("", { status: 404, headers: { "Cache-Control": "public, max-age=86400" } });
+  // An SVG opened on its own could run script on this origin, so it's served locked down.
+  r = new Response(body, { headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=604800", "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox" } });
   if (cache) await cache.put(key, r.clone());
   return r;
 }
@@ -1351,6 +1367,33 @@ button.linkish:hover{color:var(--text)}
 .bars.feat .bar{grid-template-columns:minmax(0,1.3fr) minmax(80px,1fr) 56px;margin:9px 0}
 .bar .fl{display:flex;flex-direction:column;white-space:normal;line-height:1.3;min-width:0}
 .bar .sl{display:flex;align-items:center;gap:10px;min-width:0}
+.ic.gl svg{width:17px;height:17px}
+.flag{flex:none;width:24px;height:18px;border-radius:3px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.12);vertical-align:-3px;margin-right:8px;background:#121a2a}
+.sl .flag{margin-right:0}.flag.none{display:inline-block;visibility:hidden}
+.maptip .flag{width:20px;height:15px;margin-right:6px}
+.bar:has([data-ev]){cursor:pointer;border-radius:10px;margin-left:-6px;margin-right:-6px;padding:2px 6px}
+.bar:has([data-ev]):hover{background:#101827}
+.sl[data-ev] .fl>b::after{content:"i";display:inline-flex;width:15px;height:15px;margin-left:6px;border-radius:50%;border:1px solid #3a4a66;color:#9fb3d9;font:italic 700 10px/1 Georgia,serif;align-items:center;justify-content:center;vertical-align:1px}
+.fback{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40}
+.fsheet{position:fixed;z-index:41;background:#0b111c;border:1px solid #24314a;color:var(--text);overflow:auto;overscroll-behavior:contain;box-shadow:0 0 40px rgba(0,0,0,.6)}
+.fsheet{top:0;right:0;bottom:0;width:min(460px,92vw);border-width:0 0 0 1px;padding:20px 22px}
+@media(max-width:700px){.fsheet{top:auto;left:0;width:auto;max-height:84vh;border-width:1px 0 0;border-radius:22px 22px 0 0;padding:12px 16px calc(20px + env(safe-area-inset-bottom,0px))}.fsheet::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:#33415c;margin:0 auto 10px}}
+html.fs-open{overflow:hidden}
+.fs-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fs-area{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9fd3ff;background:#0f2238;border:1px solid #1f3d63;border-radius:999px;padding:3px 12px 3px 4px}
+.fs-area .ic{width:24px;height:24px;border-radius:999px}
+.fs-x{background:none;border:1px solid var(--line);color:var(--text);width:36px;height:36px;border-radius:10px;font-size:15px;padding:0}
+.fsheet h3{font-size:23px;margin:12px 0 6px;line-height:1.25}.fs-desc{color:#c9d3e3;margin:0 0 12px;font-size:15.5px}
+.fs-where{font-size:14.5px;color:#c9d3e3;background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:8px 11px;margin-bottom:12px}
+.fs-where span{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}.fs-where b{color:var(--amber)}
+.fs-shot{display:block;position:relative;border:1px solid #24314a;border-radius:12px;overflow:hidden;background:#05070c}.fs-shot img{display:block;width:100%;height:auto}
+.fs-cap{font-size:12.5px;color:var(--muted);margin:6px 2px 0}.fs-nums.two{grid-template-columns:1fr 1fr}
+.fs-nums{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;margin:12px 0}
+.fs-nums>div{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.fs-nums b{display:block;font-size:19px}.fs-nums span{font-size:12.5px;color:var(--muted)}.fs-nums svg{width:100%;height:28px;display:block}
+.fs-acts{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fs-go{background:var(--blue);border:0;color:#fff;font-weight:700;font-size:15px;border-radius:12px;padding:11px 16px;text-decoration:none;cursor:pointer}
+.fs-none{color:var(--muted);font-size:14px}.fs-acts code{font:12.5px ui-monospace,Consolas,monospace;color:#7f8fab}
 .ic{flex:none;width:28px;height:28px;border-radius:8px;background:#121a2a;border:1px solid #1f2a40;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;font-weight:800;color:#cfe0ff;font-size:13px}
 .ic img{width:18px;height:18px;display:block}
 .bar .fl b{font-weight:700;color:var(--text)}
@@ -1583,6 +1626,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <p class="when" id="when"></p>
 </section>
 <p class="when" id="gcwhen"></p>
+<div id="fback" class="fback" hidden></div><aside id="fsheet" class="fsheet" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden></aside>
 <p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
 </div>
 </main>
@@ -1706,9 +1750,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     chart(d, dailyWhere(BUILD));
     var dev = { Phone: 0, Tablet: 0, Computer: 0, Unknown: 0 };
     (d.sizes || []).forEach(function (s) { var n = s.name.toLowerCase(); dev[/phone/.test(n) && !/tablet/.test(n) ? 'Phone' : /phone|tablet/.test(n) ? 'Tablet' : /monitor|computer|laptop|desktop/.test(n) ? 'Computer' : 'Unknown'] += s.count; });
-    bars('v-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
+    bars('v-dev', devRows(dev));
     var fv = $('v-fun').closest('.blk'); if (fv) fv.classList.toggle('hidden', !d.visitors);
-    bars('v-geo', (d.locations || []).filter(function (s) { return s.count > 0; }).slice(0, 8).map(function (s) { return [esc(s.name && !/unknown/i.test(s.name) ? s.name : 'Unknown'), s.count]; }));
+    bars('v-geo', (d.locations || []).filter(function (s) { return s.count > 0; }).slice(0, 8).map(function (s) { return [countryLabel(s), s.count]; }));
     worldMap('v-map', d.locations, 'visitors');
     spark('v-spark', d.range === 'today' ? ((d.days[d.days.length - 1] || {}).hourly || []) : d.days.map(function (x) { return x.n; }), '#3ddc84');
     var F = [['Visited', d.visitors], ['Connected a profile', conn ? conn.count : 0], ['Searched', maxWhere(SEARCH)], ['Added maps', maxWhere(ADD)], ['Downloaded or sent', built]];
@@ -1721,7 +1765,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     $('f-prob').classList.toggle('bad', probs.length > 0);
     var showAll = $('f-more').getAttribute('data-all') === '1';
     var areas = {}; use.forEach(function (e) { var a = featInfo(e.name).area; areas[a] = (areas[a] || 0) + e.count; });
-    bars('f-areas', Object.keys(areas).map(function (a) { return [esc(a), areas[a]]; }).sort(function (a, b) { return b[1] - a[1]; }));
+    bars('f-areas', Object.keys(areas).map(function (a) { return [iconLabel(areaIcon(a), esc(a)), areas[a]]; }).sort(function (a, b) { return b[1] - a[1]; }));
     bars('f-top', use.slice(0, showAll ? 999 : 15).map(function (e) { return featRow(e); }));
     $('f-more').classList.toggle('hidden', use.length <= 15); $('f-more').textContent = showAll ? 'Show fewer' : 'Show all ' + use.length;
     var cut = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
@@ -1945,7 +1989,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
   function featRow(e, cls) {
     var f = featInfo(e.name);
-    return ['<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span>', e.count, cls || ''];
+    return ['<span class="sl" data-ev="' + esc(e.name) + '" data-site="studio">' + areaIcon(f.area) + '<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span></span>', e.count, cls || ''];
   }
   // ---- world heatmap ----
   // Country shapes from Natural Earth (public domain, 1:110m), drawn once per map; colors follow views.
@@ -1980,7 +2024,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     function show(e) {
       var p = e.target.closest && e.target.closest('path[data-c]'); if (!p) { tip.hidden = true; return; }
       var c = p.getAttribute('data-c'), v = by[c];
-      tip.innerHTML = '<b>' + esc(v ? v.name : (CNAMES_REV[c] || c)) + '</b>' + (v ? fmt(v.n) + ' ' + esc(unit) + ' · ' + Math.round(v.n / total * 100) + '%' : 'no ' + esc(unit));
+      tip.innerHTML = '<b>' + flag(c) + esc(v ? v.name : (CNAMES_REV[c] || c)) + '</b>' + (v ? fmt(v.n) + ' ' + esc(unit) + ' · ' + Math.round(v.n / total * 100) + '%' : 'no ' + esc(unit));
       var r = box.getBoundingClientRect(), x = (e.clientX || 0) - r.left, y = (e.clientY || 0) - r.top;
       tip.style.left = Math.min(r.width - 150, Math.max(4, x + 12)) + 'px'; tip.style.top = Math.max(4, y - 44) + 'px'; tip.hidden = false;
     }
@@ -2022,6 +2066,140 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     svg.onpointermove = at; svg.onpointerdown = at;
     svg.onpointerleave = function () { tip.hidden = true; if (mark) mark.style.display = 'none'; };
   }
+  // ---- small icons drawn for this page (plain shapes, no brand marks) ----
+  var GLYPH = {
+    search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+    star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+    rows: '<path d="M4 6h16M4 12h16M4 18h10"/>',
+    note: '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+    download: '<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>',
+    upload: '<path d="M12 20V9"/><path d="M7 14l5-5 5 5"/><path d="M5 4h14"/>',
+    share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/>',
+    books: '<path d="M5 4h4v16H5zM10 4h4v16h-4z"/><path d="M15.5 5.5l3.6-1 3 14.6-3.6 1z"/>',
+    headset: '<rect x="2.5" y="7" width="19" height="10" rx="4"/><circle cx="8.5" cy="12" r="2"/><circle cx="15.5" cy="12" r="2"/>',
+    person: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/>',
+    chart: '<path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/>',
+    shield: '<path d="M12 3l7 3v5.5c0 4.4-3 7.6-7 9.5-4-1.9-7-5.1-7-9.5V6z"/>',
+    sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+    hand: '<path d="M8 13V6.5a1.5 1.5 0 013 0V12M11 11V5a1.5 1.5 0 013 0v6M14 11V6.5a1.5 1.5 0 013 0V14c0 3.9-2.6 7-6.5 7S5 18.5 5 15.5V12a1.5 1.5 0 013 0"/>',
+    phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+    monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M9 20h6M12 16v4"/>',
+    tablet: '<rect x="4.5" y="3" width="15" height="18" rx="2.5"/><path d="M11 18h2"/>',
+    link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>',
+    warn: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',
+    pencil: '<path d="M4 20l1-4 11-11 3 3-11 11z"/><path d="M14 7l3 3"/>',
+    layers: '<path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/>',
+    image: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l5-5 4 4 2-2 3 3"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+    compare: '<rect x="3.5" y="5" width="7" height="14" rx="1.5"/><rect x="13.5" y="5" width="7" height="14" rx="1.5"/>',
+    grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+    layout: '<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M10 9v11"/>',
+    play: '<circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
+    replay: '<path d="M4 12a8 8 0 108-8"/><path d="M4 5v4h4"/><path d="M10.5 9.5l4 2.5-4 2.5z"/>',
+    dot: '<circle cx="12" cy="12" r="3"/>',
+    question: '<circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.5a2.3 2.3 0 114 1.6c-.9.6-1.8 1.1-1.8 2.4M12 16.5v.5"/>'
+  };
+  var AREA_GLYPH = { 'Search': 'search', 'For You': 'star', 'Results': 'rows', 'Playlist': 'note', 'Save and send': 'download', 'Share': 'share', 'Sharing': 'share', 'Library': 'books',
+    'Studio Sync': 'headset', 'Quest': 'headset', 'Profile': 'person', 'Stats': 'chart', 'Clans': 'shield', 'Starters': 'sparkle', 'First visit': 'hand', 'Start': 'play', 'App': 'phone',
+    'Links': 'link', 'Problems': 'warn', 'Export': 'download', 'Import': 'upload', 'Editing': 'pencil', 'Layers': 'layers', 'Textures': 'image', 'Preview': 'eye', 'Compare': 'compare',
+    'Gallery': 'grid', 'Layout': 'layout', 'Replays': 'replay', 'Templates': 'sparkle', 'Other': 'dot' };
+  var AREA_COLOR = { 'Problems': '#ff6b7d', 'Studio Sync': '#3ddc84', 'Quest': '#3ddc84', 'For You': '#ffc23d', 'Search': '#5aa0ff', 'Profile': '#a78bfa', 'Clans': '#a78bfa', 'Links': '#38bdf8' };
+  function glyph(k, color) { return '<svg viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (GLYPH[k] || GLYPH.dot) + '</svg>'; }
+  function areaIcon(area) { return '<span class="ic gl">' + glyph(AREA_GLYPH[area] || 'dot', AREA_COLOR[area] || '#9fb3d9') + '</span>'; }
+  function iconLabel(icon, html) { return '<span class="sl">' + icon + '<span class="fl"><b>' + html + '</b></span></span>'; }
+  var DEV_GLYPH = { 'Phone': 'phone', 'Computer': 'monitor', 'Tablet or small laptop': 'tablet', 'Unknown': 'question' };
+  function devRows(dev) {
+    return [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; })
+      .map(function (r) { return [iconLabel('<span class="ic gl">' + glyph(DEV_GLYPH[r[0]], '#9fb3d9') + '</span>', esc(r[0])), r[1], r[2]]; });
+  }
+  // ---- country flags (fetched once by the Worker, then cached) ----
+  function flag(code) { code = String(code || '').toLowerCase(); return /^[a-z]{2}$/.test(code) && code !== 'xx' ? '<img class="flag" src="/admin/icon?f=' + code + '" alt="" loading="lazy" decoding="async">' : '<span class="flag none"></span>'; }
+  function countryLabel(loc) { var nm = loc.name && !/unknown/i.test(loc.name) ? loc.name : 'Unknown'; return '<span class="sl">' + flag(nm === 'Unknown' ? '' : ccode(loc)) + '<span class="fl"><b>' + esc(nm) + '</b></span></span>'; }
+
+  // ---- what a feature is: picture, where it lives, numbers, and "Show me" in Studio ----
+  var SHOT_BASE = 'https://spanky3651.github.io/Playlist-Studio/stats-shots/';
+  var STUDIO_URL = 'https://spanky3651.github.io/Playlist-Studio/';
+  var SPOT_WHERE = {
+    'source': 'Top of the filters › BeatLeader or BeatSaver', 'search-beatleader': 'Bottom of the filters › Search BeatLeader', 'level': 'Star Rating › level chips',
+    'presets': 'Filter Presets', 'accsaber': 'AccSaber Pools', 'pp-range': 'PP Range', 'profile': 'Your Profile', 'for-you': 'For You', 'quick-add': 'Quick Add',
+    'play-filter': 'Search Results › Your plays', 'results': 'Search Results', 'export': 'Top right › Export .bplist', 'playlist': 'Your Playlist',
+    'playlist-tools': 'Your Playlist › Shuffle, Sort, Refresh ratings, Undo', 'stats-tab': 'Your Playlist › Tools › Stats', 'prune-tab': 'Your Playlist › Tools › Prune',
+    'ramp-tab': 'Your Playlist › Tools › Warm-up order', 'info-tab': 'Your Playlist › Tools › Info', 'cover-tab': 'Your Playlist › Tools › Cover',
+    'download-tab': 'Save and send › Download', 'quest-usb': 'Save and send › Download › Quest (USB)', 'sync-tab': 'Save and send › Sync link',
+    'share-tab': 'Save and send › Share link', 'share-copy': 'Save and send › Share link › Copy link', 'library-tab': 'Save and send › Library',
+    'save': 'Save and send › Library › Save playlist', 'combine': 'Save and send › Library › Combine playlists', 'gallery': 'Save and send › Library › Browse the gallery',
+    'backup': 'Save and send › Library › Back up library', 'studio-sync': 'Save and send › Studio Sync', 'lq-link': 'Save and send › Studio Sync › Setup'
+  };
+  var FEAT_SPOT = [
+    [/^(search-beatleader|bsr-hop.*)$/, 'search-beatleader'], [/^search-beatsaver$/, 'source'], [/^(search-recommend|foryou-.*|rank-up-plan)$/, 'for-you'],
+    [/^(level-.*|diff-change|newbie-.*)$/, 'level'], [/^pp-filter$/, 'pp-range'], [/^accsaber-.*/, 'accsaber'], [/^nofail-.*/, 'play-filter'],
+    [/^(row-add|row-unadd|row-replay|density-.*|results-more.*|maps-like-this|sel-.*|cable-pitch.*|egg-.*)$/, 'results'], [/^(quick-add|link-load.*)$/, 'quick-add'],
+    [/^(connect-profile|profile-.*|top-plays|build-from-plays|ss-sync.*|clan-.*|asclan-.*|full-stats.*|stats-(clan|asclan|versus|top-plays|add|score-open)|versus-build)$/, 'profile'],
+    [/^export$/, 'export'], [/^(export-tab-.*|tab-exportPanel)$/, 'download-tab'], [/^quest-.*/, 'quest-usb'], [/^(share-create|share-paste)$/, 'share-copy'],
+    [/^(share-open|tab-sharePanel)$/, 'share-tab'], [/^(pub-.*|tab-syncPanel)$/, 'sync-tab'], [/^save-playlist$/, 'save'], [/^library-backup$/, 'backup'],
+    [/^(load-playlist|library-restore|import|tab-libraryPanel)$/, 'library-tab'], [/^combine-.*/, 'combine'], [/^(gallery-.*|empty-gallery)$/, 'gallery'],
+    [/^(stats-open|tab-statsPanel)$/, 'stats-tab'], [/^(refine|tab-panelRefine)$/, 'prune-tab'], [/^(session-ramp|tab-rampPanel)$/, 'ramp-tab'],
+    [/^(playlist-name|tab-infoPanel)$/, 'info-tab'], [/^(clear-logo|tab-coverPanel)$/, 'cover-tab'], [/^(undo|redo|refresh-stars|fill-data)$/, 'playlist-tools'],
+    [/^lq-(link|first-.*|key-.*|qr-show|rekey)$/, 'lq-link'], [/^(lq-.*|tab-lqPanel|onquest-open|studiosync-.*|mbf-link)$/, 'studio-sync']
+  ];
+  function featSpot(name) { for (var i = 0; i < FEAT_SPOT.length; i++) if (FEAT_SPOT[i][0].test(name)) return FEAT_SPOT[i][1]; return ''; }
+  var TOOL_HOME = { hsv: ['HSV Config Generator', 'https://spanky3651.github.io/HSV-Config-Generator/'], rs: ['ReeSaber Studio', 'https://spanky3651.github.io/ReeSaber-Studio/'] };
+  function featData(site, name) {
+    var d = site === 'studio' ? gc : toolData[site], ev = null;
+    ((d && d.events) || []).forEach(function (e) { if (e.name === name) ev = e; });
+    return { d: d, ev: ev };
+  }
+  function featInfoFor(site, name) { return site === 'studio' ? featInfo(name) : toolFeat(site, name); }
+  function sheetSpark(days) {
+    var vals = (days || []).map(function (x) { return x[1] || 0; }); if (vals.length < 2) return '';
+    var w = 160, h = 36, max = Math.max.apply(null, vals.concat([1])), n = vals.length;
+    var pts = vals.map(function (v, i) { return (i * (w - 2) / (n - 1) + 1).toFixed(1) + ',' + (h - 2 - v / max * (h - 6)).toFixed(1); });
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true"><polyline points="1,' + h + ' ' + pts.join(' ') + ' ' + (w - 1) + ',' + h + '" fill="#3ddc84" opacity=".14"/><polyline points="' + pts.join(' ') + '" fill="none" stroke="#3ddc84" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  var sheetAt = null;   // { site, name, list } of what's open, so arrow keys can step through the same list
+  function openFeat(site, name, list) {
+    var f = featInfoFor(site, name), x = featData(site, name), ev = x.ev || { name: name, count: 0 }, spot = site === 'studio' ? featSpot(name) : '';
+    sheetAt = { site: site, name: name, list: list || [] };
+    var sp = sheetSpark(ev.days), first = ev.first || gcFirstNonZero(ev.days), rng = rangeName(x.d ? x.d.range : range).toLowerCase();
+    var h = '<div class="fs-top"><span class="fs-area">' + areaIcon(f.area) + esc(f.area) + '</span><button class="fs-x" id="fsClose" aria-label="Close">✕</button></div>' +
+      '<h3 id="fsTitle">' + esc(f.label) + '</h3>' +
+      (f.desc ? '<p class="fs-desc">' + esc(f.desc) + '</p>' : '') +
+      (spot && SPOT_WHERE[spot] ? '<div class="fs-where"><span>Where</span>' + esc(SPOT_WHERE[spot]).replace(/ › ([^›]+)$/, ' › <b>$1</b>') + '</div>' : site !== 'studio' ? '<div class="fs-where"><span>Where</span>' + esc(TOOL_HOME[site][0]) + '</div>' : '') +
+      (spot ? '<a class="fs-shot" href="' + SHOT_BASE + spot + '.webp" target="_blank" rel="noopener"><img src="' + SHOT_BASE + spot + '.webp" alt="Where ' + esc(f.label) + ' is in Playlist Studio, outlined"></a><p class="fs-cap">Tap the picture to open it full size.</p>' : '') +
+      '<div class="fs-nums' + (sp ? '' : ' two') + '"><div><b>' + fmt(ev.count) + '</b><span>visitors, ' + esc(rng) + '</span></div><div><b>' + (first ? esc(dshort(first)) : '-') + '</b><span>' + (ev.first ? 'first used' : 'first in this range') + '</span></div>' + (sp ? '<div class="fs-sp">' + sp + '<span>per day</span></div>' : '') + '</div>' +
+      '<div class="fs-acts">' + (spot ? '<button class="fs-go" id="fsGo" data-spot="' + spot + '">Show me in Studio ↗</button>' : site !== 'studio' ? '<a class="fs-go" href="' + TOOL_HOME[site][1] + '" target="_blank" rel="noopener">Open ' + esc(TOOL_HOME[site][0]) + ' ↗</a>' : '<span class="fs-none">Nothing on screen for this one</span>') + '<code>' + esc(name) + '</code></div>';
+    var sh = $('fsheet'); sh.innerHTML = h; sh.hidden = false; $('fback').hidden = false; document.documentElement.classList.add('fs-open');
+    var shot = sh.querySelector('.fs-shot img'); if (shot) shot.addEventListener('error', function () { var a = shot.closest('.fs-shot'); if (a) a.remove(); });
+    setTimeout(function () { var c = $('fsClose'); if (c) c.focus(); }, 30);
+  }
+  function gcFirstNonZero(days) { var f = null; (days || []).forEach(function (d) { if (!f && d[1] > 0) f = d[0]; }); return f; }
+  function closeFeat() { $('fsheet').hidden = true; $('fback').hidden = true; document.documentElement.classList.remove('fs-open'); sheetAt = null; }
+  document.addEventListener('click', function (e) {
+    var go = e.target.closest && e.target.closest('#fsGo');
+    if (go) {
+      var id = go.getAttribute('data-spot');
+      if (/[?&]embed=1/.test(location.search) && window.parent !== window) { try { parent.postMessage('studio-spot:' + id, 'https://spanky3651.github.io'); } catch (x) {} }
+      else window.open(STUDIO_URL + '?spot=' + encodeURIComponent(id), '_blank', 'noopener');
+      return;
+    }
+    if (e.target.closest && (e.target.closest('#fsClose') || e.target.id === 'fback')) { closeFeat(); return; }
+    var row = e.target.closest && e.target.closest('.bar'), tag = row && row.querySelector('[data-ev]');
+    if (!tag) return;
+    var list = Array.prototype.map.call(row.parentNode.querySelectorAll('[data-ev]'), function (t) { return t.getAttribute('data-ev'); });
+    openFeat(tag.getAttribute('data-site'), tag.getAttribute('data-ev'), list);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!sheetAt) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('bar') && e.target.querySelector('[data-ev]')) { e.preventDefault(); e.target.click(); }
+      return;
+    }
+    if (e.key === 'Escape') { e.stopPropagation(); closeFeat(); return; }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      var l = sheetAt.list, i = l.indexOf(sheetAt.name); if (i < 0 || !l.length) return;
+      e.preventDefault(); openFeat(sheetAt.site, l[(i + (e.key === 'ArrowDown' ? 1 : l.length - 1)) % l.length], l);
+    }
+  }, true);
+
   // ---- plain names for where people come from ----
   // utm_source (where a tagged link was posted) and utm_campaign (which link) as you set them up.
   var SRC_NAMES = {
@@ -2271,7 +2449,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
   function toolFeatRow(t, e, cls) {
     var f = toolFeat(t, e.name);
-    return ['<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span>', e.count, cls || ''];
+    return ['<span class="sl" data-ev="' + esc(e.name) + '" data-site="' + t + '">' + areaIcon(f.area) + '<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span></span>', e.count, cls || ''];
   }
   function tabIntoView() {
     var tbx = $('tabs'), sel = tbx && tbx.querySelector('button[aria-selected="true"]'); if (!sel) return;
@@ -2327,8 +2505,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars(id('refs'), sites.map(function (r) { return refRow(r); }));
     bars(id('pages'), (d.pages || []).slice(0, 10).map(function (x) { return pageRow(x, T.home); }));
     worldMap(id('map'), d.locations, 'visitors');
-    bars(id('geo'), (d.locations || []).filter(function (s) { return s.count > 0; }).slice(0, 8).map(function (s) { return [esc(s.name && !/unknown/i.test(s.name) ? s.name : 'Unknown'), s.count]; }));
-    bars(id('dev'), [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
+    bars(id('geo'), (d.locations || []).filter(function (s) { return s.count > 0; }).slice(0, 8).map(function (s) { return [countryLabel(s), s.count]; }));
+    bars(id('dev'), devRows(dev));
     hideEmptyCards(t);
     txt(id('when'), 'GoatCounter (' + (d.code || T.code) + ') ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
   }
@@ -2402,7 +2580,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars('b-pages', (d.pages || []).map(function (p) { var nm = PAGES[p.path] || p.title || p.path; return ['<span class="fl"><b>' + esc(nm) + '</b><span class="fd"><code>' + esc(p.path) + '</code></span></span>', p.count]; }), '', 'No profile views in this range.');
     bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return refRow(r, isMyLink(r) ? 'g' : ''); }), '', 'No referrers in this range.');
     renderGeo(d);
-    bars('b-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
+    bars('b-dev', devRows(dev));
     $('b-geoh').classList.toggle('hidden', !(d.locations || []).some(function (c) { return c.count > 0; }));
     hideEmptyCards('bl');
     $('b-geo').classList.toggle('hidden', !(d.locations || []).some(function (c) { return c.count > 0; }));
@@ -2414,20 +2592,20 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     txt('b-ncty', fmt(locs.filter(function (c) { return c.name && !/unknown/i.test(c.name); }).length));
     if (!locs.length) { el.innerHTML = '<p class="empty">No views in this range.</p>'; txt('b-tcty', '-'); txt('b-tctyn', ''); txt('b-treg', '-'); txt('b-tregn', ''); $('b-regs').innerHTML = '<p class="empty">No views in this range.</p>'; txt('b-geonote', ''); return; }
     var max = Math.max.apply(null, locs.map(function (c) { return c.count; }).concat([1])), top = locs[0];
-    txt('b-tcty', top.name || 'Unknown'); txt('b-tctyn', fmt(top.count) + ' views \\u00b7 ' + Math.round(top.count / Math.max(1, d.visitors) * 100) + '% of all');
+    $('b-tcty').innerHTML = flag(top.name && !/unknown/i.test(top.name) ? ccode(top) : '') + esc(top.name || 'Unknown'); txt('b-tctyn', fmt(top.count) + ' views \\u00b7 ' + Math.round(top.count / Math.max(1, d.visitors) * 100) + '% of all');
     el.innerHTML = locs.map(function (c, i) {
       var regs = (c.regions || []).filter(function (r) { return r.count > 0; }), real = regs.filter(function (r) { return r.name && !/unknown/i.test(r.name); });
       if (real.length) known = true;
-      regs.forEach(function (r) { if (r.name && !/unknown/i.test(r.name)) all.push({ name: r.name, country: c.name, count: r.count }); });
-      var row = '<div class="bar"><span class="lab">' + esc(c.name && !/unknown/i.test(c.name) ? c.name : 'Unknown') + '</span><span class="track"><span class="fill" style="width:' + Math.max(2, Math.round(c.count / max * 100)) + '%"></span></span><span class="num">' + fmt(c.count) + '</span></div>';
+      regs.forEach(function (r) { if (r.name && !/unknown/i.test(r.name)) all.push({ name: r.name, country: c.name, cc: ccode(c), count: r.count }); });
+      var row = '<div class="bar"><span class="lab">' + countryLabel(c) + '</span><span class="track"><span class="fill" style="width:' + Math.max(2, Math.round(c.count / max * 100)) + '%"></span></span><span class="num">' + fmt(c.count) + '</span></div>';
       if (!real.length) return '<details><summary class="nokids">' + row + '</summary></details>';
       var rmax = Math.max.apply(null, regs.map(function (r) { return r.count; }).concat([1]));
       return '<details' + (i === 0 ? ' open' : '') + '><summary>' + row + '</summary><div class="sub">' + regs.map(function (r) { return '<div class="bar"><span class="lab">' + esc(r.name && !/unknown/i.test(r.name) ? r.name : 'Region unknown') + '</span><span class="track"><span class="fill" style="width:' + Math.max(2, Math.round(r.count / rmax * 100)) + '%"></span></span><span class="num">' + fmt(r.count) + '</span></div>'; }).join('') + '</div></details>';
     }).join('');
     all.sort(function (a, b) { return b.count - a.count; });
-    if (all.length) { txt('b-treg', all[0].name); txt('b-tregn', all[0].country + ' \\u00b7 ' + fmt(all[0].count) + ' views'); }
+    if (all.length) { $('b-treg').innerHTML = flag(all[0].cc) + esc(all[0].name); txt('b-tregn', all[0].country + ' \\u00b7 ' + fmt(all[0].count) + ' views'); }
     else { txt('b-treg', '-'); txt('b-tregn', 'no region data yet'); }
-    bars('b-regs', all.slice(0, 12).map(function (r) { return ['<span class="fl"><b>' + esc(r.name) + '</b><span class="fd">' + esc(r.country) + '</span></span>', r.count]; }), '', 'No state or region data in this range.');
+    bars('b-regs', all.slice(0, 12).map(function (r) { return ['<span class="sl">' + flag(r.cc) + '<span class="fl"><b>' + esc(r.name) + '</b><span class="fd">' + esc(r.country) + '</span></span></span>', r.count]; }), '', 'No state or region data in this range.');
     txt('b-geonote', known ? 'Tap a country to see its states or regions. GoatCounter stops at state or region, there\\u2019s no city level.' : 'GoatCounter only has the country for these views. If you want states and regions, check that region is turned on in your blprofile site\\u2019s GoatCounter settings (what data to collect).');
   }
   // ---- players ----
