@@ -1391,6 +1391,9 @@ html.fs-open{overflow:hidden}
 .fs-nums{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;margin:12px 0}
 .fs-nums>div{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
 .fs-nums b{display:block;font-size:19px}.fs-nums span{font-size:12.5px;color:var(--muted)}.fs-nums svg{width:100%;height:28px;display:block}
+.ysect{display:flex;align-items:center;gap:12px;margin:4px 0 14px}.ysect .ic.big{width:40px;height:40px;border-radius:11px}.ysect .ic.big img{width:28px;height:28px}
+.ysect b{display:block;font-size:19px}.ysect span{color:var(--muted);font-size:14px}.ysect.second{margin-top:36px;padding-top:22px;border-top:1px solid var(--line)}
+.lbl-ic{display:flex;align-items:center;gap:7px}.lbl-ic svg,.lbl-ic img{width:16px;height:16px;flex:none}
 .fs-acts{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .fs-go{background:var(--blue);border:0;color:#fff;font-weight:700;font-size:15px;border-radius:12px;padding:11px 16px;text-decoration:none;cursor:pointer}
 .fs-none{color:var(--muted);font-size:14px}.fs-acts code{font:12.5px ui-monospace,Consolas,monospace;color:#7f8fab}
@@ -1599,6 +1602,15 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 </section>
 
 <section data-sec="sync" class="hidden">
+<div class="ysect"><span class="ic big"><img id="y-psic" alt=""></span><div><b>In Playlist Studio</b><span id="y-sub">What people do with Studio Sync on the site</span></div></div>
+<p class="empty hidden" id="y-empty">Nobody used Studio Sync on the site in this range.</p>
+<div class="grid">
+<div class="card ycard" style="--accent:#38bdf8"><div class="label lbl-ic" data-g="eye" data-c="#38bdf8">Opened Studio Sync</div><div class="value" id="y-open">-</div><div class="note" id="y-openn"></div></div><div class="card ycard" style="--accent:#2f7bff"><div class="label lbl-ic" data-g="ss" data-c="#2f7bff">Got the mod</div><div class="value" id="y-mod">-</div><div class="note" id="y-modn">clicked Download or Releases</div></div><div class="card ycard" style="--accent:#a78bfa"><div class="label lbl-ic" data-g="link" data-c="#a78bfa">Linked a headset</div><div class="value" id="y-link">-</div><div class="note" id="y-linkn">from the link step in Studio</div></div><div class="card ycard" style="--accent:#3ddc84"><div class="label lbl-ic" data-g="send" data-c="#3ddc84">Sent to headsets</div><div class="value" id="y-sent">-</div><div class="note" id="y-sentn">playlists sent or changed</div></div></div>
+<div class="blk"><h2>From curious to synced <small>about, since each step counts people per event</small></h2><div class="bars funnel" id="y-fun"></div></div>
+<div class="blk"><h2>What they use <small>tap one to see where it is</small></h2><div class="bars feat" id="y-use"></div></div>
+<div class="two"><div class="blk"><h2>Problems</h2><div class="bars feat" id="y-probs"></div></div><div class="blk"><h2>How they found it</h2><div class="bars" id="y-came"></div></div></div>
+<div class="blk"><h2>Landing on Studio Sync</h2><div class="bars" id="y-pages"></div></div>
+<div class="ysect second"><span class="ic big"><img id="y-ssic" alt=""></span><div><b>From the headsets</b><span>Studio Sync’s own numbers, live (the range doesn’t change these)</span></div></div>
 <div class="grid">
 <div class="card hero"><div class="label">Active today</div><div class="value" id="activeDay"></div><div class="note">synced in the last 24 hours</div></div>
 <div class="card hero"><div class="label">Active this week</div><div class="value" id="activeWeek"></div><div class="note">last 7 days</div></div>
@@ -1676,13 +1688,13 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
     tabIntoView();
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
-    $('range').classList.toggle('hidden', t === 'sync');
+    $('range').classList.remove('hidden');
     $('gcmsg').classList.toggle('hidden', ownTab(t) || !$('gcmsg').textContent);
     $('gcwhen').classList.toggle('hidden', ownTab(t));
     if (t === 'vis' && gc) chart(gc, dailyWhere(BUILD));
     if (t === 'bl') { if (bl && bl.range === range) chart(bl, null, BLIDS); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadBl(false); }
     if (isTool(t)) { if (toolData[t] && toolData[t].range === range) renderTool(t); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadTool(t, false); }
-    if (!ownTab(t) && gc && gc.range !== range) loadGc(false);
+    if ((!ownTab(t) || t === 'sync') && gc && gc.range !== range) loadGc(false);
     busyUi();
   }
   function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
@@ -1704,8 +1716,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var gcTok = 0, blTok = 0;
   function rangeName(r) { return { today: 'Today', '7d': '7 days', '30d': '30 days', '90d': '90 days', all: 'All time' }[r] || r; }
   function busyUi() {
-    var on = (gcBusy && !ownTab(tab)) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]);
-    Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on && sx.getAttribute('data-sec') !== 'sync'); });
+    var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]);
+    Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on); });
     $('rangeBusy').textContent = on ? 'Loading ' + rangeName(range) + '...' : '';
     $('refresh').classList.toggle('spin', on);
   }
@@ -1784,6 +1796,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars('s-pages', (d.pages || []).slice(0, 10).map(function (p) { return pageRow(p, 'Playlist Studio home', 'm:ps'); }));
     bars('s-br', (d.browsers || []).slice(0, 8).map(browserRow));
     renderReleases();
+    renderSyncGc();
     ['vis', 'feat', 'src'].forEach(hideEmptyCards);
     $('f-colds').closest('.blk').classList.toggle('hidden', !d.cold.length);
     txt('gcwhen', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
@@ -2097,6 +2110,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     play: '<circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
     replay: '<path d="M4 12a8 8 0 108-8"/><path d="M4 5v4h4"/><path d="M10.5 9.5l4 2.5-4 2.5z"/>',
     dot: '<circle cx="12" cy="12" r="3"/>',
+    send: '<path d="M4 12l16-8-6 16-2.5-6.5z"/>',
     question: '<circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.5a2.3 2.3 0 114 1.6c-.9.6-1.8 1.1-1.8 2.4M12 16.5v.5"/>'
   };
   var AREA_GLYPH = { 'Search': 'search', 'For You': 'star', 'Results': 'rows', 'Playlist': 'note', 'Save and send': 'download', 'Share': 'share', 'Sharing': 'share', 'Library': 'books',
@@ -2200,6 +2214,45 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     }
   }, true);
 
+  // ---- Studio Sync tab: what people do with Studio Sync on the site (Playlist Studio's GoatCounter, this range) ----
+  var LQ_EV = /^(lq-.*|tab-lqPanel|studiosync-.*|onquest-open|mbf-link)$/;
+  var LQ_SENT = /^(lq-create|lq-create-all|lq-replace|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|lq-done|lq-order-sent|lq-sendback)$/;
+  var LQ_PROB = /(conflict|fail|error|no-answer)/;
+  function lqCount(re) { var n = 0; ((gc && gc.events) || []).forEach(function (e) { if (re.test(e.name)) n += e.count; }); return n; }
+  function lqMax(re) { var n = 0; ((gc && gc.events) || []).forEach(function (e) { if (re.test(e.name) && e.count > n) n = e.count; }); return n; }
+  function syncIcons() {
+    $('y-psic').src = MY_ICONS.ps; $('y-ssic').src = MY_ICONS.ss;
+    Array.prototype.forEach.call(document.querySelectorAll('.lbl-ic[data-g]'), function (l) { var k = l.getAttribute('data-g'); l.insertAdjacentHTML('afterbegin', k === 'ss' ? '<img src="' + MY_ICONS.ss + '" alt="">' : glyph(k, l.getAttribute('data-c'))); l.removeAttribute('data-g'); });
+  }
+  function renderSyncGc() {
+    if ($('y-psic') && !$('y-psic').src) syncIcons();
+    var d = gc; if (!d || !$('y-open')) return;
+    var opened = Math.max(lqMax(/^tab-lqPanel$/), lqCount(/^lq-open-/)), mod = lqCount(/^studiosync-(download|releases)$/), linked = lqCount(/^lq-link$/),
+      first = Math.max(lqCount(/^lq-first-sync$/), lqCount(/^lq-first-ok$/)), sentPeople = lqMax(LQ_SENT), sent = lqCount(LQ_SENT);
+    txt('y-sub', 'What people do with Studio Sync on the site, ' + (d.range === 'today' ? 'today' : d.range === 'all' ? 'all time' : 'last ' + rangeName(d.range).toLowerCase()));
+    txt('y-open', fmt(opened)); txt('y-openn', d.visitors ? Math.round(Math.min(opened, d.visitors) / d.visitors * 100) + '% of Studio visitors' : '');
+    txt('y-mod', fmt(mod)); txt('y-link', fmt(linked)); txt('y-sent', fmt(sent));
+    var F = [['eye', '#9fb3d9', 'Opened Studio Sync', opened], ['ss', '', 'Clicked to get the mod', mod], ['link', '#a78bfa', 'Linked a headset', linked],
+      ['headset', '#3ddc84', 'Headset synced for the first time', first], ['send', '#3ddc84', 'Sent a playlist to a headset', sentPeople]];
+    var top = Math.max(1, opened);
+    $('y-fun').innerHTML = F.map(function (f, i) {
+      var p = Math.min(100, Math.round(f[3] / top * 100)), icon = f[0] === 'ss' ? iconSpan('m:ss', 'S') : '<span class="ic gl">' + glyph(f[0], f[1]) + '</span>';
+      return '<div class="bar"><span class="lab"><span class="sl">' + icon + '<span class="fl"><b>' + esc(f[2]) + '</b></span></span></span><span class="track"><span class="fill' + (i === F.length - 1 ? ' g' : '') + '" style="width:' + p + '%"></span></span><span class="num">' + fmt(f[3]) + '<small>' + p + '%</small></span></div>';
+    }).join('');
+    var fb = $('y-fun').closest('.blk'); if (fb) fb.classList.toggle('hidden', !opened);
+    var evs = (d.events || []).filter(function (e) { return LQ_EV.test(e.name) && e.count > 0; }).sort(function (a, b) { return b.count - a.count; });
+    bars('y-use', evs.filter(function (e) { return !LQ_PROB.test(e.name) && featInfo(e.name).area !== 'Problems'; }).map(function (e) { return featRow(e); }));
+    bars('y-probs', evs.filter(function (e) { return LQ_PROB.test(e.name) || featInfo(e.name).area === 'Problems'; }).map(function (e) { return featRow(e, 'alt'); }));
+    var lqCamp = /studio-?sync|second-device/;
+    var rows = (d.campaigns || []).filter(function (c) { return c.count > 0 && lqCamp.test(String(c.name).toLowerCase()); }).map(campRow)
+      .concat((d.refs || []).filter(function (r) { return r.scheme === 'c' && /studio-?sync/.test(String(r.name).toLowerCase()); }).map(function (r) { return refRow(r, 'g'); }));
+    bars('y-came', rows);
+    bars('y-pages', (d.pages || []).filter(function (p) { return /studio-?sync/i.test(p.path || ''); }).map(function (p) { return pageRow(p, 'Playlist Studio home', 'm:ps'); }));
+    Array.prototype.forEach.call(document.querySelectorAll('.ycard'), function (c) { var v = c.querySelector('.value'); c.classList.toggle('hidden', !v || v.textContent === '0'); });
+    var any = opened || mod || linked || sent || evs.length;
+    $('y-empty').classList.toggle('hidden', !!any);
+  }
+
   // ---- plain names for where people come from ----
   // utm_source (where a tagged link was posted) and utm_campaign (which link) as you set them up.
   var SRC_NAMES = {
@@ -2278,12 +2331,13 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   // Pages people land on in Studio.
   function pageName(p, home) {
     var x = String(p || '').replace(/^\\/(playlist-studio|reesaber-studio|hsv-config-generator)(?=\\/|\\?|#|$)/i, '') || '/';
-    if (x === '/' || x === '' || /^\\/(index\\.html)?(\\?|$)/.test(x) && !/stats=|#p=|bsr=|cfg=|preset=/.test(x)) return home || 'Playlist Studio home';
+    if (x === '/' || x === '' || /^\\/(index\\.html)?(\\?|$)/.test(x) && !/stats=|#p=|bsr=|cfg=|preset=|studio-?sync/i.test(x)) return home || 'Playlist Studio home';
     if (/^\\/gallery/.test(x)) return 'Saber gallery';
     if (/^\\/docs/.test(x)) { var t = x.replace(/^\\/docs\\/?/, '').replace(/\\.html$/, '').replace(/[-_\\/]+/g, ' ').trim(); return t ? 'Docs: ' + t : 'Docs'; }
     if (/stats=/.test(x)) return 'A shared Stats card';
     if (/#p=|[?&]p=/.test(x)) return 'A shared playlist link';
-    if (/studio-sync/.test(x)) return 'Studio Sync setup';
+    if (/studio-?sync=|#studio-sync/i.test(x)) return /#/.test(x) ? 'Studio Sync link' : 'Studio Sync setup link';
+    if (/studio-?sync/i.test(x)) return 'Studio Sync setup';
     if (/bsr=/.test(x)) return 'A map link (BSR code)';
     if (/gallery/.test(x)) return 'Playlist gallery';
     return x;
