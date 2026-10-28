@@ -912,7 +912,7 @@ async function admin(request, env, url) {
   }
   if (url.pathname === "/admin/gc") {
     if (!env.GC_TOKEN) return json({ error: "GoatCounter isn't connected yet", setup: true }, 503, nocache);
-    try { return json(await gcStats(env, url.searchParams.get("range") || "7d", url.searchParams.get("fresh") === "1", url.searchParams.get("site") || ""), 200, nocache); }
+    try { return json(await gcStats(env, url.searchParams.get("range") || "7d", url.searchParams.get("fresh") === "1", url.searchParams.get("site") || "", url.searchParams.get("tz")), 200, nocache); }
     catch (e) {
       if (e && e.message === "gc-auth") return json({ error: "GoatCounter refused the API key (" + e.gc + "). " + ({ bl: "For the BeatLeader profile site, check that the key can read blprofile, or set GC_TOKEN_BL.", hsv: "For HSV Config Generator, check that the key can read hsv-generator, or set GC_TOKEN_HSV.", rs: "For ReeSaber Studio, check that the key can read reesaberstudio, or set GC_TOKEN_RS." }[url.searchParams.get("site")] || "Check that GC_TOKEN has the Read statistics permission.") }, 502, nocache);
       if (e && e.message === "gc-busy") return json({ error: "GoatCounter is rate limiting right now. Try again in a minute." }, 502, nocache);
@@ -1043,6 +1043,14 @@ async function gcGet(env, path, params) {
   throw Object.assign(new Error("gc-busy"), { gc: 429 });
 }
 function gcDay(t) { return new Date(t * 1000).toISOString().slice(0, 10); }
+// Days follow the viewer's clock, like the GoatCounter dashboard (which uses the site's time zone setting).
+// tz is the browser's getTimezoneOffset() in minutes (240 for US Eastern in summer); 0 means UTC.
+function gcTz(tz) { tz = Math.round(Number(tz) || 0); return Math.max(-840, Math.min(840, tz)); }
+function gcWindow(range, tz) {
+  const now = nowSec(), DAY = 86400, n = GC_RANGES[range], off = gcTz(tz) * 60;
+  const today0 = Math.floor((now - off) / DAY) * DAY + off;   // local midnight, as a UTC instant
+  return { now, DAY, n, off, start: range === "today" ? today0 : today0 - (n - 1) * DAY, end: now, day: (t) => gcDay(t - off) };
+}
 function gcIso(t) { return new Date(t * 1000).toISOString().slice(0, 19) + "Z"; }
 // Every path in the range with its per-day counts. /stats/hits returns the busiest 100; the rest come
 // by excluding the ones already seen.
@@ -1130,13 +1138,12 @@ async function gcGithub(env) {
 // views per day, which profile page, where from, countries, phone or computer.
 // The tool sites also send feature events and utm campaigns, so their tabs get those too (no region lookups,
 // to keep each load to a handful of API calls).
-async function gcSiteStats(env, key, range, fresh) {
+async function gcSiteStats(env, key, range, fresh, tz) {
   const cfg = GC_OTHER[key](env), tool = cfg.tool;
   const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
-  const ck = "gc:cache:" + key + ":" + range, cached = await env.PLAYLISTS.get(ck, "json");
+  const ck = "gc:cache:" + key + ":" + range + (gcTz(tz) ? ":" + gcTz(tz) : ""), cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
-  const now = nowSec(), DAY = 86400, n = GC_RANGES[range], today0 = Math.floor(now / DAY) * DAY;
-  const start = range === "today" ? today0 : today0 - (n - 1) * DAY, end = now;
+  const { now, DAY, n, start, end, day } = gcWindow(range, tz);
   const total = await gcGet(e, "/stats/total", { start: gcIso(start), end: gcIso(end) });
   let prev = null; if (range !== "all") try { prev = await gcGet(e, "/stats/total", { start: gcIso(start - n * DAY), end: gcIso(start) }); } catch (x) {}
   const hits = await gcHits(e, start, end);
@@ -1146,7 +1153,7 @@ async function gcSiteStats(env, key, range, fresh) {
   if (!tool) for (const c of (locations || []).filter((x) => x.id && x.count > 0).slice(0, 10)) c.regions = await gcDetail(e, "locations", c.id, start, end, 20);
   let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
   if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
-  const out = { site: key, code: cfg.code, generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
+  const out = { site: key, code: cfg.code, generated: now, range, tz: gcTz(tz), start: range === "all" && dayList.length ? dayList[0].day : day(start), end: day(end),
     visitors: (total && total.total) || 0, prevVisitors: prev ? prev.total || 0 : null, days: dayList,
     pages: hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count })), refs, sizes, locations, browsers };
   if (tool) {
@@ -1157,14 +1164,12 @@ async function gcSiteStats(env, key, range, fresh) {
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
-async function gcStats(env, range, fresh, site) {
+async function gcStats(env, range, fresh, site, tz) {
   if (!GC_RANGES[range]) range = "7d";
-  if (GC_OTHER[site]) return gcSiteStats(env, site, range, fresh);
-  const ck = "gc:cache:" + range, cached = await env.PLAYLISTS.get(ck, "json");
+  if (GC_OTHER[site]) return gcSiteStats(env, site, range, fresh, tz);
+  const ck = "gc:cache:" + range + (gcTz(tz) ? ":" + gcTz(tz) : ""), cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
-  const now = nowSec(), DAY = 86400, n = GC_RANGES[range];
-  const today0 = Math.floor(now / DAY) * DAY;
-  const start = range === "today" ? today0 : today0 - (n - 1) * DAY, end = now;
+  const { now, DAY, n, start, end, day } = gcWindow(range, tz);
   const pstart = start - n * DAY;
   const total = await gcGet(env, "/stats/total", { start: gcIso(start), end: gcIso(end) });
   let prev = null; if (range !== "all") try { prev = await gcGet(env, "/stats/total", { start: gcIso(pstart), end: gcIso(start) }); } catch (e) {}
@@ -1186,11 +1191,11 @@ async function gcStats(env, range, fresh, site) {
   const gh = await gcGithub(env);
   let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
   if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
-  const out = { generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
+  const out = { generated: now, range, tz: gcTz(tz), start: range === "all" && dayList.length ? dayList[0].day : day(start), end: day(end),
     visitors: (total && total.total) || 0, eventVisitors: (total && total.total_events) || 0, prevVisitors: prev ? prev.total || 0 : null,
     days: dayList,
     players, events, cold, pages, refs, campaigns, sizes, locations, browsers,
-    pushes: gh.pushes.filter((d) => d >= gcDay(start)), releases: gh.releases, myClans: String(env.ADMIN_CLANS || "GENX,ROOT").split(",").map((x) => x.trim()).filter(Boolean) };
+    pushes: gh.pushes.filter((d) => d >= day(start)), releases: gh.releases, myClans: String(env.ADMIN_CLANS || "GENX,ROOT").split(",").map((x) => x.trim()).filter(Boolean) };
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
@@ -1621,7 +1626,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var key = getKey(); if (!key) return;
     var tok = ++gcTok, want = range;
     gcBusy = true; gcMsg(gc ? '' : 'Loading GoatCounter...'); busyUi();
-    fetch('/admin/gc?range=' + encodeURIComponent(want) + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+    fetch('/admin/gc?range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
       if (tok !== gcTok) return;
@@ -1645,8 +1650,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var last = d.days.length ? d.days[d.days.length - 1] : null;
     if (d.range === 'today') {
       var hr = (last && last.hourly) || [], best = -1, bi = 0; hr.forEach(function (n, i) { if (n > best) { best = n; bi = i; } });
-      txt('v-todl', 'Busiest hour'); txt('v-tod', best > 0 ? (bi % 12 || 12) + (bi < 12 ? ' AM' : ' PM') : '-'); txt('v-todn', best > 0 ? best + ' visitors, UTC' : 'no visits yet');
-    } else { txt('v-todl', 'Today'); txt('v-tod', fmt(last ? last.n : 0)); txt('v-todn', 'visitors so far, UTC day'); }
+      txt('v-todl', 'Busiest hour'); txt('v-tod', best > 0 ? (bi % 12 || 12) + (bi < 12 ? ' AM' : ' PM') : '-'); txt('v-todn', best > 0 ? best + ' visitors' : 'no visits yet');
+    } else { txt('v-todl', 'Today'); txt('v-tod', fmt(last ? last.n : 0)); txt('v-todn', 'visitors so far today'); }
     txt('v-built', fmt(built)); txt('v-builtn', 'downloaded, sent or synced' + (d.visitors ? ' · ' + Math.round(built / d.visitors * 100) + '% of visitors' : ''));
     txt('v-conn', fmt(conn ? conn.count : 0)); txt('v-connn', d.visitors ? Math.round((conn ? conn.count : 0) / d.visitors * 100) + '% of visitors' : '');
     var errs = ev('js-error'), al = $('alert');
@@ -1694,7 +1699,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     renderReleases();
     ['vis', 'feat', 'src'].forEach(hideEmptyCards);
     $('f-colds').closest('.blk').classList.toggle('hidden', !d.cold.length);
-    txt('gcwhen', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + ' (UTC days). Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
+    txt('gcwhen', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
   }
   // ---- what each event means ----
   // [area, short name, what the person did]. Names ending in * cover a family (the rest of the name is shown).
@@ -1930,7 +1935,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       days.forEach(function (_, i) { var dx = Math.abs(X(i) - x); if (dx < bd) { bd = dx; best = i; } });
       var p = days[best]; if (!p) return;
       if (mark) { mark.setAttribute('x1', X(best)); mark.setAttribute('x2', X(best)); mark.style.display = ''; }
-      var lab = d.range === 'today' ? (p.h % 12 || 12) + (p.h < 12 ? ' AM' : ' PM') + ' UTC' : dshort(p.day);
+      var lab = d.range === 'today' ? (p.h % 12 || 12) + (p.h < 12 ? ' AM' : ' PM') : dshort(p.day);
       tip.innerHTML = '<b>' + fmt(p.n) + '</b> ' + esc(unit) + '<span>' + esc(lab) + (p.built != null ? ' · ' + fmt(p.built) + ' built' : '') + '</span>';
       var px = X(best) / vb.width * r.width;
       tip.style.left = Math.max(4, Math.min(r.width - 140, px - 60)) + 'px'; tip.hidden = false;
@@ -2159,7 +2164,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var key = getKey(); if (!key || !TOOLS[t]) return;
     var tok = toolTok[t] = (toolTok[t] || 0) + 1, want = range, T = TOOLS[t];
     toolBusy[t] = true; if (!toolData[t]) toolMsg(t, 'Loading ' + esc(T.name) + '...'); busyUi();
-    fetch('/admin/gc?site=' + t + '&range=' + encodeURIComponent(want) + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+    fetch('/admin/gc?site=' + t + '&range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
       if (tok !== toolTok[t]) return;
@@ -2212,7 +2217,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     if (!days.length) { svg.innerHTML = ''; return; }
     if (d.range === 'today') {
       var hr = (days[days.length - 1].hourly || []).slice(0, 24); days = hr.map(function (n, i) { return { day: '', n: n, h: i }; });
-      $(ids.head).innerHTML = ids.what + ' per hour <small>UTC</small>';
+      $(ids.head).innerHTML = ids.what + ' per hour';
     } else $(ids.head).innerHTML = ids.what + ' per day' + (ids.dots ? ' <small>dots are days you pushed changes</small>' : '');
     var max = 4; days.forEach(function (x) { if (x.n > max) max = x.n; });
     max = Math.ceil(max / 4) * 4;
@@ -2243,7 +2248,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var key = getKey(); if (!key) return;
     var tok = ++blTok, want = range;
     blBusy = true; if (!bl) bMsg('Loading your BeatLeader profile views...'); busyUi();
-    fetch('/admin/gc?site=bl&range=' + encodeURIComponent(want) + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+    fetch('/admin/gc?site=bl&range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
       if (tok !== blTok) return;
@@ -2263,7 +2268,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     else txt('b-visn', d.range === 'all' ? 'since ' + dshort(d.start) : d.range === 'today' ? 'so far today' : dshort(d.start) + ' to ' + dshort(d.end));
     var last = d.days.length ? d.days[d.days.length - 1] : null, best = null;
     d.days.forEach(function (x) { if (!best || x.n > best.n) best = x; });
-    txt('b-tod', fmt(last ? last.n : 0)); txt('b-todn', 'views so far, UTC day');
+    txt('b-tod', fmt(last ? last.n : 0)); txt('b-todn', 'views so far today');
     txt('b-best', best && best.n ? fmt(best.n) : '-'); txt('b-bestn', best && best.n ? dshort(best.day) : 'no views yet');
     var dev = devSplit(d.sizes), known = dev.Phone + dev.Tablet + dev.Computer;
     txt('b-phone', known ? Math.round(dev.Phone / known * 100) + '%' : '-');
