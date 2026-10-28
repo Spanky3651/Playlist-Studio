@@ -1240,6 +1240,7 @@ async function gcSiteStats(env, key, range, fresh, tz) {
 }
 async function gcStats(env, range, fresh, site, tz) {
   if (!GC_RANGES[range]) range = "7d";
+  if (site === "all") return gcAllStats(env, range, fresh, tz);
   if (GC_OTHER[site]) return gcSiteStats(env, site, range, fresh, tz);
   const ck = "gc:cache:" + range + (gcTz(tz) ? ":" + gcTz(tz) : ""), cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
@@ -1306,6 +1307,49 @@ async function gcFlag(cc) {
     "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox" } });
   if (cache) await cache.put(key, r.clone());
   return r;
+}
+// "All sites" tab: visitors for Playlist Studio, the BeatLeader profile, HSV Config Generator and ReeSaber Studio side by
+// side. Only what that tab needs per site (totals, page views per day, busiest pages), so it stays a few calls per site.
+// A site's full cache is reused when it's fresh. GC_ME_ID (optional) is your BeatLeader ID for your picture.
+async function gcMe(env) {
+  const id = String(env.GC_ME_ID || "76561199153577883").replace(/\D/g, ""), c = await env.PLAYLISTS.get("gc:me", "json");
+  if (c && c.id === id && nowSec() - c.t < 86400) return c;
+  try {
+    const r = await fetch("https://api.beatleader.xyz/player/" + id + "?stats=false", { headers: { "User-Agent": "PlaylistStudioStats" } });
+    if (r.ok) { const p = await r.json(), rec = { id, t: nowSec(), avatar: gcAvatar(p && p.avatar), name: String((p && p.name) || "") }; await env.PLAYLISTS.put("gc:me", JSON.stringify(rec), { expirationTtl: 30 * 86400 }); return rec; }
+  } catch (e) {}
+  return c || { id, avatar: "", name: "" };
+}
+async function gcAllStats(env, range, fresh, tz) {
+  const ck = "gc:cache:all:" + range + (gcTz(tz) ? ":" + gcTz(tz) : ""), cached = await env.PLAYLISTS.get(ck, "json");
+  if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
+  const { now, DAY, n, start, end, day } = gcWindow(range, tz);
+  const SITES = [["studio", { code: env.GC_SITE || "playliststudio", token: env.GC_TOKEN }, "gc:cache:" + range + (gcTz(tz) ? ":" + gcTz(tz) : "")]]
+    .concat(["bl", "hsv", "rs"].map((k) => [k, GC_OTHER[k](env), "gc:cache:" + k + ":" + range + (gcTz(tz) ? ":" + gcTz(tz) : "")]));
+  const sites = [];
+  for (const [key, cfg, fullKey] of SITES) {
+    const full = fresh ? null : await env.PLAYLISTS.get(fullKey, "json");
+    if (full && now - full.generated < GC_CACHE_SEC) {
+      sites.push({ key, code: cfg.code, visitors: full.visitors, prevVisitors: full.prevVisitors, days: full.days, pages: (full.pages || []).slice(0, 8) });
+      continue;
+    }
+    const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
+    try {
+      const total = await gcGet(e, "/stats/total", { start: gcIso(start), end: gcIso(end) });
+      let prev = null; if (range !== "all") try { prev = await gcGet(e, "/stats/total", { start: gcIso(start - n * DAY), end: gcIso(start) }); } catch (x) {}
+      const hits = await gcHits(e, start, end);
+      sites.push({ key, code: cfg.code, visitors: gcVisitors(total), prevVisitors: prev ? gcVisitors(prev) : null, days: gcPageDays(total, hits, range),
+        pages: hits.filter((h) => !h.event).sort((a, b) => b.count - a.count).slice(0, 8).map((h) => ({ path: h.path, title: h.title, count: h.count })) });
+    } catch (x) {
+      if (x && x.message === "gc-auth" && key === "studio") throw x;
+      sites.push({ key, code: cfg.code, error: x && x.message === "gc-auth" ? "key" : "down", visitors: 0, prevVisitors: null, days: [], pages: [] });
+    }
+  }
+  const me = await gcMe(env);
+  const firstDay = range === "all" ? sites.reduce((a, s) => (s.days && s.days[0] && (!a || s.days[0].day < a) ? s.days[0].day : a), "") : "";
+  const out = { site: "all", generated: now, range, tz: gcTz(tz), start: firstDay || day(start), end: day(end), sites, meAvatar: me.avatar || "" };
+  await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
+  return out;
 }
 
 const ADMIN_PAGE = `<!doctype html>
@@ -1382,7 +1426,21 @@ button.linkish{background:none;border:0;padding:6px 8px;color:var(--muted);font-
 button.linkish:hover{color:var(--text)}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:10px 14px;font-size:15.5px;font-weight:700;white-space:nowrap;flex:none}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:10px 6px;font-size:15px;font-weight:700;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:6px}
+.tabs .ti{display:inline-flex;width:18px;height:18px;flex:none;align-items:center;justify-content:center}.tabs .ti img{width:18px;height:18px;border-radius:5px;display:block}.tabs .ti.me img{border-radius:50%;box-shadow:0 0 0 1.5px #a78bfa}.tabs .ti svg{width:17px;height:17px}
+.atotal{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:2px 0 14px;color:var(--muted)}.atotal b{font-size:34px;color:var(--text);font-weight:800}
+.sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.site{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px 10px;overflow:hidden;min-width:0}
+.site::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,var(--c),transparent 80%)}
+.site:hover{border-color:color-mix(in srgb,var(--c) 55%,#1c2638)}
+.site .sh{display:flex;align-items:center;gap:9px}.site .sh b{font-size:14.5px;line-height:1.2;flex:1;min-width:0}.site .go{color:var(--muted);font-size:20px}
+.site .sv{font-size:32px;font-weight:800;margin-top:8px;color:var(--c);display:block}.site .sn{color:var(--muted);font-size:13px;display:block}
+.site .ssp{display:block;height:34px;margin-top:8px}.site .ssp svg{width:100%;height:100%;display:block}
+.ic.me img{border-radius:50%;width:100%;height:100%;object-fit:cover}.ic.me{border-radius:50%;box-shadow:0 0 0 1.5px #a78bfa;padding:0}
+.alegend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;font-size:13.5px;color:#c9d3e3}.alegend span{display:inline-flex;align-items:center;gap:7px}.alegend .ic{width:22px;height:22px;border-radius:6px}.alegend .ic img{width:16px;height:16px}
+.ctip .tl{display:flex;align-items:center;gap:6px;font-size:13px;color:#c9d3e3}.ctip .tl i{width:9px;height:9px;border-radius:50%;display:inline-block}.ctip .tl b{margin-left:auto;padding-left:8px;font-size:14px}
+.fill.site-studio{background:linear-gradient(90deg,#1f5fe0,#2f7bff)}.fill.site-bl{background:linear-gradient(90deg,#7c5ce6,#a78bfa)}.fill.site-hsv{background:linear-gradient(90deg,#1fae66,#3ddc84)}.fill.site-rs{background:linear-gradient(90deg,#d6334f,#ff4d6d)}
+@media(max-width:760px){.sites{grid-template-columns:1fr 1fr;gap:10px}.site .sv{font-size:28px}}
 .tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--blue);text-shadow:0 0 18px rgba(47,123,255,.45)}
 .range{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap;align-items:center}
 .range span{color:var(--muted);font-size:14px;margin-right:4px}
@@ -1536,18 +1594,28 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
 <div class="tabs" role="tablist" id="tabs">
+<button role="tab" data-tab="all" aria-selected="false">All sites</button>
 <button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
 <button role="tab" data-tab="src" aria-selected="false">Sources</button>
 <button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
-<button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader profile</span><span class="tab-short">BL profile</span></button>
+<button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader</span><span class="tab-short">BeatLeader</span></button>
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
 </div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
 <div id="skel" class="skel hidden" aria-hidden="true"><div class="skcards"><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div></div><div class="skchart"><svg viewBox="0 0 700 200" preserveAspectRatio="none"><path class="skwave" pathLength="1" d="M10 170 C120 160 170 90 260 105 S420 50 500 80 S640 40 690 45"/></svg></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div></div>
+
+<section data-sec="all" class="hidden">
+<div id="a-msg" class="gcmsg hidden"></div>
+<div class="atotal"><b id="a-total">-</b><span id="a-totaln"></span></div>
+<div class="sites" id="a-sites"></div>
+<div class="chart"><svg id="a-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Visitors per day for each site"></svg><div class="alegend" id="a-legend"></div></div>
+<div class="blk"><h2>Busiest pages <small>across your sites</small></h2><div class="bars feat" id="a-pages"></div></div>
+<p class="when" id="a-when"></p>
+</section>
 
 <section data-sec="vis">
 <div id="alert" class="alert hidden"></div>
@@ -1764,10 +1832,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
 
   // ---- tabs and range ----
-  var tab = ls('studioStatsTab') || 'vis', range = 'today', gc = null, gcBusy = false, sync = null;
+  var tab = ls('studioStatsTab2') || 'all', range = 'today', gc = null, gcBusy = false, sync = null;
   function showTab(t) {
     if (!document.querySelector('[data-sec="' + t + '"]')) t = 'vis';
-    tab = t; ls('studioStatsTab', t);
+    tab = t; ls('studioStatsTab2', t);
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
     tabIntoView();
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
@@ -1777,12 +1845,13 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     if (t === 'vis' && gc) chart(gc, dailyWhere(BUILD));
     if (t === 'bl') { if (bl && bl.range === range) chart(bl, null, BLIDS); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadBl(false); }
     if (isTool(t)) { if (toolData[t] && toolData[t].range === range) renderTool(t); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadTool(t, false); }
-    if ((!ownTab(t) || t === 'sync') && gc && gc.range !== range) loadGc(false);
+    if (t === 'all') { if (allData && allData.range === range) renderAll(); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadAll(false); }
+    if ((!ownTab(t) || t === 'sync') && (!gc || gc.range !== range) && !gcBusy && getKey() && $('out') && !$('out').classList.contains('hidden')) loadGc(false);
     busyUi();
   }
   function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
-  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else loadGc(false); });
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else if (tab === 'all') loadAll(false); else loadGc(false); });
 
   // ---- GoatCounter ----
   var BUILD = /^(export|quest-send|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|share-create)$/;
@@ -1799,11 +1868,11 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var gcTok = 0, blTok = 0;
   function rangeName(r) { return { today: 'Today', '7d': '7 days', '30d': '30 days', '90d': '90 days', all: 'All time' }[r] || r; }
   function busyUi() {
-    var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]);
+    var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]) || (tab === 'all' && allBusy);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on); });
     $('rangeBusy').innerHTML = on ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="8" stroke-linecap="round" fill="none"/></svg>Loading ' + rangeName(range) + '...' : '';
     // First load of a tab: show the page's outline instead of empty cards. Later range changes keep the old numbers dimmed.
-    var sk = on && tab !== 'sync' && !(tab === 'bl' ? bl : isTool(tab) ? toolData[tab] : gc);
+    var sk = on && tab !== 'sync' && !(tab === 'bl' ? bl : isTool(tab) ? toolData[tab] : tab === 'all' ? allData : gc);
     $('skel').classList.toggle('hidden', !sk);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('skel-hide', sk && sx.getAttribute('data-sec') === tab); });
     $('refresh').classList.toggle('spin', on);
@@ -2198,6 +2267,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     replay: '<path d="M4 12a8 8 0 108-8"/><path d="M4 5v4h4"/><path d="M10.5 9.5l4 2.5-4 2.5z"/>',
     dot: '<circle cx="12" cy="12" r="3"/>',
     send: '<path d="M4 12l16-8-6 16-2.5-6.5z"/>',
+    people: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.9-3.2 3.3-5 6-5s5.1 1.8 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14c2.2.2 3.8 1.7 4.5 4"/>',
     question: '<circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.5a2.3 2.3 0 114 1.6c-.9.6-1.8 1.1-1.8 2.4M12 16.5v.5"/>'
   };
   var AREA_GLYPH = { 'Search': 'search', 'For You': 'star', 'Results': 'rows', 'Playlist': 'note', 'Save and send': 'download', 'Share': 'share', 'Sharing': 'share', 'Library': 'books',
@@ -2300,6 +2370,123 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       e.preventDefault(); openFeat(sheetAt.site, l[(i + (e.key === 'ArrowDown' ? 1 : l.length - 1)) % l.length], l);
     }
   }, true);
+
+  // ---- All sites: visitors for every site you track, side by side ----
+  var ALL_SITES = {
+    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#2f7bff', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
+    bl: { name: 'BeatLeader profile', icon: 'me', color: '#a78bfa', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
+    hsv: { name: 'HSV Config', icon: 'm:hsv', color: '#3ddc84', tab: 'hsv', unit: 'visitors', home: 'HSV Config Generator home' },
+    rs: { name: 'ReeSaber Studio', icon: 'm:rs', color: '#ff4d6d', tab: 'rs', unit: 'visitors', home: 'ReeSaber Studio home' }
+  };
+  var allData = null, allBusy = false, allTok = 0, meAvatar = '';
+  try { meAvatar = localStorage.getItem('studioStatsMeAv') || ''; } catch (e) {}
+  function siteIcon(k, cls) {
+    var S = ALL_SITES[k];
+    if (S.icon === 'me') return meAvatar ? '<span class="ic me' + (cls ? ' ' + cls : '') + '"><img src="' + esc(meAvatar) + '" alt="" data-l="B"></span>' : iconSpan('d:beatleader.xyz', 'B');
+    return iconSpan(S.icon, S.name);
+  }
+  function allMsg(h) { var el = $('a-msg'); el.innerHTML = h; el.classList.toggle('hidden', !h); }
+  function loadAll(fresh) {
+    var key = getKey(); if (!key) return;
+    var tok = ++allTok, want = range;
+    allBusy = true; allMsg(''); busyUi();
+    fetch('/admin/gc?site=all&range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      if (tok !== allTok) return;
+      allBusy = false; busyUi();
+      if (!res.ok) {
+        if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; }
+        allMsg(res.j.setup ? '<b>GoatCounter isn’t connected yet.</b> Add GC_TOKEN to the Worker first (see the Visitors tab).' : esc(res.j.error || 'Couldn’t load your sites.'));
+        return;
+      }
+      allData = res.j;
+      if (allData.meAvatar && allData.meAvatar !== meAvatar) { meAvatar = allData.meAvatar; try { localStorage.setItem('studioStatsMeAv', meAvatar); } catch (e) {} tabIcons(); }
+      renderAll();
+    }).catch(function () { if (tok !== allTok) return; allBusy = false; busyUi(); allMsg('Couldn’t reach the Worker.'); });
+  }
+  function siteSeries(s, d) {
+    if (d.range === 'today') { var last = (s.days || [])[s.days.length - 1]; return { keys: Array.from({ length: 24 }, function (_, h) { return h; }), vals: Array.from({ length: 24 }, function (_, h) { return last && last.hourly ? last.hourly[h] || 0 : 0; }) }; }
+    return { keys: (s.days || []).map(function (x) { return x.day; }), vals: (s.days || []).map(function (x) { return x.n; }) };
+  }
+  function allSpark(vals, color) {
+    if (!vals || vals.length < 2) return '';
+    var w = 120, h = 34, max = Math.max.apply(null, vals.concat([1])), n = vals.length;
+    var pts = vals.map(function (v, i) { return (i * (w - 2) / (n - 1) + 1).toFixed(1) + ',' + (h - 2 - v / max * (h - 6)).toFixed(1); });
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true"><polyline points="1,' + h + ' ' + pts.join(' ') + ' ' + (w - 1) + ',' + h + '" fill="' + color + '" opacity=".15"/><polyline points="' + pts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function renderAll() {
+    var d = allData; if (!d) return;
+    var total = 0, h = '';
+    d.sites.forEach(function (s) {
+      var S = ALL_SITES[s.key]; if (!S) return; total += s.visitors || 0;
+      var ch = s.prevVisitors != null && s.prevVisitors > 0 ? Math.round((s.visitors - s.prevVisitors) / s.prevVisitors * 100) : null;
+      var note = s.error ? (s.error === 'key' ? 'the key can’t read ' + esc(s.code) : 'GoatCounter didn’t answer') : ch != null ? '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + Math.abs(ch) + '%</span> ' + S.unit + ' vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before' : S.unit + (d.range === 'today' ? ' so far today' : '');
+      h += '<button type="button" class="site" data-go="' + S.tab + '" style="--c:' + S.color + '"><span class="sh">' + siteIcon(s.key) + '<b>' + esc(S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
+        '<span class="sv">' + (s.error ? '-' : fmt(s.visitors)) + '</span><span class="sn">' + note + '</span><span class="ssp">' + allSpark(siteSeries(s, d).vals, S.color) + '</span></button>';
+    });
+    $('a-sites').innerHTML = h;
+    txt('a-total', fmt(total));
+    txt('a-totaln', (d.range === 'today' ? 'visits across your sites today' : d.range === 'all' ? 'visits across your sites since ' + dshort(d.start) : 'visits across your sites, ' + dshort(d.start) + ' to ' + dshort(d.end)));
+    allChart(d);
+    var pages = [];
+    d.sites.forEach(function (s) { var S = ALL_SITES[s.key]; if (!S) return; (s.pages || []).forEach(function (p) { pages.push({ s: s.key, p: p }); }); });
+    pages.sort(function (a, b) { return b.p.count - a.p.count; });
+    bars('a-pages', pages.slice(0, 10).map(function (x) {
+      var S = ALL_SITES[x.s], nm = x.s === 'bl' ? (x.p.path === '/msploit-profile' ? 'Your BeatLeader profile' : (x.p.title || x.p.path)) : pageName(x.p.path, S.home);
+      var r = nameRow(nm, nm === x.p.path ? '' : x.p.path, '', x.p.count, siteIcon(x.s));
+      return [r[0], r[1], 'site-' + x.s];
+    }), '', 'No visits in this range.');
+    txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
+  }
+  function allChart(d) {
+    var svg = $('a-chart'), box = svg.parentNode; if (!svg) return;
+    var series = d.sites.filter(function (s) { return ALL_SITES[s.key] && !s.error; }).map(function (s) { var x = siteSeries(s, d); return { key: s.key, map: x.keys.reduce(function (m, k, i) { m[k] = x.vals[i]; return m; }, {}) }; });
+    var keys = [];
+    if (d.range === 'today') keys = Array.from({ length: 24 }, function (_, h) { return h; });
+    else { var seen = {}; d.sites.forEach(function (s) { (s.days || []).forEach(function (x) { seen[x.day] = 1; }); }); keys = Object.keys(seen).sort(); }
+    var W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 220, L = 34, R = 12, T = 12, B = 26, n = keys.length;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    if (n < 2 || !series.length) { svg.innerHTML = ''; return; }
+    var max = 1; series.forEach(function (s) { keys.forEach(function (k) { if ((s.map[k] || 0) > max) max = s.map[k]; }); });
+    var step = Math.pow(10, Math.floor(Math.log10(max))), nice = Math.ceil(max / step) * step; if (nice / step <= 2) step = step / 2; max = Math.max(nice, 1);
+    function X(i) { return L + i * (W - L - R) / (n - 1); }
+    function Y(v) { return T + (H - T - B) * (1 - v / max); }
+    var g = '';
+    for (var v = 0; v <= max + 1e-9; v += step) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="#1c2638"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" fill="#9aa6b8" font-size="11" text-anchor="end">' + fmt(Math.round(v)) + '</text>';
+    series.forEach(function (s) {
+      var c = ALL_SITES[s.key].color;
+      g += '<path d="' + keys.map(function (k, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(s.map[k] || 0).toFixed(1); }).join(' ') + '" fill="none" stroke="' + c + '" stroke-width="2.5" stroke-linejoin="round"/>';
+      g += '<circle cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(s.map[keys[n - 1]] || 0).toFixed(1) + '" r="3.5" fill="' + c + '"/>';
+    });
+    var lab = function (k) { return d.range === 'today' ? ((k % 12) || 12) + (k < 12 ? ' AM' : ' PM') : dshort(k); };
+    [0, Math.floor((n - 1) / 2), n - 1].forEach(function (i, j) { g += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 6) + '" fill="#9aa6b8" font-size="11" text-anchor="' + (j === 0 ? 'start' : j === 2 ? 'end' : 'middle') + '">' + esc(lab(keys[i])) + '</text>'; });
+    g += '<line class="cmark" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="#5aa0ff" stroke-width="1" style="display:none"/>';
+    svg.innerHTML = g;
+    $('a-legend').innerHTML = d.sites.filter(function (s) { return ALL_SITES[s.key]; }).map(function (s) { return '<span style="--c:' + ALL_SITES[s.key].color + '">' + siteIcon(s.key) + esc(ALL_SITES[s.key].name) + '</span>'; }).join('');
+    var tip = box.querySelector('.ctip'); if (!tip) { tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip); }
+    var mark = svg.querySelector('.cmark');
+    function at(e) {
+      var r = svg.getBoundingClientRect(), x = ((e.clientX || 0) - r.left) / r.width * W, i = Math.max(0, Math.min(n - 1, Math.round((x - L) / ((W - L - R) / (n - 1)))));
+      mark.setAttribute('x1', X(i)); mark.setAttribute('x2', X(i)); mark.style.display = '';
+      tip.innerHTML = '<span>' + esc(lab(keys[i])) + '</span>' + series.map(function (s) { return '<span class="tl"><i style="background:' + ALL_SITES[s.key].color + '"></i>' + esc(ALL_SITES[s.key].name) + ' <b>' + fmt(s.map[keys[i]] || 0) + '</b></span>'; }).join('');
+      var px = X(i) / W * r.width; tip.style.left = Math.max(4, Math.min(r.width - 210, px - 100)) + 'px'; tip.hidden = false;
+    }
+    svg.onpointermove = at; svg.onpointerdown = at; svg.onpointerleave = function () { tip.hidden = true; mark.style.display = 'none'; };
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('#a-sites .site[data-go]'); if (b) { showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} } });
+  // Each tab's icon: the site's logo, or what the tab shows.
+  function tabIcons() {
+    var TI = { all: '<span class="ti gl">' + glyph('grid', 'currentColor') + '</span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
+      ply: '<span class="ti gl">' + glyph('people', 'currentColor') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', 'currentColor') + '</span>',
+      src: '<span class="ti gl">' + glyph('link', 'currentColor') + '</span>', sync: '<span class="ti"><img src="' + MY_ICONS.ss + '" alt=""></span>',
+      bl: meAvatar ? '<span class="ti me"><img src="' + esc(meAvatar) + '" alt=""></span>' : '<span class="ti"><img src="/admin/icon?d=beatleader.xyz" alt=""></span>',
+      hsv: '<span class="ti"><img src="' + MY_ICONS.hsv + '" alt=""></span>', rs: '<span class="ti"><img src="' + MY_ICONS.rs + '" alt=""></span>' };
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button[data-tab]'), function (b) {
+      var k = b.getAttribute('data-tab'), old = b.querySelector('.ti'); if (old) old.remove();
+      if (TI[k]) b.insertAdjacentHTML('afterbegin', TI[k]);
+    });
+  }
 
   // ---- Studio Sync tab: what people do with Studio Sync on the site (Playlist Studio's GoatCounter, this range) ----
   var LQ_EV = /^(lq-.*|tab-lqPanel|studiosync-.*|onquest-open|mbf-link)$/;
@@ -2614,7 +2801,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     if (c.width && (a.left < c.left || a.right > c.right)) tbx.scrollLeft += a.left - c.left - 24;
   }
   function isTool(t) { return !!TOOLS[t]; }
-  function ownTab(t) { return t === 'bl' || t === 'sync' || isTool(t); }
+  function ownTab(t) { return t === 'bl' || t === 'sync' || t === 'all' || isTool(t); }
   var toolData = {}, toolBusy = {}, toolTok = {};
   function toolIds(t) { var p = TOOLS[t].p; return { svg: p + '-chart', head: p + '-charth', what: 'Visitors', dots: false }; }
   function toolMsg(t, h) { var el = $(TOOLS[t].p + '-msg'); el.innerHTML = h; el.classList.toggle('hidden', !h); }
@@ -2849,17 +3036,18 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
       $('out').classList.remove('hidden'); say(''); tabIntoView();
       renderReleases();
-      if (first || !gc) loadGc(false);
+      if ((first || !gc) && tab !== 'all') loadGc(false);
       if (tab === 'bl' && !bl) loadBl(false);
+      if (tab === 'all' && !allData) loadAll(false);
       if (isTool(tab) && !toolData[tab]) loadTool(tab, false);
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
   $('go').addEventListener('click', loadSync);
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
-  $('refresh').addEventListener('click', function () { loadSync(); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else loadGc(true); });
+  $('refresh').addEventListener('click', function () { loadSync(); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); });
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
-  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
-  showRange(); showTab(tab);
+  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (allData && tab === 'all') allChart(allData); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
+  tabIcons(); showRange(); showTab(tab);
   if (getKey()) { $('keyrow').classList.add('hidden'); loadSync(); }
 })();
 </script></body></html>`;
