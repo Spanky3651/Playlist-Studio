@@ -1248,6 +1248,15 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 .top .sub{margin:0}
 .tools{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
 .tools button{padding:7px 12px;font-size:14px;font-weight:600}
+.top>div:first-child{flex:1 1 0;min-width:0}.top .tools{flex:none;flex-wrap:nowrap}
+.tools button.icon{width:42px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;color:var(--text)}
+.tools button.icon:hover{border-color:#2f7bff;color:#fff}
+.tools button.icon.spin svg{animation:rspin .9s linear infinite}
+@keyframes rspin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.tools button.icon.spin svg{animation:none;opacity:.5}}
+.forgetrow{margin:26px 0 0;text-align:center}
+button.linkish{background:none;border:0;padding:6px 8px;color:var(--muted);font-size:13px;font-weight:500;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+button.linkish:hover{color:var(--text)}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:10px 14px;font-size:15.5px;font-weight:700;white-space:nowrap;flex:none}
@@ -1347,7 +1356,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
-<div class="tools hidden" id="tools"><button id="refresh" class="ghost">Refresh</button><button id="forget" class="ghost">Forget key</button></div></div>
+<div class="tools hidden" id="tools"><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
 <div class="keyrow" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
@@ -1528,6 +1537,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <p class="when" id="when"></p>
 </section>
 <p class="when" id="gcwhen"></p>
+<p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
 </div>
 </main>
 <script>
@@ -1605,6 +1615,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var on = (gcBusy && !ownTab(tab)) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on && sx.getAttribute('data-sec') !== 'sync'); });
     $('rangeBusy').textContent = on ? 'Loading ' + rangeName(range) + '...' : '';
+    $('refresh').classList.toggle('spin', on);
   }
   function loadGc(fresh) {
     var key = getKey(); if (!key) return;
