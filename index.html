@@ -1920,6 +1920,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .pc-clans{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
 .pc-chip{display:inline-flex;align-items:center;gap:6px;font:700 12.5px var(--mono);border:1px solid var(--c);color:#e9edf5;background:#05070c;border-radius:20px;padding:3px 10px 3px 4px;cursor:pointer;min-height:0;}
 .pc-chip i{width:16px;height:16px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
+.pc-chip img.pc-ci{width:20px;height:20px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;box-shadow:0 0 0 1.5px var(--c);margin:-2px 0;}
 .pc-chip em{font-style:normal;color:#aab4c6;font-weight:500;}
 .pc-chip:hover{box-shadow:0 0 10px color-mix(in srgb,var(--c) 45%,transparent);}
 .pc-chip.war em{color:#ffb3c0;}
@@ -2967,7 +2968,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:09:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:12:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -11803,12 +11804,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var pid = String(state.player.id);
     if (pcc.pid !== pid) pcLoadCache(pid);
     renderPcClans();
-    if (pccBusy || (!force && pcc.t && Date.now() - pcc.t < 20 * 60000)) return;
+    if (pccBusy || (!force && pcc.t && Date.now() - pcc.t < 20 * 60000 && !(pcc.bl[0] && pcc.bl[0].icon === undefined))) return;   // older saved chips have no logo yet
     pccBusy = true; var tok = ++pccTok;
     function ok() { return tok === pccTok && state.player && String(state.player.id) === pid; }
     relayFetch(API_BASE + '/player/' + encodeURIComponent(pid), validPlayer).then(function (p) { return (p && p.clans) || []; }, function () { return null; }).then(function (bl) {
       if (!ok()) return null;
-      if (bl) pcc.bl = bl.filter(function (c) { return c && c.id != null && c.tag; }).map(function (c) { return { id: c.id, tag: c.tag, color: c.color || '', name: c.name || '' }; });
+      if (bl) pcc.bl = bl.filter(function (c) { return c && c.id != null && c.tag; }).map(function (c) { return { id: c.id, tag: c.tag, color: c.color || '', name: c.name || '', icon: c.icon || '' }; });
+      if (bl && pcc.bl[0] && !pcc.bl[0].icon) {
+        var c0 = pcc.bl[0];
+        return relayFetch(API_BASE + '/clan/id/' + encodeURIComponent(c0.id) + '?count=1&primary=true', function (j) { return j && j.container; }).then(function (j) { if (j && j.container && j.container.icon) c0.icon = j.container.icon; }, function () {})
+          .then(function () { return aswSoft(asGet('/users/' + encodeURIComponent(pid))); });
+      }
       return aswSoft(asGet('/users/' + encodeURIComponent(pid)));
     }).then(function (u) {
       if (!ok()) return null;
@@ -11837,17 +11843,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }, function () { pccBusy = false; if (ok()) renderPcClans(); });
   }
   function pcColor(x, d) { return /^#[0-9a-fA-F]{3,8}$/.test(x || '') ? x : d; }
+  // The clan's own logo in the chip; a logo that can't load falls back to the colored dot.
+  function pcIcon(url) { return /^https:\/\//.test(url || '') ? '<img class="pc-ci" src="' + esc(url) + '" alt="" loading="lazy" onerror="this.replaceWith(document.createElement(\'i\'))">' : '<i></i>'; }
   function renderPcClans() {
     var box = document.getElementById('pcClans'), ban = document.getElementById('pcWar'); if (!box || !ban) return;
     var on = !!state.player && pcc.pid === String(state.player.id), h = '', b = '';
     if (on && pcc.bl.length) {
       var c = pcc.bl[0];
-      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '"><i></i>' + esc(c.tag) + ' <em>BL</em></button>';
+      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + esc(c.tag) + ' <em>BL</em></button>';
     }
     var w = on ? pcc.war : null;
     if (on && pcc.as) {
       var a = pcc.as, at = w && w.phase === 'active', day = at && w.startsAt ? Math.max(1, Math.floor((Date.now() - new Date(w.startsAt).getTime()) / 86400000) + 1) : 0;
-      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '"><i></i>' + esc(a.tag) + ' <em>' + (at ? '&#9876; day ' + day : w ? '&#9876; soon' : pcc.rank ? aswOrd(pcc.rank) : 'AccSaber') + '</em></button>';
+      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + esc(a.tag) + ' <em>' + (at ? '&#9876; day ' + day : w ? '&#9876; soon' : pcc.rank ? aswOrd(pcc.rank) : 'AccSaber') + '</em></button>';
       if (w) {
         var tag = esc(a.tag), opp = esc(w.opp || 'the enemy'), title, line, btn;
         if (at) { title = tag + ' is at war with ' + opp; line = 'Day ' + day + (w.endsAt && ascLeft(new Date(w.endsAt).toISOString()) ? ', ' + esc(ascLeft(new Date(w.endsAt).toISOString())) + ' left.' : '.') + (pcc.guard != null ? ' Your guard is ' + Math.round(pcc.guard) + '.' : ''); btn = 'Fight'; }
