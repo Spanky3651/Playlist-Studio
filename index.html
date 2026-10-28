@@ -127,6 +127,7 @@ a:hover{text-decoration:underline;}
   border:1px solid var(--border-2);overflow:hidden;flex:none;
 }
 .brand .logo .logo-svg{position:absolute;inset:0;width:100%;height:100%;}
+.brand .logo{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 .brand .logo .ptri{transform-box:fill-box;transform-origin:50% 50%;}
 .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.4px;}
 .brand h1 span{color:var(--blue-text);text-shadow:var(--blue-glow);}
@@ -2962,7 +2963,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T01:46:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T10:56:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6792,10 +6793,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // The box stays hidden until the Worker says hosting is set up, so nothing changes
   // for players before it is deployed.
   var PUB_BASE = 'https://playlist-replay.msploit.workers.dev';
-  // ---- Studio Sync stats: five quick clicks on Save and send's Studio Sync tab slide in the Worker's private
-  // stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
+  // ---- Studio stats: shift-click the Studio logo on a computer, or press and hold it on a phone, to slide in the
+  // Worker's private stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
   (function () {
-    var clicks = [], panel = document.getElementById('ssaPanel'), back = document.getElementById('ssaBack');
+    var panel = document.getElementById('ssaPanel'), back = document.getElementById('ssaBack');
     if (!panel || !back) return;
     function open() {
       var body = document.getElementById('ssaBody');
@@ -6806,11 +6807,21 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       panel.classList.remove('open'); back.classList.remove('open'); panel.setAttribute('aria-hidden', 'true');
       if (!document.getElementById('sdPanel') || !document.getElementById('sdPanel').classList.contains('open')) document.body.classList.remove('sd-lock');
     }
-    document.addEventListener('click', function (e) {
-      var t = e.target.closest && e.target.closest('.tg-tab[data-tg="lqPanel"]'); if (!t) return;
-      var now = Date.now(); clicks = clicks.filter(function (x) { return now - x < 2000; }); clicks.push(now);
-      if (clicks.length >= 5) { clicks = []; open(); }
-    });
+    var logo = document.querySelector('.topbar .brand .logo');
+    if (logo) {
+      logo.addEventListener('click', function (e) { if (e.shiftKey) { e.preventDefault(); open(); } });
+      // About half a second of holding still opens it; moving the finger (a scroll) cancels.
+      var hold = null, held = false, sx = 0, sy = 0;
+      function stop() { clearTimeout(hold); hold = null; }
+      logo.addEventListener('touchstart', function (e) {
+        var t = e.touches[0]; sx = t.clientX; sy = t.clientY; held = false; stop();
+        hold = setTimeout(function () { hold = null; held = true; open(); try { if (navigator.vibrate) navigator.vibrate(15); } catch (x) {} }, 550);
+      }, { passive: true });
+      logo.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) stop(); }, { passive: true });
+      logo.addEventListener('touchend', function (e) { stop(); if (held) { held = false; if (e.cancelable) e.preventDefault(); } });
+      logo.addEventListener('touchcancel', stop, { passive: true });
+      logo.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    }
     document.getElementById('ssaClose').addEventListener('click', close);
     back.addEventListener('click', close);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
