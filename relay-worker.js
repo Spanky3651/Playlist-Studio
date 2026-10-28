@@ -914,7 +914,7 @@ async function admin(request, env, url) {
     if (!env.GC_TOKEN) return json({ error: "GoatCounter isn't connected yet", setup: true }, 503, nocache);
     try { return json(await gcStats(env, url.searchParams.get("range") || "7d", url.searchParams.get("fresh") === "1", url.searchParams.get("site") || ""), 200, nocache); }
     catch (e) {
-      if (e && e.message === "gc-auth") return json({ error: "GoatCounter refused the API key (" + e.gc + "). " + (url.searchParams.get("site") === "bl" ? "For the BeatLeader profile site, check that the key can read blprofile, or set GC_TOKEN_BL." : "Check that GC_TOKEN has the Read statistics permission.") }, 502, nocache);
+      if (e && e.message === "gc-auth") return json({ error: "GoatCounter refused the API key (" + e.gc + "). " + ({ bl: "For the BeatLeader profile site, check that the key can read blprofile, or set GC_TOKEN_BL.", hsv: "For HSV Config Generator, check that the key can read hsv-generator, or set GC_TOKEN_HSV.", rs: "For ReeSaber Studio, check that the key can read reesaberstudio, or set GC_TOKEN_RS." }[url.searchParams.get("site")] || "Check that GC_TOKEN has the Read statistics permission.") }, 502, nocache);
       if (e && e.message === "gc-busy") return json({ error: "GoatCounter is rate limiting right now. Try again in a minute." }, 502, nocache);
       return json({ error: "GoatCounter didn't respond. Try again in a moment." }, 502, nocache);
     }
@@ -1014,7 +1014,14 @@ const ADMIN_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFwAAABcCAYAAA
 // are your own BeatLeader names, hidden from the player list by default. ADMIN_CLANS (optional) are the
 // BeatLeader clan tags shown as clanmates, GENX and ROOT by default.
 // The BeatLeader profile tab reads a second GoatCounter site: GC_SITE_BL (blprofile by default) with GC_TOKEN_BL,
-// or GC_TOKEN when both sites are under the same GoatCounter account.
+// or GC_TOKEN when both sites are under the same GoatCounter account. The HSV Config Generator and ReeSaber Studio
+// tabs work the same way: GC_SITE_HSV (hsv-generator) and GC_SITE_RS (reesaberstudio), with GC_TOKEN_HSV / GC_TOKEN_RS
+// only if those sites sit under a different account.
+const GC_OTHER = {
+  bl: (env) => ({ code: env.GC_SITE_BL || "blprofile", token: env.GC_TOKEN_BL, tool: false }),
+  hsv: (env) => ({ code: env.GC_SITE_HSV || "hsv-generator", token: env.GC_TOKEN_HSV, tool: true }),
+  rs: (env) => ({ code: env.GC_SITE_RS || "reesaberstudio", token: env.GC_TOKEN_RS, tool: true })
+};
 const GC_RANGES = { today: 1, "7d": 7, "30d": 30, "90d": 90, all: 730 };   // all time looks back up to two years
 const GC_CACHE_SEC = 300;
 let gcLast = 0;
@@ -1121,29 +1128,38 @@ async function gcGithub(env) {
 }
 // The BeatLeader profile page only counts views (a pixel per profile variant), so its tab gets the visit side:
 // views per day, which profile page, where from, countries, phone or computer.
-async function gcBlStats(env, range, fresh) {
-  const e = Object.assign({}, env, { GC_SITE: env.GC_SITE_BL || "blprofile", GC_TOKEN: env.GC_TOKEN_BL || env.GC_TOKEN });
-  const ck = "gc:cache:bl:" + range, cached = await env.PLAYLISTS.get(ck, "json");
+// The tool sites also send feature events and utm campaigns, so their tabs get those too (no region lookups,
+// to keep each load to a handful of API calls).
+async function gcSiteStats(env, key, range, fresh) {
+  const cfg = GC_OTHER[key](env), tool = cfg.tool;
+  const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
+  const ck = "gc:cache:" + key + ":" + range, cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
   const now = nowSec(), DAY = 86400, n = GC_RANGES[range], today0 = Math.floor(now / DAY) * DAY;
   const start = range === "today" ? today0 : today0 - (n - 1) * DAY, end = now;
   const total = await gcGet(e, "/stats/total", { start: gcIso(start), end: gcIso(end) });
   let prev = null; if (range !== "all") try { prev = await gcGet(e, "/stats/total", { start: gcIso(start - n * DAY), end: gcIso(start) }); } catch (x) {}
   const hits = await gcHits(e, start, end);
-  const [refs, sizes, locations, browsers] = [await gcList(e, "toprefs", start, end, 15), await gcList(e, "sizes", start, end, 10), await gcList(e, "locations", start, end, 25), await gcList(e, "browsers", start, end, 10)];
+  const [refs, sizes, locations, browsers] = [await gcList(e, "toprefs", start, end, tool ? 20 : 15), await gcList(e, "sizes", start, end, 10), await gcList(e, "locations", start, end, 25), await gcList(e, "browsers", start, end, 10)];
+  const campaigns = tool ? await gcList(e, "campaigns", start, end, 15) : undefined;
   // States and regions for the busiest countries (GoatCounter has no city level).
-  for (const c of (locations || []).filter((x) => x.id && x.count > 0).slice(0, 10)) c.regions = await gcDetail(e, "locations", c.id, start, end, 20);
+  if (!tool) for (const c of (locations || []).filter((x) => x.id && x.count > 0).slice(0, 10)) c.regions = await gcDetail(e, "locations", c.id, start, end, 20);
   let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
   if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
-  const out = { site: "bl", generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
+  const out = { site: key, code: cfg.code, generated: now, range, start: range === "all" && dayList.length ? dayList[0].day : gcDay(start), end: gcDay(end),
     visitors: (total && total.total) || 0, prevVisitors: prev ? prev.total || 0 : null, days: dayList,
     pages: hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count })), refs, sizes, locations, browsers };
+  if (tool) {
+    out.eventVisitors = (total && total.total_events) || 0;
+    out.campaigns = campaigns;
+    out.events = hits.filter((h) => h.event).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count }));
+  }
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
 async function gcStats(env, range, fresh, site) {
   if (!GC_RANGES[range]) range = "7d";
-  if (site === "bl") return gcBlStats(env, range, fresh);
+  if (GC_OTHER[site]) return gcSiteStats(env, site, range, fresh);
   const ck = "gc:cache:" + range, cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 60 : GC_CACHE_SEC)) return cached;
   const now = nowSec(), DAY = 86400, n = GC_RANGES[range];
@@ -1330,7 +1346,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio stats</h1></div>
-<p class="sub">Visitors, players and features from GoatCounter, and headsets from Studio Sync.</p></div>
+<p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
 <div class="tools hidden" id="tools"><button id="refresh" class="ghost">Refresh</button><button id="forget" class="ghost">Forget key</button></div></div>
 <div class="keyrow" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
 <button id="go">Show stats</button></div>
@@ -1340,8 +1356,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
-<button role="tab" data-tab="src" aria-selected="false"><span class="tab-long">Where they come from</span><span class="tab-short">Sources</span></button>
+<button role="tab" data-tab="src" aria-selected="false">Sources</button>
 <button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader profile</span><span class="tab-short">BL profile</span></button>
+<button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
+<button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
 <button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
 </div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
@@ -1398,8 +1416,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <div class="grid">
 <div class="card hero"><div class="label">From your links</div><div class="value" id="s-camp">-</div><div class="note">visits with a utm tag</div></div>
 <div class="card"><div class="label">From search engines</div><div class="value" id="s-search">-</div><div class="note">Google, Bing, DuckDuckGo and others</div></div>
-<div class="card"><div class="label">From other sites</div><div class="value" id="s-sites">-</div><div class="note">links on Reddit, Discord, BeatLeader...</div></div>
+<div class="card" style="--accent:var(--cyan)"><div class="label">From AI assistants</div><div class="value" id="s-ai">-</div><div class="note">Gemini, ChatGPT, Claude and others</div></div>
+<div class="card"><div class="label">From other sites</div><div class="value" id="s-sites">-</div><div class="note">Reddit, Discord, BeatLeader and others</div></div>
 </div>
+<div class="blk"><h2>Where your links were posted <small>utm_source</small></h2><div class="bars" id="s-links"></div></div>
 <div class="blk"><h2>Your campaigns <small>utm_campaign</small></h2><div class="bars" id="s-camps"></div></div>
 <div class="blk"><h2>Sites sending people</h2><div class="bars" id="s-refs"></div></div>
 <div class="blk"><h2>Landing on</h2><div class="bars" id="s-pages"></div></div>
@@ -1430,6 +1450,54 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <div class="blk"><h2>Where from</h2><div class="bars" id="b-refs"></div></div>
 <div class="blk"><h2>Phone or computer</h2><div class="bars" id="b-dev"></div></div>
 <p class="when" id="b-when"></p>
+</section>
+
+<section data-sec="hsv" class="hidden">
+<div id="h-msg" class="gcmsg hidden"></div>
+<div class="grid">
+<div class="card hero" data-keep><div class="label">Visitors</div><div class="value" id="h-vis">-</div><div class="note" id="h-visn"></div><div class="spark" id="h-spark"></div></div>
+<div class="card" style="--accent:var(--cyan)"><div class="label">Used a feature</div><div class="value" id="h-act">-</div><div class="note" id="h-actn"></div></div>
+<div class="card"><div class="label">Busiest day</div><div class="value" id="h-best">-</div><div class="note" id="h-bestn"></div></div>
+<div class="card"><div class="label">On phones</div><div class="value" id="h-phone">-</div><div class="note">of visits with a known screen size</div></div>
+</div>
+<h2 id="h-charth">Visitors per day</h2>
+<div class="chart"><svg id="h-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Visitors per day"></svg></div>
+<div class="blk"><h2>Most used <small>visitors per feature</small></h2><div class="bars feat" id="h-feat"></div><button class="ghost more hidden" id="h-more">Show all</button></div>
+<div class="blk"><h2>Problems</h2><div class="bars feat" id="h-probs"></div></div>
+<div class="blk"><h2>Where your links were posted <small>utm_source</small></h2><div class="bars" id="h-srcs"></div></div>
+<div class="blk"><h2>Your campaigns <small>utm_campaign</small></h2><div class="bars" id="h-camps"></div></div>
+<div class="blk"><h2>Sites sending people</h2><div class="bars" id="h-refs"></div></div>
+<div class="blk"><h2>Landing on</h2><div class="bars" id="h-pages"></div></div>
+<div class="blk"><h2>Where visitors are <small>hover or tap a country</small></h2><div class="map" id="h-map"></div></div>
+<div class="two" style="margin-top:4px">
+<div class="blk"><h2>Phone or computer</h2><div class="bars" id="h-dev"></div></div>
+<div class="blk"><h2>Top countries</h2><div class="bars" id="h-geo"></div></div>
+</div>
+<p class="when" id="h-when"></p>
+</section>
+
+<section data-sec="rs" class="hidden">
+<div id="r-msg" class="gcmsg hidden"></div>
+<div class="grid">
+<div class="card hero" data-keep><div class="label">Visitors</div><div class="value" id="r-vis">-</div><div class="note" id="r-visn"></div><div class="spark" id="r-spark"></div></div>
+<div class="card" style="--accent:var(--cyan)"><div class="label">Used a feature</div><div class="value" id="r-act">-</div><div class="note" id="r-actn"></div></div>
+<div class="card"><div class="label">Busiest day</div><div class="value" id="r-best">-</div><div class="note" id="r-bestn"></div></div>
+<div class="card"><div class="label">On phones</div><div class="value" id="r-phone">-</div><div class="note">of visits with a known screen size</div></div>
+</div>
+<h2 id="r-charth">Visitors per day</h2>
+<div class="chart"><svg id="r-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Visitors per day"></svg></div>
+<div class="blk"><h2>Most used <small>visitors per feature</small></h2><div class="bars feat" id="r-feat"></div><button class="ghost more hidden" id="r-more">Show all</button></div>
+<div class="blk"><h2>Problems</h2><div class="bars feat" id="r-probs"></div></div>
+<div class="blk"><h2>Where your links were posted <small>utm_source</small></h2><div class="bars" id="r-srcs"></div></div>
+<div class="blk"><h2>Your campaigns <small>utm_campaign</small></h2><div class="bars" id="r-camps"></div></div>
+<div class="blk"><h2>Sites sending people</h2><div class="bars" id="r-refs"></div></div>
+<div class="blk"><h2>Landing on</h2><div class="bars" id="r-pages"></div></div>
+<div class="blk"><h2>Where visitors are <small>hover or tap a country</small></h2><div class="map" id="r-map"></div></div>
+<div class="two" style="margin-top:4px">
+<div class="blk"><h2>Phone or computer</h2><div class="bars" id="r-dev"></div></div>
+<div class="blk"><h2>Top countries</h2><div class="bars" id="r-geo"></div></div>
+</div>
+<p class="when" id="r-when"></p>
 </section>
 
 <section data-sec="sync" class="hidden">
@@ -1507,16 +1575,17 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
     $('range').classList.toggle('hidden', t === 'sync');
-    $('gcmsg').classList.toggle('hidden', t === 'sync' || t === 'bl' || !$('gcmsg').textContent);
-    $('gcwhen').classList.toggle('hidden', t === 'sync' || t === 'bl');
+    $('gcmsg').classList.toggle('hidden', ownTab(t) || !$('gcmsg').textContent);
+    $('gcwhen').classList.toggle('hidden', ownTab(t));
     if (t === 'vis' && gc) chart(gc, dailyWhere(BUILD));
     if (t === 'bl') { if (bl && bl.range === range) chart(bl, null, BLIDS); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadBl(false); }
-    if (t !== 'bl' && t !== 'sync' && gc && gc.range !== range) loadGc(false);
+    if (isTool(t)) { if (toolData[t] && toolData[t].range === range) renderTool(t); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadTool(t, false); }
+    if (!ownTab(t) && gc && gc.range !== range) loadGc(false);
     busyUi();
   }
   function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
-  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); showRange(); if (tab === 'bl') loadBl(false); else loadGc(false); });
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else loadGc(false); });
 
   // ---- GoatCounter ----
   var BUILD = /^(export|quest-send|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|share-create)$/;
@@ -1527,13 +1596,13 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function sumWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name)) n += e.count; }); return n; }
   function maxWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name) && e.count > n) n = e.count; }); return n; }
   function dailyWhere(re) { var m = {}; gc.events.forEach(function (e) { if (re.test(e.name)) (e.days || []).forEach(function (d) { m[d[0]] = (m[d[0]] || 0) + d[1]; }); }); return m; }
-  function gcMsg(t) { var el = $('gcmsg'); el.innerHTML = t; el.classList.toggle('hidden', !t || tab === 'sync' || tab === 'bl'); }
+  function gcMsg(t) { var el = $('gcmsg'); el.innerHTML = t; el.classList.toggle('hidden', !t || ownTab(tab)); }
   // Every range change starts a new load; an answer for a range that's no longer picked is dropped,
   // so a slow load can't swallow the next click or paint old numbers over new ones.
   var gcTok = 0, blTok = 0;
   function rangeName(r) { return { today: 'Today', '7d': '7 days', '30d': '30 days', '90d': '90 days', all: 'All time' }[r] || r; }
   function busyUi() {
-    var on = (gcBusy && tab !== 'bl' && tab !== 'sync') || (blBusy && tab === 'bl');
+    var on = (gcBusy && !ownTab(tab)) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on && sx.getAttribute('data-sec') !== 'sync'); });
     $('rangeBusy').textContent = on ? 'Loading ' + rangeName(range) + '...' : '';
   }
@@ -1601,13 +1670,15 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars('f-probs', probs.map(function (e) { return featRow(e, 'alt'); }), '', 'No problems in this range.');
     $('f-colds').innerHTML = d.cold.length ? '<div class="coldlist">' + d.cold.map(function (n) { var f = featInfo(n); return '<span title="' + esc(f.desc + ' (' + n + ')') + '">' + esc(f.label) + '</span>'; }).join('') + '</div>' : '<p class="empty">Every feature seen before was used in this range.</p>';
     // Sources
-    var camps = (d.campaigns || []), refs = (d.refs || []).filter(function (r) { return r.scheme !== 'c'; }), SE = /google|bing|duckduckgo|yahoo|yandex|ecosia|brave|startpage|baidu|qwant/i;
+    var camps = (d.campaigns || []), links = (d.refs || []).filter(function (r) { return r.scheme === 'c' && r.name; }), refs = (d.refs || []).filter(function (r) { return r.scheme !== 'c' && r.name; });
     txt('s-camp', fmt(camps.reduce(function (a, c) { return a + c.count; }, 0)));
-    txt('s-search', fmt(refs.filter(function (r) { return SE.test(r.name); }).reduce(function (a, r) { return a + r.count; }, 0)));
-    txt('s-sites', fmt(refs.filter(function (r) { return !SE.test(r.name) && r.name; }).reduce(function (a, r) { return a + r.count; }, 0)));
-    bars('s-camps', camps.map(function (c) { return [esc(c.name || '(none)'), c.count, 'g']; }), '', 'No tagged links used in this range.');
-    bars('s-refs', refs.filter(function (r) { return r.name; }).map(function (r) { return [esc(r.name), r.count]; }));
-    bars('s-pages', (d.pages || []).slice(0, 10).map(function (p) { return ['<span class="mono">' + esc(p.path || '/') + '</span>', p.count]; }));
+    txt('s-search', fmt(refSum(refs, function (k) { return k === 'search'; })));
+    txt('s-ai', fmt(refSum(refs, function (k) { return k === 'ai'; })));
+    txt('s-sites', fmt(refSum(refs, function (k) { return k !== 'search' && k !== 'ai'; })));
+    bars('s-links', links.map(function (r) { return refRow(r, 'g'); }));
+    bars('s-camps', camps.filter(function (c) { return c.count > 0; }).map(campRow), '', 'No tagged links used in this range.');
+    bars('s-refs', refs.map(function (r) { return refRow(r); }));
+    bars('s-pages', (d.pages || []).slice(0, 10).map(function (p) { return pageRow(p, 'Playlist Studio home'); }));
     bars('s-br', (d.browsers || []).slice(0, 8).map(function (b) { return [esc(b.name || 'Unknown'), b.count]; }));
     renderReleases();
     ['vis', 'feat', 'src'].forEach(hideEmptyCards);
@@ -1663,15 +1734,15 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'quest-send': ['Save and send', 'Sent over USB', 'Sent the playlist to a Quest over a cable'],
     'quest-connect': ['Save and send', 'Quest USB connect', 'Started connecting a Quest over USB'],
     'quest-auth-wait': ['Save and send', 'Waiting on Quest allow', 'Waited for "Allow USB debugging" on the headset'],
-    'quest-no-answer': ['Problems', 'Quest USB no answer', 'The Quest didn\u2019t answer over USB'],
+    'quest-no-answer': ['Problems', 'Quest USB no answer', 'The Quest didn\\u2019t answer over USB'],
     'quest-cancel': ['Save and send', 'Quest USB cancelled', 'Cancelled sending over USB'],
     'cable-pitch': ['Studio Sync', 'Saw the Studio Sync pitch', 'Saw the "skip the cable" Studio Sync card'],
     'cable-pitch-no': ['Studio Sync', 'Dismissed the pitch', 'Pressed Not now on the Studio Sync card'],
     'share-create': ['Share', 'Made a share link', 'Created a share link for a playlist'],
-    'share-open': ['Share', 'Opened a share link', 'Opened someone\u2019s shared playlist link'],
+    'share-open': ['Share', 'Opened a share link', 'Opened someone\\u2019s shared playlist link'],
     'share-paste': ['Share', 'Pasted a share link', 'Pasted a share link into Studio'],
     'link-load': ['Share', 'Loaded a playlist link', 'Loaded a playlist from a link'],
-    'link-load-failed': ['Problems', 'Playlist link failed', 'A playlist link couldn\u2019t be loaded'],
+    'link-load-failed': ['Problems', 'Playlist link failed', 'A playlist link couldn\\u2019t be loaded'],
     'pub-delete': ['Share', 'Deleted a hosted link', 'Removed a hosted sync link'],
     'gallery-open': ['Starters', 'Opened the gallery', 'Opened the ready-made playlist gallery'],
     'empty-gallery': ['Starters', 'Gallery from empty results', 'Opened the gallery from "No results yet"'],
@@ -1686,7 +1757,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'ss-sync': ['Profile', 'ScoreSaber pull', 'Pulled their ScoreSaber plays'],
     'ss-sync-auto': ['Profile', 'ScoreSaber refresh', 'Sync scores also refreshed ScoreSaber'],
     'stats-open': ['Stats', 'Opened Stats', 'Opened the Stats card'],
-    'stats-add': ['Stats', 'Added from Stats', 'Added a recent score\u2019s map from Stats'],
+    'stats-add': ['Stats', 'Added from Stats', 'Added a recent score\\u2019s map from Stats'],
     'stats-top-plays': ['Stats', 'Top 50 from Stats', 'Built from top 50 plays inside Stats'],
     'stats-score-open': ['Stats', 'Opened a score', 'Expanded a recent score in Stats'],
     'stats-versus': ['Stats', 'Versus from Stats', 'Opened "Maps they beat you on"'],
@@ -1696,19 +1767,19 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'stats-clan': ['Clans', 'Clan maps (old button)', 'Opened clan maps from the old Stats button'],
     'stats-asclan': ['Clans', 'AccSaber clan (old button)', 'Opened the AccSaber clan from the old Stats button'],
     'clan-open': ['Clans', 'BeatLeader clan view', 'Opened the BeatLeader clan maps view'],
-    'clan-scan': ['Clans', 'Clan maps scan', 'Loaded their clan\u2019s maps to defend or capture'],
+    'clan-scan': ['Clans', 'Clan maps scan', 'Loaded their clan\\u2019s maps to defend or capture'],
     'clan-recheck': ['Clans', 'Clan re-check', 'Re-checked the clan maps'],
     'clan-switch': ['Clans', 'Switched clan', 'Picked another of their clans'],
     'clan-switch-bl': ['Clans', 'To BeatLeader clan', 'Switched from AccSaber to the BeatLeader clan view'],
     'clan-ss': ['Clans', 'Clan maps with SS', 'Looked at replay-without-SS chances'],
-    'clan-fail': ['Problems', 'Clan maps failed', 'BeatLeader didn\u2019t answer the clan scan'],
+    'clan-fail': ['Problems', 'Clan maps failed', 'BeatLeader didn\\u2019t answer the clan scan'],
     'asclan-open': ['Clans', 'AccSaber clan view', 'Opened the AccSaber clan view'],
     'asclan-scan': ['Clans', 'AccSaber clan load', 'Loaded AccSaber missions and standings'],
     'asclan-recheck': ['Clans', 'AccSaber re-check', 'Re-checked AccSaber'],
     'asclan-switch': ['Clans', 'To AccSaber clan', 'Switched to the AccSaber clan view'],
     'asclan-war': ['Clans', 'War maps', 'Opened the war maps card'],
     'asclan-pick-*': ['Clans', 'Mission picks', 'Opened the map picks for a clan mission'],
-    'asclan-fail': ['Problems', 'AccSaber failed', 'AccSaber didn\u2019t answer the clan view'],
+    'asclan-fail': ['Problems', 'AccSaber failed', 'AccSaber didn\\u2019t answer the clan view'],
     'foryou-*': ['For You', 'For You', 'Used a For You button'],
     'foryou-connect': ['For You', 'Connect from For You', 'Connected from the For You card'],
     'rank-up-plan': ['For You', 'Rank-up plan', 'Ran the rank-up planner'],
@@ -1718,7 +1789,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'egg-bomb': ['Other', 'Easter egg bomb', 'Found the bomb easter egg'],
     'pwa-link': ['App', 'Link into the app', 'Opened a Studio link in the installed app'],
     'pwa-open-file': ['App', 'Opened a .bplist file', 'Double-clicked a .bplist into the installed app'],
-    'onquest-open': ['Studio Sync', 'Opened a headset playlist', 'Opened a playlist that\u2019s on their Quest'],
+    'onquest-open': ['Studio Sync', 'Opened a headset playlist', 'Opened a playlist that\\u2019s on their Quest'],
     'lq-link': ['Studio Sync', 'Linked a headset', 'Linked a Quest to Studio'],
     'lq-unlink': ['Studio Sync', 'Unlinked a headset', 'Removed a linked Quest'],
     'lq-first-sync': ['Studio Sync', 'First sync', 'A newly linked headset synced for the first time'],
@@ -1820,7 +1891,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     }
     box.onpointermove = show; box.onpointerdown = show; box.onpointerleave = function () { tip.hidden = true; };
   }
-  var CNAMES_REV = {}; Object.keys(CNAMES).forEach(function (n) { var c = CNAMES[n]; if (!CNAMES_REV[c] || n.length < CNAMES_REV[c].length) CNAMES_REV[c] = n.replace(/\b\w/g, function (x) { return x.toUpperCase(); }); });
+  var CNAMES_REV = {}; Object.keys(CNAMES).forEach(function (n) { var c = CNAMES[n]; if (!CNAMES_REV[c] || n.length < CNAMES_REV[c].length) CNAMES_REV[c] = n.replace(/\\b\\w/g, function (x) { return x.toUpperCase(); }); });
 
   // ---- small helpers for a calmer page ----
   // A card or block with nothing to show is hidden instead of showing a dash or an empty box.
@@ -1856,6 +1927,273 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     svg.onpointermove = at; svg.onpointerdown = at;
     svg.onpointerleave = function () { tip.hidden = true; if (mark) mark.style.display = 'none'; };
   }
+  // ---- plain names for where people come from ----
+  // utm_source (where a tagged link was posted) and utm_campaign (which link) as you set them up.
+  var SRC_NAMES = {
+    'beatleader': 'Your BeatLeader profile', 'reesaber-studio': 'ReeSaber Studio', 'playlist-studio': 'Playlist Studio', 'hsv-generator': 'HSV Config Generator',
+    'chesters-escape': 'Chester’s Escape', 'chester': 'Chester’s Escape', 'github': 'GitHub', 'share-link': 'Shared links', 'share': 'Shared links',
+    'pwa': 'Installed Studio app', 'studio-sync': 'Studio Sync', 'review': 'Review visits (testing)', 'bplist': 'Playlist files', 'discord': 'Discord',
+    'reddit': 'Reddit', 'youtube': 'YouTube', 'twitch': 'Twitch', 'x': 'X (Twitter)', 'twitter': 'X (Twitter)', 'bsmg': 'BSMG', 'goatcounter': 'GoatCounter'
+  };
+  var CAMP_NAMES = {
+    'profile-bio': 'Link in your BeatLeader profile bio', 'cross-link': 'Links between your tools', 'site': 'Chester’s Escape footer links',
+    'readme': 'README link', 'readme-playlist-studio': 'Playlist Studio README', 'readme-reesaber-studio': 'ReeSaber Studio README', 'readme-hsv-generator': 'HSV Config Generator README',
+    'studio-sync-readme': 'Studio Sync README', 'studio-sync-launch': 'Studio Sync launch post', 'second-device': 'Studio Sync on another device (QR code)',
+    'preset-share': 'Shared ReeSaber preset', 'playlist-share': 'Shared playlist link', 'stats-share': 'Shared Stats card', 'config-share': 'Shared HSV config',
+    'installed': 'Opened from the installed app', 'open-file': 'Opened a .bplist in the app', 'playlist-credit': 'Credit in exported playlists',
+    'get-the-maps': 'Chester’s Escape: Get the maps', 'get-the-maps-sync': 'Chester’s Escape: Get the maps with Studio Sync', 'bsr-link': 'Chester’s Escape: BSR link',
+    'self-review-oct26': 'Review visit (Oct 26, testing)', 'newbie-review-oct26': 'New player review (Oct 26, testing)', 'launch': 'Launch post'
+  };
+  function campName(c) {
+    c = String(c || '').toLowerCase();
+    if (CAMP_NAMES[c]) return CAMP_NAMES[c];
+    var m = /^footer-(.+)$/.exec(c); if (m) return 'Footer link on ' + (SRC_NAMES[m[1]] || m[1].replace(/-/g, ' '));
+    m = /^readme-(.+)$/.exec(c); if (m) return (SRC_NAMES[m[1]] || m[1].replace(/-/g, ' ')) + ' README';
+    return c ? c.replace(/[-_]+/g, ' ').replace(/^./, function (x) { return x.toUpperCase(); }) : '(no name)';
+  }
+  // Referring sites: [pattern, name, kind]. kind: search, ai, social, beat (Beat Saber sites), mine (your own pages), app
+  var REF_RULES = [
+    [/^gemini\\.google\\./, 'Gemini', 'ai'], [/^bard\\.google\\./, 'Gemini', 'ai'], [/(^|\\.)chatgpt\\.com$|^chat\\.openai\\.com$/, 'ChatGPT', 'ai'], [/(^|\\.)perplexity\\.ai$/, 'Perplexity', 'ai'],
+    [/(^|\\.)claude\\.ai$/, 'Claude', 'ai'], [/^copilot\\.microsoft\\.com$/, 'Microsoft Copilot', 'ai'], [/(^|\\.)grok\\.com$/, 'Grok', 'ai'], [/(^|\\.)deepseek\\.com$/, 'DeepSeek', 'ai'],
+    [/^news\\.google\\./, 'Google News', 'social'], [/^(www\\.)?google\\.|^google$/, 'Google search', 'search'], [/(^|\\.)bing\\.com$|^bing$/, 'Bing', 'search'], [/duckduckgo/, 'DuckDuckGo', 'search'],
+    [/(^|\\.)yahoo\\./, 'Yahoo', 'search'], [/(^|\\.)yandex\\./, 'Yandex', 'search'], [/(^|\\.)ecosia\\./, 'Ecosia', 'search'], [/search\\.brave\\.com|^brave$/, 'Brave Search', 'search'],
+    [/(^|\\.)startpage\\./, 'Startpage', 'search'], [/(^|\\.)baidu\\./, 'Baidu', 'search'], [/(^|\\.)qwant\\./, 'Qwant', 'search'], [/(^|\\.)naver\\./, 'Naver', 'search'],
+    [/(^|\\.)reddit\\.com$|redd\\.it$|com\\.reddit\\.frontpage/, 'Reddit', 'social'], [/discord(app)?\\.(com|gg)$|com\\.discord/, 'Discord', 'social'], [/(^|\\.)youtube\\.com$|youtu\\.be$/, 'YouTube', 'social'],
+    [/(^|\\.)twitch\\.tv$/, 'Twitch', 'social'], [/(^|\\.)(x|twitter)\\.com$|^t\\.co$/, 'X (Twitter)', 'social'], [/(^|\\.)facebook\\.com$|^fb\\./, 'Facebook', 'social'], [/(^|\\.)instagram\\.com$/, 'Instagram', 'social'],
+    [/(^|\\.)tiktok\\.com$/, 'TikTok', 'social'], [/(^|\\.)bsky\\.app$/, 'Bluesky', 'social'], [/com\\.google\\.android\\.gm/, 'Gmail app', 'app'], [/(^|\\.)mail\\.google\\.com$/, 'Gmail', 'app'],
+    [/(^|\\.)beatleader\\.(com|xyz|net)$/, 'BeatLeader', 'beat'], [/(^|\\.)beatsaver\\.com$/, 'BeatSaver', 'beat'], [/(^|\\.)scoresaber\\.com$/, 'ScoreSaber', 'beat'], [/(^|\\.)accsaber\\.com$/, 'AccSaber', 'beat'],
+    [/(^|\\.)bsmg\\.wiki$/, 'BSMG wiki', 'beat'], [/(^|\\.)givemepp\\.com$/, 'givemepp', 'beat'], [/(^|\\.)github\\.com$/, 'GitHub', 'social'], [/spanky3651\\.github\\.io/, 'Your other tools', 'mine'],
+    [/(^|\\.)mickool\\.net$/, 'mickool.net', 'mine'], [/^(localhost|127\\.0\\.0\\.1)/, 'Local testing', 'mine'], [/workers\\.dev$/, 'Your Worker', 'mine']
+  ];
+  function refInfo(r) {
+    var raw = String((r && r.name) || ''), host = raw.replace(/^[a-z-]+:\\/\\//i, '').replace(/\\/.*$/, '').toLowerCase();
+    if (r && r.scheme === 'c') return { label: SRC_NAMES[host] || raw.replace(/[-_]+/g, ' '), kind: 'link', raw: raw };
+    for (var i = 0; i < REF_RULES.length; i++) if (REF_RULES[i][0].test(host)) return { label: REF_RULES[i][1], kind: REF_RULES[i][2], raw: raw };
+    return { label: host.replace(/^www\\./, '') || 'Unknown', kind: 'other', raw: raw };
+  }
+  function nameRow(label, raw, cls, n) {
+    return ['<span class="fl"><b>' + esc(label) + '</b>' + (raw && String(raw).toLowerCase() !== String(label).toLowerCase() ? '<span class="fd"><code>' + esc(raw) + '</code></span>' : '') + '</span>', n, cls || ''];
+  }
+  function campRow(c) { return nameRow(campName(c.name), c.name, 'g', c.count); }
+  function pageRow(p, home) { var x = p.path || '/', nm = pageName(x, home); return nm === x ? ['<span class="mono">' + esc(x) + '</span>', p.count] : nameRow(nm, x, '', p.count); }
+  function refSum(refs, test) { return refs.reduce(function (a, r) { return a + (test(refInfo(r).kind) ? r.count : 0); }, 0); }
+  function refRow(r, cls) {
+    var f = refInfo(r);
+    return ['<span class="fl"><b>' + esc(f.label) + '</b>' + (f.raw && f.raw.toLowerCase() !== f.label.toLowerCase() ? '<span class="fd"><code>' + esc(f.raw) + '</code></span>' : '') + '</span>', r.count, cls || ''];
+  }
+  // Pages people land on in Studio.
+  function pageName(p, home) {
+    var x = String(p || '').replace(/^\\/(playlist-studio|reesaber-studio|hsv-config-generator)(?=\\/|\\?|#|$)/i, '') || '/';
+    if (x === '/' || x === '' || /^\\/(index\\.html)?(\\?|$)/.test(x) && !/stats=|#p=|bsr=|cfg=|preset=/.test(x)) return home || 'Playlist Studio home';
+    if (/^\\/gallery/.test(x)) return 'Saber gallery';
+    if (/^\\/docs/.test(x)) { var t = x.replace(/^\\/docs\\/?/, '').replace(/\\.html$/, '').replace(/[-_\\/]+/g, ' ').trim(); return t ? 'Docs: ' + t : 'Docs'; }
+    if (/stats=/.test(x)) return 'A shared Stats card';
+    if (/#p=|[?&]p=/.test(x)) return 'A shared playlist link';
+    if (/studio-sync/.test(x)) return 'Studio Sync setup';
+    if (/bsr=/.test(x)) return 'A map link (BSR code)';
+    if (/gallery/.test(x)) return 'Playlist gallery';
+    return x;
+  }
+
+  // ---- your other tools (more GoatCounter sites under the same key) ----
+  // Events shared by the tools: Quest over USB, share links, footer links, page errors.
+  var TOOL_COMMON = {
+    'quest-open': ['Quest', 'Opened Send to Quest', 'Opened the Quest over USB panel'],
+    'quest-connect': ['Quest', 'Connected a Quest', 'Connected their headset over USB'],
+    'quest-auth-wait': ['Quest', 'Allow USB on headset', 'Had to allow USB debugging inside the headset'],
+    'quest-picker-cancel': ['Quest', 'Closed the USB picker', 'Closed the device picker without choosing a headset'],
+    'quest-diag': ['Quest', 'USB help', 'Opened the USB troubleshooting help'],
+    'quest-load': ['Quest', 'Loaded from Quest', 'Loaded what was already on the headset'],
+    'quest-push': ['Quest', 'Sent to Quest', 'Sent their work straight to the headset'],
+    'quest-cancel': ['Quest', 'Cancelled a Quest send', 'Backed out of sending to the headset'],
+    'quest-no-answer': ['Problems', 'Quest didn’t answer', 'The headset didn’t answer over USB'],
+    'quest-error-load': ['Problems', 'Couldn’t load from Quest', 'Reading from the headset failed'],
+    'quest-error-push': ['Problems', 'Couldn’t send to Quest', 'Writing to the headset failed'],
+    'quest-error-no-folder': ['Problems', 'Mod folder missing', 'The mod’s folder wasn’t on the headset yet'],
+    'share-link': ['Sharing', 'Made a share link', 'Copied a link to their work'],
+    'share-open': ['Sharing', 'Opened a share link', 'Opened something someone shared with them'],
+    'github-click': ['Links', 'GitHub link', 'Clicked through to the source on GitHub'],
+    'kofi-click': ['Links', 'Support me link', 'Clicked the Support me (Ko-fi) button'],
+    'js-error': ['Problems', 'Page error', 'A script error on the page'],
+    'js-error-promise': ['Problems', 'Page error (async)', 'A script error from a background task'],
+    'whatsnew-shown': ['Start', 'Saw What’s New', 'The What’s New note popped up'],
+    'whatsnew-close': ['Start', 'Closed What’s New', 'Closed the What’s New note']
+  };
+  var HSV_FEAT = {
+    'welcome-start': ['Start', 'Started from welcome', 'Clicked start on the welcome screen'],
+    'template-*': ['Start', 'Started from a template', 'Loaded a starter template'],
+    'export': ['Export', 'Exported a config', 'Downloaded the config as a .json file'],
+    'export-hsv': ['Export', 'Exported as .hsv', 'Downloaded the config as a .hsv file'],
+    'export-steps-off': ['Export', 'Skipped export steps', 'Turned off the how-to steps after exporting'],
+    'copy-json': ['Export', 'Copied JSON', 'Copied the config JSON to the clipboard'],
+    'export-with-errors': ['Problems', 'Exported with errors', 'Exported even though the checker found problems'],
+    'import': ['Import', 'Imported a config', 'Opened a config file with Import'],
+    'drop-import': ['Import', 'Dropped a config', 'Dragged a config file onto the page'],
+    'apply-json': ['Import', 'Applied pasted JSON', 'Pasted config JSON and applied it'],
+    'reset': ['Editing', 'Loaded the HSV default', 'Reset to the official HSV default config'],
+    'redo': ['Editing', 'Used redo', 'Used redo (counted once a visit)'],
+    'tier-style': ['Editing', 'Styled a tier', 'Changed how a judgment tier looks (once a visit)'],
+    'token-insert': ['Editing', 'Inserted a text token', 'Added a token like %s or %n to judgment text'],
+    'assume-max': ['Editing', 'Assume max post swing', 'Turned on assume max post swing'],
+    'chains-on': ['Editing', 'Chain head judgments', 'Turned on separate judgments for chain heads'],
+    'chain-link-on': ['Editing', 'Chain link display', 'Turned on a display for chain links'],
+    'compact-view': ['Layout', 'Compact view', 'Switched to the compact editor view'],
+    'stream': ['Preview', 'Played the preview', 'Played the live stream of judgments'],
+    'vision-*': ['Preview', 'Color vision preview', 'Previewed the config with a color vision filter'],
+    'compare': ['Compare', 'Compared configs', 'Pinned a version or loaded a second config to compare'],
+    'replay-analyze': ['Replays', 'Analyzed a replay', 'Loaded a BeatLeader replay to fit tiers to their swings'],
+    'drop-replay': ['Replays', 'Dropped a replay', 'Dragged a .bsor replay onto the page'],
+    'replay-even': ['Replays', 'Even tiers from replay', 'Spread the tiers evenly across their replay scores'],
+    'replay-even-preview': ['Replays', 'Previewed even tiers', 'Previewed evenly spread tiers on the stream'],
+    'share-link': ['Sharing', 'Made a share link', 'Copied a link to their config'],
+    'share-open': ['Sharing', 'Opened a shared config', 'Opened a config someone shared']
+  };
+  var RS_FEAT = {
+    'starter-*': ['Start', 'Started from a starter', 'Picked a starter saber'],
+    'starter-drivers': ['Start', 'Starter with drivers', 'Picked a starter that uses drivers'],
+    'guide-open': ['Start', 'Opened the guide', 'Opened the built-in guide'],
+    'guide-from-*': ['Start', 'Guide opened from', 'Opened the guide from another spot'],
+    'explain': ['Start', 'Explain this', 'Asked the editor to explain a setting'],
+    'new-preset': ['Editing', 'New preset', 'Started a new saber preset'],
+    'module-*': ['Editing', 'Added a module', 'Added a module to the saber'],
+    'add-menu-open': ['Editing', 'Opened Add menu', 'Opened the Add menu'],
+    'snippet-*': ['Editing', 'Used a snippet', 'Inserted a ready-made snippet'],
+    'scheme-*': ['Editing', 'Color scheme', 'Changed the color scheme'],
+    'gradient-edit': ['Editing', 'Edited a gradient', 'Edited a color gradient'],
+    'curve-edit': ['Editing', 'Edited a curve', 'Edited an animation curve'],
+    'driver-add': ['Editing', 'Added a driver', 'Added a driver to animate a value'],
+    'driver-delete': ['Editing', 'Removed a driver', 'Deleted a driver'],
+    'driver-scrub': ['Editing', 'Scrubbed a driver', 'Dragged through a driver’s values'],
+    'layer-copy': ['Layers', 'Copied a layer', 'Copied a layer'],
+    'layer-paste': ['Layers', 'Pasted a layer', 'Pasted a layer'],
+    'layer-duplicate': ['Layers', 'Duplicated a layer', 'Duplicated a layer'],
+    'layer-drag': ['Layers', 'Dragged a layer', 'Reordered layers by dragging'],
+    'layer-move-in': ['Layers', 'Moved into a group', 'Moved a layer into a group'],
+    'layer-move-out': ['Layers', 'Moved out of a group', 'Moved a layer out of a group'],
+    'layer-solo': ['Layers', 'Solo layer', 'Showed one layer on its own'],
+    'texture-make': ['Textures', 'Made a texture', 'Generated a texture'],
+    'texture-resize': ['Textures', 'Resized a texture', 'Resized a texture'],
+    'sprite-sheet': ['Textures', 'Sprite sheet', 'Built a sprite sheet'],
+    'asset-upload-*': ['Textures', 'Uploaded an asset', 'Uploaded an image or other asset'],
+    'assets': ['Textures', 'Opened assets', 'Opened the assets panel'],
+    'undo': ['Editing', 'Used undo', 'Used undo'],
+    'redo': ['Editing', 'Used redo', 'Used redo'],
+    'history-open': ['Editing', 'Opened history', 'Opened the edit history'],
+    'checkpoint-save': ['Editing', 'Saved a checkpoint', 'Saved a checkpoint to come back to'],
+    'checkpoint-restore': ['Editing', 'Restored a checkpoint', 'Went back to a saved checkpoint'],
+    'validate-jump': ['Editing', 'Jumped to a problem', 'Clicked a checker warning to jump to it'],
+    'perf-target-*': ['Editing', 'Performance target', 'Picked a performance target'],
+    'preview-*': ['Preview', 'Preview setting', 'Changed a preview setting'],
+    'preview-combine': ['Preview', 'Combined preview', 'Previewed both sabers together'],
+    'preview-expand': ['Preview', 'Expanded preview', 'Made the preview bigger'],
+    'preview-frame': ['Preview', 'Preview frame', 'Stepped the preview by a frame'],
+    'preview-left-preset': ['Preview', 'Left saber preset', 'Picked a different preset for the left saber'],
+    'preview-resize': ['Preview', 'Resized preview', 'Resized the preview'],
+    'backdrop-*': ['Preview', 'Preview backdrop', 'Changed the preview backdrop'],
+    'capture-open': ['Preview', 'Opened capture', 'Opened the capture tools'],
+    'compare-open': ['Compare', 'Opened compare', 'Opened compare'],
+    'compare-pin': ['Compare', 'Pinned a version', 'Pinned a version to compare'],
+    'compare-preview': ['Compare', 'Previewed compare', 'Previewed the compared version'],
+    'compare-revert': ['Compare', 'Reverted to pinned', 'Went back to the pinned version'],
+    'view-*': ['Layout', 'Switched view', 'Switched editor view'],
+    'view-menu-open': ['Layout', 'Opened View menu', 'Opened the View menu'],
+    'tab-*': ['Layout', 'Switched tab', 'Switched panel tab'],
+    'export': ['Export', 'Opened Export', 'Clicked the Export button'],
+    'export-more-open': ['Export', 'More export options', 'Opened the extra export options'],
+    'export-reesaber': ['Export', 'Exported for ReeSaber', 'Downloaded the saber for the ReeSaber mod'],
+    'export-json': ['Export', 'Exported JSON', 'Downloaded the saber as JSON'],
+    'export-project': ['Export', 'Exported a project', 'Downloaded the whole project'],
+    'export-all-zip': ['Export', 'Exported everything (zip)', 'Downloaded every preset in a zip'],
+    'export-png': ['Export', 'Exported a picture', 'Saved a PNG of the saber'],
+    'export-gif': ['Export', 'Exported a GIF', 'Saved an animated GIF of the saber'],
+    'export-thumb': ['Export', 'Exported a thumbnail', 'Saved a thumbnail picture'],
+    'export-quest': ['Export', 'Export to Quest', 'Picked the Quest export'],
+    'copy-json': ['Export', 'Copied JSON', 'Copied the saber JSON'],
+    'folder-save': ['Export', 'Saved to a folder', 'Saved into a folder on their computer'],
+    'folder-sync-on': ['Export', 'Folder sync on', 'Turned on syncing with a folder'],
+    'import': ['Import', 'Opened Import', 'Clicked the Import button'],
+    'import-preset': ['Import', 'Imported a preset', 'Imported a saber preset'],
+    'import-project-*': ['Import', 'Imported a project', 'Imported a whole project'],
+    'import-reesaber': ['Import', 'Imported a ReeSaber file', 'Imported a saber made for the ReeSaber mod'],
+    'drop-import': ['Import', 'Dropped a file', 'Dragged a file onto the page'],
+    'drop-saber-file': ['Import', 'Dropped a saber file', 'Dragged a saber file onto the page'],
+    'open-src': ['Import', 'Opened a source', 'Opened the source of a saber'],
+    'gallery-browse': ['Gallery', 'Browsed the gallery', 'Browsed the saber gallery'],
+    'gallery-open': ['Gallery', 'Opened a gallery saber', 'Opened a saber from the gallery'],
+    'gallery-submit-link': ['Gallery', 'Submit to gallery', 'Clicked the link to submit a saber'],
+    'share-link': ['Sharing', 'Made a share link', 'Copied a link to their saber'],
+    'share-open': ['Sharing', 'Opened a shared saber', 'Opened a saber someone shared']
+  };
+  var TOOLS = {
+    hsv: { p: 'h', code: 'hsv-generator', name: 'HSV Config Generator', home: 'HSV Config Generator home', feat: HSV_FEAT },
+    rs: { p: 'r', code: 'reesaberstudio', name: 'ReeSaber Studio', home: 'ReeSaber Studio home', feat: RS_FEAT }
+  };
+  var TPROB = /(^js-error|error|fail|no-answer)/;
+  function toolFeat(t, name) {
+    var tab = Object.assign({}, TOOL_COMMON, TOOLS[t].feat), x = tab[name], rest = '';
+    if (!x) { var best = ''; Object.keys(tab).forEach(function (k) { if (k.slice(-1) === '*' && name.indexOf(k.slice(0, -1)) === 0 && k.length > best.length) best = k; }); if (best) { x = tab[best]; rest = name.slice(best.length - 1).replace(/^-/, ''); } }
+    if (!x) return { area: TPROB.test(name) ? 'Problems' : 'Other', label: name.replace(/-/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); }), desc: '', name: name };
+    return { area: x[0], label: x[1] + (rest ? ': ' + rest.replace(/-/g, ' ') : ''), desc: x[2], name: name };
+  }
+  function toolFeatRow(t, e, cls) {
+    var f = toolFeat(t, e.name);
+    return ['<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span>', e.count, cls || ''];
+  }
+  function isTool(t) { return !!TOOLS[t]; }
+  function ownTab(t) { return t === 'bl' || t === 'sync' || isTool(t); }
+  var toolData = {}, toolBusy = {}, toolTok = {};
+  function toolIds(t) { var p = TOOLS[t].p; return { svg: p + '-chart', head: p + '-charth', what: 'Visitors', dots: false }; }
+  function toolMsg(t, h) { var el = $(TOOLS[t].p + '-msg'); el.innerHTML = h; el.classList.toggle('hidden', !h); }
+  function loadTool(t, fresh) {
+    var key = getKey(); if (!key || !TOOLS[t]) return;
+    var tok = toolTok[t] = (toolTok[t] || 0) + 1, want = range, T = TOOLS[t];
+    toolBusy[t] = true; if (!toolData[t]) toolMsg(t, 'Loading ' + esc(T.name) + '...'); busyUi();
+    fetch('/admin/gc?site=' + t + '&range=' + encodeURIComponent(want) + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      if (tok !== toolTok[t]) return;
+      toolBusy[t] = false; busyUi();
+      if (!res.ok) {
+        if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; }
+        toolMsg(t, res.j.setup ? '<b>GoatCounter isn’t connected yet.</b> Add GC_TOKEN to the Worker first (see the Visitors tab).' : esc(res.j.error || 'Couldn’t load ' + T.name + '.'));
+        return;
+      }
+      toolData[t] = res.j; toolMsg(t, ''); renderTool(t);
+    }).catch(function () { if (tok !== toolTok[t]) return; toolBusy[t] = false; busyUi(); toolMsg(t, 'Couldn’t reach the Worker.'); });
+  }
+  function renderTool(t) {
+    var d = toolData[t], T = TOOLS[t], p = T.p; if (!d) return;
+    function id(x) { return p + '-' + x; }
+    txt(id('vis'), fmt(d.visitors));
+    if (d.prevVisitors != null && d.prevVisitors > 0) { var ch = Math.round((d.visitors - d.prevVisitors) / d.prevVisitors * 100); $(id('visn')).innerHTML = '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + Math.abs(ch) + '%</span> vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before'; }
+    else txt(id('visn'), d.range === 'all' ? 'since ' + dshort(d.start) : d.range === 'today' ? 'so far today' : dshort(d.start) + ' to ' + dshort(d.end));
+    var last = d.days.length ? d.days[d.days.length - 1] : null, best = null;
+    d.days.forEach(function (x) { if (!best || x.n > best.n) best = x; });
+    txt(id('best'), best && best.n ? fmt(best.n) : '-'); txt(id('bestn'), best && best.n ? dshort(best.day) : 'no visitors yet');
+    var evs = (d.events || []).filter(function (e) { return e.count > 0; }).sort(function (a, b) { return b.count - a.count; });
+    var probs = evs.filter(function (e) { return toolFeat(t, e.name).area === 'Problems'; }), use = evs.filter(function (e) { return toolFeat(t, e.name).area !== 'Problems'; });
+    txt(id('act'), d.visitors ? Math.round(Math.min(d.eventVisitors || 0, d.visitors) / d.visitors * 100) + '%' : '-');
+    txt(id('actn'), fmt(d.eventVisitors || 0) + ' visitors did more than look');
+    var dev = devSplit(d.sizes), known = dev.Phone + dev.Tablet + dev.Computer;
+    txt(id('phone'), known ? Math.round(dev.Phone / known * 100) + '%' : '-');
+    chart(d, null, toolIds(t));
+    spark(id('spark'), d.range === 'today' ? ((last || {}).hourly || []) : d.days.map(function (x) { return x.n; }), '#3ddc84');
+    var more = $(id('more')), all = more.getAttribute('data-all') === '1';
+    bars(id('feat'), (all ? use : use.slice(0, 15)).map(function (e) { return toolFeatRow(t, e); }));
+    more.classList.toggle('hidden', use.length <= 15); more.textContent = all ? 'Show fewer' : 'Show all ' + use.length;
+    bars(id('probs'), probs.map(function (e) { return toolFeatRow(t, e, 'alt'); }));
+    var refs = d.refs || [], links = refs.filter(function (r) { return r.scheme === 'c' && r.name; }), sites = refs.filter(function (r) { return r.scheme !== 'c' && r.name; });
+    bars(id('srcs'), links.map(function (r) { return refRow(r, 'g'); }));
+    bars(id('camps'), (d.campaigns || []).filter(function (c) { return c.count > 0; }).map(campRow));
+    bars(id('refs'), sites.map(function (r) { return refRow(r); }));
+    bars(id('pages'), (d.pages || []).slice(0, 10).map(function (x) { return pageRow(x, T.home); }));
+    worldMap(id('map'), d.locations, 'visitors');
+    bars(id('geo'), (d.locations || []).filter(function (s) { return s.count > 0; }).slice(0, 8).map(function (s) { return [esc(s.name && !/unknown/i.test(s.name) ? s.name : 'Unknown'), s.count]; }));
+    bars(id('dev'), [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
+    hideEmptyCards(t);
+    txt(id('when'), 'GoatCounter (' + (d.code || T.code) + ') ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
+  }
+
   function chart(d, built, ids) {
     ids = ids || { svg: 'v-chart', head: 'v-charth', leg: 'v-pushleg', what: 'Visitors', dots: true };
     var svg = $(ids.svg), days = d.days, W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 200;
@@ -1901,16 +2239,16 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       blBusy = false; busyUi();
       if (!res.ok) {
         if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; }
-        bMsg(res.j.setup ? '<b>GoatCounter isn\u2019t connected yet.</b> Add GC_TOKEN to the Worker first (see the Visitors tab).' : esc(res.j.error || 'Couldn\u2019t load the BeatLeader profile site.'));
+        bMsg(res.j.setup ? '<b>GoatCounter isn\\u2019t connected yet.</b> Add GC_TOKEN to the Worker first (see the Visitors tab).' : esc(res.j.error || 'Couldn\\u2019t load the BeatLeader profile site.'));
         return;
       }
       bl = res.j; bMsg(''); renderBl();
-    }).catch(function () { if (tok !== blTok) return; blBusy = false; busyUi(); bMsg('Couldn\u2019t reach the Worker.'); });
+    }).catch(function () { if (tok !== blTok) return; blBusy = false; busyUi(); bMsg('Couldn\\u2019t reach the Worker.'); });
   }
   function renderBl() {
     var d = bl;
     txt('b-vis', fmt(d.visitors));
-    if (d.prevVisitors != null && d.prevVisitors > 0) { var ch = Math.round((d.visitors - d.prevVisitors) / d.prevVisitors * 100); $('b-visn').innerHTML = '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '\u25B2 ' : '\u25BC ') + Math.abs(ch) + '%</span> vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before'; }
+    if (d.prevVisitors != null && d.prevVisitors > 0) { var ch = Math.round((d.visitors - d.prevVisitors) / d.prevVisitors * 100); $('b-visn').innerHTML = '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '\\u25B2 ' : '\\u25BC ') + Math.abs(ch) + '%</span> vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before'; }
     else txt('b-visn', d.range === 'all' ? 'since ' + dshort(d.start) : d.range === 'today' ? 'so far today' : dshort(d.start) + ' to ' + dshort(d.end));
     var last = d.days.length ? d.days[d.days.length - 1] : null, best = null;
     d.days.forEach(function (x) { if (!best || x.n > best.n) best = x; });
@@ -1923,7 +2261,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     worldMap('b-map', d.locations, 'views');
     var PAGES = { '/msploit-profile': 'Your BeatLeader profile' };
     bars('b-pages', (d.pages || []).map(function (p) { var nm = PAGES[p.path] || p.title || p.path; return ['<span class="fl"><b>' + esc(nm) + '</b><span class="fd"><code>' + esc(p.path) + '</code></span></span>', p.count]; }), '', 'No profile views in this range.');
-    bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return [esc(r.name), r.count]; }), '', 'No referrers in this range.');
+    bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return refRow(r, r.scheme === 'c' ? 'g' : ''); }), '', 'No referrers in this range.');
     renderGeo(d);
     bars('b-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
     $('b-geoh').classList.toggle('hidden', !(d.locations || []).some(function (c) { return c.count > 0; }));
@@ -1937,7 +2275,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     txt('b-ncty', fmt(locs.filter(function (c) { return c.name && !/unknown/i.test(c.name); }).length));
     if (!locs.length) { el.innerHTML = '<p class="empty">No views in this range.</p>'; txt('b-tcty', '-'); txt('b-tctyn', ''); txt('b-treg', '-'); txt('b-tregn', ''); $('b-regs').innerHTML = '<p class="empty">No views in this range.</p>'; txt('b-geonote', ''); return; }
     var max = Math.max.apply(null, locs.map(function (c) { return c.count; }).concat([1])), top = locs[0];
-    txt('b-tcty', top.name || 'Unknown'); txt('b-tctyn', fmt(top.count) + ' views \u00b7 ' + Math.round(top.count / Math.max(1, d.visitors) * 100) + '% of all');
+    txt('b-tcty', top.name || 'Unknown'); txt('b-tctyn', fmt(top.count) + ' views \\u00b7 ' + Math.round(top.count / Math.max(1, d.visitors) * 100) + '% of all');
     el.innerHTML = locs.map(function (c, i) {
       var regs = (c.regions || []).filter(function (r) { return r.count > 0; }), real = regs.filter(function (r) { return r.name && !/unknown/i.test(r.name); });
       if (real.length) known = true;
@@ -1948,10 +2286,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       return '<details' + (i === 0 ? ' open' : '') + '><summary>' + row + '</summary><div class="sub">' + regs.map(function (r) { return '<div class="bar"><span class="lab">' + esc(r.name && !/unknown/i.test(r.name) ? r.name : 'Region unknown') + '</span><span class="track"><span class="fill" style="width:' + Math.max(2, Math.round(r.count / rmax * 100)) + '%"></span></span><span class="num">' + fmt(r.count) + '</span></div>'; }).join('') + '</div></details>';
     }).join('');
     all.sort(function (a, b) { return b.count - a.count; });
-    if (all.length) { txt('b-treg', all[0].name); txt('b-tregn', all[0].country + ' \u00b7 ' + fmt(all[0].count) + ' views'); }
+    if (all.length) { txt('b-treg', all[0].name); txt('b-tregn', all[0].country + ' \\u00b7 ' + fmt(all[0].count) + ' views'); }
     else { txt('b-treg', '-'); txt('b-tregn', 'no region data yet'); }
     bars('b-regs', all.slice(0, 12).map(function (r) { return ['<span class="fl"><b>' + esc(r.name) + '</b><span class="fd">' + esc(r.country) + '</span></span>', r.count]; }), '', 'No state or region data in this range.');
-    txt('b-geonote', known ? 'Tap a country to see its states or regions. GoatCounter stops at state or region, there\u2019s no city level.' : 'GoatCounter only has the country for these views. If you want states and regions, check that region is turned on in your blprofile site\u2019s GoatCounter settings (what data to collect).');
+    txt('b-geonote', known ? 'Tap a country to see its states or regions. GoatCounter stops at state or region, there\\u2019s no city level.' : 'GoatCounter only has the country for these views. If you want states and regions, check that region is turned on in your blprofile site\\u2019s GoatCounter settings (what data to collect).');
   }
   // ---- players ----
   var pf = { find: '', fnew: false, fclan: false, fme: ls('studioStatsHideMe') !== '0' }, pShown = 40;
@@ -1984,6 +2322,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     $(x[0]).addEventListener('click', function () { pf[x[1]] = !pf[x[1]]; this.setAttribute('aria-pressed', pf[x[1]] ? 'true' : 'false'); if (x[1] === 'fme') ls('studioStatsHideMe', pf.fme ? '1' : '0'); pShown = 40; renderPlayers(); });
   });
   $('p-more').addEventListener('click', function () { pShown += 40; renderPlayers(); });
+  Object.keys(TOOLS).forEach(function (t) { $(TOOLS[t].p + '-more').addEventListener('click', function () { this.setAttribute('data-all', this.getAttribute('data-all') === '1' ? '0' : '1'); renderTool(t); }); });
   $('f-more').addEventListener('click', function () { this.setAttribute('data-all', this.getAttribute('data-all') === '1' ? '0' : '1'); renderGc(); });
   // ---- Studio Sync ----
   function sago(sec) { if (!sec) return 'never synced'; var d = Math.floor((Date.now() / 1000 - sec) / 86400); return d <= 0 ? 'synced today' : d === 1 ? 'synced yesterday' : 'synced ' + d + ' days ago'; }
@@ -1998,7 +2337,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
         (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last">' + sago(u.last) + '</span><span class="n">' + fmt(u.headsets) + '</span></div>';
     });
     $('u-list').innerHTML = h;
-    txt('u-note', (s.usersUnknown ? s.usersUnknown + (s.usersUnknown === 1 ? ' more player hasn\u2019t' : ' more players haven\u2019t') + ' opened Studio with a connected profile since this list started, so their name isn\u2019t known yet. ' : '') + 'Names come from the BeatLeader profile connected in Studio when it checks the headset list.');
+    txt('u-note', (s.usersUnknown ? s.usersUnknown + (s.usersUnknown === 1 ? ' more player hasn\\u2019t' : ' more players haven\\u2019t') + ' opened Studio with a connected profile since this list started, so their name isn\\u2019t known yet. ' : '') + 'Names come from the BeatLeader profile connected in Studio when it checks the headset list.');
   }
   function renderReleases() {
     var rel = gc && gc.releases || [];
@@ -2038,13 +2377,14 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       renderReleases();
       if (first || !gc) loadGc(false);
       if (tab === 'bl' && !bl) loadBl(false);
+      if (isTool(tab) && !toolData[tab]) loadTool(tab, false);
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
   $('go').addEventListener('click', loadSync);
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
-  $('refresh').addEventListener('click', function () { loadSync(); if (tab === 'bl') loadBl(true); else loadGc(true); });
-  $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
-  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); }, 150); });
+  $('refresh').addEventListener('click', function () { loadSync(); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else loadGc(true); });
+  $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
+  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   showRange(); showTab(tab);
   if (getKey()) { $('keyrow').classList.add('hidden'); loadSync(); }
 })();
