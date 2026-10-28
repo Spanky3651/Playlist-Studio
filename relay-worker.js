@@ -254,7 +254,7 @@ function adlKey(lib, dev) { return "adl:" + lib + ":" + dev; }
 function chgKey(lib, dev) { return "chg:" + lib + ":" + dev; }
 function touch(env, lib, dev) { return putTtl(env, chgKey(lib, dev), String(Date.now())); }
 const FEATURES = ["restore", "delete", "delete-songs", "storage", "cleanup", "order", "missing", "autodl", "favorites"];
-// In-game favorites a headset shares (Studio Sync 0.10.0 and later): { shared, hs: song hashes, miss: the ones not
+// In-game favorites a headset shares (Studio Sync 0.9.2 and later): { shared, hs: song hashes, miss: the ones not
 // downloaded, sig, n, at }. Only written when something changed.
 const MAX_FAVS = 3000, FAV_BACKUPS = 5;
 function favKey(lib, dev) { return "fav:" + lib + ":" + dev; }
@@ -684,7 +684,7 @@ async function linked(request, env, ctx, url) {
     const body = (await readJson(request, 20000)) || {};
     const known = new Set((ginv.items || []).map((x) => x.k));
     const ks = [...new Set((Array.isArray(body.ks) ? body.ks : []).filter((x) => typeof x === "string" && known.has(x)))].slice(0, MAX_INVENTORY);
-    // Favorites' missing songs (0.10.0 and later), on their own or with playlists.
+    // Favorites' missing songs (0.9.2 and later), on their own or with playlists.
     const favs = !!body.favorites;
     if (favs && !(ginv.features || []).includes("favorites")) return json({ error: "Update Studio Sync on the headset to get its favorites' songs from here" }, 409, cors);
     if (!body.all && !ks.length && !favs) return json({ error: "That playlist isn't on the headset anymore" }, 404, cors);
