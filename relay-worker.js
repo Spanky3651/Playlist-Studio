@@ -1063,7 +1063,7 @@ async function gcHits(env, start, end) {
       if (seen.has(h.path_id)) continue;
       seen.add(h.path_id); fresh++;
       out.push({ id: h.path_id, path: h.path || "", title: h.title || "", event: !!h.event, count: h.count || 0,
-        days: (h.stats || []).map((s) => [s.day, s.daily || 0]) });
+        days: (h.stats || []).map((s) => [s.day, s.daily || 0]), hours: h.event ? undefined : (h.stats || []).map((s) => s.hourly || []) });
     }
     if (!j || !j.more || !fresh) break;
   }
@@ -1077,6 +1077,21 @@ async function gcDetail(env, page, id, start, end, limit) {
 async function gcList(env, page, start, end, limit) {
   try { const j = await gcGet(env, "/stats/" + page, { start: gcIso(start), end: gcIso(end), limit: limit || 20 }); return ((j && j.stats) || []).map((s) => ({ id: s.id != null ? String(s.id) : "", name: s.name || "", count: s.count || 0, scheme: s.ref_scheme || "" })); }
   catch (e) { if (e.message === "gc-auth") throw e; return null; }
+}
+// GoatCounter's total and its per-day numbers count every event as a visit too (a visitor who searched and
+// added maps counts three times), so visitors come from the page views alone, the way the dashboard shows
+// them with events excluded: total minus total_events, and the days and hours summed over page paths.
+function gcVisitors(t) { return t ? Math.max(0, (t.total || 0) - (t.total_events || 0)) : 0; }
+function gcPageDays(total, hits, range) {
+  const by = {};
+  for (const h of hits) if (!h.event) (h.days || []).forEach((d, i) => {
+    const x = by[d[0]] || (by[d[0]] = { n: 0, hourly: [] });
+    x.n += d[1] || 0;
+    ((h.hours && h.hours[i]) || []).forEach((v, k) => { x.hourly[k] = (x.hourly[k] || 0) + (v || 0); });
+  });
+  let list = ((total && total.stats) || []).map((s) => { const x = by[s.day]; return { day: s.day, n: x ? x.n : 0, hourly: range === "today" ? (x ? Array.from({ length: 24 }, (_, k) => x.hourly[k] || 0) : []) : undefined }; });
+  if (range === "all") { const f = list.findIndex((x) => x.n > 0); list = f > 0 ? list.slice(f) : list; }
+  return list;
 }
 function gcFirstDay(days) { for (const d of days || []) if (d[1] > 0) return d[0]; return null; }
 function gcLastDay(days) { let l = null; for (const d of days || []) if (d[1] > 0) l = d[0]; return l; }
@@ -1151,10 +1166,9 @@ async function gcSiteStats(env, key, range, fresh, tz) {
   const campaigns = tool ? await gcList(e, "campaigns", start, end, 15) : undefined;
   // States and regions for the busiest countries (GoatCounter has no city level).
   if (!tool) for (const c of (locations || []).filter((x) => x.id && x.count > 0).slice(0, 10)) c.regions = await gcDetail(e, "locations", c.id, start, end, 20);
-  let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
-  if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
+  const dayList = gcPageDays(total, hits, range);
   const out = { site: key, code: cfg.code, generated: now, range, tz: gcTz(tz), start: range === "all" && dayList.length ? dayList[0].day : day(start), end: day(end),
-    visitors: (total && total.total) || 0, prevVisitors: prev ? prev.total || 0 : null, days: dayList,
+    visitors: gcVisitors(total), prevVisitors: prev ? gcVisitors(prev) : null, days: dayList,
     pages: hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count })), refs, sizes, locations, browsers };
   if (tool) {
     out.eventVisitors = (total && total.total_events) || 0;
@@ -1189,10 +1203,9 @@ async function gcStats(env, range, fresh, site, tz) {
   const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k)).sort();
   const pages = hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count }));
   const gh = await gcGithub(env);
-  let dayList = ((total && total.stats) || []).map((s) => ({ day: s.day, n: s.daily || 0, hourly: range === "today" ? s.hourly || [] : undefined }));
-  if (range === "all") { const f = dayList.findIndex((x) => x.n > 0); dayList = f > 0 ? dayList.slice(f) : dayList; }
+  const dayList = gcPageDays(total, hits, range);
   const out = { generated: now, range, tz: gcTz(tz), start: range === "all" && dayList.length ? dayList[0].day : day(start), end: day(end),
-    visitors: (total && total.total) || 0, eventVisitors: (total && total.total_events) || 0, prevVisitors: prev ? prev.total || 0 : null,
+    visitors: gcVisitors(total), eventVisitors: (total && total.total_events) || 0, prevVisitors: prev ? gcVisitors(prev) : null,
     days: dayList,
     players, events, cold, pages, refs, campaigns, sizes, locations, browsers,
     pushes: gh.pushes.filter((d) => d >= day(start)), releases: gh.releases, myClans: String(env.ADMIN_CLANS || "GENX,ROOT").split(",").map((x) => x.trim()).filter(Boolean) };
@@ -1223,7 +1236,12 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .msg:empty{display:none}
 .embed body{padding-top:16px}
 .embed .brand,.embed .top .sub{display:none}
-.embed .top{justify-content:flex-end;margin-bottom:10px}
+.embed .top{display:none}
+.tabrow{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.tabrow .tabs{flex:1 1 auto;min-width:0;border-bottom:0;margin-bottom:0}
+#tabtool{flex:none;display:flex}#tabtool:empty{display:none}
+#tabtool button.icon{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:11px;color:var(--text)}
+#tabtool button.icon.spin svg{animation:rspin .9s linear infinite}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
 .card{position:relative;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:0;overflow:hidden}
 .card::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent,#26324a),transparent 70%)}
@@ -1366,7 +1384,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
-<div class="tabs" role="tablist" id="tabs">
+<div class="tabrow"><div class="tabs" role="tablist" id="tabs">
 <button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
@@ -1375,7 +1393,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader profile</span><span class="tab-short">BL profile</span></button>
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
-</div>
+</div><span id="tabtool"></span></div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
 
@@ -1470,7 +1488,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <div id="h-msg" class="gcmsg hidden"></div>
 <div class="grid">
 <div class="card hero" data-keep><div class="label">Visitors</div><div class="value" id="h-vis">-</div><div class="note" id="h-visn"></div><div class="spark" id="h-spark"></div></div>
-<div class="card" style="--accent:var(--cyan)"><div class="label">Used a feature</div><div class="value" id="h-act">-</div><div class="note" id="h-actn"></div></div>
+<div class="card" style="--accent:var(--cyan)"><div class="label">Feature uses</div><div class="value" id="h-act">-</div><div class="note" id="h-actn"></div></div>
 <div class="card"><div class="label">Busiest day</div><div class="value" id="h-best">-</div><div class="note" id="h-bestn"></div></div>
 <div class="card"><div class="label">On phones</div><div class="value" id="h-phone">-</div><div class="note">of visits with a known screen size</div></div>
 </div>
@@ -1494,7 +1512,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <div id="r-msg" class="gcmsg hidden"></div>
 <div class="grid">
 <div class="card hero" data-keep><div class="label">Visitors</div><div class="value" id="r-vis">-</div><div class="note" id="r-visn"></div><div class="spark" id="r-spark"></div></div>
-<div class="card" style="--accent:var(--cyan)"><div class="label">Used a feature</div><div class="value" id="r-act">-</div><div class="note" id="r-actn"></div></div>
+<div class="card" style="--accent:var(--cyan)"><div class="label">Feature uses</div><div class="value" id="r-act">-</div><div class="note" id="r-actn"></div></div>
 <div class="card"><div class="label">Busiest day</div><div class="value" id="r-best">-</div><div class="note" id="r-bestn"></div></div>
 <div class="card"><div class="label">On phones</div><div class="value" id="r-phone">-</div><div class="note">of visits with a known screen size</div></div>
 </div>
@@ -1550,6 +1568,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var embedded = /[?&]embed=1/.test(location.search);
   if (embedded) {
     document.documentElement.classList.add('embed');
+    document.getElementById('tabtool').appendChild(document.getElementById('refresh'));
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') try { parent.postMessage('studio-sync-stats-close', 'https://spanky3651.github.io'); } catch (x) {} });
   }
   var K = 'studioSyncAdminKey', keyIn = document.getElementById('key'), msg = document.getElementById('msg');
@@ -1588,6 +1607,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     if (!document.querySelector('[data-sec="' + t + '"]')) t = 'vis';
     tab = t; ls('studioStatsTab', t);
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
+    tabIntoView();
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
     $('range').classList.toggle('hidden', t === 'sync');
     $('gcmsg').classList.toggle('hidden', ownTab(t) || !$('gcmsg').textContent);
@@ -1686,7 +1706,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars('f-probs', probs.map(function (e) { return featRow(e, 'alt'); }), '', 'No problems in this range.');
     $('f-colds').innerHTML = d.cold.length ? '<div class="coldlist">' + d.cold.map(function (n) { var f = featInfo(n); return '<span title="' + esc(f.desc + ' (' + n + ')') + '">' + esc(f.label) + '</span>'; }).join('') + '</div>' : '<p class="empty">Every feature seen before was used in this range.</p>';
     // Sources
-    var camps = (d.campaigns || []), links = (d.refs || []).filter(function (r) { return r.scheme === 'c' && r.name; }), refs = (d.refs || []).filter(function (r) { return r.scheme !== 'c' && r.name; });
+    var camps = (d.campaigns || []), links = (d.refs || []).filter(function (r) { return r.name && isMyLink(r); }), refs = (d.refs || []).filter(function (r) { return r.name && !isMyLink(r); });
     txt('s-camp', fmt(camps.reduce(function (a, c) { return a + c.count; }, 0)));
     txt('s-search', fmt(refSum(refs, function (k) { return k === 'search'; })));
     txt('s-ai', fmt(refSum(refs, function (k) { return k === 'ai'; })));
@@ -1849,6 +1869,42 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'lq-migrate': ['Studio Sync', 'Library moved', 'Moved an old library to the new format'],
     'lq-nudge-no': ['Studio Sync', 'Update nudge dismissed', 'Dismissed the "update Studio Sync" nudge'],
     'lq-cancel': ['Studio Sync', 'Cancelled', 'Cancelled a Studio Sync action'],
+    'combine-add': ['Playlist', 'Combined into this playlist', 'Added another playlist\\u2019s maps to Your Playlist'],
+    'combine-new': ['Playlist', 'Combined into a new playlist', 'Started a new playlist from several playlists'],
+    'clan-add': ['Clans', 'Added a BeatLeader clan map', 'Added a map from the BeatLeader clan view'],
+    'asclan-add': ['Clans', 'Added an AccSaber clan map', 'Added a map from the AccSaber clan view'],
+    'clan-defend': ['Clans', 'Maps to defend', 'Switched the clan view to maps the clan holds'],
+    'clan-capture': ['Clans', 'Maps to capture', 'Switched the clan view to maps other clans hold'],
+    'full-stats': ['Stats', 'Opened full stats', 'Opened the full Stats page'],
+    'full-stats-link': ['Stats', 'Full stats from a link', 'Opened the full Stats page from a shared link'],
+    'pub-create': ['Save and send', 'Hosted a playlist', 'Put a playlist online so it can sync'],
+    'pub-update': ['Save and send', 'Updated hosted playlist', 'Updated a hosted playlist by hand'],
+    'pub-auto-update': ['Save and send', 'Hosted playlist auto-updated', 'A hosted playlist updated itself after changes'],
+    'lq-create': ['Studio Sync', 'Sent a new playlist', 'Sent a new playlist to one headset'],
+    'lq-create-all': ['Studio Sync', 'Sent to several headsets', 'Sent a new playlist to more than one headset'],
+    'lq-replace': ['Studio Sync', 'Replaced a headset playlist', 'Sent a playlist over one already on the headset'],
+    'lq-delete': ['Studio Sync', 'Deleted a playlist', 'Deleted a playlist from the headset, keeping its songs'],
+    'lq-delete-songs': ['Studio Sync', 'Deleted playlist and songs', 'Deleted a headset playlist and its songs'],
+    'lq-delete-many': ['Studio Sync', 'Deleted several playlists', 'Deleted several headset playlists, keeping songs'],
+    'lq-delete-many-songs': ['Studio Sync', 'Deleted several with songs', 'Deleted several headset playlists and their songs'],
+    'lq-peek-removed': ['Studio Sync', 'Removed songs while peeking', 'Removed songs from a headset playlist while looking inside'],
+    'lq-peek-reorder': ['Studio Sync', 'Reordered while peeking', 'Changed a headset playlist\\u2019s song order while looking inside'],
+    'lq-adl-on': ['Studio Sync', 'Auto-download on', 'Turned on auto-download of new songs for a playlist'],
+    'lq-adl-off': ['Studio Sync', 'Auto-download off', 'Turned off auto-download for a playlist'],
+    'lq-stats-hide': ['Studio Sync', 'Hid headset stats', 'Hid the play stats on headset playlists'],
+    'lq-stats-show': ['Studio Sync', 'Showed headset stats', 'Showed the play stats on headset playlists'],
+    'lq-gm': ['Studio Sync', 'Get missing songs', 'Asked the headset to download every missing song'],
+    'lq-gm-one': ['Studio Sync', 'Get one playlist\\u2019s songs', 'Asked the headset to download one playlist\\u2019s missing songs'],
+    'tab-lqPanel': ['Studio Sync', 'Studio Sync tab', 'Switched to the Studio Sync tab under Your Playlist'],
+    'tab-syncPanel': ['Save and send', 'Sync link tab', 'Switched to the Sync link tab under Your Playlist'],
+    'tab-sharePanel': ['Save and send', 'Share link tab', 'Switched to the Share link tab under Your Playlist'],
+    'tab-exportPanel': ['Save and send', 'Download tab', 'Switched to the Download tab under Your Playlist'],
+    'tab-libraryPanel': ['Playlist', 'Library tab', 'Switched to the Library tab under Your Playlist'],
+    'tab-infoPanel': ['Playlist', 'Info tab', 'Switched to the Info tab (name, author, description)'],
+    'tab-coverPanel': ['Playlist', 'Cover tab', 'Switched to the Cover tab to pick or make a cover'],
+    'tab-rampPanel': ['Playlist', 'Warm-up order tab', 'Switched to the Warm-up order tab'],
+    'tab-panelRefine': ['Playlist', 'Prune tab', 'Switched to the Prune tab to trim the playlist'],
+    'tab-*': ['Playlist', 'Switched tab', 'Switched a tab under Your Playlist'],
     'github-click': ['Links', 'GitHub link', 'Clicked through to the source on GitHub'],
     'kofi-click': ['Links', 'Support me link', 'Clicked the Support me (Ko-fi) button'],
     'mbf-link': ['Links', 'ModsBeforeFriday link', 'Clicked the ModsBeforeFriday link'],
@@ -1953,7 +2009,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   };
   var CAMP_NAMES = {
     'profile-bio': 'Link in your BeatLeader profile bio', 'cross-link': 'Links between your tools', 'site': 'Chester’s Escape footer links',
-    'readme': 'README link', 'readme-playlist-studio': 'Playlist Studio README', 'readme-reesaber-studio': 'ReeSaber Studio README', 'readme-hsv-generator': 'HSV Config Generator README',
+    'readme': 'GitHub README', 'readme-playlist-studio': 'Playlist Studio README', 'readme-reesaber-studio': 'ReeSaber Studio README', 'readme-hsv-generator': 'HSV Config Generator README',
     'studio-sync-readme': 'Studio Sync README', 'studio-sync-launch': 'Studio Sync launch post', 'second-device': 'Studio Sync on another device (QR code)',
     'preset-share': 'Shared ReeSaber preset', 'playlist-share': 'Shared playlist link', 'stats-share': 'Shared Stats card', 'config-share': 'Shared HSV config',
     'installed': 'Opened from the installed app', 'open-file': 'Opened a .bplist in the app', 'playlist-credit': 'Credit in exported playlists',
@@ -1977,14 +2033,19 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     [/(^|\\.)reddit\\.com$|redd\\.it$|com\\.reddit\\.frontpage/, 'Reddit', 'social'], [/discord(app)?\\.(com|gg)$|com\\.discord/, 'Discord', 'social'], [/(^|\\.)youtube\\.com$|youtu\\.be$/, 'YouTube', 'social'],
     [/(^|\\.)twitch\\.tv$/, 'Twitch', 'social'], [/(^|\\.)(x|twitter)\\.com$|^t\\.co$/, 'X (Twitter)', 'social'], [/(^|\\.)facebook\\.com$|^fb\\./, 'Facebook', 'social'], [/(^|\\.)instagram\\.com$/, 'Instagram', 'social'],
     [/(^|\\.)tiktok\\.com$/, 'TikTok', 'social'], [/(^|\\.)bsky\\.app$/, 'Bluesky', 'social'], [/com\\.google\\.android\\.gm/, 'Gmail app', 'app'], [/(^|\\.)mail\\.google\\.com$/, 'Gmail', 'app'],
-    [/(^|\\.)beatleader\\.(com|xyz|net)$/, 'BeatLeader', 'beat'], [/(^|\\.)beatsaver\\.com$/, 'BeatSaver', 'beat'], [/(^|\\.)scoresaber\\.com$/, 'ScoreSaber', 'beat'], [/(^|\\.)accsaber\\.com$/, 'AccSaber', 'beat'],
-    [/(^|\\.)bsmg\\.wiki$/, 'BSMG wiki', 'beat'], [/(^|\\.)givemepp\\.com$/, 'givemepp', 'beat'], [/(^|\\.)github\\.com$/, 'GitHub', 'social'], [/spanky3651\\.github\\.io/, 'Your other tools', 'mine'],
-    [/(^|\\.)mickool\\.net$/, 'mickool.net', 'mine'], [/^(localhost|127\\.0\\.0\\.1)/, 'Local testing', 'mine'], [/workers\\.dev$/, 'Your Worker', 'mine']
+    [/^bio\\.beatleader\\./, 'BeatLeader profile', 'beat'], [/(^|\\.)beatleader\\.(com|xyz|net|pro)$/, 'BeatLeader', 'beat'], [/(^|\\.)beatsaver\\.com$/, 'BeatSaver', 'beat'], [/(^|\\.)scoresaber\\.com$/, 'ScoreSaber', 'beat'], [/(^|\\.)accsaber\\.com$/, 'AccSaber', 'beat'],
+    [/(^|\\.)bsmg\\.wiki$/, 'BSMG wiki', 'beat'], [/(^|\\.)givemepp\\.com$/, 'givemepp', 'beat'], [/(^|\\.)github\\.com$/, 'GitHub', 'social'], [/(^|\\.)mickool\\.net$/, 'mickool.net', 'mine'], [/^(localhost|127\\.0\\.0\\.1)/, 'Local testing', 'mine'], [/workers\\.dev$/, 'Your Worker', 'mine']
   ];
+  // Your own GitHub Pages, by repo, and your own BeatLeader profile page.
+  var MY_REPOS = { 'playlist-studio': 'Playlist Studio', 'reesaber-studio': 'ReeSaber Studio', 'hsv-config-generator': 'HSV Config Generator', 'chesters-escape': 'Chester\\u2019s Escape', 'studio-sync': 'Studio Sync page' };
   function refInfo(r) {
-    var raw = String((r && r.name) || ''), host = raw.replace(/^[a-z-]+:\\/\\//i, '').replace(/\\/.*$/, '').toLowerCase();
-    if (r && r.scheme === 'c') return { label: SRC_NAMES[host] || raw.replace(/[-_]+/g, ' '), kind: 'link', raw: raw };
+    var raw = String((r && r.name) || ''), full = raw.replace(/^[a-z-]+:\\/\\//i, '').toLowerCase(), host = full.replace(/\\/.*$/, ''), path = full.slice(host.length);
+    if (/^spanky3651\\.github\\.io$/.test(host)) { var repo = (path.split('/')[1] || '').replace(/[?#].*$/, ''); return { label: MY_REPOS[repo] || 'Your GitHub Pages', kind: 'mine', raw: raw }; }
+    if (/(^|\\.)beatleader\\.(com|xyz|net|pro)$/.test(host) && /^\\/u\\/(msploit|76561199153577883)(\\/|$|\\?)/.test(path)) return { label: 'Your BeatLeader profile', kind: 'beat', raw: raw };
+    // utm_source tags you set are your links; a tag added by someone else (ChatGPT adds utm_source=chatgpt.com) is that site.
+    if (r && r.scheme === 'c' && SRC_NAMES[host]) return { label: SRC_NAMES[host], kind: 'link', raw: raw };
     for (var i = 0; i < REF_RULES.length; i++) if (REF_RULES[i][0].test(host)) return { label: REF_RULES[i][1], kind: REF_RULES[i][2], raw: raw };
+    if (r && r.scheme === 'c') return { label: raw.replace(/[-_]+/g, ' '), kind: 'link', raw: raw };
     return { label: host.replace(/^www\\./, '') || 'Unknown', kind: 'other', raw: raw };
   }
   function nameRow(label, raw, cls, n) {
@@ -1992,6 +2053,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
   function campRow(c) { return nameRow(campName(c.name), c.name, 'g', c.count); }
   function pageRow(p, home) { var x = p.path || '/', nm = pageName(x, home); return nm === x ? ['<span class="mono">' + esc(x) + '</span>', p.count] : nameRow(nm, x, '', p.count); }
+  function isMyLink(r) { return r.scheme === 'c' && refInfo(r).kind === 'link'; }
   function refSum(refs, test) { return refs.reduce(function (a, r) { return a + (test(refInfo(r).kind) ? r.count : 0); }, 0); }
   function refRow(r, cls) {
     var f = refInfo(r);
@@ -2155,6 +2217,11 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var f = toolFeat(t, e.name);
     return ['<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span>', e.count, cls || ''];
   }
+  function tabIntoView() {
+    var tbx = $('tabs'), sel = tbx && tbx.querySelector('button[aria-selected="true"]'); if (!sel) return;
+    var a = sel.getBoundingClientRect(), c = tbx.getBoundingClientRect();
+    if (c.width && (a.left < c.left || a.right > c.right)) tbx.scrollLeft += a.left - c.left - 24;
+  }
   function isTool(t) { return !!TOOLS[t]; }
   function ownTab(t) { return t === 'bl' || t === 'sync' || isTool(t); }
   var toolData = {}, toolBusy = {}, toolTok = {};
@@ -2188,8 +2255,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     txt(id('best'), best && best.n ? fmt(best.n) : '-'); txt(id('bestn'), best && best.n ? dshort(best.day) : 'no visitors yet');
     var evs = (d.events || []).filter(function (e) { return e.count > 0; }).sort(function (a, b) { return b.count - a.count; });
     var probs = evs.filter(function (e) { return toolFeat(t, e.name).area === 'Problems'; }), use = evs.filter(function (e) { return toolFeat(t, e.name).area !== 'Problems'; });
-    txt(id('act'), d.visitors ? Math.round(Math.min(d.eventVisitors || 0, d.visitors) / d.visitors * 100) + '%' : '-');
-    txt(id('actn'), fmt(d.eventVisitors || 0) + ' visitors did more than look');
+    txt(id('act'), fmt(d.eventVisitors || 0));
+    txt(id('actn'), 'each feature counted once per visitor, then added up');
     var dev = devSplit(d.sizes), known = dev.Phone + dev.Tablet + dev.Computer;
     txt(id('phone'), known ? Math.round(dev.Phone / known * 100) + '%' : '-');
     chart(d, null, toolIds(t));
@@ -2198,7 +2265,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars(id('feat'), (all ? use : use.slice(0, 15)).map(function (e) { return toolFeatRow(t, e); }));
     more.classList.toggle('hidden', use.length <= 15); more.textContent = all ? 'Show fewer' : 'Show all ' + use.length;
     bars(id('probs'), probs.map(function (e) { return toolFeatRow(t, e, 'alt'); }));
-    var refs = d.refs || [], links = refs.filter(function (r) { return r.scheme === 'c' && r.name; }), sites = refs.filter(function (r) { return r.scheme !== 'c' && r.name; });
+    var refs = d.refs || [], links = refs.filter(function (r) { return r.name && isMyLink(r); }), sites = refs.filter(function (r) { return r.name && !isMyLink(r); });
     bars(id('srcs'), links.map(function (r) { return refRow(r, 'g'); }));
     bars(id('camps'), (d.campaigns || []).filter(function (c) { return c.count > 0; }).map(campRow));
     bars(id('refs'), sites.map(function (r) { return refRow(r); }));
@@ -2277,7 +2344,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     worldMap('b-map', d.locations, 'views');
     var PAGES = { '/msploit-profile': 'Your BeatLeader profile' };
     bars('b-pages', (d.pages || []).map(function (p) { var nm = PAGES[p.path] || p.title || p.path; return ['<span class="fl"><b>' + esc(nm) + '</b><span class="fd"><code>' + esc(p.path) + '</code></span></span>', p.count]; }), '', 'No profile views in this range.');
-    bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return refRow(r, r.scheme === 'c' ? 'g' : ''); }), '', 'No referrers in this range.');
+    bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return refRow(r, isMyLink(r) ? 'g' : ''); }), '', 'No referrers in this range.');
     renderGeo(d);
     bars('b-dev', [['Phone', dev.Phone, 'a'], ['Computer', dev.Computer], ['Tablet or small laptop', dev.Tablet, 'g'], ['Unknown', dev.Unknown, '']].filter(function (r) { return r[1] > 0; }));
     $('b-geoh').classList.toggle('hidden', !(d.locations || []).some(function (c) { return c.count > 0; }));
@@ -2389,7 +2456,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       renderUsers(s);
       bars('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]]);
       txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
-      $('out').classList.remove('hidden'); say('');
+      $('out').classList.remove('hidden'); say(''); tabIntoView();
       renderReleases();
       if (first || !gc) loadGc(false);
       if (tab === 'bl' && !bl) loadBl(false);
