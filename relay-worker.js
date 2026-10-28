@@ -1272,6 +1272,10 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .msg:empty{display:none}
 .embed body{padding-top:16px}
 .embed main{max-width:1120px}
+::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:#05070b}
+::-webkit-scrollbar-thumb{background:#2c3a57;border-radius:10px;border:2px solid #05070b;min-height:40px}::-webkit-scrollbar-thumb:hover{background:#2f7bff}
+::-webkit-scrollbar-corner{background:#05070b}
+@supports not selector(::-webkit-scrollbar){html,*{scrollbar-width:thin;scrollbar-color:#2a3650 #05070b}}
 .embed .brand,.embed .top .sub{display:none}
 .embed .top{display:none}
 .embed main{padding-bottom:90px}
