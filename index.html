@@ -700,6 +700,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-fav-th{width:40px;height:40px;border-radius:8px;flex:none;display:grid;place-items:center;background:#0d1620;border:1px solid #1f3456;color:#ff5c8a;font-size:19px;line-height:1;}
 .lq-fav-th svg{width:19px;height:19px;color:#7fb0ff;}
 .lq-fav-th.re{background:#0f1d36;border-color:#23406f;}
+.lq-fav-th svg.lq-hrt{width:24px;height:24px;filter:drop-shadow(0 0 5px rgba(255,45,85,.67));}
 .lq-fav-tag{font-size:11px;color:var(--muted);border:1px solid #2a3850;border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:2px;font-weight:500;}
 .lq-favlist.gone{border-color:#23406f;background:#0c1527;}
 .lq-favlist .lq-peek{margin-top:0;}
@@ -2996,7 +2997,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T20:57Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T21:33Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7666,7 +7667,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (bs.length) mi += '<div class="lq-hr"></div><div class="lq-ph">Restore from a backup</div>' + bs.map(function (b) {
       return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span><span class="lq-mi-n">' + b.n.toLocaleString() + ' song' + (b.n === 1 ? '' : 's') + '</span>', 'data-lq-favrs="' + dv + '|' + b.t + '"');
     }).join('');
-    var h = '<div class="lq-list lq-favlist"><div class="lq-pl lq-fav"><span class="lq-fav-th" aria-hidden="true">\u2665</span><div class="lq-t"><span class="lq-n">Favorites<span class="lq-fav-tag">in game</span></span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
+    var h = '<div class="lq-list lq-favlist"><div class="lq-pl lq-fav"><span class="lq-fav-th" aria-hidden="true"><svg class="lq-hrt" viewBox="0 0 24 24"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="#ff3b63"/></svg></span><div class="lq-t"><span class="lq-n">Favorites<span class="lq-fav-tag">in game</span></span><span class="lq-m">' + lqMetaHtml(meta) + '</span></div>' +
       lqBtn(open ? 'Close' : 'Open', 'data-lq-favopen="' + dv + '" aria-expanded="' + open + '"') +
       '<button type="button" class="ghost lq-ib' + (mOpen ? ' on' : '') + '" data-lq-menu="' + esc(mk) + '" title="More" aria-label="More for favorites" aria-haspopup="menu" aria-expanded="' + mOpen + '">' + lqIco('more') + '</button>' +
       (mOpen ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
