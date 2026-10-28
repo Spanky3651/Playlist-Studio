@@ -2963,7 +2963,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:03:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:05:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6793,8 +6793,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // The box stays hidden until the Worker says hosting is set up, so nothing changes
   // for players before it is deployed.
   var PUB_BASE = 'https://playlist-replay.msploit.workers.dev';
-  // ---- Studio stats: press and hold the "Playlist Studio" title on a computer, or the logo on a phone, to slide in the
-  // Worker's private stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
+  // ---- Studio stats: shift-click the Studio logo on a computer, or press and hold the "Playlist Studio" title on a phone,
+  // to slide in the Worker's private stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
   (function () {
     var panel = document.getElementById('ssaPanel'), back = document.getElementById('ssaBack');
     if (!panel || !back) return;
@@ -6808,31 +6808,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (!document.getElementById('sdPanel') || !document.getElementById('sdPanel').classList.contains('open')) document.body.classList.remove('sd-lock');
     }
     var logo = document.querySelector('.topbar .brand .logo');
-    if (logo) {
-      // About half a second of holding still opens it; moving the finger (a scroll) cancels.
+    if (logo) logo.addEventListener('click', function (e) { if (e.shiftKey) { e.preventDefault(); open(); } });
+    // On a phone: about half a second of holding still on the title opens it; moving the finger (a scroll) cancels.
+    var title = document.querySelector('.topbar .brand-txt h1');
+    if (title) {
       var hold = null, held = false, sx = 0, sy = 0;
       function stop() { clearTimeout(hold); hold = null; }
-      logo.addEventListener('touchstart', function (e) {
+      title.addEventListener('touchstart', function (e) {
         var t = e.touches[0]; sx = t.clientX; sy = t.clientY; held = false; stop();
         hold = setTimeout(function () { hold = null; held = true; open(); try { if (navigator.vibrate) navigator.vibrate(15); } catch (x) {} }, 550);
       }, { passive: true });
-      logo.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) stop(); }, { passive: true });
-      logo.addEventListener('touchend', function (e) { stop(); if (held) { held = false; if (e.cancelable) e.preventDefault(); } });
-      logo.addEventListener('touchcancel', stop, { passive: true });
-      logo.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-    }
-    // On a computer: hold the mouse button down on the title for about half a second; moving away cancels.
-    var title = document.querySelector('.topbar .brand-txt h1');
-    if (title) {
-      var mHold = null, mx = 0, my = 0;
-      function mStop() { clearTimeout(mHold); mHold = null; }
-      title.addEventListener('mousedown', function (e) {
-        if (e.button !== 0) return;
-        mx = e.clientX; my = e.clientY; mStop();
-        mHold = setTimeout(function () { mHold = null; open(); }, 550);
-      });
-      title.addEventListener('mousemove', function (e) { if (mHold && (Math.abs(e.clientX - mx) > 6 || Math.abs(e.clientY - my) > 6)) mStop(); });
-      ['mouseup', 'mouseleave'].forEach(function (n) { title.addEventListener(n, mStop); });
+      title.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) stop(); }, { passive: true });
+      title.addEventListener('touchend', function (e) { stop(); if (held) { held = false; if (e.cancelable) e.preventDefault(); } });
+      title.addEventListener('touchcancel', stop, { passive: true });
+      title.addEventListener('contextmenu', function (e) { e.preventDefault(); });
     }
     document.getElementById('ssaClose').addEventListener('click', close);
     back.addEventListener('click', close);
