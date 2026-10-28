@@ -3030,7 +3030,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T22:08Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T22:11Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -12102,6 +12102,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     pcSave(); renderPcClans();
   }
   function pcAsLink() { return pcc.as ? { clan: pcc.as, aid: String(pcc.aid || (state.player && state.player.id)) } : null; }
+  // Rank, pp and picture come back with the clan check, so the stat strip stays current
+  // instead of showing the numbers from the day this browser connected.
+  function pcLive(p) {
+    var pl = state.player; if (!pl) return;
+    var ch = false;
+    if (typeof p.pp === 'number' && p.pp > 0 && p.pp !== pl.pp) { pl.pp = p.pp; ch = true; }
+    if (p.rank && p.rank !== pl.rank) { pl.rank = p.rank; ch = true; }
+    if (p.countryRank && p.countryRank !== pl.countryRank) { pl.countryRank = p.countryRank; ch = true; }
+    if (p.avatar && p.avatar !== pl.avatar) { pl.avatar = p.avatar; ch = true; }
+    if (!ch) return;
+    savePlayerCache();
+    if (state.switching || el.profileCard.hidden) return;
+    document.getElementById('pcRank').textContent = pl.rank ? '#' + Number(pl.rank).toLocaleString('en-US') : '-';
+    document.getElementById('pcPp').textContent = Math.round(pl.pp || 0).toLocaleString('en-US');
+    if (pl.avatar) { el.pcAvatar.src = pl.avatar; el.pcAvatar.parentNode.style.display = ''; }
+    updateLevelUI(); renderForYou();
+  }
   function pcRefresh(force) {
     if (!state.player) return;
     var pid = String(state.player.id);
@@ -12110,7 +12127,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (pccBusy || (!force && pcc.t && Date.now() - pcc.t < 20 * 60000 && !(pcc.bl[0] && pcc.bl[0].icon === undefined))) return;   // older saved chips have no logo yet
     pccBusy = true; var tok = ++pccTok;
     function ok() { return tok === pccTok && state.player && String(state.player.id) === pid; }
-    relayFetch(API_BASE + '/player/' + encodeURIComponent(pid), validPlayer).then(function (p) { return (p && p.clans) || []; }, function () { return null; }).then(function (bl) {
+    relayFetch(API_BASE + '/player/' + encodeURIComponent(pid), validPlayer).then(function (p) { if (p && ok()) pcLive(p); return (p && p.clans) || []; }, function () { return null; }).then(function (bl) {
       if (!ok()) return null;
       if (bl) pcc.bl = bl.filter(function (c) { return c && c.id != null && c.tag; }).map(function (c) { return { id: c.id, tag: c.tag, color: c.color || '', name: c.name || '', icon: c.icon || '' }; });
       if (bl && pcc.bl[0] && !pcc.bl[0].icon) {
