@@ -1917,15 +1917,20 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asw-mcard .asm-bar span{background:#ff4d6d;}
 .cb-note.soon b{color:#fff;}
 @media (max-width:620px){.asw-t{grid-template-columns:minmax(0,1fr) 70px 74px;gap:6px;}.asw-stake{grid-template-columns:1fr;}.asw-w{grid-template-columns:1fr;}.asw-w .r,.asw-w .vs{text-align:left;}.asw-lr{grid-template-columns:24px 58px 1fr 58px;}}
-/* Clans as buttons in the same outlined style as Sync scores: logo, tag, a quiet note. */
+/* Clans as filled Studio buttons: logo, tag, a quiet note and an arrow that slides on hover. */
 .pc-clans{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;}
-.pc-chip{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 11px 5px 6px;color:var(--text);cursor:pointer;min-height:0;font-size:13.5px;}
-.pc-chip i{width:12px;height:12px;margin:0 5px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
-.pc-chip img.pc-ci{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;}
+.pc-chip{display:inline-flex;align-items:center;gap:9px;background:var(--panel-3);border:1px solid var(--border-2);border-radius:8px;padding:7px 11px 7px 7px;color:var(--text);cursor:pointer;min-height:0;font-size:13.5px;}
+.pc-chip:hover{background:#131a28;}
+.pc-chip:active{background:#0c1019;border-color:var(--blue);}
+.pc-chip i{width:12px;height:12px;margin:0 8px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
+.pc-chip img.pc-ci{width:28px;height:28px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;}
 .pc-chip b{font:800 13.5px var(--mono);letter-spacing:.3px;}
 .pc-chip em{font-style:normal;color:var(--muted,#9aa6b8);font-size:12.5px;font-weight:500;}
-.pc-chip.war{border-color:#ff4d6d66;}
-.pc-chip.war em{color:#ff8fa3;font-weight:700;}
+.pc-chip .pc-ar{color:var(--muted);font-size:20px;line-height:1;margin-left:2px;transition:transform .14s,color .14s;}
+.pc-chip:hover .pc-ar{transform:translateX(3px);color:#fff;}
+.pc-chip.war{border-color:#ff4d6d88;background:#1a0b11;}
+.pc-chip.war em,.pc-chip.war .pc-ar{color:#ff8fa3;}
+.pc-chip.war em{font-weight:700;}
 .pc-war{display:flex;gap:10px;align-items:center;margin:0 0 10px;border:1px solid rgba(255,77,109,.5);border-radius:11px;padding:10px 12px;background:linear-gradient(90deg,rgba(255,77,109,.14),rgba(255,77,109,.02));font-size:13.5px;color:#f3c6cf;}
 .pc-war[hidden]{display:none;}
 .pc-war-ic{font-size:19px;color:#ff8fa3;flex:none;}
@@ -2970,7 +2975,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T15:49Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T16:04Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -11855,12 +11860,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var on = !!state.player && pcc.pid === String(state.player.id), h = '', b = '';
     if (on && pcc.bl.length) {
       var c = pcc.bl[0];
-      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + '<b>' + esc(c.tag) + '</b><em>BeatLeader</em></button>';
+      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + '<b>' + esc(c.tag) + '</b><em>BeatLeader</em><span class="pc-ar" aria-hidden="true">&#8250;</span></button>';
     }
     var w = on ? pcc.war : null;
     if (on && pcc.as) {
       var a = pcc.as, at = w && w.phase === 'active', day = at && w.startsAt ? Math.max(1, Math.floor((Date.now() - new Date(w.startsAt).getTime()) / 86400000) + 1) : 0;
-      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + '<b>' + esc(a.tag) + '</b><em>' + (at ? '&#9876; at war, day ' + day : w ? '&#9876; war soon' : pcc.rank ? 'AccSaber ' + aswOrd(pcc.rank) : 'AccSaber') + '</em></button>';
+      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + '<b>' + esc(a.tag) + '</b><em>' + (at ? '&#9876; at war, day ' + day : w ? '&#9876; war soon' : pcc.rank ? 'AccSaber ' + aswOrd(pcc.rank) : 'AccSaber') + '</em><span class="pc-ar" aria-hidden="true">&#8250;</span></button>';
       if (w) {
         var tag = esc(a.tag), opp = esc(w.opp || 'the enemy'), title, line, btn;
         if (at) { title = tag + ' is at war with ' + opp; line = 'Day ' + day + (w.endsAt && ascLeft(new Date(w.endsAt).toISOString()) ? ', ' + esc(ascLeft(new Date(w.endsAt).toISOString())) + ' left.' : '.') + (pcc.guard != null ? ' Your guard is ' + Math.round(pcc.guard) + '.' : ''); btn = 'Fight'; }
