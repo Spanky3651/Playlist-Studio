@@ -1478,7 +1478,25 @@ html.fs-open{overflow:hidden}
 .geo .sub .bar{font-size:14px;margin:4px 0}
 .geo .sub .fill{background:#5b8fe0}
 section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
-.range .rbusy{color:#8fbaff;font-size:14px;margin-left:6px;display:inline}
+.range .rbusy{color:#8fbaff;font-size:14px;margin-left:6px;display:inline-flex;align-items:center;gap:7px}
+.rbusy svg{width:18px;height:18px;animation:rspin 1.1s linear infinite;flex:none}
+.skel{margin-top:4px}.skel.hidden,section.skel-hide{display:none !important}
+.sk{position:relative;overflow:hidden;display:block;background:#111827;border-radius:8px}
+.sk::after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(90,160,255,.13),transparent);animation:sksheen 1.4s ease-in-out infinite}
+@keyframes sksheen{to{transform:translateX(100%)}}
+.skcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.skcard{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-height:118px}
+.skcard .s1{height:12px;width:55%}.skcard .s2{height:32px;width:45%;margin:12px 0 12px}.skcard .s3{height:10px;width:75%}
+.skchart{height:210px;margin-top:28px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--card2),var(--card));overflow:hidden}
+.skchart svg{width:100%;height:100%;display:block}
+.skwave{fill:none;stroke:#2f7bff;stroke-width:3;opacity:.55;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;animation:skdraw 2.2s ease-in-out infinite}
+@keyframes skdraw{0%{stroke-dashoffset:1}60%{stroke-dashoffset:0}100%{stroke-dashoffset:-1}}
+.skbars{margin-top:28px;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:12px 18px}
+.skrow{display:grid;grid-template-columns:28px minmax(0,1fr) 34% 40px;gap:12px;align-items:center;margin:10px 0}
+.skrow .sk{height:11px}.skrow .skic{width:28px;height:28px}.skrow .sk:nth-child(2){width:70%}.skrow:nth-child(2) .sk:nth-child(2){width:52%}.skrow:nth-child(3) .sk:nth-child(2){width:64%}
+.skrow .sk:nth-child(3){width:85%}.skrow:nth-child(2) .sk:nth-child(3){width:55%}.skrow:nth-child(3) .sk:nth-child(3){width:30%}
+@media(max-width:700px){.skcards{grid-template-columns:1fr 1fr;gap:10px}.skchart{height:170px}}
+@media (prefers-reduced-motion:reduce){.sk::after,.skwave,.rbusy svg{animation:none}.skwave{stroke-dashoffset:0}}
 .coldlist{display:flex;flex-wrap:wrap;gap:8px}
 .coldlist span{border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:14px;color:var(--muted)}
 .funnel .num small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
@@ -1529,6 +1547,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 </div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
+<div id="skel" class="skel hidden" aria-hidden="true"><div class="skcards"><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div></div><div class="skchart"><svg viewBox="0 0 700 200" preserveAspectRatio="none"><path class="skwave" pathLength="1" d="M10 170 C120 160 170 90 260 105 S420 50 500 80 S640 40 690 45"/></svg></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div></div>
 
 <section data-sec="vis">
 <div id="alert" class="alert hidden"></div>
@@ -1782,13 +1801,17 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function busyUi() {
     var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on); });
-    $('rangeBusy').textContent = on ? 'Loading ' + rangeName(range) + '...' : '';
+    $('rangeBusy').innerHTML = on ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="8" stroke-linecap="round" fill="none"/></svg>Loading ' + rangeName(range) + '...' : '';
+    // First load of a tab: show the page's outline instead of empty cards. Later range changes keep the old numbers dimmed.
+    var sk = on && tab !== 'sync' && !(tab === 'bl' ? bl : isTool(tab) ? toolData[tab] : gc);
+    $('skel').classList.toggle('hidden', !sk);
+    Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('skel-hide', sk && sx.getAttribute('data-sec') === tab); });
     $('refresh').classList.toggle('spin', on);
   }
   function loadGc(fresh) {
     var key = getKey(); if (!key) return;
     var tok = ++gcTok, want = range;
-    gcBusy = true; gcMsg(gc ? '' : 'Loading GoatCounter...'); busyUi();
+    gcBusy = true; gcMsg(''); busyUi();
     fetch('/admin/gc?range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
@@ -2598,7 +2621,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function loadTool(t, fresh) {
     var key = getKey(); if (!key || !TOOLS[t]) return;
     var tok = toolTok[t] = (toolTok[t] || 0) + 1, want = range, T = TOOLS[t];
-    toolBusy[t] = true; if (!toolData[t]) toolMsg(t, 'Loading ' + esc(T.name) + '...'); busyUi();
+    toolBusy[t] = true; toolMsg(t, ''); busyUi();
     fetch('/admin/gc?site=' + t + '&range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
@@ -2682,7 +2705,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function loadBl(fresh) {
     var key = getKey(); if (!key) return;
     var tok = ++blTok, want = range;
-    blBusy = true; if (!bl) bMsg('Loading your BeatLeader profile views...'); busyUi();
+    blBusy = true; bMsg(''); busyUi();
     fetch('/admin/gc?site=bl&range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
