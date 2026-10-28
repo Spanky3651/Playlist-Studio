@@ -366,7 +366,7 @@ async function linked(request, env, ctx, url) {
       // "My order" from Studio, as file names, until the headset says it put it in game.
       if (feats.includes("order")) {
         const ord = (await env.PLAYLISTS.get(ordKey(dev.lib, me.id), "json")) || {};
-        if (Array.isArray(ord.ks) && ord.t > (inv.ordApplied || 0)) {
+        if (Array.isArray(ord.ks) && ord.t > (inv.ordApplied || 0) && !(ord.same && ord.same === inv.ordApplied)) {
           const byK = new Map(inv.items.map((it) => [it.k, it.file]));
           extra.order = { t: ord.t, files: ord.ks.map((k) => byK.get(k)).filter(Boolean) };
         }
@@ -544,9 +544,14 @@ async function linked(request, env, ctx, url) {
     // Always later than the last one, so a headset that applied an order in the same second still gets this one.
     const prevOrd = (await env.PLAYLISTS.get(ordKey(om[1], om[2]), "json")) || {};
     const t = Math.max(nowSec(), (prevOrd.t || 0) + 1);
-    await putTtl(env, ordKey(om[1], om[2]), { ks, t });
+    // The order the headset has in game: the saved one once it says it applied it, else the one remembered before.
+    // Moving playlists and then back to that order is no change, so nothing waits for the headset.
+    const applied = ((await env.PLAYLISTS.get(invKey(om[1], om[2]), "json")) || {}).ordApplied || 0;
+    const aks = Array.isArray(prevOrd.ks) && prevOrd.t && prevOrd.t <= applied ? prevOrd.ks : (Array.isArray(prevOrd.aks) ? prevOrd.aks : null);
+    const same = !!(aks && applied && aks.length === ks.length && aks.every((k, i) => k === ks[i]));
+    await putTtl(env, ordKey(om[1], om[2]), Object.assign({ ks, t }, aks ? { aks } : {}, same ? { same: applied } : {}));
     await touch(env, om[1], om[2]);
-    return json({ order: ks, t }, 200, cors);
+    return json(Object.assign({ order: ks, t }, same ? { same: true } : {}), 200, cors);
   }
   // POST /lib/<id>/devices/<dev>/cleanup asks the headset to clean up songs no playlist uses; DELETE takes it back.
   const cl = path.match(/^\/lib\/([A-Za-z0-9]{6,16})\/devices\/([A-Za-z0-9]{6,16})\/cleanup$/);
@@ -688,7 +693,7 @@ async function linked(request, env, ctx, url) {
       const seen = Math.max(dv.seen || 0, +(await env.PLAYLISTS.get(seenKey(id, dv.id))) || 0);
       const ord = (await env.PLAYLISTS.get(ordKey(id, dv.id), "json")) || {};
       const feats = inv.features || [], more = {};
-      if (feats.includes("order")) Object.assign(more, { orderT: ord.t || 0, orderApplied: inv.ordApplied || 0 });
+      if (feats.includes("order")) Object.assign(more, { orderT: ord.same && ord.same === inv.ordApplied ? inv.ordApplied : ord.t || 0, orderApplied: inv.ordApplied || 0 });
       if (feats.includes("storage")) { const st = await env.PLAYLISTS.get(statKey(id, dv.id), "json"); if (st) more.stats = st; }
       if (feats.includes("cleanup")) {
         const [cln, clnr] = await Promise.all([env.PLAYLISTS.get(clnKey(id, dv.id), "json"), env.PLAYLISTS.get(clnrKey(id, dv.id), "json")]);

@@ -2968,7 +2968,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T12:28:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T13:40:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -8113,6 +8113,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (!res.ok || !res.j || !Array.isArray(res.j.order)) return;
         var q = state.lq.quest[dev]; if (q) q.order = res.j.order;
         if (lqOrd[dev] === ks) delete lqOrd[dev];
+        if (q && lqCan(dev, 'order') && res.j.same) { q.orderT = q.orderApplied || 0; lqRender(); return; }   // back to the order the headset already has
         if (q && lqCan(dev, 'order') && res.j.t) {
           q.orderT = res.j.t;
           toast('New order goes to ' + lqDevName(dev) + ' on its next sync.', 'ok'); track('lq-order-sent');
