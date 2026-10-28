@@ -1172,6 +1172,8 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 .rec-empty{margin-top:10px;border:1px dashed var(--border-2);border-radius:10px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.55;background:#07090d;}
 .rec-empty b{color:#cfe0f5;}
 .toast.show{transform:translateX(-50%) translateY(0);}
+/* a short (empty) toast used to peek over the bottom edge while hidden */
+.toast:not(.show){transform:translateX(-50%) translateY(calc(100% + 60px));}
 .toast::before{content:"◆";color:var(--blue-text);}
 .toast.err{border-color:var(--danger);box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 14px rgba(255,77,109,.4);}
 .toast.err::before{content:"✕";color:var(--danger);}
@@ -1327,6 +1329,8 @@ body.sd-lock{overflow:hidden}
 .sd.ssa iframe{flex:1;width:100%;border:0;background:#000}
 .sd.ssa a.sd-link{text-decoration:none}
 .sd.ssa .ssa-logo{width:30px;height:30px;border-radius:8px;flex:none;box-shadow:0 0 12px rgba(47,123,255,.25)}
+/* On phones Studio stats rises from the bottom as a sheet; drag the top bar down to close it. */
+@media(max-width:720px){.sd.ssa{top:auto;left:0;right:0;width:100vw;height:92vh;height:92dvh;border-left:0;border-top:1px solid var(--border-2);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -30px 60px -20px rgba(0,0,0,.9);transform:translateY(102%)}.sd.ssa.open{transform:none}.sd.ssa.drag{transition:none}.sd.ssa .sd-head{position:relative;padding-top:18px;touch-action:none}.sd.ssa .sd-head::before{content:"";position:absolute;top:7px;left:50%;width:44px;height:5px;margin-left:-22px;border-radius:3px;background:#33415c}}
 .sv-hero{position:relative;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--panel)}
 .sv-hero .cvr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22}
 .sv-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--panel) 20%,rgba(11,14,20,.5) 65%,var(--panel));pointer-events:none}
@@ -2963,7 +2967,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:05:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:09:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6825,6 +6829,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
     document.getElementById('ssaClose').addEventListener('click', close);
     back.addEventListener('click', close);
+    // Phones: pull the sheet down by its top bar to close it.
+    var head = panel.querySelector('.sd-head'), dy0 = null, dy = 0;
+    if (head) {
+      head.addEventListener('touchstart', function (e) { if (!window.matchMedia('(max-width:720px)').matches || (e.target.closest && e.target.closest('a,button'))) return; dy0 = e.touches[0].clientY; dy = 0; panel.classList.add('drag'); }, { passive: true });
+      head.addEventListener('touchmove', function (e) { if (dy0 === null) return; dy = Math.max(0, e.touches[0].clientY - dy0); panel.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+      var endDrag = function () { if (dy0 === null) return; dy0 = null; panel.classList.remove('drag'); panel.style.transform = ''; if (dy > 90) close(); };
+      head.addEventListener('touchend', endDrag); head.addEventListener('touchcancel', endDrag);
+    }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
     // Esc pressed inside the stats page arrives as a message from the Worker's page.
     window.addEventListener('message', function (e) {
