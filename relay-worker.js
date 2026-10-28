@@ -228,8 +228,15 @@ function outKey(lib, dev) { return "out:" + lib + ":" + dev; }
 // A headset's "done" for one pending write lives under its own key. KV has no transactions, so if acks
 // rewrote the shared list, two at once (or an ack and a send from Studio) could undo each other.
 function ackKey(lib, dev, id) { return "outa:" + lib + ":" + dev + ":" + id; }
+// The headset fetched a pending write (it may be putting it in game right now), so it can't be taken back quietly.
+function gotKey(lib, dev, id) { return "outg:" + lib + ":" + dev + ":" + id; }
 // When a headset last checked in, kept apart from the library so it can be fresher than the hourly copy there.
 // The player's own order for a headset's playlists (playlist keys, top first), set from Studio's "My order".
+// What Studio sees: switches that only put back what the headset has show as already taken.
+function adlView(adl, inv) {
+  const { same, ...v } = adl;
+  return "same" in adl && same === (inv.adlApplied || 0) ? Object.assign(v, { t: inv.adlApplied || 0 }) : v;
+}
 function ordKey(lib, dev) { return "ord:" + lib + ":" + dev; }
 function seenKey(lib, dev) { return "seen:" + lib + ":" + dev; }
 // Headset storage the mod reports (0.8.0 and later): song counts and sizes, free space, versions.
@@ -283,6 +290,32 @@ function cleanBackups(v) {
 // Studio and upload.ps1 send the version they started from (?base=); a send made from an older one gets 409, so
 // an edit can't silently replace one made meanwhile somewhere else. The headset's copy after it applies a send has
 // the same version as the send, so applying never looks like a change.
+// Would the headset's file stay as it is after this edit? Mirrors the mod's Merge: title, author and description
+// when sent, a cover when sent, and the songs in order with their difficulties. Song and mapper names are only
+// display text, so they don't count. A change and its reverse leave nothing to send.
+function canon(v) {
+  if (Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+  if (v && typeof v === "object") return "{" + Object.keys(v).sort().map((k) => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}";
+  return JSON.stringify(v === undefined ? null : v);
+}
+function sameOnHeadset(text, edit) {
+  let o; try { o = JSON.parse(text); } catch (e) { return false; }
+  if (!o || typeof o !== "object" || !Array.isArray(o.songs) || !edit || !Array.isArray(edit.songs)) return false;
+  for (const key of ["playlistTitle", "playlistAuthor", "playlistDescription"]) if (typeof edit[key] === "string" && edit[key] !== o[key]) return false;
+  if (typeof edit.image === "string" && edit.image.length && (edit.image !== o.image || o.imageString !== undefined)) return false;
+  const hashOf = (sg) => String((sg && sg.hash) || "").toLowerCase();
+  const diffs = (sg) => (Array.isArray(sg.difficulties) ? sg.difficulties : []).filter(Boolean).map((d) => String(d.characteristic || "Standard").toLowerCase() + "|" + String(d.name || "").toLowerCase()).sort().join(",");
+  const es = edit.songs.filter((sg) => sg && typeof sg === "object" && !Array.isArray(sg));
+  if (es.length !== o.songs.length) return false;
+  for (let i = 0; i < es.length; i++) {
+    const a = es[i], b = o.songs[i];
+    if (!b || typeof b !== "object") return false;
+    if (hashOf(a) !== hashOf(b)) return false;
+    if (!hashOf(a) && canon(a) !== canon(b)) return false;
+    if ("difficulties" in a && diffs(a) !== diffs(b)) return false;
+  }
+  return true;
+}
 async function plVersion(pl) {
   if (typeof pl === "string") { try { pl = JSON.parse(pl); } catch (e) { return ""; } }
   if (!pl || !Array.isArray(pl.songs)) return "";
@@ -379,7 +412,7 @@ async function linked(request, env, ctx, url) {
       // Auto-download switches set in Studio, as file names, until the headset says it took them.
       if (feats.includes("autodl")) {
         const adl = await env.PLAYLISTS.get(adlKey(dev.lib, me.id), "json");
-        if (adl && adl.t > (inv.adlApplied || 0) && adl.set)
+        if (adl && adl.t > (inv.adlApplied || 0) && adl.set && !("same" in adl && adl.same === (inv.adlApplied || 0)))
           extra.autodl = { t: adl.t, set: Object.keys(adl.set).filter((k) => fileOf.has(k)).map((k) => ({ file: fileOf.get(k), on: !!adl.set[k] })) };
       }
       if (feats.includes("missing")) {
@@ -487,6 +520,7 @@ async function linked(request, env, ctx, url) {
           if (!w.remove && !w.restore && nowSec() - (w.at || 0) > 300) await putTtl(env, ackKey(dev.lib, me.id, w.id), "1");
           return json({ error: "Not found" }, 404, cors);
         }
+        await putTtl(env, gotKey(dev.lib, me.id, w.id), "1");
         return new Response(text, { headers: Object.assign({ "Content-Type": "application/json", "Cache-Control": "no-store" }, cors) });
       }
       if (ob[2] && request.method === "POST") {
@@ -626,9 +660,13 @@ async function linked(request, env, ctx, url) {
     const prev = (await env.PLAYLISTS.get(adlKey(adm[1], adm[2]), "json")) || {};
     const keep = prev.set && (prev.t || 0) > (ainv.adlApplied || 0) ? prev.set : {};
     const adl = { t: Math.max(nowSec(), (prev.t || 0) + 1), set: Object.assign({}, keep, set) };
+    // Every switch back to what the headset already has: nothing waits for it (it still gets them if it took
+    // something newer meanwhile).
+    const autoOf = new Map((ainv.items || []).filter((x) => typeof x.auto === "boolean").map((x) => [x.k, x.auto]));
+    if (Object.keys(adl.set).every((k) => autoOf.get(k) === adl.set[k])) adl.same = ainv.adlApplied || 0;
     await putTtl(env, adlKey(adm[1], adm[2]), adl);
     await touch(env, adm[1], adm[2]);
-    return json({ autodl: adl }, 200, cors);
+    return json({ autodl: adlView(adl, ainv) }, 200, cors);
   }
   const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|delete|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
   if (!m) return json({ error: "Not found" }, 404, cors);
@@ -707,7 +745,7 @@ async function linked(request, env, ctx, url) {
       }
       if (feats.includes("autodl")) {
         const adl = await env.PLAYLISTS.get(adlKey(id, dv.id), "json");
-        Object.assign(more, { autodlApplied: inv.adlApplied || 0 }, adl ? { autodl: adl } : {});
+        Object.assign(more, { autodlApplied: inv.adlApplied || 0 }, adl ? { autodl: adlView(adl, inv) } : {});
       }
       return json(Object.assign({ items, deleted, features: feats, pending: pendingList(), moved: movedList(), updated: inv.updated || 0, seen, order: Array.isArray(ord.ks) ? ord.ks : [] }, more), 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
@@ -799,6 +837,22 @@ async function linked(request, env, ctx, url) {
       const target = it || waiting;
       const base = url.searchParams.get("base") || "", now = latestV(target.file, it);
       if (base && now && base !== now) return json({ error: "This playlist changed since you opened it", conflict: true, v: now, pending: pendingList() }, 409, cors);
+      // Back to what the headset already has (a change and its reverse): drop the waiting send instead of adding one,
+      // unless the headset already fetched it, then the send goes so it ends up right.
+      const prevW = out.items.filter((x) => x.file === target.file);
+      if (it && it.have && !prevW.some((x) => x.create || x.restore || x.remove)) {
+        const fetched = (await Promise.all(prevW.map((x) => env.PLAYLISTS.get(gotKey(id, dv.id, x.id))))).some(Boolean);
+        const cur = fetched ? null : await env.PLAYLISTS.get("invb:" + id + ":" + dv.id + ":" + it.k);
+        if (cur && sameOnHeadset(cur, pl.value)) {
+          if (prevW.length) {
+            for (const x of prevW) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + x.id);
+            out.items = out.items.filter((x) => x.file !== target.file);
+            await putTtl(env, outKey(id, dv.id), out);
+            await touch(env, id, dv.id);
+          }
+          return json({ k: target.k, file: target.file, v: it.v || await plVersion(cur), same: true, pending: pendingList() }, 200, cors);
+        }
+      }
       const w = await queue(target.k, target.file, pl.value.playlistTitle, false, pl.value);
       return json({ k: target.k, file: target.file, v: w.v, pending: pendingList() }, 200, cors);
     }

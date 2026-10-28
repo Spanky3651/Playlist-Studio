@@ -2968,7 +2968,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T13:40:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T14:10:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7319,7 +7319,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
     if (body.length > 1950000) { toast('This playlist is too big to send. A smaller cover image usually fixes it.', 'warn'); return Promise.resolve(false); }
     lqBusy(true);
-    var sent = 0, err = '', moved = false, clash = false, chain = Promise.resolve();
+    var sent = 0, same = 0, err = '', moved = false, clash = false, chain = Promise.resolve();
     lqTargets(ed).forEach(function (t, i) {
       chain = chain.then(function () {
         if (clash) return;
@@ -7328,7 +7328,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           if (res.status === 409 && res.j && res.j.conflict) { clash = true; var cq = state.lq.quest[t.dev]; if (cq && Array.isArray(res.j.pending)) cq.pending = res.j.pending; return; }
           if (!res.ok) { err = (res.j && res.j.error) || 'Couldn’t send it back.'; return; }
           if (!i && res.j && res.j.v) ed.v = res.j.v;
-          sent++;
+          sent++; if (res.j && res.j.same) same++;
           var q = state.lq.quest[t.dev]; if (q && res.j) q.pending = res.j.pending || q.pending;
           // The Worker follows a playlist that was saved under another name; so does this one.
           if (res.j && res.j.k && res.j.k !== t.k) { lqSetTarget(i, { dev: t.dev, k: res.j.k, file: res.j.file || t.file }); moved = true; }
@@ -7339,7 +7339,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (sent) lqTargets(ed).forEach(function (t) { lqSent[t.dev + '|' + t.k] = { maps: x.songs.length, songs: uniqueHashes(x.songs) }; });
       if (sent && !err) ed.sent = lqHash(lqSigOf(lqKeysOf(x.songs)));
       if (moved) lqSaveOpenQuest();
-      if (sent) { lqMarkSaved(); if (!quiet) { toast('Sent. ' + lqEdWhere(ed) + ' replaces “' + ed.title + '” on its next sync and keeps a backup.', 'ok'); track('lq-sendback'); } }
+      // Every headset already has it as it is now (a change and its reverse): nothing goes.
+      if (sent && same === sent) { lqMarkSaved(); if (!quiet) toast('Nothing to send: “' + ed.title + '” is already like this on ' + lqEdWhere(ed) + '.', 'ok'); }
+      else if (sent) { lqMarkSaved(); if (!quiet) { toast('Sent. ' + lqEdWhere(ed) + ' replaces “' + ed.title + '” on its next sync and keeps a backup.', 'ok'); track('lq-sendback'); } }
       if (err) toast(err, 'warn');
     }).then(function () { lqBusy(false); if (clash) { state.lq.dirty = true; lqRaiseConflict(ed); } return !!sent && !err && !clash; });
   }
