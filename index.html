@@ -711,6 +711,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-peek li.off .pk-n{opacity:.5;}
 .lq-fav-st{font-size:12px;flex:none;}
 .lq-fav-more{display:block;margin:6px auto 2px;}
+.lq-mi-heart{color:#ff5c8a;width:16px;text-align:center;font-size:15px;line-height:1;flex:none;}
 .lq-mi-n{margin-left:auto;padding-left:10px;color:var(--muted);font-size:12px;}
 .row-btn.fav{color:#3f4f68;font-size:16px;}
 .row-btn.fav.on{color:#ff5c8a;} .lq-noadl{white-space:nowrap;}
@@ -2995,7 +2996,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T20:23Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T20:40Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5644,10 +5645,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // the same song already in Your Playlist at another difficulty gets a badge
     state.basket.forEach(function (b) { if (b.hash) { var h = b.hash.toLowerCase(); (byHash[h] = byHash[h] || []).push(b); } });
     if (libGet() && state.lq && state.lq.devices.length) lqIdxSoon();
+    var fd = lqFavDev(), fdn = fd ? esc(lqDevName(fd)) : '';
     rows.slice(0, MAX).forEach(function (e) {
-      var tgt = state.lq && state.lq.addTo, added = tgt ? lqInTarget(e) : inBasket(e), k = keyOf(e);
+      var tgt = state.lq && state.lq.addTo, added = tgt ? lqInTarget(e) : inBasket(e), k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
       items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '" draggable="true">' + coverImg(e) + infoBlock(e, true, lqOnChip(e) + (added ? '' : otherDiffBadge(e, byHash))) +
-        '<div class="row-actions"><button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
+        '<div class="row-actions">' + (fd ? '<button class="row-btn fav' + (fon ? ' on' : '') + '" data-act="fav" aria-pressed="' + !!fon + '" title="' + (fon ? 'A favorite on ' + fdn + '. Click to unfavorite' : 'Favorite on ' + fdn) + '">' + (fon ? '♥' : '♡') + '</button>' : '') +
+        '<button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
         (added ? '<button class="row-btn added" data-act="unadd" title="In your playlist - click to take it out">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>' });
     });
@@ -7537,7 +7540,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     lqFavOverlay(devId);
     track(on ? 'lq-fav-on' : 'lq-fav-off');
     clearTimeout(lqFavT[devId]); lqFavT[devId] = setTimeout(function () { lqFavSend(devId); }, 700);
-    lqRender(); renderBasket();
+    lqRender(); renderBasket(); renderResults();
   }
   // Taps not sent yet stay on top of whatever the last refresh brought.
   function lqFavOverlay(devId) {
@@ -7554,7 +7557,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var q = state.lq.quest[devId];
       if (res.ok && res.j) { if (q) { q.favPending = res.j.favPending || null; q.favApplied = res.j.favApplied || q.favApplied || 0; lqFavOverlay(devId); } }
       else { toast((res.j && res.j.error) || 'Couldn\u2019t change your favorites right now.', 'warn'); lqRefresh(); }
-      lqRender(); renderBasket();
+      lqRender(); renderBasket(); renderResults();
     }, function () { toast('Couldn\u2019t reach the sync service.', 'warn'); lqRefresh(); });
   }
   // The favorites as a playlist: one entry per song (every difficulty, pick them in Your Playlist as usual).
@@ -7619,6 +7622,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         toast(nn ? nn.toLocaleString() + ' favorite' + (nn === 1 ? '' : 's') + (b ? ' from ' + lqWhen(b.t) : '') + ' go back to ' + lqDevName(devId) + ' on its next sync.' : lqDevName(devId) + ' already has every one of them.', 'ok'); track('lq-fav-restore');
       } else toast((res.j && res.j.error) || 'Couldn\u2019t restore them right now.', 'warn');
     }, function () { toast('Couldn\u2019t reach the sync service.', 'warn'); }).then(function () { lqBusy(false); });
+  }
+  // Every song of one of the headset's playlists into its favorites (adds only).
+  function lqFavFromPlaylist(dev, k) {
+    if (state.lq.busy || !lqFavShared(dev)) return;
+    var t = lqTitleOf(dev, k);
+    lqBusy(true);
+    lqLatest(dev, k).then(function (got) {
+      var set = {}, n = 0;
+      got.pl.songs.forEach(function (sg) { var h = String(sg.hash || '').toLowerCase(); if (/^[0-9a-f]{40}$/.test(h) && !set[h] && !lqIsFav(dev, h)) { set[h] = true; n++; } });
+      if (!n) { toast('Every song in \u201c' + t + '\u201d is already a favorite on ' + lqDevName(dev) + '.', 'ok'); return; }
+      return libFetch('PUT', libPath('/devices/' + encodeURIComponent(dev) + '/favorites'), { set: set }).then(function (res) {
+        if (!res.ok || !res.j) throw new Error((res.j && res.j.error) || 'Couldn\u2019t add them to your favorites right now.');
+        var q = state.lq.quest[dev]; if (q) { q.favPending = res.j.favPending || null; q.favApplied = res.j.favApplied || q.favApplied || 0; lqFavOverlay(dev); }
+        toast(n.toLocaleString() + ' song' + (n === 1 ? '' : 's') + ' from \u201c' + t + '\u201d become' + (n === 1 ? 's a favorite' : ' favorites') + ' on ' + lqDevName(dev) + '\u2019s next sync.', 'ok'); track('lq-fav-fromlist');
+        renderBasket(); renderResults();
+      });
+    }).then(null, function (err) { toast((err && err.message) || 'Couldn\u2019t read that playlist from the headset.', 'warn'); }).then(function () { lqBusy(false); });
   }
   function lqFavKeepMap() { try { return JSON.parse(localStorage.getItem(LQ_FAVKEEP) || '{}') || {}; } catch (e) { return {}; } }
   function lqFavKept(devId, t) { return lqFavKeepMap()[devId] === t; }
@@ -8711,8 +8731,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!removing && baks.length) mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Restore a backup</div>' + baks.map(function (b) {
       return lqMi(lqIco('hist') + '<span>' + esc(lqWhen(b.t)) + '</span>' + lqBakSize(b, curM, it.count), 'data-lq-restore="' + id + '|' + b.t + '"');
     }).join('');
-    if (!removing && !it.waiting && (miss && !lqGmWaiting(d.id) || lqNext(d.id, 'autodl'))) {
+    var favOk = lqFavShared(d.id) && it.count > 0;
+    if (!removing && !it.waiting && (miss && !lqGmWaiting(d.id) || lqNext(d.id, 'autodl') || favOk)) {
       mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Songs</div>';
+      if (favOk) mi += lqMi('<span class="lq-mi-heart" aria-hidden="true">\u2665</span>Add all songs to favorites', 'data-lq-favpl2="' + id + '" title="Favorites every song in this playlist on ' + dn + '. Favorites you already have stay as they are."');
       if (miss && !lqGmWaiting(d.id)) mi += lqMi(lqIco('down') + 'Get its ' + miss.toLocaleString() + ' missing song' + (miss === 1 ? '' : 's'), 'data-lq-gm1="' + id + '"');
       if (lqNext(d.id, 'autodl')) mi += lqMi(lqIco('refresh') + (adlOn ? 'Turn off auto-download' : 'Turn on auto-download'), 'data-lq-adl="' + id + '|' + (adlOn ? 0 : 1) + '" title="' + (adlOn ? 'Songs this playlist is missing won\u2019t download on their own' : 'Songs this playlist is missing download on their own when it changes') + '"');
     }
@@ -8741,7 +8763,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (lqDrag) { lqDrag.dirty = true; return; }
     try { lqAddToRender(); } catch (e) {}   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
-    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); }   // hearts in Your Playlist follow the headset
+    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); renderResults(); }   // hearts in Your Playlist and the results follow the headset
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
     panel.hidden = !lqShown();
@@ -9182,6 +9204,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-favgm')) lqFavGetMissing(t.getAttribute('data-lq-favgm'));
       else if (t.hasAttribute('data-lq-favcopy')) { var fc = t.getAttribute('data-lq-favcopy').split('|'); lqFavCopy(fc[0], fc[1]); }
       else if (t.hasAttribute('data-lq-favdl')) lqFavDownload(t.getAttribute('data-lq-favdl'));
+      else if (t.hasAttribute('data-lq-favpl2')) { var f2 = t.getAttribute('data-lq-favpl2').split('|'); lqFavFromPlaylist(f2[0], f2[1]); }
       else if (t.hasAttribute('data-lq-favrs')) { var fr = t.getAttribute('data-lq-favrs').split('|'); lqFavRestore(fr[0], fr[1]); }
       else if (t.hasAttribute('data-lq-favkeep')) { var fk = t.getAttribute('data-lq-favkeep').split('|'); lqFavKeep(fk[0], fk[1]); }
       else if (t.hasAttribute('data-lq-gm1')) { var g1 = t.getAttribute('data-lq-gm1').split('|'); lqGetMissing(g1[0], g1[1]); }
@@ -12602,6 +12625,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (!btn && e.target.closest('a, button, input, select, label, .egg-bomb')) return;
       if (!btn && window.getSelection && String(window.getSelection() || '').trim()) return;
       var act = btn ? btn.dataset.act : row.classList.contains('in-pl') ? 'unadd' : 'add';
+      if (act === 'fav') { var fe = findFiltered(row.dataset.key), fdv = lqFavDev(); if (fe && fdv) lqFavToggle(fdv, fe.hash, !lqIsFav(fdv, fe.hash)); return; }
       var tgo = state.lq && state.lq.addTo;
       if (tgo && (act === 'add' || act === 'unadd')) { var te = findFiltered(row.dataset.key); if (te) { if (act === 'add') lqAddTo(tgo.dev, tgo.k, te, 'button'); else lqTakeOut(tgo.dev, tgo.k, te); } return; }
       if (act === 'add') { var ent = findFiltered(row.dataset.key); if (ent && addEntry(ent)) { if (state.viewMode === 'clan') track(clan.kind === 'as' ? 'asclan-add' : 'clan-add'); if (!btn) track('row-add'); renderAll(); } }

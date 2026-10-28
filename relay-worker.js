@@ -2237,6 +2237,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'lq-fav-restore': ['Studio Sync', 'Restored favorites', 'Put back favorites from Studio\u2019s copy'],
     'lq-fav-keep': ['Studio Sync', 'Kept favorites empty', 'Dismissed the restore favorites card'],
     'lq-fav-arrived': ['Studio Sync', 'Favorites changed', 'The headset took favorite changes from Studio'],
+    'lq-fav-fromlist': ['Studio Sync', 'Playlist to favorites', 'Favorited every song in a headset playlist'],
     'lq-gm-one': ['Studio Sync', 'Get one playlist\\u2019s songs', 'Asked the headset to download one playlist\\u2019s missing songs'],
     'tab-lqPanel': ['Studio Sync', 'Studio Sync tab', 'Switched to the Studio Sync tab under Your Playlist'],
     'tab-syncPanel': ['Save and send', 'Sync link tab', 'Switched to the Sync link tab under Your Playlist'],
