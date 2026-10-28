@@ -896,8 +896,9 @@ async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
+  if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
   if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
@@ -1212,6 +1213,25 @@ async function gcStats(env, range, fresh, site, tz) {
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
+// Small site icons for the stats page lists (Gemini, Reddit, Chrome...). Icons are public, so this needs no key.
+// Each one comes from Google's icon service once and stays in the Cloudflare cache for a week; only plain
+// host names or short https page addresses are accepted, and only images are passed on.
+async function gcIcon(url) {
+  const d = String(url.searchParams.get("d") || "").toLowerCase(), u = String(url.searchParams.get("u") || "");
+  let q = "";
+  if (d.length <= 100 && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d)) q = "domain=" + encodeURIComponent(d);
+  else if (u.length <= 200 && /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(\/[a-z0-9._~\/-]*)?$/i.test(u)) q = "domain_url=" + encodeURIComponent(u);
+  else return new Response("", { status: 400, headers: { "Cache-Control": "no-store" } });
+  const cache = typeof caches !== "undefined" ? caches.default : null, key = new Request("https://studio-icons.invalid/" + q);
+  let r = cache ? await cache.match(key) : null;
+  if (r) return r;
+  let g = null; try { g = await fetch("https://www.google.com/s2/favicons?sz=64&" + q); } catch (e) {}
+  const type = (g && g.headers.get("Content-Type")) || "";
+  if (!g || !g.ok || !/^image\/(png|x-icon|vnd\.microsoft\.icon|gif|webp|jpeg)$/.test(type)) return new Response("", { status: 404, headers: { "Cache-Control": "public, max-age=86400" } });
+  r = new Response(await g.arrayBuffer(), { headers: { "Content-Type": type, "Cache-Control": "public, max-age=604800", "X-Content-Type-Options": "nosniff" } });
+  if (cache) await cache.put(key, r.clone());
+  return r;
+}
 
 const ADMIN_PAGE = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1330,6 +1350,9 @@ button.linkish:hover{color:var(--text)}
 .funnel .bar{grid-template-columns:minmax(120px,190px) 1fr 110px}
 .bars.feat .bar{grid-template-columns:minmax(0,1.3fr) minmax(80px,1fr) 56px;margin:9px 0}
 .bar .fl{display:flex;flex-direction:column;white-space:normal;line-height:1.3;min-width:0}
+.bar .sl{display:flex;align-items:center;gap:10px;min-width:0}
+.ic{flex:none;width:28px;height:28px;border-radius:8px;background:#121a2a;border:1px solid #1f2a40;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;font-weight:800;color:#cfe0ff;font-size:13px}
+.ic img{width:18px;height:18px;display:block}
 .bar .fl b{font-weight:700;color:var(--text)}
 .fd{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
 .fd code{font-size:12px;color:#8fa6c8}
@@ -1715,7 +1738,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars('s-camps', camps.filter(function (c) { return c.count > 0; }).map(campRow), '', 'No tagged links used in this range.');
     bars('s-refs', refs.map(function (r) { return refRow(r); }));
     bars('s-pages', (d.pages || []).slice(0, 10).map(function (p) { return pageRow(p, 'Playlist Studio home'); }));
-    bars('s-br', (d.browsers || []).slice(0, 8).map(function (b) { return [esc(b.name || 'Unknown'), b.count]; }));
+    bars('s-br', (d.browsers || []).slice(0, 8).map(browserRow));
     renderReleases();
     ['vis', 'feat', 'src'].forEach(hideEmptyCards);
     $('f-colds').closest('.blk').classList.toggle('hidden', !d.cold.length);
@@ -2057,7 +2080,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function refSum(refs, test) { return refs.reduce(function (a, r) { return a + (test(refInfo(r).kind) ? r.count : 0); }, 0); }
   function refRow(r, cls) {
     var f = refInfo(r);
-    return ['<span class="fl"><b>' + esc(f.label) + '</b>' + (f.raw && f.raw.toLowerCase() !== f.label.toLowerCase() ? '<span class="fd"><code>' + esc(f.raw) + '</code></span>' : '') + '</span>', r.count, cls || ''];
+    return ['<span class="sl">' + iconSpan(refIcon(r, f), f.label) + '<span class="fl"><b>' + esc(f.label) + '</b>' + (f.raw && f.raw.toLowerCase() !== f.label.toLowerCase() ? '<span class="fd"><code>' + esc(f.raw) + '</code></span>' : '') + '</span></span>', r.count, cls || ''];
   }
   // Pages people land on in Studio.
   function pageName(p, home) {
@@ -2072,6 +2095,39 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     if (/gallery/.test(x)) return 'Playlist gallery';
     return x;
   }
+  // ---- small site icons next to sources and browsers ----
+  // Other sites: their own icon, fetched once by the Worker (/admin/icon) and cached. Your tools: their real icons.
+  var MY_ICONS = {"ps": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212.5%22%20fill%3D%22%2308090c%22%2F%3E%3Cpath%20d%3D%22M8.06%2030.33A24%2024%200%200%201%2051.90%2018.58%22%20stroke%3D%22%23ff2740%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M55.94%2033.67A24%2024%200%200%201%2012.10%2045.42%22%20stroke%3D%22%232f7bff%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2213.8%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M28.12%2024.24L40.05%2032L28.12%2039.76Z%22%20fill%3D%22%2308090c%22%20stroke%3D%22%2308090c%22%20stroke-width%3D%221.87%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E", "rs": "data:image/png;base64,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", "hsv": "data:image/png;base64,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", "ce": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M50%206%20L94%2084%20Q96%2090%2090%2090%20L10%2090%20Q4%2090%206%2084%20Z%22%20fill%3D%22%239a4a12%22%2F%3E%3Cpath%20d%3D%22M50%206%20L50%2090%20L10%2090%20Q4%2090%206%2084%20Z%22%20fill%3D%22%23e8822a%22%2F%3E%3Cpath%20d%3D%22M50%206%20L94%2084%20Q96%2090%2090%2090%20L50%2090%20Z%22%20fill%3D%22%23ffb347%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%20Black%2CArial%22%20font-weight%3D%22900%22%20font-size%3D%2240%22%20fill%3D%22%231a0f00%22%3E4%3C%2Ftext%3E%3C%2Fsvg%3E"};
+  var REPO_ICON = { 'playlist-studio': 'ps', 'reesaber-studio': 'rs', 'hsv-config-generator': 'hsv', 'chesters-escape': 'ce', 'studio-sync': 'ps' };
+  var SRC_ICON = { beatleader: 'd:beatleader.xyz', github: 'd:github.com', discord: 'd:discord.com', reddit: 'd:reddit.com', youtube: 'd:youtube.com', twitch: 'd:twitch.tv', x: 'd:x.com', twitter: 'd:x.com',
+    bsmg: 'd:bsmg.wiki', goatcounter: 'd:goatcounter.com', 'reesaber-studio': 'm:rs', 'playlist-studio': 'm:ps', pwa: 'm:ps', bplist: 'm:ps', 'studio-sync': 'm:ps', 'hsv-generator': 'm:hsv', 'chesters-escape': 'm:ce', chester: 'm:ce' };
+  var LABEL_HOST = { 'Google search': 'google.com', 'Bing': 'bing.com', 'DuckDuckGo': 'duckduckgo.com', 'Yahoo': 'yahoo.com', 'Yandex': 'yandex.com', 'Ecosia': 'ecosia.org', 'Brave Search': 'search.brave.com',
+    'Startpage': 'startpage.com', 'Baidu': 'baidu.com', 'Qwant': 'qwant.com', 'Naver': 'naver.com', 'Reddit': 'reddit.com', 'Discord': 'discord.com', 'Gmail app': 'mail.google.com', 'Facebook': 'facebook.com',
+    'X (Twitter)': 'x.com', 'YouTube': 'youtube.com', 'Instagram': 'instagram.com', 'TikTok': 'tiktok.com', 'Gemini': 'gemini.google.com', 'ChatGPT': 'chatgpt.com', 'Perplexity': 'perplexity.ai', 'Claude': 'claude.ai',
+    'Microsoft Copilot': 'copilot.microsoft.com', 'Grok': 'grok.com', 'DeepSeek': 'deepseek.com', 'BeatLeader': 'beatleader.xyz', 'BeatLeader profile': 'beatleader.xyz', 'Your BeatLeader profile': 'beatleader.xyz', 'BeatSaver': 'beatsaver.com', 'ScoreSaber': 'scoresaber.com' };
+  var BROWSER_ICON = [[/edge/i, 'u:https://www.microsoft.com/edge'], [/samsung/i, 'd:samsung.com'], [/opera/i, 'd:opera.com'], [/firefox/i, 'u:https://www.mozilla.org/firefox/'], [/brave/i, 'd:brave.com'],
+    [/vivaldi/i, 'd:vivaldi.com'], [/duckduckgo/i, 'd:duckduckgo.com'], [/yandex/i, 'd:browser.yandex.com'], [/safari/i, 'u:https://www.apple.com/safari/'], [/chrom/i, 'u:https://www.google.com/chrome/']];
+  function iconSpan(src, label) {
+    var l = esc(String(label || '?').replace(/^your /i, '').charAt(0).toUpperCase() || '?');
+    if (!src) return '<span class="ic mono">' + l + '</span>';
+    var url = src.slice(0, 2) === 'm:' ? MY_ICONS[src.slice(2)] : src.slice(0, 2) === 'u:' ? '/admin/icon?u=' + encodeURIComponent(src.slice(2)) : '/admin/icon?d=' + encodeURIComponent(src.slice(2));
+    return url ? '<span class="ic"><img src="' + esc(url) + '" alt="" loading="lazy" decoding="async" data-l="' + l + '"></span>' : '<span class="ic mono">' + l + '</span>';
+  }
+  function refIcon(r, f) {
+    var raw = String((r && r.name) || ''), full = raw.replace(/^[a-z-]+:\\/\\//i, '').toLowerCase(), host = full.replace(/\\/.*$/, ''), path = full.slice(host.length);
+    if (/^spanky3651\\.github\\.io$/.test(host)) return 'm:' + (REPO_ICON[(path.split('/')[1] || '').replace(/[?#].*$/, '')] || 'ps');
+    if (r && r.scheme === 'c' && SRC_ICON[host]) return SRC_ICON[host];
+    if (LABEL_HOST[f.label]) return 'd:' + LABEL_HOST[f.label];
+    if (/\\./.test(host) && /^[a-z0-9.-]+$/.test(host)) return 'd:' + host.replace(/^www\\./, '');
+    return '';
+  }
+  function browserRow(b) {
+    var nm = b.name || 'Unknown', src = '';
+    for (var i = 0; i < BROWSER_ICON.length; i++) if (BROWSER_ICON[i][0].test(nm)) { src = BROWSER_ICON[i][1]; break; }
+    return ['<span class="sl">' + iconSpan(src, nm) + '<span class="fl"><b>' + esc(nm) + '</b></span></span>', b.count];
+  }
+  // An icon that can't load turns into the site's first letter.
+  document.addEventListener('error', function (e) { var t = e.target; if (t && t.tagName === 'IMG' && t.parentNode && t.parentNode.classList && t.parentNode.classList.contains('ic')) { var p = t.parentNode; p.classList.add('mono'); p.textContent = t.getAttribute('data-l') || '?'; } }, true);
 
   // ---- your other tools (more GoatCounter sites under the same key) ----
   // Events shared by the tools: Quest over USB, share links, footer links, page errors.
