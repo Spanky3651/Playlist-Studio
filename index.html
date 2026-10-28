@@ -588,6 +588,14 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-peek-h .lq-fav-sort{margin-left:auto;width:auto !important;min-width:0;height:30px;min-height:0;flex:none;font-size:13px;padding:0 26px 0 9px;background-position:right 8px center;order:2;}
 .lq-peek-h:has(.lq-fav-sort) .pk-note{order:3;flex-basis:100%;margin-top:-2px;}
 .lq-fav-stars{font:12px var(--mono);color:var(--amber);flex:none;}
+.lq-favlist .lq-peek li{flex-wrap:nowrap;gap:12px;padding:7px 2px;}
+.lq-favlist .lq-peek li img{width:40px;height:40px;border-radius:7px;}
+.lq-favlist .lq-peek .pk-tx{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px;}
+.lq-favlist .lq-peek .pk-tx .pk-n{flex:none;font-weight:600;}
+.lq-favlist .lq-peek .pk-n small{font-weight:400;}
+.lq-favlist .lq-peek .pk-s{font-size:12.5px;color:#8792a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lq-favlist .lq-peek .pk-s .g{color:#3ddc84;}.lq-favlist .lq-peek .pk-s .r{color:#ff8fa3;}
+.lq-favlist .lq-peek li.off .pk-s{opacity:.5;}
 .lq-peek ol{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;}
 .lq-peek li{display:flex;align-items:center;gap:10px;padding:5px 2px;border-top:1px solid #111a28;font-size:13.5px;}
 .lq-peek li:first-child{border-top:0;}
@@ -3037,7 +3045,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T22:44Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T22:57Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4102,6 +4110,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (isNF(v)) e.nf = true;
       if (!v.fc && v.m <= 3 && (v.fa || 0) >= 0.90) e.near = true;
       if ((v.a || 0) > (e.best.a || 0)) e.best = v;
+      if ((v.pp || 0) > ((e.bestPp && e.bestPp.pp) || 0)) e.bestPp = v;
       if ((v.t || 0) > e.latestT) e.latestT = v.t || 0;
     }
     return idx;
@@ -7733,6 +7742,24 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     ((v && v.diffs) || []).forEach(function (x) { var st = +(x.blStars || x.stars || 0); if (st > best) best = st; });
     return best;
   }
+  // The quiet second line on a favorite: your best score on it (accuracy, pp or misses and rank, when), "Not played yet",
+  // or the mapper when no profile is connected.
+  function lqFavScoreLine(h, i) {
+    if (!state.player) return i && i.m ? 'by ' + esc(i.m) : '';
+    var mi = scoreHashIdx()[String(h).toLowerCase()];
+    if (!mi) return 'Not played yet';
+    var sc = mi.bestPp || mi.best, out = [];
+    out.push('<span class="' + (sc.fc ? 'g' : 'r') + '">' + ((sc.a || 0) * 100).toFixed(2) + '%' + (sc.fc ? ' FC' : '') + '</span>');
+    if (sc.pp > 0) out.push(Math.round(sc.pp) + 'pp');
+    else {
+      // Unranked, so no pp: show the misses (when it isn't an FC) and where the score sits on the map's leaderboard.
+      var ms = (sc.m || 0) + (sc.b || 0);
+      if (!sc.fc && ms > 0) out.push(ms + ' miss' + (ms === 1 ? '' : 'es'));
+      if (sc.rk > 0) out.push('#' + Number(sc.rk).toLocaleString('en-US'));
+    }
+    if (sc.t) out.push(agoStr(sc.t));
+    return out.join(' &middot; ');
+  }
   var LQ_FAVSORT = 'playlistStudio.lqFavSort.v1';
   function lqFavSortGet() { var v = ''; try { v = localStorage.getItem(LQ_FAVSORT) || ''; } catch (e) {} return /^(artist|mapper|stars|miss)$/.test(v) ? v : 'name'; }
   function lqFavPeekHtml(d) {
@@ -7752,10 +7779,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var rows = shown.map(function (h) {
       var i = lqFavInfo[h], on = lqIsFav(d.id, h), pend = Object.prototype.hasOwnProperty.call(p, h);
       var st = pend ? '<span class="lq-wait">' + (on ? 'adding' : 'removing') + ' on next sync</span>' : m.miss.has(h) ? '<span class="lq-miss">not downloaded</span>' : '';
+      var who = i ? (srt === 'mapper' ? i.m : i.a) : '';
       return '<li' + (on ? '' : ' class="off"') + '>' +
-        '<img src="https://eu.cdn.beatsaver.com/' + h + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + (i ? esc(lqFavName(h)) + ((srt === 'artist' ? i.a : i.m) ? '<small>' + esc(srt === 'artist' ? i.a : i.m) + '</small>' : '') : '<span class="lq-m">Loading\u2026</span>') + '</span>' +
-        (srt === 'stars' && i && i.s ? '<span class="lq-fav-stars">' + i.s.toFixed(1) + '\u2605</span>' : '') +
-        (st ? '<span class="lq-fav-st">' + st + '</span>' : '') + '<button type="button" class="lq-heart' + (on ? ' on' : '') + '" data-lq-favh="' + esc(d.id) + '|' + h + '|' + (on ? 0 : 1) + '" aria-pressed="' + on + '" title="' + (on ? 'Unfavorite on ' : 'Favorite on ') + dn + '">' + favHeartSvg(on) + '</button>' + '</li>';
+        '<img src="https://eu.cdn.beatsaver.com/' + h + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-tx"><span class="pk-n">' + (i ? esc(lqFavName(h)) + (who ? '<small>' + esc(who) + '</small>' : '') : '<span class="lq-m">Loading\u2026</span>') + '</span>' +
+        '<span class="pk-s">' + lqFavScoreLine(h, i) + (st ? ' <span class="lq-fav-st">' + st + '</span>' : '') + '</span></span>' +
+        (srt === 'stars' && i && i.s ? '<span class="lq-fav-stars">' + i.s.toFixed(1) + '\u2605</span>' : '') + '<button type="button" class="lq-heart' + (on ? ' on' : '') + '" data-lq-favh="' + esc(d.id) + '|' + h + '|' + (on ? 0 : 1) + '" aria-pressed="' + on + '" title="' + (on ? 'Unfavorite on ' : 'Favorite on ') + dn + '">' + favHeartSvg(on) + '</button>' + '</li>';
     });
     var n = lqFavOn(d.id).length;
     return '<div class="lq-peek" aria-label="Favorites on ' + dn + '"><div class="lq-peek-h"><b>' + n.toLocaleString() + ' favorite' + (n === 1 ? '' : 's') + '</b><span class="pk-note">· the heart favorites or unfavorites a song on ' + dn + '</span>' +
