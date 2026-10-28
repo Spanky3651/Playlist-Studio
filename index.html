@@ -585,6 +585,9 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-peek{margin:0 10px 10px 14px;border:1px solid #1c2738;border-radius:10px;background:#070b12;padding:8px 10px;}
 .lq-peek-h{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:4px;flex-wrap:wrap;}
 .lq-peek-h b{color:#e6edf6;} .lq-peek-h .sp{flex:1;}
+.lq-peek-h .lq-fav-sort{margin-left:auto;width:auto !important;min-width:0;height:30px;min-height:0;flex:none;font-size:13px;padding:0 26px 0 9px;background-position:right 8px center;order:2;}
+.lq-peek-h:has(.lq-fav-sort) .pk-note{order:3;flex-basis:100%;margin-top:-2px;}
+.lq-fav-stars{font:12px var(--mono);color:var(--amber);flex:none;}
 .lq-peek ol{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;}
 .lq-peek li{display:flex;align-items:center;gap:10px;padding:5px 2px;border-top:1px solid #111a28;font-size:13.5px;}
 .lq-peek li:first-child{border-top:0;}
@@ -707,7 +710,9 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-fav-off{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border:1px dashed #2a3850;border-radius:12px;background:#070b12;font-size:13.5px;color:var(--muted);line-height:1.5;}
 .lq-fav-off .ic{color:#5d6f8a;font-size:18px;}
 .lq-heart{flex:none;display:grid;place-items:center;width:28px;height:28px;min-width:0;min-height:0;padding:0;border:0;border-radius:7px;background:none;box-shadow:none;color:#3f4f68;font-size:17px;line-height:1;cursor:pointer;}
-.lq-heart.on{color:#ff5c8a;}
+.lq-heart.on{color:#ff3b63;}
+.lq-heart svg.fav-h,.row-btn.fav svg.fav-h{width:18px;height:18px;display:block;}
+.lq-heart:not(.on):hover,.row-btn.fav:not(.on):hover{color:#ff8fa3;}
 .lq-heart:hover,.lq-heart:focus-visible{background:#1a1220;border:0;box-shadow:none;}
 .lq-peek li.off .pk-n{opacity:.5;}
 .lq-fav-st{font-size:12px;flex:none;}
@@ -715,7 +720,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-mi-heart{color:#ff5c8a;width:16px;text-align:center;font-size:15px;line-height:1;flex:none;}
 .lq-mi-n{margin-left:auto;padding-left:10px;color:var(--muted);font-size:12px;}
 .row-btn.fav{color:#3f4f68;font-size:16px;}
-.row-btn.fav.on{color:#ff5c8a;} .lq-noadl{white-space:nowrap;}
+.row-btn.fav.on{color:#ff3b63;} .lq-noadl{white-space:nowrap;}
 .lq-dot2{width:7px;height:7px;border-radius:50%;background:#ffb84d;flex:none;}
 .lq-dot2.new{background:#5b9bff;}
 .lq-dot2.ok{background:#3ddc84;}
@@ -2384,6 +2389,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="myRank">My rank</option>
               <option value="myDate">Last played</option>
               <option value="improve">Improvement</option><option value="complexity">AccSaber complexity</option>
+              <option value="fav" hidden>Favorites</option>
               <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
             </select></div>
         </div>
@@ -2649,6 +2655,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <option value="passRating">Pass</option>
             <option value="pp">PP @ target acc</option>
             <option value="improve">Improvement</option><option value="complexity">AccSaber complexity</option>
+            <option value="fav" hidden>Favorites</option>
             <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
           </select>
           <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
@@ -3030,7 +3037,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T22:11Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T22:44Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5084,6 +5091,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (va == null) return 1; if (vb == null) return -1;
         return f.order === 'asc' ? va - vb : vb - va;
       });
+    } else if (key === 'fav') {
+      // Songs favorited on the headset first (or last when flipped), hardest first within each group.
+      var fdv = lqFavDev();
+      out.sort(function (a, b) {
+        var fa = fdv && lqIsFav(fdv, a.hash) ? 1 : 0, fb = fdv && lqIsFav(fdv, b.hash) ? 1 : 0;
+        if (fa !== fb) return f.order === 'asc' ? fa - fb : fb - fa;
+        return (b.stars || 0) - (a.stars || 0);
+      });
     } else if (isMy && state.player) {
       out.sort(function (a, b) {
         var va = myVal(scoreFor(a), key), vb = myVal(scoreFor(b), key);
@@ -5683,7 +5698,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     rows.slice(0, MAX).forEach(function (e) {
       var tgt = state.lq && state.lq.addTo, added = tgt ? lqInTarget(e) : inBasket(e), k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
       items.push({ key: k, html: '<div class="song-row' + (added ? ' in-pl' : '') + '" data-key="' + esc(k) + '" draggable="true">' + coverImg(e) + infoBlock(e, true, lqOnChip(e) + (added ? '' : otherDiffBadge(e, byHash))) +
-        '<div class="row-actions">' + (fd ? '<button class="row-btn fav' + (fon ? ' on' : '') + '" data-act="fav" aria-pressed="' + !!fon + '" title="' + (fon ? 'A favorite on ' + fdn + '. Click to unfavorite' : 'Favorite on ' + fdn) + '">' + (fon ? '♥' : '♡') + '</button>' : '') +
+        '<div class="row-actions">' + (fd ? '<button class="row-btn fav' + (fon ? ' on' : '') + '" data-act="fav" aria-pressed="' + !!fon + '" title="' + (fon ? 'A favorite on ' + fdn + '. Click to unfavorite' : 'Favorite on ' + fdn) + '">' + favHeartSvg(fon) + '</button>' : '') +
         '<button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) +
         (added ? '<button class="row-btn added" data-act="unadd" title="In your playlist - click to take it out">✓</button>' : '<button class="row-btn add" data-act="add" title="Add to playlist">+</button>') +
         '</div></div>' });
@@ -5762,7 +5777,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     state.basket.forEach(function (e) {
       var k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
       items.push({ key: k, html: '<div class="song-row bk" draggable="true" data-key="' + esc(k) + '"><span class="bk-grip" title="Drag to reorder" aria-hidden="true">⠿</span><span class="bk-idx"></span>' + coverImg(e) + infoBlock(e) +
-        '<div class="row-actions">' + (fd ? '<button class="row-btn fav' + (fon ? ' on' : '') + '" data-act="fav" aria-pressed="' + !!fon + '" title="' + (fon ? 'A favorite on ' + fdn + '. Click to unfavorite' : 'Favorite on ' + fdn) + '">' + (fon ? '♥' : '♡') + '</button>' : '') +
+        '<div class="row-actions">' + (fd ? '<button class="row-btn fav' + (fon ? ' on' : '') + '" data-act="fav" aria-pressed="' + !!fon + '" title="' + (fon ? 'A favorite on ' + fdn + '. Click to unfavorite' : 'Favorite on ' + fdn) + '">' + favHeartSvg(fon) + '</button>' : '') +
         '<button class="row-btn preview" data-act="preview" title="Preview map">▶</button>' + blLink(e) + '<div class="reorder-col">' +
           '<button class="reorder" data-act="up" title="Move up">▲</button>' +
           '<button class="reorder" data-act="down" title="Move down">▼</button></div>' +
@@ -7556,7 +7571,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         return fetchTimeout(BS_API + '/maps/hash/' + ch.join(','), 10000).then(function (r) { if (r.status === 404) return {}; if (!r.ok) throw new Error('http'); return r.json(); }).then(function (j) {
           var by = {};
           if (j && j.versions) by[ch[0]] = j; else if (j) Object.keys(j).forEach(function (k) { by[k.toLowerCase()] = j[k]; });
-          ch.forEach(function (h) { var mp = by[h], md = (mp && mp.metadata) || {}; lqFavInfo[h] = mp ? { n: md.songName || mp.name || '', a: md.songAuthorName || '', m: md.levelAuthorName || '', key: mp.id || '' } : { n: '', gone: true }; });
+          ch.forEach(function (h) { var mp = by[h], md = (mp && mp.metadata) || {}; lqFavInfo[h] = mp ? { n: md.songName || mp.name || '', a: md.songAuthorName || '', m: md.levelAuthorName || '', key: mp.id || '', s: lqFavStars(mp) } : { n: '', gone: true }; });
         }, function () { ch.forEach(function (h) { setTimeout(function () { delete lqFavAsk[h]; }, 120000); }); });
       });
     }, Promise.resolve()).then(function () { if (then) then(); else lqRender(); });
@@ -7707,21 +7722,44 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (open) h += lqFavPeekHtml(d);
     return h + '</div>';
   }
+  // The drawn heart for song rows: filled when it's a favorite, an outline when it isn't.
+  function favHeartSvg(on) {
+    var d = 'M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z';
+    return '<svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"' + (on ? ' fill="currentColor"' : ' fill="none" stroke="currentColor" stroke-width="2"') + '/></svg>';
+  }
+  // The hardest ranked difficulty on BeatSaver (BeatLeader stars, else ScoreSaber); 0 when unranked.
+  function lqFavStars(mp) {
+    var v = mp && mp.versions && mp.versions[0], best = 0;
+    ((v && v.diffs) || []).forEach(function (x) { var st = +(x.blStars || x.stars || 0); if (st > best) best = st; });
+    return best;
+  }
+  var LQ_FAVSORT = 'playlistStudio.lqFavSort.v1';
+  function lqFavSortGet() { var v = ''; try { v = localStorage.getItem(LQ_FAVSORT) || ''; } catch (e) {} return /^(artist|mapper|stars|miss)$/.test(v) ? v : 'name'; }
   function lqFavPeekHtml(d) {
     var hs = lqFavList(d.id), m = lqFavSet(d.id), p = lqFavPend(d.id) || {}, all = !!(state.lq.favAll && state.lq.favAll[d.id]), dn = esc(lqDevName(d.id));
+    var srt = lqFavSortGet();
     var nm = function (h) { return lqFavName(h).toLowerCase() || '\uffff' + h; };
-    hs.sort(function (a, b) { var x = nm(a), y = nm(b); return x < y ? -1 : x > y ? 1 : 0; });
+    var by = function (h) { var i = lqFavInfo[h]; var t = i ? (srt === 'artist' ? i.a : i.m) : ''; return (t || '').toLowerCase() || '\uffff'; };
+    var abc = function (x, y) { return x < y ? -1 : x > y ? 1 : 0; };
+    hs.sort(function (a, b) {
+      if (srt === 'artist' || srt === 'mapper') { var c = abc(by(a), by(b)); if (c) return c; }
+      else if (srt === 'stars') { var sa = (lqFavInfo[a] && lqFavInfo[a].s) || 0, sb = (lqFavInfo[b] && lqFavInfo[b].s) || 0; if (sa !== sb) return sb - sa; }
+      else if (srt === 'miss') { var ma = m.miss.has(a) ? 0 : 1, mb = m.miss.has(b) ? 0 : 1; if (ma !== mb) return ma - mb; }
+      return abc(nm(a), nm(b));
+    });
     var shown = all ? hs : hs.slice(0, 200);
     lqFavNeed(shown);
     var rows = shown.map(function (h) {
       var i = lqFavInfo[h], on = lqIsFav(d.id, h), pend = Object.prototype.hasOwnProperty.call(p, h);
       var st = pend ? '<span class="lq-wait">' + (on ? 'adding' : 'removing') + ' on next sync</span>' : m.miss.has(h) ? '<span class="lq-miss">not downloaded</span>' : '';
-      return '<li' + (on ? '' : ' class="off"') + '><button type="button" class="lq-heart' + (on ? ' on' : '') + '" data-lq-favh="' + esc(d.id) + '|' + h + '|' + (on ? 0 : 1) + '" aria-pressed="' + on + '" title="' + (on ? 'Unfavorite on ' : 'Favorite on ') + dn + '">' + (on ? '\u2665' : '\u2661') + '</button>' +
-        '<img src="https://eu.cdn.beatsaver.com/' + h + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + (i ? esc(lqFavName(h)) + (i.m ? '<small>' + esc(i.m) + '</small>' : '') : '<span class="lq-m">Loading\u2026</span>') + '</span>' +
-        (st ? '<span class="lq-fav-st">' + st + '</span>' : '') + '</li>';
+      return '<li' + (on ? '' : ' class="off"') + '>' +
+        '<img src="https://eu.cdn.beatsaver.com/' + h + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + (i ? esc(lqFavName(h)) + ((srt === 'artist' ? i.a : i.m) ? '<small>' + esc(srt === 'artist' ? i.a : i.m) + '</small>' : '') : '<span class="lq-m">Loading\u2026</span>') + '</span>' +
+        (srt === 'stars' && i && i.s ? '<span class="lq-fav-stars">' + i.s.toFixed(1) + '\u2605</span>' : '') +
+        (st ? '<span class="lq-fav-st">' + st + '</span>' : '') + '<button type="button" class="lq-heart' + (on ? ' on' : '') + '" data-lq-favh="' + esc(d.id) + '|' + h + '|' + (on ? 0 : 1) + '" aria-pressed="' + on + '" title="' + (on ? 'Unfavorite on ' : 'Favorite on ') + dn + '">' + favHeartSvg(on) + '</button>' + '</li>';
     });
     var n = lqFavOn(d.id).length;
-    return '<div class="lq-peek" aria-label="Favorites on ' + dn + '"><div class="lq-peek-h"><b>' + n.toLocaleString() + ' favorite' + (n === 1 ? '' : 's') + '</b><span class="pk-note">· the heart favorites or unfavorites a song on ' + dn + '</span></div>' +
+    return '<div class="lq-peek" aria-label="Favorites on ' + dn + '"><div class="lq-peek-h"><b>' + n.toLocaleString() + ' favorite' + (n === 1 ? '' : 's') + '</b><span class="pk-note">· the heart favorites or unfavorites a song on ' + dn + '</span>' +
+      (hs.length > 1 ? '<select class="lq-fav-sort" data-lq-favsort aria-label="Sort favorites">' + [['name', 'Song name'], ['artist', 'Artist'], ['mapper', 'Mapper'], ['stars', 'Stars'], ['miss', 'Not downloaded first']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === srt ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' : '') + '</div>' +
       (rows.length ? '<ol>' + rows.join('') + '</ol>' : '<div class="pk-msg">No favorites on ' + dn + ' yet. Favorite songs in game, or with the heart on songs in Your Playlist.</div>') +
       (!all && hs.length > shown.length ? lqBtn('Show all ' + hs.length.toLocaleString(), 'data-lq-favall="' + esc(d.id) + '"', 'ghost sm lq-fav-more') : '') + '</div>';
   }
@@ -8797,7 +8835,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (lqDrag) { lqDrag.dirty = true; return; }
     try { lqAddToRender(); } catch (e) {}   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
-    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); renderResults(); }   // hearts in Your Playlist and the results follow the headset
+    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); renderResults(); syncInlineSort(); if (el.fSort && el.fSort.value === 'fav') setTimeout(applyClientFilters, 0); }   // hearts in Your Playlist and the results follow the headset
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
     panel.hidden = !lqShown();
@@ -9326,6 +9364,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && state.lq.menuOpen) { state.lq.menuOpen = null; lqRender(); } });
     document.getElementById('lqPanel').addEventListener('change', function (e) {
       if (e.target && e.target.hasAttribute('data-lq-sort')) { try { localStorage.setItem(LQ_SORT, e.target.value); } catch (x) {} track('lq-sort-' + e.target.value); lqRender(); return; }
+      if (e.target && e.target.hasAttribute('data-lq-favsort')) { try { localStorage.setItem(LQ_FAVSORT, e.target.value); } catch (x) {} track('lq-favsort-' + e.target.value); lqRender(); var fs = document.querySelector('[data-lq-favsort]'); if (fs) fs.focus(); return; }
       if (e.target && e.target.hasAttribute('data-lq-delsongs')) { state.lq.delSongs = !!e.target.checked; lqRender(); var cb = document.querySelector('[data-lq-delsongs]'); if (cb) cb.focus(); return; }
       if (e.target && e.target.id === 'lqSendTo') { state.lq.sendTo = e.target.value; state.lq.dup = null; if (e.target.value !== 'all') state.lq.lastDev = e.target.value; lqRender(); }
     });
@@ -10574,6 +10613,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.sortBar.hidden = !showable;
     var co = el.sortInline && el.sortInline.querySelector('option[value="clanRank"]'); if (co) co.hidden = state.viewMode !== 'clan';
     if (state.viewMode !== 'clan' && el.fSort.value === 'clanRank') { el.fSort.value = 'stars'; }
+    var favOk = !!lqFavDev();
+    [el.fSort, el.sortInline].forEach(function (sel) { var o = sel && sel.querySelector('option[value="fav"]'); if (o) o.hidden = !favOk; });
+    if (!favOk && el.fSort.value === 'fav') { el.fSort.value = 'stars'; }
     if (!showable) return;
     var vo = el.sortInline && el.sortInline.querySelector('option[value="vsGap"]'); if (vo) vo.hidden = state.viewMode !== 'versus';
     if (state.viewMode !== 'versus' && el.fSort.value === 'vsGap') { el.fSort.value = 'stars'; }
@@ -10584,6 +10626,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     if (el.sortInlineOrder) {
       var desc = el.fOrder.value !== 'asc', dateLike = el.fSort.value === 'myDate';
+      if (el.fSort.value === 'fav') {
+        el.sortInlineOrder.innerHTML = '<span class="so-a">' + (desc ? '↓' : '↑') + '</span><span class="so-t"> ' + (desc ? 'Favorites first' : 'Favorites last') + '</span>';
+        el.sortInlineOrder.setAttribute('aria-label', 'Sort ' + (desc ? 'favorites first' : 'favorites last') + ', tap to flip');
+        return;
+      }
       el.sortInlineOrder.innerHTML = '<span class="so-a">' + (desc ? '↓' : '↑') + '</span><span class="so-t"> ' + (dateLike
         ? (desc ? 'Newest first' : 'Oldest first')
         : (desc ? 'High → Low' : 'Low → High')) + '</span>';
