@@ -840,15 +840,39 @@ a.ss-btn svg{width:16px;height:16px;flex:none;}
 /* ---------- Your Profile (BeatLeader) ---------- */
 .hint-line{font-size:12.5px;font-family:var(--mono);line-height:1.5;margin-top:8px;}
 .hint-line code{color:#6aa6ff;}
-.pcard{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.pc-avatar{width:48px;height:48px;border-radius:10px;border:1px solid var(--border-2);object-fit:cover;background:#05070c;flex:none;}
+.pcard{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.pc-av{width:52px;height:52px;border-radius:14px;padding:2px;flex:none;background:linear-gradient(135deg,#ff2d55,#7b2ff7 50%,#1e6bff);box-shadow:0 6px 18px rgba(0,0,0,.55);}
+.pc-avatar{display:block;width:100%;height:100%;border-radius:12px;border:2px solid var(--panel);object-fit:cover;background:#05070c;}
 .pc-info{min-width:0;flex:1;}
-#fullStatsBtn{flex:none;align-self:center;}
-#fullStatsBtn .ic{color:#5b9dff;}
-#fullStatsBtn.is-new{animation:sv-flash 1.3s ease-out .5s 1;}
+.pc-sub{font:12.5px var(--mono);color:var(--muted);margin-top:3px;}
+/* Rank, pp and scores share one strip; its last cell opens the full stats. */
+.pc-strip{display:grid;grid-template-columns:1fr 1fr 1fr auto;border:1px solid var(--border-2);border-radius:10px;background:#0c1220;margin-bottom:10px;overflow:hidden;}
+.pc-st{display:flex;flex-direction:column;min-width:0;padding:8px 12px;border-right:1px solid var(--border-2);}
+.pc-sl{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.pc-sv{font-size:19px;font-weight:800;color:#fff;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-sv.pp{color:#7fb0ff;}
+#fullStatsBtn.pc-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:0;padding:6px 14px;border:0;border-radius:0;background:#0f1a2e;color:#cfe4ff;font-size:12px;font-weight:600;box-shadow:none;}
+#fullStatsBtn.pc-go svg{width:18px;height:18px;color:#5b9dff;}
+#fullStatsBtn.pc-go:hover{background:#13223d;color:#fff;box-shadow:none;}
+#fullStatsBtn.pc-go:active{transform:none;background:#0c1626;}
+#fullStatsBtn.is-new{animation:sv-flash-in 1.3s ease-out .5s 1;}
 @keyframes sv-flash{0%{box-shadow:0 0 0 0 rgba(30,107,255,0)}30%{border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,107,255,.35),0 0 14px rgba(30,107,255,.45)}100%{box-shadow:0 0 0 0 rgba(30,107,255,0)}}
+@keyframes sv-flash-in{0%{box-shadow:inset 0 0 0 0 rgba(30,107,255,0)}30%{box-shadow:inset 0 0 0 2px rgba(30,107,255,.7),inset 0 0 16px rgba(30,107,255,.45)}100%{box-shadow:inset 0 0 0 0 rgba(30,107,255,0)}}
 @media (prefers-reduced-motion:reduce){#fullStatsBtn.is-new{animation:none}}
-.pc-name{font-size:17px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-name{font-size:21px;font-weight:800;color:#fff;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* Sync and Build share the row; Build is the main one. */
+.pcard-actions.pc-acts{display:grid;grid-template-columns:1fr 1.25fr;gap:8px;margin-bottom:12px;}
+.pc-acts button{justify-content:center;white-space:nowrap;padding-left:10px;padding-right:10px;}
+.pc-acts button svg{width:15px;height:15px;flex:none;color:#5b9dff;}
+#buildPlaysBtn{background:linear-gradient(180deg,#12233a,#0a1524);border-color:var(--blue);color:#cfe4ff;}
+#buildPlaysBtn svg{color:var(--amber);}
+/* Top plays as one joined bar. */
+#topChips{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--border-2);border-radius:9px;overflow:hidden;background:#0c1220;}
+#topChips button{border:0;border-left:1px solid var(--border-2);border-radius:0;background:transparent;padding:8px 0;text-align:center;justify-content:center;font-weight:600;color:#c6d2e3;}
+#topChips button:first-child{border-left:0;}
+#topChips button:hover{background:#13213a;color:#fff;}
+#topChips .tp-w{color:var(--muted);font-weight:500;}
+@media (max-width:420px){#topChips .tp-w{display:none;}.pc-st{padding:7px 9px;}.pc-sv{font-size:16.5px;}#fullStatsBtn.pc-go{padding:6px 10px;}}
 .pc-stats{font-size:13px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
 .pcard-actions{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .sync-progress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;}
@@ -1938,20 +1962,24 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asw-mcard .asm-bar span{background:#ff4d6d;}
 .cb-note.soon b{color:#fff;}
 @media (max-width:620px){.asw-t{grid-template-columns:minmax(0,1fr) 70px 74px;gap:6px;}.asw-stake{grid-template-columns:1fr;}.asw-w{grid-template-columns:1fr;}.asw-w .r,.asw-w .vs{text-align:left;}.asw-lr{grid-template-columns:24px 58px 1fr 58px;}}
-/* Clans as filled Studio buttons: logo, tag, a quiet note and an arrow that slides on hover. */
-.pc-clans{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;}
-.pc-chip{display:inline-flex;align-items:center;gap:9px;background:var(--panel-3);border:1px solid var(--border-2);border-radius:8px;padding:7px 11px 7px 7px;color:var(--text);cursor:pointer;min-height:0;font-size:13.5px;}
+/* Clans: two equal buttons across the card, tag over a quiet note; one clan takes the whole row. */
+.pc-clans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px;}
+.pc-clans[hidden]{display:none;}
+.pc-clans>:only-child{grid-column:1/-1;}
+.pc-chip{display:flex;align-items:center;gap:9px;min-width:0;background:var(--panel-3);border:1px solid var(--border-2);border-radius:10px;padding:7px 8px 7px 7px;color:var(--text);cursor:pointer;min-height:0;text-align:left;}
 .pc-chip:hover{background:#131a28;}
 .pc-chip:active{background:#0c1019;border-color:var(--blue);}
-.pc-chip i{width:12px;height:12px;margin:0 8px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
-.pc-chip img.pc-ci{width:28px;height:28px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;}
-.pc-chip b{font:800 13.5px var(--mono);letter-spacing:.3px;}
-.pc-chip em{font-style:normal;color:var(--muted,#9aa6b8);font-size:12.5px;font-weight:500;}
-.pc-chip .pc-ar{color:var(--muted);font-size:20px;line-height:1;margin-left:2px;transition:transform .14s,color .14s;}
+.pc-chip i{width:14px;height:14px;margin:0 9px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
+.pc-chip img.pc-ci{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;box-shadow:0 0 0 1px rgba(255,255,255,.08);}
+.pc-ct{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.2;}
+.pc-chip b{font:800 13.5px var(--mono);letter-spacing:.3px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-chip em{font-style:normal;color:var(--muted,#9aa6b8);font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-chip .pc-ar{color:var(--muted);font-size:20px;line-height:1;flex:none;transition:transform .14s,color .14s;}
 .pc-chip:hover .pc-ar{transform:translateX(3px);color:#fff;}
 .pc-chip.war{border-color:#ff4d6d88;background:#1a0b11;}
 .pc-chip.war em,.pc-chip.war .pc-ar{color:#ff8fa3;}
 .pc-chip.war em{font-weight:700;}
+@media (max-width:420px){.pc-chip{gap:7px;}.pc-chip img.pc-ci{width:28px;height:28px;}}
 .pc-war{display:flex;gap:10px;align-items:center;margin:0 0 10px;border:1px solid rgba(255,77,109,.5);border-radius:11px;padding:10px 12px;background:linear-gradient(90deg,rgba(255,77,109,.14),rgba(255,77,109,.02));font-size:13.5px;color:#f3c6cf;}
 .pc-war[hidden]{display:none;}
 .pc-war-ic{font-size:19px;color:#ff8fa3;flex:none;}
@@ -2122,29 +2150,34 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         </div>
 <div id="profileCard" hidden>
           <div class="pcard">
-            <img id="pcAvatar" class="pc-avatar" alt="" />
+            <span class="pc-av"><img id="pcAvatar" class="pc-avatar" alt="" /></span>
             <div class="pc-info">
               <div class="pc-name" id="pcName"></div>
-              <div class="pc-stats" id="pcStats"></div>
-              <div class="pc-clans" id="pcClans" hidden></div>
+              <div class="pc-sub">BeatLeader &middot; connected</div>
             </div>
-            <button class="ghost sm" id="fullStatsBtn" type="button" title="Your BeatLeader, ScoreSaber and AccSaber ranks, recent scores and replays"><span class="ic">&#9636;</span> Stats</button>
           </div>
+          <div class="pc-strip" id="pcStats">
+            <div class="pc-st"><span class="pc-sl">Global</span><span class="pc-sv" id="pcRank">-</span></div>
+            <div class="pc-st"><span class="pc-sl">PP</span><span class="pc-sv pp" id="pcPp">-</span></div>
+            <div class="pc-st" title="Scores loaded in this browser"><span class="pc-sl">Scores</span><span class="pc-sv" id="pcN">-</span></div>
+            <button class="pc-go" id="fullStatsBtn" type="button" title="Your BeatLeader, ScoreSaber and AccSaber ranks, recent scores and replays"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Stats</span></button>
+          </div>
+          <div class="pc-clans" id="pcClans" hidden></div>
           <div class="pc-war" id="pcWar" role="status" hidden></div>
           <div class="pc-bye" id="pcBye" role="alertdialog" aria-labelledby="pcByeT" hidden><b id="pcByeT"></b>Your playlist stays. Your synced scores leave this browser until you connect again.<div class="pcard-actions"><button class="ghost sm danger" id="disconnectBtn" type="button">Disconnect</button><button class="ghost sm" id="pcByeCancel" type="button">Cancel</button></div></div>
-          <div class="pcard-actions">
-            <button class="ghost sm" id="syncBtn">⟳ Sync scores</button>
-            <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want - no search or import needed.">★ Build from my plays</button>
+          <div class="pcard-actions pc-acts">
+            <button class="ghost sm" id="syncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2M3 12A9 9 0 0 1 18.5 5.8"/><polyline points="21 3 21 9 15 9"/><polyline points="3 21 3 15 9 15"/></svg>Sync scores</button>
+            <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want - no search or import needed."><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg>Build from my plays</button>
           </div>
           <div class="sync-progress" id="syncProgress" hidden><div class="bar"><div class="bar-fill" id="syncBar"></div></div><span id="syncText"></span></div>
           <div class="topplays bl-only">
             <label class="field-label" style="margin-top:2px;">Top plays &rarr; playlist <span class="info" data-tip="Loads your connected profile's highest-PP (top) plays into the results so you can drop them straight into a playlist - great for grinding your best scores.">i</span></label>
             <div class="scan-chips" id="topChips" style="margin-top:6px;">
-              <button type="button" data-top="25">Top 25</button>
-              <button type="button" data-top="50">Top 50</button>
-              <button type="button" data-top="100">Top 100</button>
-              <button type="button" data-top="250">Top 250</button>
-              <button type="button" data-top="500">Top 500</button>
+              <button type="button" data-top="25"><span class="tp-w">Top </span>25</button>
+              <button type="button" data-top="50"><span class="tp-w">Top </span>50</button>
+              <button type="button" data-top="100"><span class="tp-w">Top </span>100</button>
+              <button type="button" data-top="250"><span class="tp-w">Top </span>250</button>
+              <button type="button" data-top="500"><span class="tp-w">Top </span>500</button>
             </div>
             <p class="muted hint-line" id="topHint">Loads your highest-PP plays into the results, then hit <b>Add all</b> to build the playlist.</p>
           </div>
@@ -2997,7 +3030,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T21:33Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T21:59Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -10506,10 +10539,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
     el.profileConnect.hidden = true; el.profileCard.hidden = false;
     if (el.topHint) el.topHint.innerHTML = 'Loads <b>' + esc(state.player.name) + "</b>'s highest-PP plays into the results, then hit <b>Add all</b>.";
-    if (state.player.avatar) { el.pcAvatar.src = state.player.avatar; el.pcAvatar.style.display = ''; } else { el.pcAvatar.style.display = 'none'; }
+    if (state.player.avatar) { el.pcAvatar.src = state.player.avatar; el.pcAvatar.parentNode.style.display = ''; } else { el.pcAvatar.parentNode.style.display = 'none'; }
     el.pcName.textContent = state.player.name;
     var n = Object.keys(state.scores).length;
-    el.pcStats.textContent = '#' + (state.player.rank || '-') + ' global · ' + Math.round(state.player.pp || 0) + 'pp · ' + n + ' scores loaded';
+    document.getElementById('pcRank').textContent = state.player.rank ? '#' + Number(state.player.rank).toLocaleString('en-US') : '-';
+    document.getElementById('pcPp').textContent = Math.round(state.player.pp || 0).toLocaleString('en-US');
+    document.getElementById('pcN').textContent = n.toLocaleString('en-US');
     setProfileState('');
     renderPlayBar(); renderForYou(); updateLevelUI(); ssUI(); pcRefresh(false);
   }
@@ -12118,12 +12153,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var on = !!state.player && pcc.pid === String(state.player.id), h = '', b = '';
     if (on && pcc.bl.length) {
       var c = pcc.bl[0];
-      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + '<b>' + esc(c.tag) + '</b><em>BeatLeader</em><span class="pc-ar" aria-hidden="true">&#8250;</span></button>';
+      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + '<span class="pc-ct"><b>' + esc(c.tag) + '</b><em>BeatLeader</em></span><span class="pc-ar" aria-hidden="true">&#8250;</span></button>';
     }
     var w = on ? pcc.war : null;
     if (on && pcc.as) {
       var a = pcc.as, at = w && w.phase === 'active', day = at && w.startsAt ? Math.max(1, Math.floor((Date.now() - new Date(w.startsAt).getTime()) / 86400000) + 1) : 0;
-      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + '<b>' + esc(a.tag) + '</b><em>' + (at ? '&#9876; at war, day ' + day : w ? '&#9876; war soon' : pcc.rank ? 'AccSaber ' + aswOrd(pcc.rank) : 'AccSaber') + '</em><span class="pc-ar" aria-hidden="true">&#8250;</span></button>';
+      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + '<span class="pc-ct"><b>' + esc(a.tag) + '</b><em>' + (at ? '&#9876; War, day ' + day : w ? '&#9876; War soon' : pcc.rank ? 'AccSaber ' + aswOrd(pcc.rank) : 'AccSaber') + '</em></span><span class="pc-ar" aria-hidden="true">&#8250;</span></button>';
       if (w) {
         var tag = esc(a.tag), opp = esc(w.opp || 'the enemy'), title, line, btn;
         if (at) { title = tag + ' is at war with ' + opp; line = 'Day ' + day + (w.endsAt && ascLeft(new Date(w.endsAt).toISOString()) ? ', ' + esc(ascLeft(new Date(w.endsAt).toISOString())) + ' left.' : '.') + (pcc.guard != null ? ' Your guard is ' + Math.round(pcc.guard) + '.' : ''); btn = 'Fight'; }
