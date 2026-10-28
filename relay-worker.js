@@ -1237,11 +1237,11 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .embed body{padding-top:16px}
 .embed .brand,.embed .top .sub{display:none}
 .embed .top{display:none}
-.tabrow{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);margin-bottom:16px}
-.tabrow .tabs{flex:1 1 auto;min-width:0;border-bottom:0;margin-bottom:0}
-#tabtool{flex:none;display:flex}#tabtool:empty{display:none}
-#tabtool button.icon{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:11px;color:var(--text)}
-#tabtool button.icon.spin svg{animation:rspin .9s linear infinite}
+.embed main{padding-bottom:90px}
+.embed #tools{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:30;margin:0}
+.embed #tools button.icon{width:54px;height:54px;border-radius:50%;background:var(--blue);border:0;color:#fff;box-shadow:0 8px 24px rgba(47,123,255,.45),0 2px 6px rgba(0,0,0,.6)}
+.embed #tools button.icon:hover{background:#4a8dff;color:#fff}
+.embed #tools button.icon svg{width:24px;height:24px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
 .card{position:relative;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:0;overflow:hidden}
 .card::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent,#26324a),transparent 70%)}
@@ -1384,7 +1384,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
-<div class="tabrow"><div class="tabs" role="tablist" id="tabs">
+<div class="tabs" role="tablist" id="tabs">
 <button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
@@ -1393,7 +1393,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader profile</span><span class="tab-short">BL profile</span></button>
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
-</div><span id="tabtool"></span></div>
+</div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
 
@@ -1568,7 +1568,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var embedded = /[?&]embed=1/.test(location.search);
   if (embedded) {
     document.documentElement.classList.add('embed');
-    document.getElementById('tabtool').appendChild(document.getElementById('refresh'));
+    document.body.appendChild(document.getElementById('tools'));
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') try { parent.postMessage('studio-sync-stats-close', 'https://spanky3651.github.io'); } catch (x) {} });
   }
   var K = 'studioSyncAdminKey', keyIn = document.getElementById('key'), msg = document.getElementById('msg');
