@@ -1917,13 +1917,17 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asw-mcard .asm-bar span{background:#ff4d6d;}
 .cb-note.soon b{color:#fff;}
 @media (max-width:620px){.asw-t{grid-template-columns:minmax(0,1fr) 70px 74px;gap:6px;}.asw-stake{grid-template-columns:1fr;}.asw-w{grid-template-columns:1fr;}.asw-w .r,.asw-w .vs{text-align:left;}.asw-lr{grid-template-columns:24px 58px 1fr 58px;}}
-.pc-clans{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.pc-chip{display:inline-flex;align-items:center;gap:6px;font:700 12.5px var(--mono);border:1px solid var(--c);color:#e9edf5;background:#05070c;border-radius:20px;padding:3px 10px 3px 4px;cursor:pointer;min-height:0;}
-.pc-chip i{width:16px;height:16px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
-.pc-chip img.pc-ci{width:20px;height:20px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;box-shadow:0 0 0 1.5px var(--c);margin:-2px 0;}
-.pc-chip em{font-style:normal;color:#aab4c6;font-weight:500;}
-.pc-chip:hover{box-shadow:0 0 10px color-mix(in srgb,var(--c) 45%,transparent);}
-.pc-chip.war em{color:#ffb3c0;}
+/* Clans as a flat line under the name: logo, tag, a quiet note; a small dot between clans. */
+.pc-clans{display:flex;gap:4px 18px;flex-wrap:wrap;align-items:center;margin-top:8px;}
+.pc-chip{position:relative;display:inline-flex;align-items:center;gap:8px;background:none;border:0;border-radius:6px;padding:2px 0;color:#e9edf5;cursor:pointer;min-height:0;font:inherit;}
+.pc-chip+.pc-chip::before{content:"";position:absolute;left:-11px;top:50%;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:#2b3650;}
+.pc-chip i{width:12px;height:12px;margin:0 6px;border-radius:50%;background:var(--c);display:inline-block;flex:none;}
+.pc-chip img.pc-ci{width:24px;height:24px;border-radius:50%;object-fit:cover;flex:none;background:#0b0f17;}
+.pc-chip b{font:800 14px var(--mono);letter-spacing:.3px;}
+.pc-chip em{font-style:normal;color:var(--muted,#9aa6b8);font-size:13px;font-weight:500;}
+.pc-chip:hover b,.pc-chip:focus-visible b{color:#fff;text-decoration:underline;text-underline-offset:3px;}
+.pc-chip:focus-visible{outline:2px solid var(--blue,#2f7bff);outline-offset:3px;}
+.pc-chip.war em{color:#ff8fa3;font-weight:700;}
 .pc-war{display:flex;gap:10px;align-items:center;margin:0 0 10px;border:1px solid rgba(255,77,109,.5);border-radius:11px;padding:10px 12px;background:linear-gradient(90deg,rgba(255,77,109,.14),rgba(255,77,109,.02));font-size:13.5px;color:#f3c6cf;}
 .pc-war[hidden]{display:none;}
 .pc-war-ic{font-size:19px;color:#ff8fa3;flex:none;}
@@ -2968,7 +2972,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T14:10:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T15:37:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -11853,12 +11857,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var on = !!state.player && pcc.pid === String(state.player.id), h = '', b = '';
     if (on && pcc.bl.length) {
       var c = pcc.bl[0];
-      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + esc(c.tag) + ' <em>BL</em></button>';
+      h += '<button type="button" class="pc-chip" data-pcc="bl" style="--c:' + esc(pcColor(c.color, '#45adde')) + '" title="' + esc((c.name || c.tag) + ' on BeatLeader: maps your clan could defend or capture') + '">' + pcIcon(c.icon) + '<b>' + esc(c.tag) + '</b><em>BeatLeader</em></button>';
     }
     var w = on ? pcc.war : null;
     if (on && pcc.as) {
       var a = pcc.as, at = w && w.phase === 'active', day = at && w.startsAt ? Math.max(1, Math.floor((Date.now() - new Date(w.startsAt).getTime()) / 86400000) + 1) : 0;
-      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + esc(a.tag) + ' <em>' + (at ? '&#9876; day ' + day : w ? '&#9876; soon' : pcc.rank ? aswOrd(pcc.rank) : 'AccSaber') + '</em></button>';
+      h += '<button type="button" class="pc-chip' + (w ? ' war' : '') + '" data-pcc="as" style="--c:' + esc(w ? '#ff4d6d' : pcColor(a.tagColor || a.primaryColor, '#e8335a')) + '" title="' + esc((a.name || a.tag) + ' on AccSaber: ' + (w ? 'war, ' : '') + 'season race and missions') + '">' + pcIcon(a.iconUrl) + '' + '<b>' + esc(a.tag) + '</b><em>' + (at ? '&#9876; at war, day ' + day : w ? '&#9876; war soon' : pcc.rank ? 'AccSaber ' + aswOrd(pcc.rank) : 'AccSaber') + '</em></button>';
       if (w) {
         var tag = esc(a.tag), opp = esc(w.opp || 'the enemy'), title, line, btn;
         if (at) { title = tag + ' is at war with ' + opp; line = 'Day ' + day + (w.endsAt && ascLeft(new Date(w.endsAt).toISOString()) ? ', ' + esc(ascLeft(new Date(w.endsAt).toISOString())) + ' left.' : '.') + (pcc.guard != null ? ' Your guard is ' + Math.round(pcc.guard) + '.' : ''); btn = 'Fight'; }
