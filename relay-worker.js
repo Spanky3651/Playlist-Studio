@@ -1701,6 +1701,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <p class="when" id="b-geonote"></p>
 <div class="blk"><h2>Where from</h2><div class="bars" id="b-refs"></div></div>
 <div class="blk"><h2>Phone or computer</h2><div class="bars" id="b-dev"></div></div>
+<div class="blk"><h2>Browsers</h2><div class="bars" id="b-br"></div></div>
 <p class="when" id="b-when"></p>
 </section>
 
@@ -2925,6 +2926,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     bars('b-refs', (d.refs || []).filter(function (r) { return r.name; }).map(function (r) { return refRow(r, isMyLink(r) ? 'g' : ''); }), '', 'No referrers in this range.');
     renderGeo(d);
     bars('b-dev', devRows(dev));
+    bars('b-br', (d.browsers || []).slice(0, 8).map(browserRow), '', 'No browsers in this range.');
     $('b-geoh').classList.toggle('hidden', !(d.locations || []).some(function (c) { return c.count > 0; }));
     hideEmptyCards('bl');
     $('b-geo').classList.toggle('hidden', !(d.locations || []).some(function (c) { return c.count > 0; }));
