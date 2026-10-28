@@ -1271,6 +1271,7 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .msg.err{color:#ff8a98}
 .msg:empty{display:none}
 .embed body{padding-top:16px}
+.embed main{max-width:1120px}
 .embed .brand,.embed .top .sub{display:none}
 .embed .top{display:none}
 .embed main{padding-bottom:90px}
@@ -1648,7 +1649,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   if (embedded) {
     document.documentElement.classList.add('embed');
     document.body.appendChild(document.getElementById('tools'));
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') try { parent.postMessage('studio-sync-stats-close', 'https://spanky3651.github.io'); } catch (x) {} });
+    window.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !(typeof sheetAt !== 'undefined' && sheetAt)) try { parent.postMessage('studio-sync-stats-close', 'https://spanky3651.github.io'); } catch (x) {} });
   }
   var K = 'studioSyncAdminKey', keyIn = document.getElementById('key'), msg = document.getElementById('msg');
   function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; }

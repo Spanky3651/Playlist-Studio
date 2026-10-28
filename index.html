@@ -1326,6 +1326,7 @@ body.sd-lock{overflow:hidden}
 .sd-body>*{flex-shrink:0}
 /* Studio Sync stats drawer (five quick clicks on the Studio Sync tab in Save and send): the Worker's private /admin page */
 .sd.ssa .sd-body{padding:0;gap:0}
+@media(min-width:721px){.sd.ssa{width:min(1180px,94vw)}}
 .sd.ssa iframe{flex:1;width:100%;border:0;background:#000}
 .sd.ssa a.sd-link{text-decoration:none}
 .sd.ssa .ssa-logo{width:30px;height:30px;border-radius:8px;flex:none;box-shadow:0 0 12px rgba(47,123,255,.25)}
@@ -2968,7 +2969,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:12:00Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T11:16:00Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -6838,7 +6839,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var endDrag = function () { if (dy0 === null) return; dy0 = null; panel.classList.remove('drag'); panel.style.transform = ''; if (dy > 90) close(); };
       head.addEventListener('touchend', endDrag); head.addEventListener('touchcancel', endDrag);
     }
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+    window.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); }, true);
     // Esc pressed inside the stats page arrives as a message from the Worker's page.
     window.addEventListener('message', function (e) {
       if (e.origin !== PUB_BASE) return;
