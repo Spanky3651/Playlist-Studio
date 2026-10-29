@@ -3045,7 +3045,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T00:46Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T00:47Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7765,7 +7765,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqFavSortMenu(srt) {
     var g = function (label, opts) { return '<optgroup label="' + label + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === srt ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</optgroup>'; };
     return g('Song', [['name', 'Song name'], ['artist', 'Artist'], ['mapper', 'Mapper']]) +
-      (state.player ? g('Your scores', [['acc', 'Best accuracy'], ['pp', 'Most pp'], ['recent', 'Played recently'], ['oldest', 'Played longest ago'], ['nofc', 'Not FC\u2019d first'], ['unplayed', 'Not played first']]) : '') +
+      (state.player ? g('Your scores', [['acc', 'Best accuracy'], ['pp', 'Most pp'], ['recent', 'Last played'], ['oldest', 'Last played, oldest first'], ['nofc', 'Not FC\u2019d first'], ['unplayed', 'Not played first']]) : '') +
       g('Map', [['stars', 'Stars'], ['length', 'Longest'], ['bpm', 'Highest BPM'], ['rating', 'BeatSaver rating'], ['newmap', 'Newest upload'], ['miss', 'Not downloaded first']]);
   }
   function lqFavSortGet() { var v = ''; try { v = localStorage.getItem(LQ_FAVSORT) || ''; } catch (e) {} return /^(artist|mapper|stars|miss|acc|pp|recent|oldest|unplayed|nofc|length|bpm|rating|newmap)$/.test(v) ? v : 'name'; }
