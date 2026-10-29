@@ -720,6 +720,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-fav-off .ic{color:#5d6f8a;font-size:18px;}
 .lq-heart{flex:none;display:grid;place-items:center;width:28px;height:28px;min-width:0;min-height:0;padding:0;border:0;border-radius:7px;background:none;box-shadow:none;color:#3f4f68;font-size:17px;line-height:1;cursor:pointer;}
 .lq-heart.on{color:#ff3b63;}
+.lq-peek li .pk-heart{margin-left:-4px;}
 .lq-heart svg.fav-h,.row-btn.fav svg.fav-h{width:18px;height:18px;display:block;}
 .lq-heart:not(.on):hover,.row-btn.fav:not(.on):hover{color:#ff8fa3;}
 .lq-heart:hover,.lq-heart:focus-visible{background:#1a1220;border:0;box-shadow:none;}
@@ -1664,6 +1665,9 @@ body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s
 .play-chip .pc-n{font-size:11.5px;color:#6c7689;background:#121722;border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums;}
 .play-chip.active .pc-n{color:#d6e5ff;background:rgba(30,107,255,.3);}
 .play-chip.zero:not(.active){opacity:.55;}
+.feat-tile .ft-v small{font-size:.6em;font-weight:600;color:var(--muted);}
+.play-chip.fav-chip.active{background:rgba(255,59,99,.16);border-color:#ff3b63;color:#fff;box-shadow:0 0 9px rgba(255,59,99,.25);}
+.play-chip.fav-chip.active .pc-n{color:#ffd0da;background:rgba(255,59,99,.3);}
 .sort-order .so-a{font-weight:700;}
 .rank-seg{display:none;}
 /* NEW strip for maps you haven't played */
@@ -2623,6 +2627,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
             <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
             <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
+            <button type="button" class="play-chip fav-chip" id="favChip" hidden aria-pressed="false" title="Only songs you've favorited on your Quest. Works with the other chips.">♥ Favorites</button>
             <button type="button" class="play-chip play-more" id="playMoreBtn" aria-expanded="false" aria-controls="playMoreRow" title="Last played and accuracy filters">More <span class="pm-n" id="playMoreN"></span></button>
           </div>
           <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
@@ -2761,6 +2766,10 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
                     <option value="accAbove">My accuracy ≥ …%</option>
                     <option value="accBelow">My accuracy &lt; …%</option>
                     <option value="stale">Not played in over a year</option>
+                  </optgroup>
+                  <optgroup label="Favorites">
+                    <option value="fav">Songs I've favorited</option>
+                    <option value="notfav">Songs I haven't favorited</option>
                   </optgroup>
                   <optgroup label="Difficulty">
                     <option value="starRange">Star rating in range</option>
@@ -3046,7 +3055,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T00:53Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T00:59Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -5007,6 +5016,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // Oct 25 2026: count every Your plays chip in one pass. The play status is checked last, so the counts
     // are "what each chip would show" with every other filter applied.
     var psWant = f.playStatus, pc = { any: 0, unplayed: 0, played: 0, fc: 0, nofc: 0, nearfc: 0, nf: 0 };
+    var favDev = lqFavDev(), favOnly = !!(state.favOnly && favDev);
     f.playStatus = 'any';
     var out = state.raw.filter(function (s) {
       if (exact) return true;
@@ -5078,6 +5088,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         var exHay = (s.mapper + ' ' + s.author).toLowerCase();
         if (f.mapperExclude.some(function (t) { return exHay.indexOf(t) !== -1; })) return false;
       }
+      if (favOnly && !lqIsFav(favDev, s.hash)) return false;
       if (state.player && !exact) {
         var pq = playInfo(s); pc.any++;
         if (!pq) pc.unplayed++; else { pc.played++; if (pq.fc) pc.fc++; else { pc.nofc++; if (pq.near) pc.nearfc++; } if (pq.nf) pc.nf++; }
@@ -5087,6 +5098,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       return true;
     });
     f.playStatus = psWant; state.playCounts = state.player && !exact ? pc : null;
+    state.favCount = favDev ? (favOnly ? out.length : out.filter(function (x) { return lqIsFav(favDev, x.hash); }).length) : null;
     var key = f.sort;
     var isMy = key === 'myAcc' || key === 'myRank' || key === 'myDate' || key === 'improve';
     if (state.viewMode === 'recommend') {
@@ -5639,7 +5651,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     else { rc.innerHTML = '<b>' + fmtN(avail.length) + '</b><span>' + (avail.length === 1 ? 'map' : 'maps') + '</span>'; rc.classList.add('on'); rc.classList.remove('filt'); }
     rc.title = rows.length ? (allN > avail.length ? avail.length + ' shown of ' + allN + ' that match your search filters' : avail.length + ' maps match your filters') : '';
     var aan = document.getElementById('addAllN'); if (aan) aan.textContent = rows.length ? fmtN(rows.length) : '';
-    var pc = state.playCounts;
+    var pc = state.playCounts, fch = document.getElementById('favChip');
+    if (fch) { var fn = state.favCount; fch.innerHTML = '\u2665 Favorites' + (fn != null && state.raw.length ? '<span class="pc-n">' + fmtN(fn) + '</span>' : ''); fch.classList.toggle('zero', fn === 0 && !state.favOnly); }
     Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip[data-ps]'), function (b) {
       if (b.dataset.lbl == null) b.dataset.lbl = b.textContent.trim();
       var n = pc ? pc[b.dataset.ps] : null;
@@ -6274,6 +6287,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var avgPp = ppVals.length ? ppVals.reduce(function (a, c) { return a + c; }, 0) / ppVals.length : 0;
     var rt = basketRuntime() > 0 ? fmtDur(basketRuntime()) : '-';
     var tiles = [['Songs', n], ['Runtime', rt], ['Avg \u2605', avgStar ? avgStar.toFixed(1) : '-'], ['Avg PP', avgPp ? Math.round(avgPp) : '-'], ['Mappers', Object.keys(mappers).length]];
+    var sfd = lqFavDev();
+    if (sfd) { var sfn = 0, sfs = {}; u.forEach(function (e) { var hh = (e.hash || '').toLowerCase(); if (hh && !sfs[hh] && lqIsFav(sfd, hh)) { sfs[hh] = 1; sfn++; } }); tiles.push(['Favorites', sfn + '<small> of ' + n + '</small>']); }
     var html = '<div class="feat-tiles">' + tiles.map(function (t) { return '<div class="feat-tile"><div class="ft-v">' + t[1] + '</div><div class="ft-l">' + t[0] + '</div></div>'; }).join('') + '</div>';
     if (starVals.length) {
       var bins = []; var i; for (i = 0; i < 12; i++) bins.push(0);
@@ -6490,6 +6505,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Does this basket entry belong to the target set? Mirrors the results play-status filter exactly.
   function refineMatches(e, crit, accVal, starMin, starMax) {
     if (crit === 'starRange') { var st = +e.stars || 0; return st > 0 && st >= starMin && st <= starMax; }
+    if (crit === 'fav' || crit === 'notfav') { var fdv = lqFavDev(); return !!fdv && (lqIsFav(fdv, e.hash) === (crit === 'fav')); }
     var pi = playInfo(e), played = !!pi;
     switch (crit) {
       case 'played':   return played;
@@ -6515,16 +6531,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var o = refineOpts(), crit = o.crit, scoreBased = !!SCORE_CRITS[crit];
     el.refineAccWrap.hidden = !(crit === 'accAbove' || crit === 'accBelow');
     el.refineStarWrap.hidden = crit !== 'starRange';
-    var total = state.basket.length, needProfile = scoreBased && !state.player;
+    var total = state.basket.length, needProfile = scoreBased && !state.player, needFav = (crit === 'fav' || crit === 'notfav') && !lqFavDev();
     el.refineConnectHint.hidden = !needProfile;
     if (!total) { el.refinePreview.className = 'refine-note'; el.refinePreview.textContent = 'Your playlist is empty.'; }
+    else if (needFav) { el.refinePreview.className = 'refine-note'; el.refinePreview.innerHTML = 'Favorites come from a linked headset that shares them. Link one in <b>Studio Sync</b> to use this.'; }
     else if (needProfile) { el.refinePreview.className = 'refine-note'; el.refinePreview.innerHTML = '<b>' + total + '</b> map' + (total === 1 ? '' : 's') + ' in your playlist.'; }
     else {
       var m = refineCount(o);
       el.refinePreview.className = 'refine-note' + (m ? ' hot' : '');
       el.refinePreview.innerHTML = 'Matches <b>' + m + '</b> of <b>' + total + '</b> - Remove leaves ' + (total - m) + ', Keep leaves ' + m + '.';
     }
-    var disable = !total || needProfile;
+    var disable = !total || needProfile || needFav;
     el.refineRemoveBtn.disabled = disable;
     el.refineKeepBtn.disabled = disable;
     // Quick chips are all score-based → dim them without a profile.
@@ -6534,6 +6551,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (crit) el.refineCrit.value = crit;
     var o = refineOpts();
     if (SCORE_CRITS[o.crit] && !state.player) { toast('Connect your BeatLeader profile first (Your scores).', 'warn'); updateRefineUI(); return; }
+    if ((o.crit === 'fav' || o.crit === 'notfav') && !lqFavDev()) { toast('Link a headset that shares its favorites in Studio Sync first.', 'warn'); updateRefineUI(); return; }
     if (!state.basket.length) return;
     track('refine');
     var before = state.basket.slice();
@@ -7815,6 +7833,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (open) h += lqFavPeekHtml(d);
     return h + '</div>';
   }
+  // A heart on each song of a headset playlist, for that headset's favorites.
+  function lqPkHeart(devId, h) {
+    h = String(h || '').toLowerCase();
+    if (!/^[0-9a-f]{40}$/.test(h) || !lqFavShared(devId)) return '';
+    var on = lqIsFav(devId, h), dn = esc(lqDevName(devId));
+    return '<button type="button" class="lq-heart pk-heart' + (on ? ' on' : '') + '" data-lq-favh="' + esc(devId) + '|' + h + '|' + (on ? 0 : 1) + '" aria-pressed="' + on + '" title="' + (on ? 'Unfavorite on ' : 'Favorite on ') + dn + '">' + favHeartSvg(on) + '</button>';
+  }
   // The drawn heart for song rows: filled when it's a favorite, an outline when it isn't.
   function favHeartSvg(on) {
     var d = 'M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z';
@@ -8773,7 +8798,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }
       rows.push('<li>' + (canMove ? '<button type="button" class="pk-grip" data-lq-pkgrip="' + esc(key) + '|' + si + '" title="Drag to reorder" aria-label="Move ' + esc(nm) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '') +
         '<img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(nm) + (sg.levelAuthorName ? '<small>' + esc(sg.levelAuthorName) + '</small>' : '') + '</span>' +
-        (dh ? '<span class="pk-d">' + dh + '</span>' : '') +
+        (dh ? '<span class="pk-d">' + dh + '</span>' : '') + lqPkHeart(d.id, h) +
         (canMove || (pl.songs.length === 1 && !edHere && !state.lq.busy) ? '<button type="button" class="pk-x" data-lq-pkrm="' + esc(key) + '|' + esc(h) + '" title="Remove from this playlist" aria-label="Remove ' + esc(nm) + '">\u00d7</button>' : '') + '</li>');
     });
     if (pl) lqPkNeed(pl);
@@ -8974,7 +8999,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (lqDrag) { lqDrag.dirty = true; return; }
     try { lqAddToRender(); } catch (e) {}   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
-    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); renderResults(); syncInlineSort(); if (el.fSort && el.fSort.value === 'fav') setTimeout(applyClientFilters, 0); }   // hearts in Your Playlist and the results follow the headset
+    var fsig = lqFavSig(); if (fsig !== lqRender.fsig) { lqRender.fsig = fsig; renderBasket(); renderResults(); syncInlineSort(); renderStats(); if (el.fSort && el.fSort.value === 'fav' || state.favOnly) setTimeout(applyClientFilters, 0); }   // hearts in Your Playlist and the results follow the headset
     var lib = libGet(), lq = state.lq, live = state.pubAvailable === true, down = state.pubAvailable === false;
     var linked = !!(live && lib && lq.devices.length), ed = lq.editing;
     panel.hidden = !lqShown();
@@ -10113,10 +10138,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
       npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value, njsMin: el.fNjsMin.value, njsMax: el.fNjsMax.value,
       durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value,
-      ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod };
+      ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod, favOnly: !!state.favOnly };
   }
   function applyPreset(p) {
-    el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc'; state.sortTouched = true;
+    el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc'; state.sortTouched = true; state.favOnly = !!p.favOnly;
     el.fMaxScan.value = p.maxScan || savedMaxScan(); el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
     state.bandAuto = (parseFloat(el.starMinNum.value) <= 0 && parseFloat(el.starMaxNum.value) >= 15); markLvl(null);
     el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
@@ -10817,9 +10842,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var connected = !!state.player;
     el.playFilterBar.classList.toggle('connected', connected);
     var ps = el.playStatus ? el.playStatus.value : 'any';
-    Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip'), function (b) {
+    Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip[data-ps]'), function (b) {
       b.classList.toggle('active', b.dataset.ps === ps);
     });
+    var fch = document.getElementById('favChip'), fok = !!lqFavDev();
+    if (fch) { fch.hidden = !fok; var fon = !!(state.favOnly && fok); fch.classList.toggle('active', fon); fch.setAttribute('aria-pressed', fon ? 'true' : 'false'); }
     syncInlineSort();
   }
   // Resolve whatever the user typed into a full BeatLeader player object. /player/{token} already
@@ -12976,6 +13003,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.querySelectorAll('#quickLists [data-quick]').forEach(function (btn) { btn.addEventListener('click', function () { applyQuickList(this.dataset.quick); }); });
     // Results-side play-history chips (mirror the profile dropdown)
     el.playChips.addEventListener('click', function (e) {
+      if (e.target.closest('#favChip')) { state.favOnly = !state.favOnly; if (state.favOnly) track('fav-chip'); applyClientFilters(); return; }
       var b = e.target.closest('.play-chip[data-ps]'); if (!b) return;
       if (!state.player) { focusProfileConnect(); return; }
       el.playStatus.value = b.dataset.ps; if (b.dataset.ps !== 'played') el.accMax.value = '';
