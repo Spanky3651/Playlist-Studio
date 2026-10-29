@@ -26,6 +26,10 @@ export default {
       try { return await hosted(request, env, ctx, url); }
       catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
     }
+    if (url.pathname === "/seen") {
+      try { return await seenPost(request, env, ctx); }
+      catch (e) { return json({ ok: false }, 500, writeCors(request)); }
+    }
     if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
       try { return await admin(request, env, url); }
       catch (e) { return json({ error: "Server error" }, 500, { "Cache-Control": "no-store" }); }
@@ -66,6 +70,37 @@ async function relay(request, url) {
   headers.set("Content-Type", upstream.headers.get("Content-Type") || "application/json");
   headers.set("Cache-Control", "public, max-age=60");
   return new Response(upstream.body, { status: upstream.status, headers });
+}
+
+// ---------------------------------------------------------------- when a profile was connected (/seen)
+// Studio posts the public BeatLeader id and name it just connected (the same profile it already counts in
+// GoatCounter), and the time is kept: the last 60 connects per player, so the owner's stats page can show when
+// each one connected, to the minute. Only from Studio's own page, and a connect within a minute of the last counts once.
+const SEEN_MAX = 60, SEEN_TTL = 60 * 60 * 24 * 400;
+async function seenPost(request, env, ctx) {
+  const cors = writeCors(request);
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (request.method !== "POST") return json({ ok: false }, 405, cors);
+  if (!env.PLAYLISTS || !originOk(request)) return json({ ok: false }, 403, cors);
+  if (!(await allowWrite(request, env, "seen", 20))) return json({ ok: false }, 429, cors);
+  let b = {}; try { b = JSON.parse((await request.text()).slice(0, 500)); } catch (e) {}
+  const id = String((b && b.id) || "");
+  if (!/^\d{3,25}$/.test(id)) return json({ ok: false }, 400, cors);
+  const name = String((b && b.name) || "").replace(/[\u0000-\u001f]/g, "").slice(0, 60);
+  const k = "gc:pseen:" + id, now = nowSec(), rec = (await env.PLAYLISTS.get(k, "json")) || { t: [] };
+  if (!Array.isArray(rec.t)) rec.t = [];
+  if (!rec.t.length || now - rec.t[rec.t.length - 1] > 60) { rec.t.push(now); rec.t = rec.t.slice(-SEEN_MAX); }
+  if (name) rec.n = name;
+  const put = env.PLAYLISTS.put(k, JSON.stringify(rec), { expirationTtl: SEEN_TTL });
+  if (ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
+  return json({ ok: true }, 200, cors);
+}
+async function seenTimes(env, ids) {
+  const out = {};
+  for (let i = 0; i < ids.length; i += 25) await Promise.all(ids.slice(i, i + 25).map(async (id) => {
+    try { const r = await env.PLAYLISTS.get("gc:pseen:" + id, "json"); if (r && Array.isArray(r.t) && r.t.length) out[id] = r.t.slice(-SEEN_MAX); } catch (e) {}
+  }));
+  return out;
 }
 
 // ---------------------------------------------------------------- hosted playlists
@@ -1109,7 +1144,7 @@ async function adminStats(env) {
       const devs = Array.isArray(lib.devices) ? lib.devices : [];
       st.hostedLinks += (lib.items || []).length;
       if (!devs.length) { st.librariesNoHeadset++; return; }
-      const user = { id: (lib.player && lib.player.id) || "", name: (lib.player && lib.player.name) || "", headsets: devs.length, last: 0, linked: 0, mod: "" };
+      const user = { id: (lib.player && lib.player.id) || "", name: (lib.player && lib.player.name) || "", headsets: devs.length, last: 0, linked: 0, mod: "", hs: [] };
       if (devs.length > 1) st.librariesMulti++;
       const seen = await withSeen(env, id, devs);
       const invs = await Promise.all(devs.map((d) => env.PLAYLISTS.get(invKey(id, d.id), "json")));
@@ -1120,6 +1155,7 @@ async function adminStats(env) {
       seen.forEach((d, j) => {
         st.headsets++;
         const s = d.seen || 0, added = d.added || 0;
+        user.hs.push({ s, a: added });
         if (s > user.last) user.last = s;
         if (added && (!user.linked || added < user.linked)) user.linked = added;
         if (!s) st.neverSynced++;
@@ -1154,6 +1190,8 @@ async function adminStats(env) {
     }));
   }
   st.users.sort((a, b) => b.last - a.last);
+  st.users.forEach((u) => u.hs.sort((a, b) => b.s - a.s));
+  try { const ut = await seenTimes(env, st.users.filter((u) => u.id).slice(0, 80).map((u) => u.id)); st.users.forEach((u) => { if (ut[u.id]) u.times = ut[u.id]; }); } catch (e) {}
   // Profile pictures from the same BeatLeader cache as the Players tab.
   try { const bl = await gcClans(env, st.users.filter((u) => u.id).slice(0, 60).map((u) => u.id)); st.users.forEach((u) => { const x = bl[u.id]; u.avatar = x ? gcAvatar(x.avatar) : ""; }); } catch (e) {}
   return st;
@@ -1350,8 +1388,13 @@ async function gcStats(env, range, fresh, site, tz) {
   const me = String(env.ADMIN_ME || "MSploit").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
   const players = hits.filter((h) => /^profile\//.test(h.path)).map((h) => {
     const name = h.path.slice(8), m = /\((\d{3,25})\)\s*$/.exec(h.title || "");
-    return { name, id: m ? m[1] : "", count: h.count, last: gcLastDay(h.days), first: seen.p[h.path] || gcFirstDay(h.days), me: me.includes(name.toLowerCase()) };
-  }).sort((a, b) => (b.last || "").localeCompare(a.last || "") || b.count - a.count);
+    return { name, id: m ? m[1] : "", count: h.count, last: gcLastDay(h.days), first: seen.p[h.path] || gcFirstDay(h.days), me: me.includes(name.toLowerCase()),
+      days: (h.days || []).filter((d) => d[1] > 0) };
+  });
+  const ptimes = await seenTimes(env, players.filter((p) => p.id).slice(0, 120).map((p) => p.id));
+  players.forEach((p) => { const t = ptimes[p.id]; if (t) { p.times = t; p.lastT = t[t.length - 1]; } });
+  const dsec = (d) => (d ? Date.parse(d + "T12:00:00Z") / 1000 : 0);
+  players.sort((a, b) => Math.max(b.lastT || 0, dsec(b.last)) - Math.max(a.lastT || 0, dsec(a.last)) || b.count - a.count);
   const bl = await gcClans(env, players.filter((p) => p.id).slice(0, 80).map((p) => p.id));
   players.forEach((p) => { const x = bl[p.id]; p.clans = x && !p.me ? x.tags || null : null; p.avatar = x ? gcAvatar(x.avatar) : ""; });
   const events = hits.filter((h) => h.event && !/^profile\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
@@ -1575,6 +1618,17 @@ button.linkish:hover{color:var(--text)}
 .prow a{color:#cfe0ff;text-decoration:none;font-weight:700;overflow-wrap:anywhere}
 .prow a:hover{text-decoration:underline}
 .prow .n{text-align:right;font-weight:700}
+.ncnt{font:inherit;font-weight:800;color:var(--text,#e9edf5);background:transparent;border:1px solid transparent;border-radius:8px;padding:4px 8px 4px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-right:-8px}
+.ncnt:hover,.ncnt.on{border-color:#1f3456;background:#0d1626}.ncnt .cv{font-size:11px;color:var(--muted)}
+.prow.sel{background:#0d1626}
+.ldot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3ddc84;box-shadow:0 0 6px #3ddc84;margin-right:6px;vertical-align:1px}
+.pdet{padding:4px 16px 14px 63px;background:#0d1626;border-top:1px solid #141c2a}
+.pd-h{font-size:13px;color:var(--muted);margin:6px 0 8px}.pd-h:empty{display:none}
+.spk{display:flex;align-items:flex-end;gap:3px;height:34px}.spk i{flex:1;height:8%;background:#1a2336;border-radius:2px;min-height:3px}.spk i.on{background:#2f7bff}
+.spk-l{display:flex;justify-content:space-between;font-size:11.5px;color:#5d6f8a;margin:3px 0 10px}
+.dls{display:flex;flex-direction:column}.dls.hs{margin-bottom:6px}
+.dl{display:grid;grid-template-columns:80px minmax(0,1fr) 28px;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid #141c2a;font-size:14px}
+.dl:first-child{border-top:0}.dl .dd{font-weight:700;color:var(--text,#e9edf5)}.dl .dt{color:var(--muted);font-size:13px}.dl .dn{text-align:right;font-weight:700;color:#cfe0ff}.dl .dim{color:#5d6f8a}
 .pb{font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;border:1px solid;white-space:nowrap;display:inline-block}
 .pb.new{color:#9ff0c4;border-color:#1d4a33;background:#06140d}.pb.back{color:#8fbaff;border-color:#1f3456}
 .pb.clan{color:var(--muted);border-color:var(--line)}.pb.mine{color:#ffd28a;border-color:#4a3a1c}.pb.me{color:var(--muted);border-color:var(--line);border-style:dashed}
@@ -1667,6 +1721,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   .prow .c-first{display:none}
   .prow .c-last{grid-column:1;grid-row:2;color:var(--muted);font-size:13.5px}
   .prow .n{grid-column:2;grid-row:1 / span 2}
+  .pdet{padding-left:14px}
   .chart svg{height:180px}
   .funnel .lab{white-space:normal}
   .bars.feat .bar{grid-template-columns:minmax(0,1fr) 26% 44px}
@@ -1684,7 +1739,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
 <div class="tools hidden" id="tools"><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
-<div class="keyrow" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
+<div class="keyrow hidden" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
@@ -3072,6 +3127,38 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var pf = { find: '', fnew: false, fclan: false, fme: ls('studioStatsHideMe') !== '0' }, pShown = 40;
   $('p-fme').setAttribute('aria-pressed', pf.fme ? 'true' : 'false');
   function mine(p) { return (p.clans || []).some(function (t) { return (gc.myClans || []).indexOf(t) >= 0; }); }
+  // How long ago, in minutes, hours, days or months; the exact time goes in the tooltip.
+  function agoAt(sec) {
+    var s = Math.max(0, Date.now() / 1000 - sec), m = Math.floor(s / 60), h = Math.floor(s / 3600), d = Math.floor(s / 86400);
+    return s < 60 ? 'just now' : m < 60 ? m + ' min ago' : h < 24 ? h + ' h ago' : d < 60 ? d + ' d ago' : Math.floor(d / 30) + ' mo ago';
+  }
+  function atTime(sec) { var t = new Date(sec * 1000); return t.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+  function dayKey(sec) { var t = new Date(sec * 1000); return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2); }
+  function dayName(k) { var n = new Date(), y = new Date(Date.now() - 86400000); return k === dayKey(n / 1000) ? 'Today' : k === dayKey(y / 1000) ? 'Yesterday' : dshort(k); }
+  function lastCell(sec, day) {
+    if (sec) return '<span class="c-last" title="' + esc(atTime(sec)) + '">' + (Date.now() / 1000 - sec < 3600 ? '<span class="ldot"></span>' : '') + agoAt(sec) + '</span>';
+    return '<span class="c-last">' + dago(day) + '</span>';
+  }
+  // The connects by day, newest first: the times Studio sent, then older days GoatCounter counted before that.
+  function connectDays(times, days) {
+    var by = {}, first = times && times.length ? dayKey(times[0]) : null;
+    (times || []).forEach(function (t) { var k = dayKey(t); (by[k] = by[k] || { t: [], n: 0 }).t.push(t); by[k].n++; });
+    (days || []).forEach(function (d) { if (!by[d[0]] && (!first || d[0] < first)) by[d[0]] = { t: [], n: d[1] }; });
+    return Object.keys(by).sort().reverse().map(function (k) { return { k: k, t: by[k].t, n: by[k].n }; });
+  }
+  function strip30(list) {
+    var hit = {}, mx = 1; list.forEach(function (x) { hit[x.k] = x.n; if (x.n > mx) mx = x.n; });
+    var h = '';
+    for (var i = 29; i >= 0; i--) { var k = dayKey(Date.now() / 1000 - i * 86400), v = hit[k] || 0; h += '<i' + (v ? ' class="on" style="height:' + Math.max(18, Math.round(v / mx * 100)) + '%"' : '') + ' title="' + esc(dayName(k)) + (v ? ': ' + v : '') + '"></i>'; }
+    return '<div class="spk">' + h + '</div><div class="spk-l"><span>30 days ago</span><span>today</span></div>';
+  }
+  function detailHtml(head, list, extra) {
+    var rows = list.slice(0, 30).map(function (x) {
+      return '<div class="dl"><span class="dd">' + esc(dayName(x.k)) + '</span><span class="dt">' + (x.t.length ? x.t.map(function (t) { return esc(new Date(t * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })); }).join(' &middot; ') : '<span class="dim">time not kept</span>') + '</span><span class="dn">' + fmt(x.n) + '</span></div>';
+    }).join('');
+    return '<div class="pdet"><div class="pd-h">' + head + '</div>' + (extra || '') + (list.length ? strip30(list) + '<div class="dls">' + rows + '</div>' : '<div class="pd-h">No connects yet.</div>') + '</div>';
+  }
+  var pOpen = {}, uOpen = {};
   function renderPlayers() {
     if (!gc) return;
     var all = gc.players.filter(function (p) { return !(pf.fme && p.me); }), start = gc.start;
@@ -3088,7 +3175,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       var b = (p.me ? '<span class="pb me">YOU</span>' : isNew(p) ? '<span class="pb new">NEW</span>' : '<span class="pb back">BACK</span>') +
         (p.clans || []).map(function (t) { return '<span class="pb ' + ((gc.myClans || []).indexOf(t) >= 0 ? 'mine' : 'clan') + '">' + esc(t) + '</span>'; }).join('');
       var av = '<span class="pav" aria-hidden="true">' + esc((p.name || '?').charAt(0).toUpperCase()) + (p.avatar && p.avatar.indexOf('https://') === 0 ? '<img src="' + esc(p.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
-      h += '<div class="prow"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + '</span></span><span class="c-first">' + dshort(p.first) + '</span><span class="c-last">' + dago(p.last) + '</span><span class="n">' + fmt(p.count) + '</span></div>';
+      h += '<div class="prow' + (pOpen[p.name] ? ' sel' : '') + '"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + '</span></span><span class="c-first">' + dshort(p.first) + '</span>' + lastCell(p.lastT, p.last) + '<span class="n"><button class="ncnt' + (pOpen[p.name] ? ' on' : '') + '" data-pk="' + esc(p.name) + '" aria-expanded="' + !!pOpen[p.name] + '" title="See when they connected">' + fmt(p.count) + '<span class="cv" aria-hidden="true">' + (pOpen[p.name] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
+      if (pOpen[p.name]) { var cl = connectDays(p.times, p.days); h += detailHtml(fmt(p.count) + ' connect' + (p.count === 1 ? '' : 's') + ' in this range' + (p.first ? ', first seen ' + esc(dshort(p.first)) : ''), cl); }
     });
     $('p-list').innerHTML = h;
     $('p-more').classList.toggle('hidden', list.length <= pShown);
@@ -3099,19 +3187,27 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     $(x[0]).addEventListener('click', function () { pf[x[1]] = !pf[x[1]]; this.setAttribute('aria-pressed', pf[x[1]] ? 'true' : 'false'); if (x[1] === 'fme') ls('studioStatsHideMe', pf.fme ? '1' : '0'); pShown = 40; renderPlayers(); });
   });
   $('p-more').addEventListener('click', function () { pShown += 40; renderPlayers(); });
+  $('p-list').addEventListener('click', function (e) { var b = e.target.closest('[data-pk]'); if (!b) return; var k = b.getAttribute('data-pk'); pOpen[k] = !pOpen[k]; renderPlayers(); });
+  $('u-list').addEventListener('click', function (e) { var b = e.target.closest('[data-uk]'); if (!b || !sync) return; var k = b.getAttribute('data-uk'); uOpen[k] = !uOpen[k]; renderUsers(sync); });
   Object.keys(TOOLS).forEach(function (t) { $(TOOLS[t].p + '-more').addEventListener('click', function () { this.setAttribute('data-all', this.getAttribute('data-all') === '1' ? '0' : '1'); renderTool(t); }); });
   $('f-more').addEventListener('click', function () { this.setAttribute('data-all', this.getAttribute('data-all') === '1' ? '0' : '1'); renderGc(); });
   // ---- Studio Sync ----
-  function sago(sec) { if (!sec) return 'never synced'; var d = Math.floor((Date.now() / 1000 - sec) / 86400); return d <= 0 ? 'synced today' : d === 1 ? 'synced yesterday' : 'synced ' + d + ' days ago'; }
+  function sago(sec) { return sec ? 'synced ' + agoAt(sec) : 'never synced'; }
   function renderUsers(s) {
     var us = s.users || [], h = '<div class="prow head"><span>Player</span><span class="c-first">Linked</span><span class="c-last">Last sync</span><span class="n">Headsets</span></div>';
     if (!us.length) h += '<div class="prow"><span class="empty">No Studio Sync users with a connected profile yet.</span></div>';
-    us.forEach(function (u) {
+    us.forEach(function (u, ui) {
+      var uk = u.id || u.name;
       var url = u.id ? 'https://beatleader.com/u/' + encodeURIComponent(u.id) : '#';
       var av = '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
       var linked = u.linked ? new Date(u.linked * 1000).toISOString().slice(0, 10) : '';
-      h += '<div class="prow"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>' +
-        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last">' + sago(u.last) + '</span><span class="n">' + fmt(u.headsets) + '</span></div>';
+      h += '<div class="prow' + (uOpen[uk] ? ' sel' : '') + '"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>' +
+        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[u.id || u.name] ? ' on' : '') + '" data-uk="' + esc(u.id || u.name) + '" aria-expanded="' + !!uOpen[u.id || u.name] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[u.id || u.name] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
+      if (uOpen[uk]) {
+        var hsr = (u.hs || []).map(function (x, i) { return '<div class="dl"><span class="dd">Headset ' + (i + 1) + '</span><span class="dt">' + (x.s ? 'synced ' + agoAt(x.s) + ' (' + esc(atTime(x.s)) + ')' : 'never synced') + (x.a ? ' &middot; linked ' + esc(dshort(dayKey(x.a))) : '') + '</span><span class="dn"></span></div>'; }).join('');
+        var ul = connectDays(u.times, null);
+        h += detailHtml(fmt(u.headsets) + ' headset' + (u.headsets === 1 ? '' : 's'), ul, '<div class="dls hs">' + hsr + '</div><div class="pd-h">' + (ul.length ? 'When they connected their profile in Studio' : '') + '</div>');
+      }
     });
     $('u-list').innerHTML = h;
     txt('u-note', (s.usersUnknown ? s.usersUnknown + (s.usersUnknown === 1 ? ' more player hasn\\u2019t' : ' more players haven\\u2019t') + ' opened Studio with a connected profile since this list started, so their name isn\\u2019t known yet. ' : '') + 'Names come from the BeatLeader profile connected in Studio when it checks the headset list.');
@@ -3164,6 +3260,6 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (allData && tab === 'all') allChart(allData); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab);
-  if (getKey()) { $('keyrow').classList.add('hidden'); loadSync(); }
+  if (getKey()) loadSync(); else $('keyrow').classList.remove('hidden');
 })();
 </script></body></html>`;

@@ -292,7 +292,7 @@ No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 
 ## Privacy
 
-- No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter. Studio also counts which features get used, and when you connect a BeatLeader profile it counts that public profile name, so the developer can see who uses Studio.
+- No account and no cookies. Page views are counted with [GoatCounter](https://www.goatcounter.com/), a privacy-friendly counter. Studio also counts which features get used, and when you connect a BeatLeader profile it counts that public profile name and the time you connected (the last 60 connects are kept), so the developer can see who uses Studio and when.
 - Presets, saved playlists, saved cover icons, your working session, and your connected profile + synced scores are all stored in your browser's local storage. Nothing is uploaded unless you choose **Host this playlist**, which stores that one playlist (songs, title, cover) on the Playlist Studio relay until you hit **Stop hosting** or it expires.
 - API requests hit BeatLeader, BeatSaver, ScoreSaber and AccSaber (public data), with BeatLeader and ScoreSaber going through the relay. Only anonymous, read-only requests are sent, apart from hosting a playlist when you ask for it.
 - **Send to Quest** in the Export panel talks to your headset over USB straight from your browser; the playlist never leaves your computer.

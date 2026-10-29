@@ -3055,7 +3055,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T00:59Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T11:09Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -4159,7 +4159,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   // Fire a privacy-friendly custom event to GoatCounter (no-op until analytics is configured).
   function track(name) { if (!name) return; try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'app/' + name, title: name, event: true }); } catch (e) {} }
-  function trackLookup(p) { try { if (!p) return; var name = String(p.name || 'unknown').slice(0, 60); if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'profile/' + name, title: 'Profile lookup: ' + name + (p.id ? ' (' + p.id + ')' : ''), event: true }); } catch (e) {} }
+  function trackLookup(p) { try { if (!p) return; var name = String(p.name || 'unknown').slice(0, 60); if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'profile/' + name, title: 'Profile lookup: ' + name + (p.id ? ' (' + p.id + ')' : ''), event: true });
+      // The same public profile also goes to the Worker with the time, so the stats page can show when each player connected.
+      if (window.goatcounter && window.goatcounter.count && /^\d{3,25}$/.test(String(p.id || ''))) fetch(PUB_BASE + '/seen', { method: 'POST', mode: 'cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: String(p.id), name: name }) }).catch(function () {});
+    } catch (e) {} }
   function setStatus(text, kind) { el.statusText.textContent = text; el.statusPill.className = 'status-pill' + (kind ? ' ' + kind : ''); }
   var toastTimer;
   function toast(msg, kind) {
