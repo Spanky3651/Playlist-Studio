@@ -1542,7 +1542,6 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut
 .embed #tools button.icon svg{width:24px;height:24px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
 .card{position:relative;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:0;overflow:hidden}
-.card::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent,#26324a),transparent 70%)}
 .card.hero{--accent:var(--green)}
 .spark{width:100%;height:30px;margin-top:10px;opacity:.95}
 .spark svg{width:100%;height:100%;display:block}
@@ -1612,7 +1611,6 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .hch{display:block;min-width:0}.hch svg{width:100%;height:120px;display:block}.hax{display:flex;justify-content:space-between;font-size:12px;color:#7f8a9c;margin-top:4px}
 @media(max-width:700px){.hero2 .hrow{grid-template-columns:1fr;gap:12px}.site.hero2 .sv{font-size:36px}.hstats{gap:16px}.sites.three{grid-template-columns:1fr 1fr}.sites.three .site:last-child:nth-child(odd){grid-column:1 / span 2}.atotal .tch{margin-left:0;flex-basis:100%}}
 .site{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px 10px;overflow:hidden;min-width:0}
-.site::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,var(--c),transparent 80%)}
 .site:hover{border-color:color-mix(in srgb,var(--c) 55%,#1c2638)}
 .site .sh{display:flex;align-items:center;gap:9px}.site .sh b{font-size:14.5px;line-height:1.2;flex:1;min-width:0}.site .go{color:var(--muted);font-size:20px}
 .site .sv{font-size:32px;font-weight:800;margin-top:8px;color:var(--c);display:block}.site .sn{color:var(--muted);font-size:13px;display:block}
