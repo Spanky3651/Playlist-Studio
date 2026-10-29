@@ -3358,9 +3358,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
   // Refresh: the button, and on its own every 5 minutes while the page is on screen (right away when you come back to it after longer).
   var lastLoad = Date.now(), AUTO_MS = 5 * 60 * 1000;
-  // The Studio Sync logo (top of the page and on its tab) turns once when the page loads and on every refresh.
+  // The Studio Sync logo at the top of the page turns once when the page loads and on every refresh.
   function logoSpin() {
-    ['.brand img', '#tabs [data-tab="sync"] .ti img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
+    ['.brand img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
   }
   function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
   function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
