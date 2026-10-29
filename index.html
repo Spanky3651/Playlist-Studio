@@ -588,13 +588,13 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-peek-h .lq-fav-sort{margin-left:auto;width:auto !important;min-width:0;height:30px;min-height:0;flex:none;font-size:13px;padding:0 26px 0 9px;background-position:right 8px center;order:2;}
 .lq-peek-h:has(.lq-fav-sort) .pk-note{order:3;flex-basis:100%;margin-top:-2px;}
 .lq-fav-stars{font:12px var(--mono);color:var(--amber);flex:none;}
-.lq-favlist .lq-peek li{flex-wrap:nowrap;gap:12px;padding:7px 2px;}
-.lq-favlist .lq-peek li img{width:40px;height:40px;border-radius:7px;}
-.lq-favlist .lq-peek .pk-tx{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px;}
-.lq-favlist .lq-peek .pk-tx .pk-n{flex:none;font-weight:600;}
-.lq-favlist .lq-peek .pk-n small{font-weight:400;}
-.lq-favlist .lq-peek .pk-s{font-size:12.5px;color:#8792a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.lq-favlist .lq-peek .pk-s .g{color:#3ddc84;}.lq-favlist .lq-peek .pk-s .r{color:#ff8fa3;}
+.lq-favlist .lq-peek li,.lq-peek li.pk-row{flex-wrap:nowrap;gap:12px;padding:7px 2px;}
+.lq-favlist .lq-peek li img,.lq-peek li.pk-row img{width:40px;height:40px;border-radius:7px;}
+.lq-favlist .lq-peek .pk-tx,.lq-peek li.pk-row .pk-tx{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px;}
+.lq-favlist .lq-peek .pk-tx .pk-n,.lq-peek li.pk-row .pk-tx .pk-n{flex:none;font-weight:600;}
+.lq-favlist .lq-peek .pk-n small,.lq-peek li.pk-row .pk-n small{font-weight:400;}
+.lq-favlist .lq-peek .pk-s,.lq-peek li.pk-row .pk-s{font-size:12.5px;color:#8792a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lq-favlist .lq-peek .pk-s .g,.lq-peek li.pk-row .pk-s .g{color:#3ddc84;}.lq-favlist .lq-peek .pk-s .r,.lq-peek li.pk-row .pk-s .r{color:#ff8fa3;}
 .lq-favlist .lq-peek li.off .pk-s{opacity:.5;}
 .lq-peek ol{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;}
 .lq-peek li{display:flex;align-items:center;gap:10px;padding:5px 2px;border-top:1px solid #111a28;font-size:13.5px;}
@@ -614,6 +614,7 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-peek .pk-note{font-size:12px;color:var(--muted);}
 .lq-peek .pk-sum{font-size:12.5px;color:#c6d2e3;}
 .lq-peek li{flex-wrap:wrap;}
+.lq-peek li.pk-row{flex-wrap:nowrap;}
 .lq-peek .pk-d{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 10px;max-width:60%;}
 .lq-peek .pk-dx{white-space:nowrap;}
 .lq-peek .pk-st{color:#e6c35c;margin-left:4px;}
@@ -3055,7 +3056,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T11:09Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -8787,21 +8788,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (!(sv0 && sv0.del[String(sg.hash || '').toLowerCase()])) nMaps += ds.length || 1;
       var h = String(sg.hash || '').toLowerCase(), inf = lqPkInfo[h], gone = !!(sv0 && sv0.del[h]);
       if (!seenH[h]) { seenH[h] = 1; if (inf && inf.d) secs += inf.d; else if (!gone) unk++; }
-      var dh = ds.map(function (x) {
-        var dn = BplistExporter.mapDifficultyName(x.name), dc = SV_DIFF[dn] || [dn, '#8792a6'], mode = x.characteristic || 'Standard';
-        var st = lqPkStars(h, dn, mode); if (st > 0 && !gone) { smin = Math.min(smin, st); smax = Math.max(smax, st); }
-        return '<span class="pk-dx"><span style="color:' + dc[1] + '">' + esc(dc[0]) + (mode !== 'Standard' ? ' ' + esc(mode) : '') + '</span>' +
-          (st > 0 ? '<span class="pk-st">' + st.toFixed(2) + '★</span>' : '') + lqPkScore(h, dn, mode) + '</span>';
-      }).join('');
+      ds.forEach(function (x) {
+        var st = lqPkStars(h, BplistExporter.mapDifficultyName(x.name), x.characteristic || 'Standard'); if (st > 0 && !gone) { smin = Math.min(smin, st); smax = Math.max(smax, st); }
+      });
+      var fi = lqFavInfo[h], art = sg.songAuthorName || (inf && inf.a) || (fi && fi.a) || '', mpr = sg.levelAuthorName || (inf && inf.m) || (fi && fi.m) || '', sl = lqFavScoreLine(h, { m: mpr });
       var nm = sg.songName || sg.hash || '';
       if (gone) {
         rows.push('<li class="pk-gone"><img src="https://eu.cdn.beatsaver.com/' + esc(h) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(nm) + '</span><span class="pk-gone-l">Removed</span>' +
           lqBtn(lqIco('undo') + 'Undo', 'data-lq-pkundo="' + esc(key) + '|' + esc(h) + '"', 'ghost sm') + '</li>');
         return;
       }
-      rows.push('<li>' + (canMove ? '<button type="button" class="pk-grip" data-lq-pkgrip="' + esc(key) + '|' + si + '" title="Drag to reorder" aria-label="Move ' + esc(nm) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '') +
-        '<img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-n">' + esc(nm) + (sg.levelAuthorName ? '<small>' + esc(sg.levelAuthorName) + '</small>' : '') + '</span>' +
-        (dh ? '<span class="pk-d">' + dh + '</span>' : '') + lqPkHeart(d.id, h) +
+      rows.push('<li class="pk-row">' + (canMove ? '<button type="button" class="pk-grip" data-lq-pkgrip="' + esc(key) + '|' + si + '" title="Drag to reorder" aria-label="Move ' + esc(nm) + ' (arrow keys)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>' : '') +
+        '<img src="https://eu.cdn.beatsaver.com/' + esc(String(sg.hash || '').toLowerCase()) + '.jpg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="pk-tx"><span class="pk-n">' + esc(nm) + (art ? '<small>' + esc(art) + '</small>' : '') + '</span>' +
+        (sl ? '<span class="pk-s">' + sl + '</span>' : '') + '</span>' + lqPkHeart(d.id, h) +
         (canMove || (pl.songs.length === 1 && !edHere && !state.lq.busy) ? '<button type="button" class="pk-x" data-lq-pkrm="' + esc(key) + '|' + esc(h) + '" title="Remove from this playlist" aria-label="Remove ' + esc(nm) + '">\u00d7</button>' : '') + '</li>');
     });
     if (pl) lqPkNeed(pl);
@@ -8842,8 +8841,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             var by = {};
             if (j && j.versions) by[ch[0]] = j; else if (j) Object.keys(j).forEach(function (k) { by[k.toLowerCase()] = j[k]; });
             ch.forEach(function (h) {
-              var m = by[h], inf = { d: 0, s: {} };
+              var m = by[h], inf = { d: 0, s: {}, a: '', m: '' };
               if (m) {
+                inf.a = (m.metadata && m.metadata.songAuthorName) || ''; inf.m = (m.metadata && m.metadata.levelAuthorName) || '';
                 var vs = m.versions || [], v = vs.filter(function (x) { return x && x.hash && x.hash.toLowerCase() === h; })[0] || vs[0] || {};
                 inf.d = (m.metadata && m.metadata.duration) || 0;
                 (v.diffs || []).forEach(function (d) { if (d.blStars > 0) inf.s[d.difficulty + '|' + d.characteristic] = d.blStars; });
@@ -8858,15 +8858,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqPkStars(h, dn, mode) {
     var inf = lqPkInfo[h], k = h + '|' + dn + '|' + mode, pe = state.playIndex && state.playIndex[k];
     return (inf && inf.s[dn + '|' + mode]) || (pe && pe.stars) || 0;
-  }
-  function lqPkScore(h, dn, mode) {
-    if (!state.player) return '';
-    var sc = state.scores[h + '|' + dn + '|' + mode];
-    if (!sc) return '<span class="pk-sc nw" title="You haven\u2019t played this one">new</span>';
-    var acc = ((sc.a || 0) * 100).toFixed(2) + '%', md = (String(sc.md || '').match(/\b(SS|FS|SF)\b/) || [])[1];
-    var tag = isNF(sc) ? 'NF ' : sc.fc ? 'FC ' : sc.m ? sc.m + '\u00d7 ' : '';
-    return '<span class="pk-sc ' + (sc.fc && !isNF(sc) ? 'fc' : sc.m || isNF(sc) ? 'ms' : '') + '" title="Your best: ' + acc + (sc.fc ? ', full combo' : sc.m ? ', ' + sc.m + ' miss' + (sc.m === 1 ? '' : 'es') : '') + (md ? ' on ' + SV_MODS[md] : '') + '">' + tag + acc + '</span>' +
-      (md ? '<span class="pk-md">' + md + '</span>' : '');
   }
   function lqPkMove(key, from, to) {
     var c = lqPeekCache[key], pl = c && c.pl; if (!pl || to < 0 || to >= pl.songs.length || from === to) return;
