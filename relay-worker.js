@@ -2576,7 +2576,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 
   // ---- All sites: visitors for every site you track, side by side ----
   var ALL_SITES = {
-    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#2f7bff', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
+    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#5296ff', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
     bl: { name: 'BeatLeader profile', icon: 'me', color: '#3ddc84', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
     hsv: { name: 'HSV Config', icon: 'm:hsv', color: '#a78bfa', tab: 'hsv', unit: 'visitors', home: 'HSV Config Generator home' },
     rs: { name: 'ReeSaber Studio', icon: 'm:rs', color: '#ff4d6d', tab: 'rs', unit: 'visitors', home: 'ReeSaber Studio home' }
