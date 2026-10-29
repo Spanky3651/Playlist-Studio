@@ -3045,7 +3045,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-28T23:30Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29T00:46Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -7580,7 +7580,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         return fetchTimeout(BS_API + '/maps/hash/' + ch.join(','), 10000).then(function (r) { if (r.status === 404) return {}; if (!r.ok) throw new Error('http'); return r.json(); }).then(function (j) {
           var by = {};
           if (j && j.versions) by[ch[0]] = j; else if (j) Object.keys(j).forEach(function (k) { by[k.toLowerCase()] = j[k]; });
-          ch.forEach(function (h) { var mp = by[h], md = (mp && mp.metadata) || {}; lqFavInfo[h] = mp ? { n: md.songName || mp.name || '', a: md.songAuthorName || '', m: md.levelAuthorName || '', key: mp.id || '', s: lqFavStars(mp) } : { n: '', gone: true }; });
+          ch.forEach(function (h) { var mp = by[h], md = (mp && mp.metadata) || {}; lqFavInfo[h] = mp ? { n: md.songName || mp.name || '', a: md.songAuthorName || '', m: md.levelAuthorName || '', key: mp.id || '', s: lqFavStars(mp), d: +md.duration || 0, b: +md.bpm || 0, r: (mp.stats && +mp.stats.score) || 0, u: mp.uploaded ? Date.parse(mp.uploaded) / 1000 || 0 : 0 } : { n: '', gone: true }; });
         }, function () { ch.forEach(function (h) { setTimeout(function () { delete lqFavAsk[h]; }, 120000); }); });
       });
     }, Promise.resolve()).then(function () { if (then) then(); else lqRender(); });
@@ -7761,15 +7761,39 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return out.join(' &middot; ');
   }
   var LQ_FAVSORT = 'playlistStudio.lqFavSort.v1';
-  function lqFavSortGet() { var v = ''; try { v = localStorage.getItem(LQ_FAVSORT) || ''; } catch (e) {} return /^(artist|mapper|stars|miss)$/.test(v) ? v : 'name'; }
+  // The Favorites list sort menu: the song, your scores on it (with a profile connected), and the map.
+  function lqFavSortMenu(srt) {
+    var g = function (label, opts) { return '<optgroup label="' + label + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === srt ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</optgroup>'; };
+    return g('Song', [['name', 'Song name'], ['artist', 'Artist'], ['mapper', 'Mapper']]) +
+      (state.player ? g('Your scores', [['acc', 'Best accuracy'], ['pp', 'Most pp'], ['recent', 'Played recently'], ['oldest', 'Played longest ago'], ['nofc', 'Not FC\u2019d first'], ['unplayed', 'Not played first']]) : '') +
+      g('Map', [['stars', 'Stars'], ['length', 'Longest'], ['bpm', 'Highest BPM'], ['rating', 'BeatSaver rating'], ['newmap', 'Newest upload'], ['miss', 'Not downloaded first']]);
+  }
+  function lqFavSortGet() { var v = ''; try { v = localStorage.getItem(LQ_FAVSORT) || ''; } catch (e) {} return /^(artist|mapper|stars|miss|acc|pp|recent|oldest|unplayed|nofc|length|bpm|rating|newmap)$/.test(v) ? v : 'name'; }
   function lqFavPeekHtml(d) {
     var hs = lqFavList(d.id), m = lqFavSet(d.id), p = lqFavPend(d.id) || {}, all = !!(state.lq.favAll && state.lq.favAll[d.id]), dn = esc(lqDevName(d.id));
     var srt = lqFavSortGet();
     var nm = function (h) { return lqFavName(h).toLowerCase() || '\uffff' + h; };
     var by = function (h) { var i = lqFavInfo[h]; var t = i ? (srt === 'artist' ? i.a : i.m) : ''; return (t || '').toLowerCase() || '\uffff'; };
     var abc = function (x, y) { return x < y ? -1 : x > y ? 1 : 0; };
+    var mine = !!state.player && /^(acc|pp|recent|oldest|unplayed|nofc)$/.test(srt), sIdx = mine ? scoreHashIdx() : null;
+    if (/^(acc|pp|recent|oldest|unplayed|nofc)$/.test(srt) && !state.player) srt = 'name';
+    var best = function (h) { var mi = sIdx[h]; return mi ? (mi.bestPp || mi.best) : null; };
+    var fnum = function (h, k) { var i = lqFavInfo[h]; return (i && i[k]) || 0; };
+    // Your-score sorts: songs with no score go last (first for "Not played first"); everything ties back to the song name.
+    var myKey = function (h) {
+      var mi = sIdx[h], sc = best(h);
+      if (srt === 'acc') return sc ? sc.a || 0 : null;
+      if (srt === 'pp') return sc && sc.pp > 0 ? sc.pp : null;
+      if (srt === 'recent') return mi ? mi.latestT || 0 : null;
+      if (srt === 'oldest') return mi ? -(mi.latestT || 0) : null;
+      if (srt === 'unplayed') return mi ? 0 : 1;
+      if (srt === 'nofc') return !mi ? 1 : mi.fc ? 0 : 2;
+      return null;
+    };
     hs.sort(function (a, b) {
-      if (srt === 'artist' || srt === 'mapper') { var c = abc(by(a), by(b)); if (c) return c; }
+      if (mine) { var ka = myKey(a), kb = myKey(b); if (ka !== kb) { if (ka == null) return 1; if (kb == null) return -1; return kb - ka; } }
+      else if (srt === 'length' || srt === 'bpm' || srt === 'rating' || srt === 'newmap') { var f = { length: 'd', bpm: 'b', rating: 'r', newmap: 'u' }[srt], na = fnum(a, f), nb = fnum(b, f); if (na !== nb) return nb - na; }
+      else if (srt === 'artist' || srt === 'mapper') { var c = abc(by(a), by(b)); if (c) return c; }
       else if (srt === 'stars') { var sa = (lqFavInfo[a] && lqFavInfo[a].s) || 0, sb = (lqFavInfo[b] && lqFavInfo[b].s) || 0; if (sa !== sb) return sb - sa; }
       else if (srt === 'miss') { var ma = m.miss.has(a) ? 0 : 1, mb = m.miss.has(b) ? 0 : 1; if (ma !== mb) return ma - mb; }
       return abc(nm(a), nm(b));
@@ -7787,7 +7811,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     var n = lqFavOn(d.id).length;
     return '<div class="lq-peek" aria-label="Favorites on ' + dn + '"><div class="lq-peek-h"><b>' + n.toLocaleString() + ' favorite' + (n === 1 ? '' : 's') + '</b><span class="pk-note">· the heart favorites or unfavorites a song on ' + dn + '</span>' +
-      (hs.length > 1 ? '<select class="lq-fav-sort" data-lq-favsort aria-label="Sort favorites">' + [['name', 'Song name'], ['artist', 'Artist'], ['mapper', 'Mapper'], ['stars', 'Stars'], ['miss', 'Not downloaded first']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === srt ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' : '') + '</div>' +
+      (hs.length > 1 ? '<select class="lq-fav-sort" data-lq-favsort aria-label="Sort favorites">' + lqFavSortMenu(srt) + '</select>' : '') + '</div>' +
       (rows.length ? '<ol>' + rows.join('') + '</ol>' : '<div class="pk-msg">No favorites on ' + dn + ' yet. Favorite songs in game, or with the heart on songs in Your Playlist.</div>') +
       (!all && hs.length > shown.length ? lqBtn('Show all ' + hs.length.toLocaleString(), 'data-lq-favall="' + esc(d.id) + '"', 'ghost sm lq-fav-more') : '') + '</div>';
   }
