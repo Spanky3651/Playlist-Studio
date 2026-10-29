@@ -1748,7 +1748,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 @media(max-width:700px){.tab-short{display:inline}}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
 </style></head><body><main>
-<div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio stats</h1></div>
+<div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
 <div class="tools hidden" id="tools"><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
 <div class="keyrow hidden" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
