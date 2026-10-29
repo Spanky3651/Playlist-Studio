@@ -1581,7 +1581,7 @@ button.linkish:hover{color:var(--text)}
 .tabs::-webkit-scrollbar{display:none}
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:10px 6px;font-size:15px;font-weight:700;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:6px}
 .tabs .ti{display:inline-flex;width:18px;height:18px;flex:none;align-items:center;justify-content:center}.tabs .ti img{width:18px;height:18px;border-radius:5px;display:block}.tabs .ti.me img{border-radius:50%}.tabs .ti svg{width:17px;height:17px}
-.atotal{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:2px 0 14px;color:var(--muted)}.atotal b{font-size:34px;color:var(--text);font-weight:800}
+.atotal{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:2px 0 16px;color:var(--muted)}.atotal .atl{display:flex;flex-direction:column;gap:2px;min-width:0}.atotal .atk{font-size:12.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#8d9ab0}.atotal .atv{display:flex;align-items:baseline;gap:8px}.atotal b{font-size:42px;line-height:1.05;color:var(--text);font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.atotal .atu{font-size:17px;font-weight:600;color:#9aa6b8}.atotal .tch{padding-bottom:6px}.site.hero2 .sh .ic{width:36px;height:36px;border-radius:10px}.site.hero2 .sh .ic img{width:24px;height:24px}.site.hero2 .sh b{font-size:16.5px}
 .sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .atotal .tch{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13.5px}
 .chg{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:13.5px;border-radius:999px;padding:3px 10px;white-space:nowrap}
@@ -1802,7 +1802,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 
 <section data-sec="all" class="hidden">
 <div id="a-msg" class="gcmsg hidden"></div>
-<div class="atotal"><b id="a-total">-</b><span id="a-totaln"></span><span class="tch" id="a-totch"></span></div>
+<div class="atotal"><div class="atl"><span class="atk" id="a-totaln"></span><span class="atv"><b id="a-total">-</b><span class="atu">visits</span></span></div><span class="tch" id="a-totch"></span></div>
 <div id="a-sites"></div>
 <div class="blk"><h2>Where visitors are <small>all your sites, hover or tap a country</small></h2><div class="map" id="a-map"></div></div>
 <p class="when" id="a-when"></p>
@@ -2733,7 +2733,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var tch = prevOk && prevT > 0 && before ? Math.round((total - prevT) / prevT * 100) : null;
     $('a-totch').innerHTML = tch == null ? '' : chgTag(tch) + '<span>vs the ' + before + ' before</span>';
     txt('a-total', fmt(total));
-    txt('a-totaln', (d.range === 'today' ? 'visits across your sites today' : d.range === 'all' ? 'visits across your sites since ' + dshort(d.start) : 'visits across your sites, ' + dshort(d.start) + ' to ' + dshort(d.end)));
+    txt('a-totaln', 'All your sites · ' + (d.range === 'today' ? 'today' : d.range === 'all' ? 'since ' + dshort(d.start) : dshort(d.start) + ' to ' + dshort(d.end)));
     var locs = [];
     d.sites.forEach(function (s) { if (ALL_SITES[s.key]) locs = locs.concat(s.locations || []); });
     worldMap('a-map', locs, 'visitors');
