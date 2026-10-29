@@ -1466,6 +1466,18 @@ async function gcAllStats(env, range, fresh, tz) {
     .concat(["bl", "hsv", "rs"].map((k) => [k, GC_OTHER[k](env), "gc:cache:" + k + ":" + range + (gcTz(tz) ? ":" + gcTz(tz) : "")]));
   const sites = [];
   for (const [key, cfg, fullKey] of SITES) {
+    if (key === "studio") {
+      try {
+        const f = await gcStats(env, range, fresh, "", tz);
+        sites.push({ key, code: cfg.code, visitors: f.visitors, prevVisitors: f.prevVisitors, days: f.days, pages: (f.pages || []).slice(0, 8),
+          locations: (f.locations || []).map((c) => ({ id: c.id, name: c.name, count: c.count })),
+          players: (f.players || []).map((x) => ({ name: x.name, id: x.id, avatar: x.avatar || "", lastT: x.lastT || 0, last: x.last || "", me: !!x.me })) });
+      } catch (x) {
+        if (x && x.message === "gc-auth") throw x;
+        sites.push({ key, code: cfg.code, error: "down", visitors: 0, prevVisitors: null, days: [], pages: [], locations: [], players: [] });
+      }
+      continue;
+    }
     const full = fresh ? null : await env.PLAYLISTS.get(fullKey, "json");
     if (full && now - full.generated < GC_CACHE_SEC) {
       sites.push({ key, code: cfg.code, visitors: full.visitors, prevVisitors: full.prevVisitors, days: full.days, pages: (full.pages || []).slice(0, 8), locations: (full.locations || []).map((c) => ({ id: c.id, name: c.name, count: c.count })) });
@@ -1578,6 +1590,16 @@ button.linkish:hover{color:var(--text)}
 .hero2 .hrow{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:22px;align-items:end;margin-top:6px}
 .hero2 .hl{display:flex;flex-direction:column}.site.hero2 .sv{font-size:44px;line-height:1.1}.site.hero2 .sn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
 .hstats{display:flex;gap:22px;margin-top:14px}.hstats>span{display:flex;flex-direction:column}.hstats small{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hstats b{font-size:20px}.hstats em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.pstrip{border-top:1px solid #141c2a;margin-top:14px;padding-top:12px;cursor:default}
+.psh{display:flex;align-items:baseline;gap:6px;font-size:13.5px;color:var(--muted);flex-wrap:wrap}.psh b{color:var(--text);font-size:14.5px}.psh .sp{flex:1}
+.psh .seeall{font:inherit;font-size:13px;color:#7fa7d9;background:none;border:0;padding:0;cursor:pointer;white-space:nowrap;min-height:0}.psh .seeall:hover{color:#a8c6ff;background:none}
+.pchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pchip{display:inline-flex;align-items:center;gap:7px;background:#0d1626;border:1px solid #1f3456;border-radius:999px;padding:3px 11px 3px 3px;font-size:13.5px;font-weight:600;color:#e9edf5;text-decoration:none;cursor:pointer;min-height:0;font-family:inherit}
+.pchip:hover{border-color:#2f7bff;background:#0d1626;color:#fff}.pchip.more{padding:3px 11px;color:#7fa7d9}
+.pchip .ldot{margin:0 0 0 -1px}
+.pav2{width:24px;height:24px;border-radius:50%;display:block;flex:none;object-fit:cover;background:#1a2336}
+.pav2.lt{display:grid;place-items:center;font-size:12px;font-weight:800;color:#cfe0ff}
+div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .hch{display:block;min-width:0}.hch svg{width:100%;height:120px;display:block}.hax{display:flex;justify-content:space-between;font-size:12px;color:#7f8a9c;margin-top:4px}
 @media(max-width:700px){.hero2 .hrow{grid-template-columns:1fr;gap:12px}.site.hero2 .sv{font-size:36px}.hstats{gap:16px}.sites.three{grid-template-columns:1fr 1fr}.sites.three .site:last-child:nth-child(odd){grid-column:1 / span 2}.atotal .tch{margin-left:0;flex-basis:100%}}
 .site{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px 10px;overflow:hidden;min-width:0}
@@ -2624,12 +2646,23 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       if (!I.err && v.length) {
         if (d.range !== 'today') stats.push(['Today', fmt(v[v.length - 1] || 0), '']);
         stats.push([d.range === 'today' ? 'Busiest hour' : 'Best day', fmt(v[bi] || 0), v[bi] ? lab(k[bi]) : '']);
+        if (hero.players) stats.push(['Players', fmt(hero.players.length), 'connected']);
         if (total) stats.push(['Share', Math.round((hero.visitors || 0) / total * 100) + '%', '']);
       }
-      h += '<button type="button" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
+      var pls = hero.players || [], strip = '';
+      if (pls.length) {
+        var when = { today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days', all: 'since you started counting' }[d.range] || '';
+        strip = '<div class="pstrip"><div class="psh"><b>' + fmt(pls.length) + ' player' + (pls.length === 1 ? '' : 's') + '</b> connected a profile ' + when + '<span class="sp"></span><button type="button" class="seeall" data-go="ply">See all in Players ›</button></div><div class="pchips">' +
+          pls.slice(0, 40).map(function (p) {
+            var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
+            var pic = p.avatar ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
+            return '<a class="pchip" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
+          }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="ply">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
+      }
+      h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
         '<span class="hrow"><span class="hl"><span class="sv">' + I.num + '</span><span class="sn">' + (I.err || chgTag(I.ch, true) + '<span>' + I.S.unit + (I.ch != null && before ? ' vs the ' + before + ' before' : d.range === 'today' ? ' so far today' : '') + '</span>') + '</span>' +
         (stats.length ? '<span class="hstats">' + stats.map(function (t) { return '<span><small>' + t[0] + '</small><b>' + t[1] + '</b>' + (t[2] ? '<em>' + esc(t[2]) + '</em>' : '') + '</span>'; }).join('') + '</span>' : '') + '</span>' +
-        '<span class="hch">' + (I.err ? '' : heroChart(I.x, I.S.color)) + (k.length > 1 && !I.err ? '<span class="hax"><span>' + esc(lab(k[0])) + '</span><span>' + esc(lab(k[k.length - 1])) + '</span></span>' : '') + '</span></span></button>';
+        '<span class="hch">' + (I.err ? '' : heroChart(I.x, I.S.color)) + (k.length > 1 && !I.err ? '<span class="hax"><span>' + esc(lab(k[0])) + '</span><span>' + esc(lab(k[k.length - 1])) + '</span></span>' : '') + '</span></span>' + strip + '</div>';
     }
     list.forEach(function (s) {
       if (s === hero) return;
@@ -2648,7 +2681,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     worldMap('a-map', locs, 'visitors');
     txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
   }
-  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('#a-sites .site[data-go]'); if (b) { showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} } });
+  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
+  document.addEventListener('click', aGo);
+  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
   // Each tab's icon: the site's logo, or what the tab shows.
   function tabIcons() {
     var TI = { all: '<span class="ti gl">' + glyph('grid', 'currentColor') + '</span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
