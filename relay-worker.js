@@ -2687,8 +2687,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   // Each tab's icon: the site's logo, or what the tab shows.
   function tabIcons() {
     var TI = { all: '<span class="ti gl">' + glyph('grid', 'currentColor') + '</span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
-      ply: '<span class="ti gl">' + glyph('people', 'currentColor') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', 'currentColor') + '</span>',
-      src: '<span class="ti gl">' + glyph('link', 'currentColor') + '</span>', sync: '<span class="ti"><img src="' + MY_ICONS.ss + '" alt=""></span>',
+      ply: '<span class="ti gl">' + glyph('people', '#2f7bff') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', '#ff2740') + '</span>',
+      src: '<span class="ti gl">' + glyph('link', '#2f7bff') + '</span>', sync: '<span class="ti"><img src="' + MY_ICONS.ss + '" alt=""></span>',
       bl: meAvatar ? '<span class="ti me"><img src="' + esc(meAvatar) + '" alt=""></span>' : '<span class="ti"><img src="/admin/icon?d=beatleader.xyz" alt=""></span>',
       hsv: '<span class="ti"><img src="' + MY_ICONS.hsv + '" alt=""></span>', rs: '<span class="ti"><img src="' + MY_ICONS.rs + '" alt=""></span>' };
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button[data-tab]'), function (b) {
