@@ -1605,10 +1605,10 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .chg-glow{animation:chgGlow 1.6s ease-out 1}
 @keyframes chgGlow{0%{text-shadow:0 0 0 transparent}15%{text-shadow:0 0 14px currentColor,0 0 30px currentColor}100%{text-shadow:0 0 0 transparent}}
 .dlt{font-size:max(11px,.4em);font-weight:800;color:#3ddc84;margin-left:4px;vertical-align:super;line-height:0;letter-spacing:0;text-shadow:none;cursor:help}.dlt.dn{color:#ff7a8a}
-.pchip.chg-new{animation:chgRing 2.2s ease-out 1;border-color:#2b6b4a}
+.pchip.chg-new{border-color:#2b6b4a}.pchip.chg-ring{animation:chgRing 2.2s ease-out 1}
 .newtag{font-size:10px;font-weight:800;line-height:1.3;color:#05070c;background:#3ddc84;border-radius:4px;padding:1px 4px;letter-spacing:.3px}
 @keyframes chgRing{0%{box-shadow:0 0 0 0 rgba(61,220,132,0)}10%{box-shadow:0 0 0 3px rgba(61,220,132,.6)}60%{box-shadow:0 0 0 9px rgba(61,220,132,0)}100%{box-shadow:none}}
-@media(prefers-reduced-motion:reduce){.chg-glow,.pchip.chg-new{animation:none}}
+@media(prefers-reduced-motion:reduce){.chg-glow,.pchip.chg-ring{animation:none}}
 .hch{display:block;min-width:0}.hch svg{width:100%;height:120px;display:block}.hax{display:flex;justify-content:space-between;font-size:12px;color:#7f8a9c;margin-top:4px}
 @media(max-width:700px){.hero2 .hrow{grid-template-columns:1fr;gap:12px}.site.hero2 .sv{font-size:36px}.hstats{gap:16px}.sites.three{grid-template-columns:1fr 1fr}.sites.three .site:last-child:nth-child(odd){grid-column:1 / span 2}.atotal .tch{margin-left:0;flex-basis:100%}}
 .site{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px 10px;overflow:hidden;min-width:0}
@@ -2002,23 +2002,43 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var glowUntil = 0;
   function glowOn() { return Date.now() < glowUntil; }
   function numOf(t) { t = String(t == null ? '' : t).trim(); return /^[-+]?[0-9,]*[.]?[0-9]+%?$/.test(t) ? parseFloat(t.replace(/,/g, '')) : null; }
-  function markNum(el, oldT, newT) {
-    el.setAttribute('data-v', newT);
-    var a = numOf(oldT), b = numOf(newT); if (a == null || b == null || a === b || !glowOn()) return;
-    var d = Math.round((b - a) * 10) / 10, pct = /%$/.test(String(newT).trim());
-    el.classList.remove('chg-glow'); void el.offsetWidth; el.classList.add('chg-glow');
-    el.insertAdjacentHTML('beforeend', '<sup class="dlt' + (d < 0 ? ' dn' : '') + '" title="Was ' + esc(String(oldT)) + ' before the last refresh">' + (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + (pct ? '%' : '') + '</sup>');
+  // Only compare a number with the one shown for the same range: switching ranges changes numbers on purpose.
+  // vrFix names what the numbers being drawn belong to (a range, or 'sync' for Studio Sync counts, which have no range).
+  // A redraw during the same refresh keeps the marks; the next refresh clears them unless the number changed again.
+  var vrFix = null, glowGen = 0;
+  function markNum(el, oldT, newT, oldR, oldG, oldS) {
+    var vr = vrFix || range;
+    el.setAttribute('data-v', newT); el.setAttribute('data-vr', vr); el.removeAttribute('data-mg'); el.removeAttribute('data-ms');
+    var a = numOf(oldT), b = numOf(newT); if (a == null || b == null || oldR !== vr) return;
+    var sup = '';
+    if (a === b) { if (oldS && String(oldG) === String(glowGen)) sup = oldS; }
+    else if (glowOn()) {
+      var d = Math.round((b - a) * 10) / 10, pct = /%$/.test(String(newT).trim());
+      sup = '<sup class="dlt' + (d < 0 ? ' dn' : '') + '" title="Was ' + esc(String(oldT)) + ' before the last refresh">' + (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + (pct ? '%' : '') + '</sup>';
+      el.classList.remove('chg-glow'); void el.offsetWidth; el.classList.add('chg-glow');
+    }
+    if (sup) { el.insertAdjacentHTML('beforeend', sup); el.setAttribute('data-mg', glowGen); el.setAttribute('data-ms', sup); }
   }
-  function txt(id, v) { var el = $(id), old = el.hasAttribute('data-v') ? el.getAttribute('data-v') : el.textContent; el.textContent = v; markNum(el, old, v); }
-  // Same for HTML built in one go: numbers carry data-k, people chips carry data-k="p:..." and get a ring when they're new.
+  function txt(id, v) {
+    var el = $(id), old = el.hasAttribute('data-v') ? el.getAttribute('data-v') : el.textContent, oldR = el.getAttribute('data-vr'), oldG = el.getAttribute('data-mg'), oldS = el.getAttribute('data-ms');
+    el.textContent = v; markNum(el, old, v, oldR, oldG, oldS);
+  }
+  // Same for HTML built in one go: numbers carry data-k, people chips carry data-k="p:..." and get a NEW tag when they're new.
   function swapHtml(box, html) {
-    var old = {}, had = false;
-    Array.prototype.forEach.call(box.querySelectorAll('[data-k]'), function (e) { had = true; old[e.getAttribute('data-k')] = e.hasAttribute('data-v') ? e.getAttribute('data-v') : e.textContent; });
-    box.innerHTML = html;
+    var vr = vrFix || range, old = {}, had = box.getAttribute('data-vr') === vr;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-k]'), function (e) { old[e.getAttribute('data-k')] = { v: e.hasAttribute('data-v') ? e.getAttribute('data-v') : e.textContent, r: e.getAttribute('data-vr'), g: e.getAttribute('data-mg'), s: e.getAttribute('data-ms') }; });
+    box.innerHTML = html; box.setAttribute('data-vr', vr);
     Array.prototype.forEach.call(box.querySelectorAll('[data-k]'), function (e) {
-      var k = e.getAttribute('data-k');
-      if (k.indexOf('p:') === 0) { if (had && glowOn() && !(k in old)) { e.classList.add('chg-new'); var nm = e.querySelector('span:not(.pav2)'); if (nm) nm.insertAdjacentHTML('afterend', '<b class="newtag" title="New since the last refresh">NEW</b>'); } return; }
-      markNum(e, k in old ? old[k] : null, e.textContent);
+      var k = e.getAttribute('data-k'), o = old[k];
+      if (k.indexOf('p:') === 0) {
+        var fresh = had && glowOn() && !o, kept = had && o && String(o.g) === String(glowGen);
+        if (fresh || kept) {
+          e.classList.add('chg-new'); if (fresh) e.classList.add('chg-ring'); e.setAttribute('data-mg', glowGen);
+          var nm = e.querySelector('span:not(.pav2)'); if (nm) nm.insertAdjacentHTML('afterend', '<b class="newtag" title="New since the last refresh">NEW</b>');
+        }
+        return;
+      }
+      markNum(e, o ? o.v : null, e.textContent, o ? o.r : null, o ? o.g : null, o ? o.s : null);
     });
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -2668,6 +2688,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
   function renderAll() {
     var d = allData; if (!d) return;
+    var vr0 = vrFix; vrFix = d.range;
     var total = 0, prevT = 0, prevOk = true, list = d.sites.filter(function (s) { return ALL_SITES[s.key]; });
     list.forEach(function (s) { total += s.visitors || 0; if (!s.error) { if (s.prevVisitors != null) prevT += s.prevVisitors; else prevOk = false; } });
     var before = { today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range];
@@ -2717,6 +2738,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     d.sites.forEach(function (s) { if (ALL_SITES[s.key]) locs = locs.concat(s.locations || []); });
     worldMap('a-map', locs, 'visitors');
     txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
+    vrFix = vr0;
   }
   function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
   document.addEventListener('click', aGo);
@@ -3308,6 +3330,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       var first = !getKey() || !sync;
       setKey(key); keyIn.value = ''; signedIn(true);
       var s = sync = res.j, players = s.libraries - s.librariesNoHeadset;
+      vrFix = 'sync';
       txt('activeDay', s.activeDay); txt('activeWeek', s.activeWeek); txt('activeMonth', s.activeMonth);
       txt('headsets', s.headsets); txt('neverNote', s.neverSynced ? s.neverSynced + ' never synced' : 'all have synced at least once');
       txt('newWeek', s.newWeek); txt('newMonthNote', s.newMonth + ' in the last 30 days');
@@ -3319,9 +3342,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       txt('goneQuiet', s.goneQuiet);
       txt('pendingChanges', s.pendingChanges);
       txt('pendingNote', s.pendingChanges ? 'on ' + s.pendingHeadsets + ' headset' + (s.pendingHeadsets === 1 ? '' : 's') + ', oldest ' + ago(s.pendingOldest) : 'nothing queued');
-      renderUsers(s); if (allData) renderAll();
+      renderUsers(s); if (allData && allData.range === range) renderAll();
       bars('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]].map(function (r, i) { return ['<span class="sl">' + (i === 4 ? '<span class="ic gl">' + glyph('question', '#9fb3d9') + '</span>' : iconSpan('m:ss', 'S')) + '<span class="fl"><b>' + esc(r[0]) + '</b></span></span>', r[1]]; }));
       txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old. The page refreshes itself every 5 minutes.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
+      vrFix = null;
       $('out').classList.remove('hidden'); say(''); tabIntoView();
       renderReleases();
       if ((first || !gc) && tab !== 'all') loadGc(false);
@@ -3338,7 +3362,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function logoSpin() {
     ['.brand img', '#tabs [data-tab="sync"] .ti img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
   }
-  function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
+  function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
   function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
   $('refresh').addEventListener('click', function () { refreshAll(false); });
   setInterval(autoRefresh, 30000);
