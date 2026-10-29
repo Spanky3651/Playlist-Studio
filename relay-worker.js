@@ -1515,6 +1515,9 @@ main{max-width:980px;margin:0 auto}
 h1{font-size:26px;margin:0}
 .brand{display:flex;align-items:center;gap:12px;margin:0 0 6px}
 .brand img{width:44px;height:44px;border-radius:11px;box-shadow:0 0 16px rgba(47,123,255,.25);flex:none}
+.lspin{animation:lspin 1s cubic-bezier(.4,0,.2,1) 1}
+@keyframes lspin{0%{transform:rotate(0) scale(1)}55%{transform:rotate(320deg) scale(1.1);filter:drop-shadow(0 0 8px rgba(47,123,255,.7))}100%{transform:rotate(360deg) scale(1)}}
+@media(prefers-reduced-motion:reduce){.lspin{animation:none}}
 .sub{color:var(--muted);font-size:15px;margin:0 0 22px}
 .keyrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 13px;font-size:16px;font-family:inherit}
@@ -1600,6 +1603,12 @@ button.linkish:hover{color:var(--text)}
 .pav2{width:20px;height:20px;border-radius:50%;display:block;flex:none;object-fit:cover;background:#1a2336}
 .pav2.lt{display:grid;place-items:center;font-size:11px;font-weight:800;color:#cfe0ff}
 div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
+.chg-glow{animation:chgGlow 1.6s ease-out 1}
+@keyframes chgGlow{0%{text-shadow:0 0 0 transparent}15%{text-shadow:0 0 14px currentColor,0 0 30px currentColor}100%{text-shadow:0 0 0 transparent}}
+.dlt{font-size:max(11px,.4em);font-weight:800;color:#3ddc84;margin-left:4px;vertical-align:super;line-height:0;letter-spacing:0;text-shadow:none;cursor:help}.dlt.dn{color:#ff7a8a}
+.pchip.chg-new{animation:chgRing 2.2s ease-out 1}
+@keyframes chgRing{0%{box-shadow:0 0 0 0 rgba(61,220,132,0)}10%{box-shadow:0 0 0 3px rgba(61,220,132,.6)}60%{box-shadow:0 0 0 9px rgba(61,220,132,0)}100%{box-shadow:none}}
+@media(prefers-reduced-motion:reduce){.chg-glow,.pchip.chg-new{animation:none}}
 .hch{display:block;min-width:0}.hch svg{width:100%;height:120px;display:block}.hax{display:flex;justify-content:space-between;font-size:12px;color:#7f8a9c;margin-top:4px}
 @media(max-width:700px){.hero2 .hrow{grid-template-columns:1fr;gap:12px}.site.hero2 .sv{font-size:36px}.hstats{gap:16px}.sites.three{grid-template-columns:1fr 1fr}.sites.three .site:last-child:nth-child(odd){grid-column:1 / span 2}.atotal .tch{margin-left:0;flex-basis:100%}}
 .site{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px 10px;overflow:hidden;min-width:0}
@@ -1990,7 +1999,29 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   function getKey() { return ls(K) || ''; }
   function setKey(v) { ls(K, v || null); }
   function $(id) { return document.getElementById(id); }
-  function txt(id, v) { $(id).textContent = v; }
+  // What changed on a refresh: a number that's different from before glows once and keeps a small +3 until the next refresh.
+  var glowUntil = 0;
+  function glowOn() { return Date.now() < glowUntil; }
+  function numOf(t) { t = String(t == null ? '' : t).trim(); return /^[-+]?[0-9,]*[.]?[0-9]+%?$/.test(t) ? parseFloat(t.replace(/,/g, '')) : null; }
+  function markNum(el, oldT, newT) {
+    el.setAttribute('data-v', newT);
+    var a = numOf(oldT), b = numOf(newT); if (a == null || b == null || a === b || !glowOn()) return;
+    var d = Math.round((b - a) * 10) / 10, pct = /%$/.test(String(newT).trim());
+    el.classList.remove('chg-glow'); void el.offsetWidth; el.classList.add('chg-glow');
+    el.insertAdjacentHTML('beforeend', '<sup class="dlt' + (d < 0 ? ' dn' : '') + '" title="Was ' + esc(String(oldT)) + ' before the last refresh">' + (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + (pct ? '%' : '') + '</sup>');
+  }
+  function txt(id, v) { var el = $(id), old = el.hasAttribute('data-v') ? el.getAttribute('data-v') : el.textContent; el.textContent = v; markNum(el, old, v); }
+  // Same for HTML built in one go: numbers carry data-k, people chips carry data-k="p:..." and get a ring when they're new.
+  function swapHtml(box, html) {
+    var old = {}, had = false;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-k]'), function (e) { had = true; old[e.getAttribute('data-k')] = e.hasAttribute('data-v') ? e.getAttribute('data-v') : e.textContent; });
+    box.innerHTML = html;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-k]'), function (e) {
+      var k = e.getAttribute('data-k');
+      if (k.indexOf('p:') === 0) { if (had && glowOn() && !(k in old)) e.classList.add('chg-new'); return; }
+      markNum(e, k in old ? old[k] : null, e.textContent);
+    });
+  }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
   function signedIn(on) { $('keyrow').classList.toggle('hidden', on); $('tools').classList.toggle('hidden', !on); if (!on) $('out').classList.add('hidden'); }
@@ -2035,7 +2066,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
   function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
-  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else if (tab === 'all') loadAll(false); else loadGc(false); });
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); glowUntil = 0; showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else if (tab === 'all') loadAll(false); else loadGc(false); });
 
   // ---- GoatCounter ----
   var BUILD = /^(export|quest-send|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|share-create)$/;
@@ -2410,7 +2441,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec="' + secId + '"] .card'), function (c) {
       if (c.hasAttribute('data-keep')) return;
       var v = c.querySelector('.value'); if (!v) return;
-      var t = v.textContent.trim(); c.classList.toggle('hidden', t === '' || t === '-' || t === '0' || t === '0%');
+      var t = (v.hasAttribute('data-v') ? v.getAttribute('data-v') : v.textContent).trim(); c.classList.toggle('hidden', t === '' || t === '-' || t === '0' || t === '0%');
     });
   }
   function spark(id, vals, color) {
@@ -2633,7 +2664,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       pls.slice(0, 40).map(function (p) {
         var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
-        return '<a class="pchip" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
+        return '<a class="pchip" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
   }
   function renderAll() {
@@ -2667,18 +2698,18 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
         strip += pStrip(su, 'Studio Sync user', 'Studio Sync users', 'synced a headset ' + when, 'sync', 'Studio Sync');
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
-        '<span class="hrow"><span class="hl"><span class="sv">' + I.num + '</span><span class="sn">' + (I.err || chgTag(I.ch, true) + '<span>' + I.S.unit + (I.ch != null && before ? ' vs the ' + before + ' before' : d.range === 'today' ? ' so far today' : '') + '</span>') + '</span>' +
-        (stats.length ? '<span class="hstats">' + stats.map(function (t) { return '<span><small>' + t[0] + '</small><b>' + t[1] + '</b>' + (t[2] ? '<em>' + esc(t[2]) + '</em>' : '') + '</span>'; }).join('') + '</span>' : '') + '</span>' +
+        '<span class="hrow"><span class="hl"><span class="sv" data-k="a:' + hero.key + '">' + I.num + '</span><span class="sn">' + (I.err || chgTag(I.ch, true) + '<span>' + I.S.unit + (I.ch != null && before ? ' vs the ' + before + ' before' : d.range === 'today' ? ' so far today' : '') + '</span>') + '</span>' +
+        (stats.length ? '<span class="hstats">' + stats.map(function (t) { return '<span><small>' + t[0] + '</small><b data-k="a:st:' + t[0] + '">' + t[1] + '</b>' + (t[2] ? '<em>' + esc(t[2]) + '</em>' : '') + '</span>'; }).join('') + '</span>' : '') + '</span>' +
         '<span class="hch">' + (I.err ? '' : heroChart(I.x, I.S.color)) + (k.length > 1 && !I.err ? '<span class="hax"><span>' + esc(lab(k[0])) + '</span><span>' + esc(lab(k[k.length - 1])) + '</span></span>' : '') + '</span></span>' + strip + '</div>';
     }
     list.forEach(function (s) {
       if (s === hero) return;
       var I = info(s), v = I.x.vals, today = d.range === 'today' ? ' so far today' : v.length ? ' · today ' + fmt(v[v.length - 1] || 0) : '';
       rest += '<button type="button" class="site" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(s.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
-        '<span class="arow"><span class="sv">' + I.num + '</span>' + chgTag(I.ch, true) + '</span><span class="sn">' + (I.err || I.S.unit + today) + '</span><span class="ssp">' + (I.err ? '' : allSpark(v, I.S.color)) + '</span></button>';
+        '<span class="arow"><span class="sv" data-k="a:' + s.key + '">' + I.num + '</span>' + chgTag(I.ch, true) + '</span><span class="sn">' + (I.err || I.S.unit + today) + '</span><span class="ssp">' + (I.err ? '' : allSpark(v, I.S.color)) + '</span></button>';
     });
     if (rest) h += '<div class="sites three">' + rest + '</div>';
-    $('a-sites').innerHTML = h;
+    swapHtml($('a-sites'), h);
     var tch = prevOk && prevT > 0 && before ? Math.round((total - prevT) / prevT * 100) : null;
     $('a-totch').innerHTML = tch == null ? '' : chgTag(tch) + '<span>vs the ' + before + ' before</span>';
     txt('a-total', fmt(total));
@@ -2738,7 +2769,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       .concat((d.refs || []).filter(function (r) { return r.scheme === 'c' && /studio-?sync/.test(String(r.name).toLowerCase()); }).map(function (r) { return refRow(r, 'g'); }));
     bars('y-came', rows);
     bars('y-pages', (d.pages || []).filter(function (p) { return /studio-?sync/i.test(p.path || ''); }).map(function (p) { return pageRow(p, 'Playlist Studio home', 'm:ps'); }));
-    Array.prototype.forEach.call(document.querySelectorAll('.ycard'), function (c) { var v = c.querySelector('.value'); c.classList.toggle('hidden', !v || v.textContent === '0'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.ycard'), function (c) { var v = c.querySelector('.value'); c.classList.toggle('hidden', !v || (v.hasAttribute('data-v') ? v.getAttribute('data-v') : v.textContent) === '0'); });
     var any = opened || mod || linked || sent || evs.length;
     $('y-empty').classList.toggle('hidden', !!any);
   }
@@ -3304,14 +3335,18 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
   // Refresh: the button, and on its own every 5 minutes while the page is on screen (right away when you come back to it after longer).
   var lastLoad = Date.now(), AUTO_MS = 5 * 60 * 1000;
-  function refreshAll(auto) { lastLoad = Date.now(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
+  // The Studio Sync logo (top of the page and on its tab) turns once when the page loads and on every refresh.
+  function logoSpin() {
+    ['.brand img', '#tabs [data-tab="sync"] .ti img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
+  }
+  function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
   function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
   $('refresh').addEventListener('click', function () { refreshAll(false); });
   setInterval(autoRefresh, 30000);
   document.addEventListener('visibilitychange', autoRefresh);
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
-  tabIcons(); showRange(); showTab(tab);
+  tabIcons(); showRange(); showTab(tab); logoSpin();
   if (getKey()) loadSync(); else $('keyrow').classList.remove('hidden');
 })();
 </script></body></html>`;
