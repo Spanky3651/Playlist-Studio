@@ -2626,6 +2626,16 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="hgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + color + '" stop-opacity=".35"/><stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
       '<polygon points="2,' + H + ' ' + pts + ' ' + (W - 2) + ',' + H + '" fill="url(#hgr)"/><polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
   }
+  // A row of people as chips: picture and name, a green dot when they were on in the last hour, each opens their BeatLeader profile.
+  function pStrip(pls, one, many, what, goTab, goName) {
+    if (!pls.length) return '';
+    return '<div class="pstrip"><div class="psh"><b>' + fmt(pls.length) + ' ' + (pls.length === 1 ? one : many) + '</b> ' + what + '<span class="sp"></span><button type="button" class="seeall" data-go="' + goTab + '">See all in ' + goName + ' ›</button></div><div class="pchips">' +
+      pls.slice(0, 40).map(function (p) {
+        var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
+        var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
+        return '<a class="pchip" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
+      }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
+  }
   function renderAll() {
     var d = allData; if (!d) return;
     var total = 0, prevT = 0, prevOk = true, list = d.sites.filter(function (s) { return ALL_SITES[s.key]; });
@@ -2649,15 +2659,12 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
         if (hero.players) stats.push(['Players', fmt(hero.players.length), 'connected']);
         if (total) stats.push(['Share', Math.round((hero.visitors || 0) / total * 100) + '%', '']);
       }
-      var pls = hero.players || [], strip = '';
-      if (pls.length) {
-        var when = { today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days', all: 'since you started counting' }[d.range] || '';
-        strip = '<div class="pstrip"><div class="psh"><b>' + fmt(pls.length) + ' player' + (pls.length === 1 ? '' : 's') + '</b> connected a profile ' + when + '<span class="sp"></span><button type="button" class="seeall" data-go="ply">See all in Players ›</button></div><div class="pchips">' +
-          pls.slice(0, 40).map(function (p) {
-            var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
-            var pic = p.avatar ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
-            return '<a class="pchip" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
-          }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="ply">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
+      var when = { today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days', all: 'since you started counting' }[d.range] || '';
+      var strip = pStrip(hero.players || [], 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
+      if (sync && sync.users) {
+        var from = d.range === 'all' ? 0 : Date.parse(d.start + 'T00:00:00') / 1000 || 0;
+        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, avatar: u.avatar, lastT: u.last }; });
+        strip += pStrip(su, 'Studio Sync user', 'Studio Sync users', 'synced a headset ' + when, 'sync', 'Studio Sync');
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
         '<span class="hrow"><span class="hl"><span class="sv">' + I.num + '</span><span class="sn">' + (I.err || chgTag(I.ch, true) + '<span>' + I.S.unit + (I.ch != null && before ? ' vs the ' + before + ' before' : d.range === 'today' ? ' so far today' : '') + '</span>') + '</span>' +
@@ -2687,7 +2694,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   // Each tab's icon: the site's logo, or what the tab shows.
   function tabIcons() {
     var TI = { all: '<span class="ti gl">' + glyph('grid', 'currentColor') + '</span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
-      ply: '<span class="ti gl">' + glyph('people', '#2f7bff') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', '#ff2740') + '</span>',
+      ply: '<span class="ti gl">' + glyph('people', '#2f7bff') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', '#d64556') + '</span>',
       src: '<span class="ti gl">' + glyph('link', '#2f7bff') + '</span>', sync: '<span class="ti"><img src="' + MY_ICONS.ss + '" alt=""></span>',
       bl: meAvatar ? '<span class="ti me"><img src="' + esc(meAvatar) + '" alt=""></span>' : '<span class="ti"><img src="/admin/icon?d=beatleader.xyz" alt=""></span>',
       hsv: '<span class="ti"><img src="' + MY_ICONS.hsv + '" alt=""></span>', rs: '<span class="ti"><img src="' + MY_ICONS.rs + '" alt=""></span>' };
@@ -3282,7 +3289,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       txt('goneQuiet', s.goneQuiet);
       txt('pendingChanges', s.pendingChanges);
       txt('pendingNote', s.pendingChanges ? 'on ' + s.pendingHeadsets + ' headset' + (s.pendingHeadsets === 1 ? '' : 's') + ', oldest ' + ago(s.pendingOldest) : 'nothing queued');
-      renderUsers(s);
+      renderUsers(s); if (allData) renderAll();
       bars('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]].map(function (r, i) { return ['<span class="sl">' + (i === 4 ? '<span class="ic gl">' + glyph('question', '#9fb3d9') + '</span>' : iconSpan('m:ss', 'S')) + '<span class="fl"><b>' + esc(r[0]) + '</b></span></span>', r[1]]; }));
       txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old. The page refreshes itself every 5 minutes.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
       $('out').classList.remove('hidden'); say(''); tabIntoView();
