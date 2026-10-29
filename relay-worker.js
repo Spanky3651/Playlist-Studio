@@ -1568,6 +1568,17 @@ button.linkish:hover{color:var(--text)}
 .tabs .ti{display:inline-flex;width:18px;height:18px;flex:none;align-items:center;justify-content:center}.tabs .ti img{width:18px;height:18px;border-radius:5px;display:block}.tabs .ti.me img{border-radius:50%}.tabs .ti svg{width:17px;height:17px}
 .atotal{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:2px 0 14px;color:var(--muted)}.atotal b{font-size:34px;color:var(--text);font-weight:800}
 .sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.atotal .tch{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13.5px}
+.chg{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:13.5px;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.chg.up{color:#3ddc84;background:rgba(61,220,132,.12)}.chg.down{color:#ff7a8a;background:rgba(255,77,109,.13)}.chg.sm{font-size:12.5px;padding:2px 8px}
+.sites.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.site .arow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}.site .arow .sv{margin-top:0}
+.site.hero2{width:100%;margin-bottom:12px;padding:16px 18px 14px}
+.hero2 .hrow{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:22px;align-items:end;margin-top:6px}
+.hero2 .hl{display:flex;flex-direction:column}.site.hero2 .sv{font-size:44px;line-height:1.1}.site.hero2 .sn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.hstats{display:flex;gap:22px;margin-top:14px}.hstats>span{display:flex;flex-direction:column}.hstats small{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hstats b{font-size:20px}.hstats em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.hch{display:block;min-width:0}.hch svg{width:100%;height:120px;display:block}.hax{display:flex;justify-content:space-between;font-size:12px;color:#7f8a9c;margin-top:4px}
+@media(max-width:700px){.hero2 .hrow{grid-template-columns:1fr;gap:12px}.site.hero2 .sv{font-size:36px}.hstats{gap:16px}.sites.three{grid-template-columns:1fr 1fr}.sites.three .site:last-child:nth-child(odd){grid-column:1 / span 2}.atotal .tch{margin-left:0;flex-basis:100%}}
 .site{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px 10px;overflow:hidden;min-width:0}
 .site::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,var(--c),transparent 80%)}
 .site:hover{border-color:color-mix(in srgb,var(--c) 55%,#1c2638)}
@@ -1760,9 +1771,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 
 <section data-sec="all" class="hidden">
 <div id="a-msg" class="gcmsg hidden"></div>
-<div class="atotal"><b id="a-total">-</b><span id="a-totaln"></span></div>
-<div class="sites" id="a-sites"></div>
-<div class="chart"><svg id="a-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Visitors per day for each site"></svg><div class="alegend" id="a-legend"></div></div>
+<div class="atotal"><b id="a-total">-</b><span id="a-totaln"></span><span class="tch" id="a-totch"></span></div>
+<div id="a-sites"></div>
 <div class="blk"><h2>Busiest pages <small>across your sites</small></h2><div class="bars feat" id="a-pages"></div></div>
 <p class="when" id="a-when"></p>
 </section>
@@ -2585,20 +2595,53 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     var pts = vals.map(function (v, i) { return (i * (w - 2) / (n - 1) + 1).toFixed(1) + ',' + (h - 2 - v / max * (h - 6)).toFixed(1); });
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true"><polyline points="1,' + h + ' ' + pts.join(' ') + ' ' + (w - 1) + ',' + h + '" fill="' + color + '" opacity=".15"/><polyline points="' + pts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
   }
+  function chgTag(ch, sm) { return ch == null ? '' : '<span class="chg ' + (ch >= 0 ? 'up' : 'down') + (sm ? ' sm' : '') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + Math.abs(ch) + '%</span>'; }
+  function heroChart(x, color) {
+    var v = x.vals; if (!v || v.length < 2) return '';
+    var W = 700, H = 120, n = v.length, max = Math.max.apply(null, v.concat([1]));
+    var pts = v.map(function (y, i) { return (i * (W - 4) / (n - 1) + 2).toFixed(1) + ',' + (H - 4 - y / max * (H - 16)).toFixed(1); }).join(' ');
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="hgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + color + '" stop-opacity=".35"/><stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
+      '<polygon points="2,' + H + ' ' + pts + ' ' + (W - 2) + ',' + H + '" fill="url(#hgr)"/><polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
+  }
   function renderAll() {
     var d = allData; if (!d) return;
-    var total = 0, h = '';
-    d.sites.forEach(function (s) {
-      var S = ALL_SITES[s.key]; if (!S) return; total += s.visitors || 0;
-      var ch = s.prevVisitors != null && s.prevVisitors > 0 ? Math.round((s.visitors - s.prevVisitors) / s.prevVisitors * 100) : null;
-      var note = s.error ? (s.error === 'key' ? 'the key can’t read ' + esc(s.code) : 'GoatCounter didn’t answer') : ch != null ? '<span class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + Math.abs(ch) + '%</span> ' + S.unit + ' vs the ' + ({ today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range] || 'period') + ' before' : S.unit + (d.range === 'today' ? ' so far today' : '');
-      h += '<button type="button" class="site" data-go="' + S.tab + '" style="--c:' + S.color + '"><span class="sh">' + siteIcon(s.key) + '<b>' + esc(S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
-        '<span class="sv">' + (s.error ? '-' : fmt(s.visitors)) + '</span><span class="sn">' + note + '</span><span class="ssp">' + allSpark(siteSeries(s, d).vals, S.color) + '</span></button>';
+    var total = 0, prevT = 0, prevOk = true, list = d.sites.filter(function (s) { return ALL_SITES[s.key]; });
+    list.forEach(function (s) { total += s.visitors || 0; if (!s.error) { if (s.prevVisitors != null) prevT += s.prevVisitors; else prevOk = false; } });
+    var before = { today: 'day', '7d': '7 days', '30d': '30 days', '90d': '90 days' }[d.range];
+    var hourLab = function (k) { return ((k % 12) || 12) + (k < 12 ? ' AM' : ' PM'); };
+    function info(s) {
+      var S = ALL_SITES[s.key], ch = !s.error && s.prevVisitors != null && s.prevVisitors > 0 ? Math.round((s.visitors - s.prevVisitors) / s.prevVisitors * 100) : null;
+      var err = s.error ? (s.error === 'key' ? 'the key can’t read ' + esc(s.code) : 'GoatCounter didn’t answer') : '';
+      return { S: S, ch: ch, err: err, x: siteSeries(s, d), num: s.error ? '-' : fmt(s.visitors) };
+    }
+    var hero = list.filter(function (s) { return s.key === 'studio'; })[0] || list[0], h = '', rest = '';
+    if (hero) {
+      var I = info(hero), v = I.x.vals, k = I.x.keys, bi = 0;
+      v.forEach(function (y, i) { if (y > v[bi]) bi = i; });
+      var lab = function (key) { return d.range === 'today' ? hourLab(key) : dshort(key); };
+      var stats = [];
+      if (!I.err && v.length) {
+        if (d.range !== 'today') stats.push(['Today', fmt(v[v.length - 1] || 0), '']);
+        stats.push([d.range === 'today' ? 'Busiest hour' : 'Best day', fmt(v[bi] || 0), v[bi] ? lab(k[bi]) : '']);
+        if (total) stats.push(['Share', Math.round((hero.visitors || 0) / total * 100) + '%', '']);
+      }
+      h += '<button type="button" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
+        '<span class="hrow"><span class="hl"><span class="sv">' + I.num + '</span><span class="sn">' + (I.err || chgTag(I.ch, true) + '<span>' + I.S.unit + (I.ch != null && before ? ' vs the ' + before + ' before' : d.range === 'today' ? ' so far today' : '') + '</span>') + '</span>' +
+        (stats.length ? '<span class="hstats">' + stats.map(function (t) { return '<span><small>' + t[0] + '</small><b>' + t[1] + '</b>' + (t[2] ? '<em>' + esc(t[2]) + '</em>' : '') + '</span>'; }).join('') + '</span>' : '') + '</span>' +
+        '<span class="hch">' + (I.err ? '' : heroChart(I.x, I.S.color)) + (k.length > 1 && !I.err ? '<span class="hax"><span>' + esc(lab(k[0])) + '</span><span>' + esc(lab(k[k.length - 1])) + '</span></span>' : '') + '</span></span></button>';
+    }
+    list.forEach(function (s) {
+      if (s === hero) return;
+      var I = info(s), v = I.x.vals, today = d.range === 'today' ? ' so far today' : v.length ? ' · today ' + fmt(v[v.length - 1] || 0) : '';
+      rest += '<button type="button" class="site" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(s.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
+        '<span class="arow"><span class="sv">' + I.num + '</span>' + chgTag(I.ch, true) + '</span><span class="sn">' + (I.err || I.S.unit + today) + '</span><span class="ssp">' + (I.err ? '' : allSpark(v, I.S.color)) + '</span></button>';
     });
+    if (rest) h += '<div class="sites three">' + rest + '</div>';
     $('a-sites').innerHTML = h;
+    var tch = prevOk && prevT > 0 && before ? Math.round((total - prevT) / prevT * 100) : null;
+    $('a-totch').innerHTML = tch == null ? '' : chgTag(tch) + '<span>vs the ' + before + ' before</span>';
     txt('a-total', fmt(total));
     txt('a-totaln', (d.range === 'today' ? 'visits across your sites today' : d.range === 'all' ? 'visits across your sites since ' + dshort(d.start) : 'visits across your sites, ' + dshort(d.start) + ' to ' + dshort(d.end)));
-    allChart(d);
     var pages = [];
     d.sites.forEach(function (s) { var S = ALL_SITES[s.key]; if (!S) return; (s.pages || []).forEach(function (p) { pages.push({ s: s.key, p: p }); }); });
     pages.sort(function (a, b) { return b.p.count - a.p.count; });
@@ -2608,41 +2651,6 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       return [r[0], r[1], 'site-' + x.s];
     }), '', 'No visits in this range.');
     txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
-  }
-  function allChart(d) {
-    var svg = $('a-chart'), box = svg.parentNode; if (!svg) return;
-    var series = d.sites.filter(function (s) { return ALL_SITES[s.key] && !s.error; }).map(function (s) { var x = siteSeries(s, d); return { key: s.key, map: x.keys.reduce(function (m, k, i) { m[k] = x.vals[i]; return m; }, {}) }; });
-    var keys = [];
-    if (d.range === 'today') keys = Array.from({ length: 24 }, function (_, h) { return h; });
-    else { var seen = {}; d.sites.forEach(function (s) { (s.days || []).forEach(function (x) { seen[x.day] = 1; }); }); keys = Object.keys(seen).sort(); }
-    var W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 220, L = 34, R = 12, T = 12, B = 26, n = keys.length;
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    if (n < 2 || !series.length) { svg.innerHTML = ''; return; }
-    var max = 1; series.forEach(function (s) { keys.forEach(function (k) { if ((s.map[k] || 0) > max) max = s.map[k]; }); });
-    var step = Math.pow(10, Math.floor(Math.log10(max))), nice = Math.ceil(max / step) * step; if (nice / step <= 2) step = step / 2; max = Math.max(nice, 1);
-    function X(i) { return L + i * (W - L - R) / (n - 1); }
-    function Y(v) { return T + (H - T - B) * (1 - v / max); }
-    var g = '';
-    for (var v = 0; v <= max + 1e-9; v += step) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="#1c2638"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" fill="#9aa6b8" font-size="11" text-anchor="end">' + fmt(Math.round(v)) + '</text>';
-    series.forEach(function (s) {
-      var c = ALL_SITES[s.key].color;
-      g += '<path d="' + keys.map(function (k, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(s.map[k] || 0).toFixed(1); }).join(' ') + '" fill="none" stroke="' + c + '" stroke-width="2.5" stroke-linejoin="round"/>';
-      g += '<circle cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(s.map[keys[n - 1]] || 0).toFixed(1) + '" r="3.5" fill="' + c + '"/>';
-    });
-    var lab = function (k) { return d.range === 'today' ? ((k % 12) || 12) + (k < 12 ? ' AM' : ' PM') : dshort(k); };
-    [0, Math.floor((n - 1) / 2), n - 1].forEach(function (i, j) { g += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 6) + '" fill="#9aa6b8" font-size="11" text-anchor="' + (j === 0 ? 'start' : j === 2 ? 'end' : 'middle') + '">' + esc(lab(keys[i])) + '</text>'; });
-    g += '<line class="cmark" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="#5aa0ff" stroke-width="1" style="display:none"/>';
-    svg.innerHTML = g;
-    $('a-legend').innerHTML = d.sites.filter(function (s) { return ALL_SITES[s.key]; }).map(function (s) { return '<span style="--c:' + ALL_SITES[s.key].color + '">' + siteIcon(s.key) + esc(ALL_SITES[s.key].name) + '</span>'; }).join('');
-    var tip = box.querySelector('.ctip'); if (!tip) { tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip); }
-    var mark = svg.querySelector('.cmark');
-    function at(e) {
-      var r = svg.getBoundingClientRect(), x = ((e.clientX || 0) - r.left) / r.width * W, i = Math.max(0, Math.min(n - 1, Math.round((x - L) / ((W - L - R) / (n - 1)))));
-      mark.setAttribute('x1', X(i)); mark.setAttribute('x2', X(i)); mark.style.display = '';
-      tip.innerHTML = '<span>' + esc(lab(keys[i])) + '</span>' + series.map(function (s) { return '<span class="tl"><i style="background:' + ALL_SITES[s.key].color + '"></i>' + esc(ALL_SITES[s.key].name) + ' <b>' + fmt(s.map[keys[i]] || 0) + '</b></span>'; }).join('');
-      var px = X(i) / W * r.width; tip.style.left = Math.max(4, Math.min(r.width - 210, px - 100)) + 'px'; tip.hidden = false;
-    }
-    svg.onpointermove = at; svg.onpointerdown = at; svg.onpointerleave = function () { tip.hidden = true; mark.style.display = 'none'; };
   }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('#a-sites .site[data-go]'); if (b) { showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} } });
   // Each tab's icon: the site's logo, or what the tab shows.
@@ -3264,7 +3272,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   setInterval(autoRefresh, 30000);
   document.addEventListener('visibilitychange', autoRefresh);
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
-  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (allData && tab === 'all') allChart(allData); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
+  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab);
   if (getKey()) loadSync(); else $('keyrow').classList.remove('hidden');
 })();
