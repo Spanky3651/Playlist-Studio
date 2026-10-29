@@ -2722,7 +2722,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
   // Each tab's icon: the site's logo, or what the tab shows.
   function tabIcons() {
-    var TI = { all: '<span class="ti gl">' + glyph('grid', 'currentColor') + '</span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
+    var TI = { all: '<span class="ti gl"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#ff2740"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#2f7bff"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#2f7bff"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="#ff2740"/></svg></span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
       ply: '<span class="ti gl">' + glyph('people', '#2f7bff') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', '#d64556') + '</span>',
       src: '<span class="ti gl">' + glyph('link', '#2f7bff') + '</span>', sync: '<span class="ti"><img src="' + MY_ICONS.ss + '" alt=""></span>',
       bl: meAvatar ? '<span class="ti me"><img src="' + esc(meAvatar) + '" alt=""></span>' : '<span class="ti"><img src="/admin/icon?d=beatleader.xyz" alt=""></span>',
