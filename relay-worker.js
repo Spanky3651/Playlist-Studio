@@ -1516,7 +1516,7 @@ h1{font-size:26px;margin:0}
 .brand{display:flex;align-items:center;gap:12px;margin:0 0 6px}
 .brand img{width:44px;height:44px;border-radius:11px;box-shadow:0 0 16px rgba(47,123,255,.25);flex:none}
 .lspin{animation:lspin 1s cubic-bezier(.4,0,.2,1) 1}
-@keyframes lspin{0%{transform:rotate(0) scale(1)}55%{transform:rotate(320deg) scale(1.1);filter:drop-shadow(0 0 8px rgba(47,123,255,.7))}100%{transform:rotate(360deg) scale(1)}}
+@keyframes lspin{0%{transform:rotate(0) scale(1)}55%{transform:rotate(320deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
 @media(prefers-reduced-motion:reduce){.lspin{animation:none}}
 .sub{color:var(--muted);font-size:15px;margin:0 0 22px}
 .keyrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
