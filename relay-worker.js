@@ -1468,7 +1468,7 @@ async function gcAllStats(env, range, fresh, tz) {
   for (const [key, cfg, fullKey] of SITES) {
     const full = fresh ? null : await env.PLAYLISTS.get(fullKey, "json");
     if (full && now - full.generated < GC_CACHE_SEC) {
-      sites.push({ key, code: cfg.code, visitors: full.visitors, prevVisitors: full.prevVisitors, days: full.days, pages: (full.pages || []).slice(0, 8) });
+      sites.push({ key, code: cfg.code, visitors: full.visitors, prevVisitors: full.prevVisitors, days: full.days, pages: (full.pages || []).slice(0, 8), locations: (full.locations || []).map((c) => ({ id: c.id, name: c.name, count: c.count })) });
       continue;
     }
     const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
@@ -1476,11 +1476,12 @@ async function gcAllStats(env, range, fresh, tz) {
       const total = await gcGet(e, "/stats/total", { start: gcIso(start), end: gcIso(end) });
       let prev = null; if (range !== "all") try { prev = await gcGet(e, "/stats/total", { start: gcIso(start - n * DAY), end: gcIso(start) }); } catch (x) {}
       const hits = await gcHits(e, start, end);
-      sites.push({ key, code: cfg.code, visitors: gcVisitors(total), prevVisitors: prev ? gcVisitors(prev) : null, days: gcPageDays(total, hits, range),
+      let locations = []; try { locations = ((await gcList(e, "locations", start, end, 25)) || []).map((c) => ({ id: c.id, name: c.name, count: c.count })); } catch (x) {}
+      sites.push({ key, code: cfg.code, visitors: gcVisitors(total), prevVisitors: prev ? gcVisitors(prev) : null, days: gcPageDays(total, hits, range), locations,
         pages: hits.filter((h) => !h.event).sort((a, b) => b.count - a.count).slice(0, 8).map((h) => ({ path: h.path, title: h.title, count: h.count })) });
     } catch (x) {
       if (x && x.message === "gc-auth" && key === "studio") throw x;
-      sites.push({ key, code: cfg.code, error: x && x.message === "gc-auth" ? "key" : "down", visitors: 0, prevVisitors: null, days: [], pages: [] });
+      sites.push({ key, code: cfg.code, error: x && x.message === "gc-auth" ? "key" : "down", visitors: 0, prevVisitors: null, days: [], pages: [], locations: [] });
     }
   }
   const me = await gcMe(env);
@@ -1765,7 +1766,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
 </div>
-<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="true">Today</button><button data-r="7d" aria-pressed="false">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
+<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="false">Today</button><button data-r="7d" aria-pressed="true">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
 <div id="skel" class="skel hidden" aria-hidden="true"><div class="skcards"><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div></div><div class="skchart"><svg viewBox="0 0 700 200" preserveAspectRatio="none"><path class="skwave" pathLength="1" d="M10 170 C120 160 170 90 260 105 S420 50 500 80 S640 40 690 45"/></svg></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div></div>
 
@@ -1773,7 +1774,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <div id="a-msg" class="gcmsg hidden"></div>
 <div class="atotal"><b id="a-total">-</b><span id="a-totaln"></span><span class="tch" id="a-totch"></span></div>
 <div id="a-sites"></div>
-<div class="blk"><h2>Busiest pages <small>across your sites</small></h2><div class="bars feat" id="a-pages"></div></div>
+<div class="blk"><h2>Where visitors are <small>all your sites, hover or tap a country</small></h2><div class="map" id="a-map"></div></div>
 <p class="when" id="a-when"></p>
 </section>
 
@@ -1993,7 +1994,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
 
   // ---- tabs and range ----
-  var tab = ls('studioStatsTab2') || 'all', range = 'today', gc = null, gcBusy = false, sync = null;
+  var tab = ls('studioStatsTab2') || 'all', range = '7d', gc = null, gcBusy = false, sync = null;
   function showTab(t) {
     if (!document.querySelector('[data-sec="' + t + '"]')) t = 'vis';
     tab = t; ls('studioStatsTab2', t);
@@ -2642,14 +2643,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     $('a-totch').innerHTML = tch == null ? '' : chgTag(tch) + '<span>vs the ' + before + ' before</span>';
     txt('a-total', fmt(total));
     txt('a-totaln', (d.range === 'today' ? 'visits across your sites today' : d.range === 'all' ? 'visits across your sites since ' + dshort(d.start) : 'visits across your sites, ' + dshort(d.start) + ' to ' + dshort(d.end)));
-    var pages = [];
-    d.sites.forEach(function (s) { var S = ALL_SITES[s.key]; if (!S) return; (s.pages || []).forEach(function (p) { pages.push({ s: s.key, p: p }); }); });
-    pages.sort(function (a, b) { return b.p.count - a.p.count; });
-    bars('a-pages', pages.slice(0, 10).map(function (x) {
-      var S = ALL_SITES[x.s], nm = x.s === 'bl' ? (x.p.path === '/msploit-profile' ? 'Your BeatLeader profile' : (x.p.title || x.p.path)) : pageName(x.p.path, S.home);
-      var r = nameRow(nm, nm === x.p.path ? '' : x.p.path, '', x.p.count, siteIcon(x.s));
-      return [r[0], r[1], 'site-' + x.s];
-    }), '', 'No visits in this range.');
+    var locs = [];
+    d.sites.forEach(function (s) { if (ALL_SITES[s.key]) locs = locs.concat(s.locations || []); });
+    worldMap('a-map', locs, 'visitors');
     txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
   }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('#a-sites .site[data-go]'); if (b) { showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} } });
