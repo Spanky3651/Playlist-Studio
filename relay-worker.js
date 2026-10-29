@@ -3221,10 +3221,10 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     if (sync) rows.push(['<span class="sl"><span class="ic gl">' + glyph('headset', '#3ddc84') + '</span><span class="fl"><b>Headsets linked</b></span></span>', sync.headsets, 'g']);
     bars('relBars', rows);
   }
-  function loadSync() {
+  function loadSync(auto) {
     var key = keyIn.value.trim() || getKey();
     if (!key) { say('Enter your admin key.', true); return; }
-    say('Loading...');
+    if (auto !== true) say('Loading...');
     fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
@@ -3245,7 +3245,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       txt('pendingNote', s.pendingChanges ? 'on ' + s.pendingHeadsets + ' headset' + (s.pendingHeadsets === 1 ? '' : 's') + ', oldest ' + ago(s.pendingOldest) : 'nothing queued');
       renderUsers(s);
       bars('modBars', [['0.8 or newer', s.mod08 || 0], ['0.7', s.mod07], ['0.5 to 0.6', s.mod05], ['Older than 0.5', s.modOld], ['Not shared yet', s.modUnknown]].map(function (r, i) { return ['<span class="sl">' + (i === 4 ? '<span class="ic gl">' + glyph('question', '#9fb3d9') + '</span>' : iconSpan('m:ss', 'S')) + '<span class="fl"><b>' + esc(r[0]) + '</b></span></span>', r[1]]; }));
-      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
+      txt('when', 'Updated ' + new Date(s.generated * 1000).toLocaleString() + '. Last sync times are at most 10 minutes old. The page refreshes itself every 5 minutes.' + (s.excluded ? ' Your own library is left out.' : ' Your own headsets are counted (ADMIN_EXCLUDE isn’t set).'));
       $('out').classList.remove('hidden'); say(''); tabIntoView();
       renderReleases();
       if ((first || !gc) && tab !== 'all') loadGc(false);
@@ -3256,7 +3256,13 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   }
   $('go').addEventListener('click', loadSync);
   keyIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadSync(); });
-  $('refresh').addEventListener('click', function () { loadSync(); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); });
+  // Refresh: the button, and on its own every 5 minutes while the page is on screen (right away when you come back to it after longer).
+  var lastLoad = Date.now(), AUTO_MS = 5 * 60 * 1000;
+  function refreshAll(auto) { lastLoad = Date.now(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
+  function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
+  $('refresh').addEventListener('click', function () { refreshAll(false); });
+  setInterval(autoRefresh, 30000);
+  document.addEventListener('visibilitychange', autoRefresh);
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (allData && tab === 'all') allChart(allData); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab);
