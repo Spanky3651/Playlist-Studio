@@ -3464,7 +3464,7 @@ body>main{position:relative;z-index:1}
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     // the box can start small and grow (a side panel opening): stretch the field with it so blocks never bunch on one side
     if (oW && oH) for (var j = 0; j < B.length; j++) { B[j].x *= W / oW; B[j].y *= H / oH; }
-    var n = Math.round(Math.min(60, Math.max(22, W * H / 26000)));
+    var n = Math.round(Math.min(38, Math.max(14, W * H / 42000)));
     for (var tries = 0; B.length < n && tries < n * 3; tries++) { var q = place(false); if (q.ok) B.push(q); }
     B.length = Math.min(B.length, n);
     settle(8);
