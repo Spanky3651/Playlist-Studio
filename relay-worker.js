@@ -1542,7 +1542,7 @@ const ADMIN_PAGE = `<!doctype html>
 <meta name="robots" content="noindex"><title>Studio Stats</title>
 <link rel="icon" type="image/png" href="${ADMIN_LOGO}">
 <style>
-:root{--bg:#000;--card:rgba(8,11,18,.66);--card2:rgba(12,17,28,.62);--line:#1c2638;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--cyan:#38bdf8;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
+:root{--bg:#000;--card:#0b0b0d;--card2:#121215;--line:#24242b;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--cyan:#38bdf8;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,'Segoe UI',Arial,sans-serif;padding:24px 16px 48px}
 main{max-width:980px;margin:0 auto}
@@ -1816,9 +1816,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.9}
 body>main{position:relative;z-index:1}
-/* falling note blocks behind the page, seen through frosted-glass cards */
-.card,.bars,.chart,.site,.pchip,.pdet,.plist,.gcmsg,.skcard,.skchart,.skbars{-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2)}
-.pchip{background:rgba(10,14,22,.7)}
+/* falling note blocks behind the page; the cards stay solid on top */
+.pchip{background:#141417}
 </style></head><body><canvas id="blocksBg" aria-hidden="true"></canvas><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
@@ -3467,7 +3466,7 @@ body>main{position:relative;z-index:1}
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     // the box can start small and grow (a side panel opening): stretch the field with it so blocks never bunch on one side
     if (oW && oH) for (var j = 0; j < B.length; j++) { B[j].x *= W / oW; B[j].y *= H / oH; }
-    var n = Math.round(Math.min(38, Math.max(14, W * H / 42000)));
+    var n = Math.round(Math.min(24, Math.max(9, W * H / 65000)));
     for (var tries = 0; B.length < n && tries < n * 3; tries++) { var q = place(false); if (q.ok) B.push(q); }
     B.length = Math.min(B.length, n);
     settle(8);
