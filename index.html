@@ -2083,8 +2083,23 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .pc-link.danger{color:#ff8fa3;}
 .pc-foot [hidden]{display:none !important;}
 /* ---- Easter eggs ---- */
-/* "115": red and blue note blocks falling behind the page, under the solid panels */
-#eggBlocks{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block;opacity:.75;}
+/* Falling blocks background (footer switch): note blocks fall behind the solid panels; the classic streaks stop */
+#blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block;opacity:.75;}
+body.blocks-on #fxCanvas{display:none !important;}
+.foot-fx{width:100%;display:flex;justify-content:center;order:5;margin-top:4px;}
+.fxsw{display:inline-flex;align-items:center;gap:11px;font:700 14px system-ui,'Segoe UI',Arial,sans-serif;color:#cfd8e6;background:transparent;border:0;padding:4px;cursor:pointer;text-transform:none;letter-spacing:.2px;box-shadow:none;}
+.fxsw:hover{background:transparent;box-shadow:none;}
+.fxsw-track{position:relative;width:50px;height:28px;border-radius:9px;background:#0d121b;border:1px solid var(--border-2);flex:none;transition:.2s;}
+.fxsw-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;transition:transform .25s cubic-bezier(.4,1.4,.6,1);}
+.fxsw-knob svg{width:20px;height:20px;display:block;}
+.fxsw .k-body{fill:#3a4253;transition:fill .2s;}.fxsw .k-arrow{fill:#7f8a9c;transition:fill .2s;}
+.fxsw:hover .fxsw-track{border-color:#3a4a66;}
+.fxsw:focus-visible .fxsw-track{outline:2px solid var(--blue);outline-offset:2px;}
+body.blocks-on .fxsw{color:#fff;}
+body.blocks-on .fxsw-track{border-color:transparent;background:linear-gradient(#0d121b,#0d121b) padding-box,linear-gradient(90deg,#ff1e3c,#1e6bff) border-box;}
+body.blocks-on .fxsw-knob{transform:translateX(22px);}
+body.blocks-on .fxsw .k-body{fill:#ff1e3c;}body.blocks-on .fxsw .k-arrow{fill:#fff;}
+@media(prefers-reduced-motion:reduce){.fxsw-knob,.fxsw-track{transition:none;}}
 .egg-bomb{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;opacity:.55;vertical-align:middle;cursor:pointer;}
 .egg-bomb:hover,.egg-bomb:focus-visible{opacity:1;box-shadow:none;}
 .egg-bomb svg{width:18px;height:18px;}
@@ -3075,6 +3090,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
+  <div class="foot-fx"><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   <div class="foot-updated" id="footUpdated" data-updated="2026-10-30">Last updated recently</div>
 </footer>
 
@@ -10193,10 +10209,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   // ---- Easter eggs -------------------------------------------------------------
-  // Left out of the README on purpose. "115" typed outside a text box turns on falling note blocks behind the page;
-  // the browser remembers it until its site data is cleared or 115 is typed again.
-  // About 1 in 1,000 result rows hides a bomb. Oct 31 only: a jack-o'-lantern logo and cobwebs on the For You cards.
-  var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {}, egg115Sent = false, eggKeys = '', eggKeyT = 0;
+  // Left out of the README on purpose. About 1 in 1,000 result rows hides a bomb. Oct 31 only: a jack-o'-lantern logo and cobwebs on the For You cards.
+  var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {};
   var EGG_BOMB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="#4a505c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="6.4" fill="#15171c" stroke="#4a505c" stroke-width="1"/><circle cx="10" cy="10" r="1.6" fill="#6b7280" opacity=".7"/></svg>';
   var EGG_SPIDER = '<svg class="egg-spider" viewBox="0 0 64 64" aria-hidden="true">' +
     '<g stroke="#c9d1df" stroke-opacity=".45" stroke-width=".5" fill="none"><path d="M64 0L44 0M64 0L64 20M64 0L50 14M64 0L46 6M64 0L58 18"/><path d="M50.5 0.2Q55 4 63.8 6.5M47 1.5Q55 8 62.5 13M52 0Q56 2 64 3"/></g>' +
@@ -10219,8 +10233,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     toast('You hit a bomb. Combo lost.', 'err');
     track('egg-bomb');
   }
-  // The falling note blocks, same as the Studio Stats page: they keep their size, never overlap, stay still for reduced motion.
-  function eggBlocksRun(cv) {
+  // Falling blocks background (the footer switch, off by default): red and blue note blocks fall behind the solid panels.
+  // They keep their size, never overlap, and stay still for reduced motion. While on, the classic streaks and outlines stop.
+  function blocksRun(cv) {
   var cx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var COL = { r: ['#ff3a4e', '#ff0016', '#a8000f'], b: ['#4a5cff', '#0020ff', '#0012a8'] };
   var SPR = {};
@@ -10310,25 +10325,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   document.addEventListener('visibilitychange', vis);
   return function () { cancelAnimationFrame(raf); if (ro) ro.disconnect(); else removeEventListener('resize', size); document.removeEventListener('visibilitychange', vis); };
   }
-  var EGG_BLOCKS_KEY = 'playlistStudio.eggBlocks.v1', eggBlocksStop = null;
-  function eggBlocksSet(on, quiet) {
-    var cv = document.getElementById('eggBlocks');
+  var BLOCKS_KEY = 'playlistStudio.blocksBg.v1', blocksStop = null;
+  function blocksSet(on, quiet) {
+    var cv = document.getElementById('blocksBg');
     if (on) {
-      if (!cv) { cv = document.createElement('canvas'); cv.id = 'eggBlocks'; cv.setAttribute('aria-hidden', 'true'); document.body.insertBefore(cv, document.body.firstChild); }
-      if (!eggBlocksStop && cv.getContext) eggBlocksStop = eggBlocksRun(cv);
-    } else { if (eggBlocksStop) eggBlocksStop(); eggBlocksStop = null; if (cv) cv.remove(); }
-    if (!quiet) { try { if (on) localStorage.setItem(EGG_BLOCKS_KEY, '1'); else localStorage.removeItem(EGG_BLOCKS_KEY); } catch (e) {} }
-  }
-  function egg115() {
-    var on = !eggBlocksStop; eggBlocksSet(on);
-    if (on && !egg115Sent) { egg115Sent = true; track('egg-115'); }
-  }
-  function eggKey(e) {
-    var tg = e.target, tag = tg && tg.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (tg && tg.isContentEditable) || e.ctrlKey || e.metaKey || e.altKey) return;
-    var now = Date.now(); if (now - eggKeyT > 1500) eggKeys = ''; eggKeyT = now;
-    if (/^[0-9]$/.test(e.key)) { eggKeys = (eggKeys + e.key).slice(-3); if (eggKeys === '115') { eggKeys = ''; egg115(); } }
-    else eggKeys = '';
+      if (!cv) { cv = document.createElement('canvas'); cv.id = 'blocksBg'; cv.setAttribute('aria-hidden', 'true'); document.body.insertBefore(cv, document.body.firstChild); }
+      if (!blocksStop && cv.getContext) blocksStop = blocksRun(cv);
+    } else { if (blocksStop) blocksStop(); blocksStop = null; if (cv) cv.remove(); }
+    on = !!blocksStop;
+    document.body.classList.toggle('blocks-on', on);
+    var sw = document.getElementById('blocksSw'); if (sw) sw.setAttribute('aria-checked', on ? 'true' : 'false');
+    applyAnim();
+    if (!quiet) { try { if (on) localStorage.setItem(BLOCKS_KEY, '1'); else localStorage.removeItem(BLOCKS_KEY); } catch (e) {} track(on ? 'blocks-on' : 'blocks-off'); }
   }
   function eggHalloween() {
     // October 31 every year, by the visitor's own date; any other day the logo is the normal one.
@@ -10341,9 +10349,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function setupEggs() {
-    document.addEventListener('keydown', eggKey);
-    var blocksOn = false; try { blocksOn = localStorage.getItem(EGG_BLOCKS_KEY) === '1'; } catch (e) {}
-    if (blocksOn) eggBlocksSet(true, true);
+    var sw = document.getElementById('blocksSw'); if (sw) sw.addEventListener('click', function () { blocksSet(!blocksStop); });
+    var blocksOn = false; try { blocksOn = localStorage.getItem(BLOCKS_KEY) === '1'; } catch (e) {}
+    if (blocksOn) blocksSet(true, true);
     if (el.resultList) el.resultList.addEventListener('click', function (e) { var b = e.target.closest('.egg-bomb'); if (b) { e.stopPropagation(); eggBoom(b); } });
     eggHalloween();
   }
@@ -12842,7 +12850,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function fxStart() { if (FX.running || !el.fxCanvas) return; FX.running = true; fxResize(); fxSeed(); FX.raf = requestAnimationFrame(fxDraw); }
   function fxStop() { FX.running = false; if (FX.raf) cancelAnimationFrame(FX.raf); FX.raf = null; if (el.fxCanvas) { var ctx = el.fxCanvas.getContext('2d'); if (ctx) ctx.clearRect(0, 0, FX.W, FX.H); } }
-  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); if (state.anim) fxStart(); else fxStop(); }
+  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); if (state.anim && !blocksStop) fxStart(); else fxStop(); }
   function fxStagger() {
     var items = document.querySelectorAll('.col-left > .panel, .col-left > .intro, .col-left > .fetch-dock, .col-right > .panel');
     for (var i = 0; i < items.length; i++) { items[i].style.animationDelay = (Math.min(i, 10) * 0.045) + 's'; items[i].classList.add('fx-rise'); }
@@ -13740,7 +13748,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
      No Fail retries: foryou-nofail, nofail-chip, nofail-quick;
-     Extras: egg-115, egg-bomb, egg-halloween, clear-logo (triple tap on the logo);
+     Background: blocks-on, blocks-off (the footer Falling blocks switch);
+     Extras: egg-bomb, egg-halloween, clear-logo (triple tap on the logo);
      Combine playlists: combine-open-<library|import|drop>, combine-new, combine-add;
      Studio Sync (Quest mod): lq-open-<intro|export|pcnote|sync|footer|hash>, lq-hide, studiosync-download,
      studiosync-releases, mbf-link (link clicks), lq-link, lq-unlink, lq-create, lq-edit, lq-sendback, lq-migrate,
