@@ -164,7 +164,22 @@ body.ss-on .topbar-actions #downloadBtn{display:none !important;}
 .fetch-dock .big-fetch{flex:1;min-width:0;}
 .fetch-dock .dock-reset{pointer-events:auto;flex:none;margin-top:2px;padding:0 16px;gap:7px;justify-content:center;font-size:15px;background:var(--panel);box-shadow:0 8px 26px rgba(0,0,0,.6);position:relative;z-index:6;}
 .fetch-dock .dock-reset svg{width:17px;height:17px;}
-@media(max-width:420px){.fetch-dock .dock-reset{padding:0 14px;}.fetch-dock .dock-reset span{display:none;}}
+.fetch-dock{position:sticky;}.fetch-dock .dock-pre.on{border-color:var(--blue);color:#fff;}
+.preset-pop{position:absolute;left:0;bottom:calc(100% - 14px);width:min(360px,100%);pointer-events:auto;z-index:9;padding:12px;border:1px solid #2a4a7a;border-radius:14px;background:#0c1626;box-shadow:0 18px 44px rgba(0,0,0,.7);}
+.preset-pop[hidden]{display:none;}
+.preset-pop .pp-h{display:flex;align-items:center;gap:8px;color:#fff;font-size:14.5px;}.preset-pop .pp-h svg{width:16px;height:16px;color:#8fbaff;flex:none;}.preset-pop .sp{flex:1;}
+.preset-pop .pp-x{width:32px;height:32px;min-height:0;padding:0;font-size:20px;line-height:1;display:grid;place-items:center;}
+.preset-pop .pp-sub{font-size:12.5px;color:var(--muted);margin:6px 0 8px;line-height:1.45;}
+.preset-pop .pp-list{display:flex;flex-direction:column;gap:2px;max-height:220px;overflow:auto;margin-bottom:8px;}
+.preset-pop .pp-it{display:flex;align-items:center;gap:4px;}
+.preset-pop .pp-load{flex:1;min-width:0;text-align:left;background:transparent;border:0;border-radius:8px;padding:9px 10px;font-size:14px;color:#e6edf6;box-shadow:none;min-height:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.preset-pop .pp-load:hover{background:#13213a;}
+.preset-pop .pp-del{flex:none;width:30px;height:30px;min-height:0;padding:0;border:0;background:none;color:#5d6f8a;font-size:18px;box-shadow:none;}.preset-pop .pp-del:hover{color:#ff7a8a;background:none;}
+.preset-pop .pp-empty{font-size:13px;color:#7f8a9c;margin:2px 0 6px;}
+.preset-pop .preset-row{margin:0;}
+.md-lbl{margin:0 0 8px;}
+.md-diff{display:flex;align-items:center;gap:10px;margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--border);}.md-diff .switch{margin-left:auto;}
+@media(max-width:720px){.fetch-dock .dock-reset{padding:0 14px;}.fetch-dock .dock-reset span{display:none;}}
 .col-divider{margin:10px 2px -2px;display:flex;flex-direction:column;gap:2px;}
 .col-divider span{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#7fb4ff;display:flex;align-items:center;gap:10px;}
 .col-divider span::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -1233,6 +1248,9 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 .tag-legend{font-size:12px;color:var(--muted-2);margin:2px 0 8px;font-family:var(--mono);}
 .tag-legend b{color:var(--blue-text);} .tag-legend i{color:var(--red);font-style:normal;}
 .tag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;}
+.tag-grid.genre-off .tag-h.tg-genre,.tag-grid.genre-off .tag-chip.tg-genre:not([data-state="1"]):not([data-state="2"]){display:none;}
+.tag-more{width:100%;text-align:left;background:none;border:0;padding:6px 0 2px;margin:0;color:#8fbaff;font-size:13px;font-weight:600;cursor:pointer;min-height:0;box-shadow:none;}
+.tag-more:hover{color:#cfe4ff;background:none;}
 .tag-grid .tag-h{width:100%;font-size:11.5px;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;color:var(--muted-2);margin:8px 0 2px;}
 .tag-chip{background:var(--panel-2);border:1px solid var(--border-2);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;transition:.13s;user-select:none;}
 .tag-chip:hover{color:var(--text);border-color:var(--blue-dim);}
@@ -2249,24 +2267,19 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
-    <!-- Intro -->
-    <details class="intro" id="introPanel">
-      <summary class="intro-summary"><span>How it works</span><svg class="intro-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="intro-body">
-        <p><b>Playlist Studio</b> is a free Beat Saber playlist tool and builder that runs right in your browser. Pick a search source, filter, <b>Search</b>, add the maps you want to <b>Your Playlist</b>, then export a <code>.bplist</code>. Two sources: <b>BeatLeader</b> for scores, PP and your play history, or <b>BeatSaver</b> to browse by tags and genres. You're not stuck with everything that matches, so cherry-pick, mix results from several searches, drag rows to reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>. New to mods? The <a href="https://bsmg.wiki/" target="_blank" rel="noopener" data-track="bsmg-link">BSMG wiki</a> walks you through installing them on PC and Quest.</p>
-        <div class="flow">
-          <div class="step"><span class="num">1</span> Filter &amp; Search</div>
-          <span class="arrow">→</span>
-          <div class="step"><span class="num">2</span> Add picks</div>
-          <span class="arrow">→</span>
-          <div class="step"><span class="num">3</span> Drag to reorder &amp; cover</div>
-          <span class="arrow">→</span>
-          <div class="step"><span class="num">4</span> Export</div>
-        </div>
-        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b>, and you can add your <b>ScoreSaber</b> plays from Your Profile. BeatSaver search connects directly.</span></div>
-        <div class="callout intro-ss"><span class="ci">◈</span><span><b>On Quest?</b> The free <a href="#studio-sync" data-ss-open="intro">Studio Sync mod</a> sends playlists straight to your headset with no cable, and lets you edit the ones already on it from here.</span></div>
+    <!-- Search -->
+    <section class="panel" data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
+      <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work - type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
+      <div class="panel-body">
+        <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Matches the mapper name. On BeatSaver, auto-generated lighting credits like 'Auto Lighter by …' are ignored so they don't flood the results. Example: Bloodcloak, Joetastic">i</span></label>
+          <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
+        <div class="field"><label class="field-label">Exclude mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Hides any map whose mapper or artist matches - handy for dropping a mapper you don't want, or catching 'Auto Lighter by X' style credits.">i</span></label>
+          <input type="text" id="fMapperExclude" placeholder="e.g. jonas, someMapper" /></div>
+        <div class="field"><label class="field-label">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
+          <input type="text" id="fSearch" placeholder="e.g. camellia - or a BSR code / link" /></div>
       </div>
-    </details>
+    </section>
 
     <!-- Tags (BeatSaver) -->
     <section class="panel bs-only">
@@ -2307,6 +2320,25 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
+    <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Range</h2><span class="count" id="ppFilterState"></span></div>
+      <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge (shown once your profile is connected or this panel is open) on every row and the <b>PP</b> sort.</div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top - 99% is worth far more than 95%.">i</span></label>
+            <div class="pp-acc-input"><input type="number" id="ppFilterAcc" min="1" max="100" step="0.5" value="95" /><span class="pp-pct">%</span></div></div>
+          <div class="field"><label class="field-label">Speed <span class="info" data-tip="Evaluate PP at this speed. FS (Faster) and SF (Super Fast) re-rate the map higher, so more PP; SS (Slower) lowers it. A map not rated for the chosen speed is skipped by the PP range filter.">i</span></label>
+            <div class="pp-mods" id="ppFilterMods"></div></div>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">PP range <span class="info" data-tip="Keep only ranked maps whose estimated raw PP (at the accuracy and speed above) falls in this range. Blank = no bound. Unranked maps are excluded while a bound is set.">i</span></span>
+          <input type="number" id="ppMin" min="0" step="10" placeholder="min" />
+          <span class="dash">–</span>
+          <input type="number" id="ppMax" min="0" step="10" placeholder="max" />
+        </div>
+      </div>
+    </section>
+
     <!-- Song Metrics -->
     <section class="panel" data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><h2>Length, NPS &amp; BPM</h2></div>
@@ -2339,25 +2371,12 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
-    <!-- Search -->
+    <!-- Mode & difficulty -->
     <section class="panel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
-      <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work - type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><h2>Mode &amp; difficulty</h2></div>
+      <div class="panel-sub">Which game modes and difficulties to include. Pick exactly one mode to also narrow the API query. Difficulty is off by default so every difficulty comes through; turn it on to keep only the ones you tick (e.g. Expert+ only).</div>
       <div class="panel-body">
-        <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Matches the mapper name. On BeatSaver, auto-generated lighting credits like 'Auto Lighter by …' are ignored so they don't flood the results. Example: Bloodcloak, Joetastic">i</span></label>
-          <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
-        <div class="field"><label class="field-label">Exclude mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Hides any map whose mapper or artist matches - handy for dropping a mapper you don't want, or catching 'Auto Lighter by X' style credits.">i</span></label>
-          <input type="text" id="fMapperExclude" placeholder="e.g. jonas, someMapper" /></div>
-        <div class="field"><label class="field-label">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
-          <input type="text" id="fSearch" placeholder="e.g. camellia - or a BSR code / link" /></div>
-      </div>
-    </section>
-
-    <!-- Game Mode -->
-    <section class="panel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><h2>Game Mode</h2></div>
-      <div class="panel-sub">Which game modes to include. Select exactly one to also narrow the API query; leave several on to filter client-side.</div>
-      <div class="panel-body">
+        <div class="feat-lbl md-lbl">Game mode</div>
         <div class="chips" id="modeChips">
           <label class="chip"><input type="checkbox" value="Standard" checked /><span>Standard</span></label>
           <label class="chip"><input type="checkbox" value="OneSaber" /><span>One Saber</span></label>
@@ -2367,16 +2386,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <label class="chip"><input type="checkbox" value="Lightshow" /><span>Lightshow</span></label>
           <label class="chip"><input type="checkbox" value="Lawless" /><span>Lawless</span></label>
         </div>
-      </div>
-    </section>
-
-    <!-- Difficulty (optional) -->
-    <section class="panel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg></span><h2>Difficulty</h2>
-        <label class="switch head-switch"><input type="checkbox" id="diffEnable" /><span class="track"></span><span class="switch-lbl">Filter on</span></label>
-      </div>
-      <div class="panel-sub">Optional - off by default so every difficulty comes through. Turn it on to keep only specific difficulties (e.g. Expert+ only).</div>
-      <div class="panel-body">
+        <div class="md-diff"><span class="feat-lbl">Difficulty</span><label class="switch"><input type="checkbox" id="diffEnable" /><span class="track"></span><span class="switch-lbl">Filter on</span></label></div>
         <div class="chips diff-chips off" id="diffChips">
           <label class="chip"><input type="checkbox" value="Easy" checked /><span>Easy</span></label>
           <label class="chip"><input type="checkbox" value="Normal" checked /><span>Normal</span></label>
@@ -2389,7 +2399,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 
     <!-- Data Source -->
     <section class="panel sortsec" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Ranked Status &amp; Sort</h2></div>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2><span class="bl-only">Ranked Status &amp; Sort</span><span class="bs-only">Sort</span></h2></div>
       <div class="panel-sub"><span class="bl-only">Which slice of BeatLeader to search and how to order it.</span><span class="bs-only">How to order the BeatSaver catalog.</span> <b>Sort by</b> only re-orders results - it never changes which maps match.</div>
       <div class="panel-body">
         <div class="grid-2">
@@ -2477,65 +2487,27 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
-    <!-- Presets -->
-    <section class="panel" id="presetPanel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span><h2>Filter Presets</h2></div>
-      <div class="panel-sub">Save a filter combo you reuse (e.g. "6★ tech warmup") and load it in one click. Stored in this browser only.</div>
-      <div class="panel-body">
-        <div class="preset-row">
-          <input type="text" id="presetName" placeholder="Name this preset" />
-          <button class="ghost sm" id="presetSave">Save filters</button>
+    <!-- Intro -->
+    <details class="intro" id="introPanel">
+      <summary class="intro-summary"><span>How it works</span><svg class="intro-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="intro-body">
+        <p><b>Playlist Studio</b> is a free Beat Saber playlist tool and builder that runs right in your browser. Pick a search source, filter, <b>Search</b>, add the maps you want to <b>Your Playlist</b>, then export a <code>.bplist</code>. Two sources: <b>BeatLeader</b> for scores, PP and your play history, or <b>BeatSaver</b> to browse by tags and genres. You're not stuck with everything that matches, so cherry-pick, mix results from several searches, drag rows to reorder, then export just your picks. Already know the maps you want? Paste their <b>BSR codes</b> into <b>Quick Add</b>. New to mods? The <a href="https://bsmg.wiki/" target="_blank" rel="noopener" data-track="bsmg-link">BSMG wiki</a> walks you through installing them on PC and Quest.</p>
+        <div class="flow">
+          <div class="step"><span class="num">1</span> Filter &amp; Search</div>
+          <span class="arrow">→</span>
+          <div class="step"><span class="num">2</span> Add picks</div>
+          <span class="arrow">→</span>
+          <div class="step"><span class="num">3</span> Drag to reorder &amp; cover</div>
+          <span class="arrow">→</span>
+          <div class="step"><span class="num">4</span> Export</div>
         </div>
-        <div class="preset-row">
-          <select id="presetSelect"><option value="">- saved presets -</option></select>
-          <button class="ghost sm" id="presetLoad">Load</button>
-          <button class="ghost sm danger" id="presetDelete">Delete</button>
-        </div>
+        <div class="callout amber"><span class="ci">◈</span><span><b>Heads up:</b> scores, PP and play-history filters come from <b>BeatLeader</b>, and you can add your <b>ScoreSaber</b> plays from Your Profile. BeatSaver search connects directly.</span></div>
+        <div class="callout intro-ss"><span class="ci">◈</span><span><b>On Quest?</b> The free <a href="#studio-sync" data-ss-open="intro">Studio Sync mod</a> sends playlists straight to your headset with no cable, and lets you edit the ones already on it from here.</span></div>
       </div>
-    </section>
-
-    <!-- Advanced: PP tools (below the core filters) -->
-    <div class="col-divider bl-only"><span>Ranked tools</span><small>AccSaber pools and a pp range, for BeatLeader ranked play (pp gains and rank-up plans are in For You)</small></div>
-
-    <!-- Rank-Up Planner -->
-
-
-    <!-- AccSaber Pools -->
-    <section class="panel bl-only" id="accPanel" data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></span><h2>AccSaber Pools</h2><span class="count" id="accState"></span></div>
-      <div class="panel-sub">The ranked AccSaber charts with their complexity, straight from AccSaber. Load a pool as results, then use the <b>Your plays</b> chips to find the ones you haven't played or FC'd.</div>
-      <div class="panel-body">
-        <div class="lvl-chips" id="accCats" role="group" aria-label="AccSaber category">
-          <button type="button" data-ascat="all" class="on">All</button>
-          <button type="button" data-ascat="true">True Acc</button>
-          <button type="button" data-ascat="standard">Standard</button>
-          <button type="button" data-ascat="tech">Tech</button>
-        </div>
-        <button type="button" class="primary" id="accLoadBtn" style="width:100%;">Load AccSaber maps</button>
-      </div>
-    </section>
-
-    <section class="panel bl-only" id="ppPanel" data-collapsible data-collapsed>
-      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 4 7v10l8 5 8-5V7z"/></svg></span><h2>PP Range</h2><span class="count" id="ppFilterState"></span></div>
-      <div class="panel-sub">Estimate raw PP for a target accuracy and speed, then keep only ranked maps whose PP lands in your range. The same accuracy &amp; speed drive the <b>≈pp</b> badge (shown once your profile is connected or this panel is open) on every row and the <b>PP</b> sort.</div>
-      <div class="panel-body">
-        <div class="grid-2">
-          <div class="field"><label class="field-label">Target accuracy <span class="info" data-tip="The accuracy you're estimating PP for. BeatLeader's acc curve is steep near the top - 99% is worth far more than 95%.">i</span></label>
-            <div class="pp-acc-input"><input type="number" id="ppFilterAcc" min="1" max="100" step="0.5" value="95" /><span class="pp-pct">%</span></div></div>
-          <div class="field"><label class="field-label">Speed <span class="info" data-tip="Evaluate PP at this speed. FS (Faster) and SF (Super Fast) re-rate the map higher, so more PP; SS (Slower) lowers it. A map not rated for the chosen speed is skipped by the PP range filter.">i</span></label>
-            <div class="pp-mods" id="ppFilterMods"></div></div>
-        </div>
-        <div class="metric-row">
-          <span class="metric-name">PP range <span class="info" data-tip="Keep only ranked maps whose estimated raw PP (at the accuracy and speed above) falls in this range. Blank = no bound. Unranked maps are excluded while a bound is set.">i</span></span>
-          <input type="number" id="ppMin" min="0" step="10" placeholder="min" />
-          <span class="dash">–</span>
-          <input type="number" id="ppMax" min="0" step="10" placeholder="max" />
-        </div>
-      </div>
-    </section>
+    </details>
 
     <div class="fetch-dock"><button type="button" class="ghost dock-reset" id="resetBtn" title="Reset search filters - your playlist is kept" aria-label="Reset filters">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Reset</span></button><button class="primary big-fetch" id="fetchBtn2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Reset</span></button><button type="button" class="ghost dock-reset dock-pre" id="presetBtn" title="Filter presets: save these filters or load a saved set" aria-label="Filter presets" aria-expanded="false" aria-controls="presetPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>Presets</span></button><div class="preset-pop" id="presetPanel" role="dialog" aria-label="Filter presets" hidden><div class="pp-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><b>Filter presets</b><span class="sp"></span><button type="button" class="ghost pp-x" id="presetClose" aria-label="Close">&times;</button></div><p class="pp-sub">Save a filter combo you reuse (e.g. "6★ tech warmup") and load it in one tap. Stored in this browser only.</p><div class="pp-list" id="presetList"></div><div class="preset-row"><input type="text" id="presetName" placeholder="Name these filters" /><button class="ghost sm" id="presetSave">Save</button></div><div class="preset-row" style="display:none" aria-hidden="true"><select id="presetSelect"><option value="">- saved presets -</option></select><button class="ghost sm" id="presetLoad">Load</button><button class="ghost sm danger" id="presetDelete">Delete</button></div></div><button class="primary big-fetch" id="fetchBtn2">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search BeatLeader</button></div>
     <div class="stale-hint" id="staleHint" hidden>⟳ Filters changed since your last fetch - re-fetch to pull the new set.</div>
     <div class="fetch-progress" id="fetchProgress" hidden>
@@ -2607,6 +2579,21 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           </div>
         </section>
         </div>
+      </div>
+    </section>
+
+<!-- AccSaber Pools -->
+    <section class="panel bl-only" id="accPanel" data-collapsible data-collapsed>
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></span><h2>AccSaber Pools</h2><span class="count" id="accState"></span></div>
+      <div class="panel-sub">The ranked AccSaber charts with their complexity, straight from AccSaber. Load a pool as results, then use the <b>Your plays</b> chips to find the ones you haven't played or FC'd.</div>
+      <div class="panel-body">
+        <div class="lvl-chips" id="accCats" role="group" aria-label="AccSaber category">
+          <button type="button" data-ascat="all" class="on">All</button>
+          <button type="button" data-ascat="true">True Acc</button>
+          <button type="button" data-ascat="standard">Standard</button>
+          <button type="button" data-ascat="tech">Tech</button>
+        </div>
+        <button type="button" class="primary" id="accLoadBtn" style="width:100%;">Load AccSaber maps</button>
       </div>
     </section>
 
@@ -4853,10 +4840,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function buildTagChips() {
     var html = '', last = '';
     BS_TAGS.forEach(function (t) {
-      if (t.t !== last) { html += '<div class="tag-h">' + (t.t === 'style' ? 'Style' : 'Genre') + '</div>'; last = t.t; }
-      html += '<button type="button" class="tag-chip" data-tag="' + t.s + '" data-state="0">' + esc(t.l) + '</button>';
+      if (t.t !== last) { html += t.t === 'style' ? '<div class="tag-h">Style</div>' : '<button type="button" class="tag-more" id="tagMore" aria-expanded="false">More tags: genre <span aria-hidden="true">&#9656;</span></button><div class="tag-h tg-genre">Genre</div>'; last = t.t; }
+      html += '<button type="button" class="tag-chip' + (t.t === 'style' ? '' : ' tg-genre') + '" data-tag="' + t.s + '" data-state="0">' + esc(t.l) + '</button>';
     });
-    el.tagChips.innerHTML = html;
+    el.tagChips.innerHTML = html; el.tagChips.classList.add('genre-off');   // genres fold away; any you've picked still show
   }
   function bindSourceUI() {
     buildTagChips();
@@ -4865,6 +4852,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var b = e.target.closest('button[data-source]'); if (b) setSource(b.dataset.source);
     });
     el.tagChips.addEventListener('click', function (e) {
+      var mo = e.target.closest('#tagMore');
+      if (mo) { var off = el.tagChips.classList.toggle('genre-off'); mo.setAttribute('aria-expanded', off ? 'false' : 'true'); mo.innerHTML = off ? 'More tags: genre <span aria-hidden="true">&#9656;</span>' : 'Fewer tags <span aria-hidden="true">&#9662;</span>'; return; }
       var c = e.target.closest('.tag-chip'); if (!c) return;
       c.dataset.state = String((parseInt(c.dataset.state, 10) + 1) % 3);   // off → include → exclude → off
     });
@@ -10284,11 +10273,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function populatePresets() {
     var o = lsGet(), names = Object.keys(o).sort();
     el.presetSelect.innerHTML = '<option value="">- saved presets -</option>' + names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+    var pl = document.getElementById('presetList');
+    if (pl) pl.innerHTML = names.length ? names.map(function (n) { return '<div class="pp-it"><button type="button" class="pp-load" data-pl="' + esc(n) + '">' + esc(n) + '</button><button type="button" class="pp-del" data-pd="' + esc(n) + '" title="Delete this preset" aria-label="Delete ' + esc(n) + '">&times;</button></div>'; }).join('')
+      : '<p class="pp-empty">No presets yet. Name the filters you have set and save them.</p>';
   }
   function savePreset() {
     var name = el.presetName.value.trim(); if (!name) { toast('Give the preset a name first.', 'warn'); return; }
     var o = lsGet(); o[name] = captureFilters();
-    if (lsSet(o)) { populatePresets(); el.presetSelect.value = name; el.presetName.value = ''; toast('Preset "' + name + '" saved.', 'ok'); }
+    if (lsSet(o)) { populatePresets(); el.presetSelect.value = name; el.presetName.value = ''; toast('Preset "' + name + '" saved. Load it from Presets next to Reset.', 'ok'); }
     else toast('Could not save - browser storage is unavailable here.', 'err');
   }
   function loadPreset() {
@@ -13094,6 +13086,22 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.presetLoad.addEventListener('click', loadPreset);
     el.presetDelete.addEventListener('click', deletePreset);
     el.presetName.addEventListener('keydown', function (e) { if (e.key === 'Enter') savePreset(); });
+    // The Presets button beside Reset opens the presets above the bar; tap a name to load it.
+    var presetBtn = document.getElementById('presetBtn');
+    var presetPop = function (open) {
+      if (open === undefined) open = el.presetPanel.hidden;
+      el.presetPanel.hidden = !open; presetBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); presetBtn.classList.toggle('on', open);
+      if (open) { populatePresets(); track('presets-open'); }
+    };
+    presetBtn.addEventListener('click', function (e) { e.stopPropagation(); presetPop(); });
+    document.getElementById('presetClose').addEventListener('click', function () { presetPop(false); });
+    el.presetPanel.addEventListener('click', function (e) {
+      var ld = e.target.closest('[data-pl]'), dl = e.target.closest('[data-pd]');
+      if (ld) { el.presetSelect.value = ld.getAttribute('data-pl'); loadPreset(); presetPop(false); }
+      else if (dl) { el.presetSelect.value = dl.getAttribute('data-pd'); deletePreset(); }
+    });
+    document.addEventListener('click', function (e) { if (!el.presetPanel.hidden && e.target.isConnected && !e.target.closest('#presetPanel') && !e.target.closest('#presetBtn')) presetPop(false); });   // a deleted row's button is gone by now: not a tap outside
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !el.presetPanel.hidden) presetPop(false); });
 
     // playlist library
     el.savePlaylistBtn.addEventListener('click', savePlaylist);
@@ -13239,7 +13247,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // screenshot script uses the same list, so the pictures and the live outline always point at the same place.
   var SPOTS = {
     'source': ['#sourceSwitch', null, 'filters'], 'search-beatleader': ['#fetchBtn2', null, 'filters'], 'level': ['#lvlChips', null, 'filters'],
-    'presets': ['#presetPanel', '#presetPanel', 'filters'], 'accsaber': ['#accPanel', '#accPanel', 'filters'], 'pp-range': ['#ppPanel', '#ppPanel', 'filters'],
+    'presets': ['#presetBtn', null, 'filters'], 'accsaber': ['#accPanel', '#accPanel', 'results'], 'pp-range': ['#ppPanel', '#ppPanel', 'filters'],
     'profile': ['#profilePanel', null, 'filters'], 'for-you': ['#forYouPanel', null, 'results'], 'quick-add': ['#panelQuickAdd', '#panelQuickAdd', 'playlist'],
     'play-filter': ['#playFilterBar', null, 'results'], 'results': ['#resultList', null, 'results'], 'export': ['#downloadBtn', null, null],
     'playlist': ['#basketList', null, 'playlist'], 'playlist-tools': ['#shuffleBtn', null, 'playlist'],

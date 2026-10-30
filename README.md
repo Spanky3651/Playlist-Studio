@@ -151,7 +151,7 @@ The math mirrors BeatLeader's server exactly: `passPP = 15.2·e^(passRating^(1/2
 Tell it a goal - a flat PP gain, or a target total PP - and Playlist Studio works out the fewest ranked maps that get you there. It learns your accuracy curve the same way the PP Optimizer does, projects the weighted PP each map would add, and greedily picks the most efficient set until the goal is met. You get a projected new total PP and an estimated new global rank, the exact maps with their individual PP gains, and a one-tap **Add all** into Your Playlist. Needs your BeatLeader profile connected. The rank figure is an estimate; the PP math mirrors BeatLeader's weighting exactly.
 
 ### AccSaber pools
-The **AccSaber Pools** panel loads every ranked AccSaber chart straight from AccSaber, with its category (True Acc, Standard, Tech) and complexity, easiest first. Pick a category, then use the **Your plays** chips to find the charts you haven't played or FC'd and add them.
+The **AccSaber Pools** panel (next to For You) loads every ranked AccSaber chart straight from AccSaber, with its category (True Acc, Standard, Tech) and complexity, easiest first. Pick a category, then use the **Your plays** chips to find the charts you haven't played or FC'd and add them.
 
 ### Covers & export
 - Auto-generated neon cover art - **25 procedural styles and 13 accent palettes**, picked from a live thumbnail grid - drawn from your title and star range. The styles include a set of **Beat Saber–themed** designs: **Note Cubes**, **Saber Slash**, **Bombs**, **Obstacles**, **Note Highway**, **Cut Spark** and **Saber Trails**, alongside the abstract neon ones (Pulse, Grid, Waveform, Spectrum, Vortex, Aurora, and more).
@@ -193,7 +193,7 @@ The headset syncs when the game starts, when you return to the main menu, when y
 Covers come from the playlists the headset shares: Studio reads each one once, keeps a small copy in your browser, and only reads it again after the playlist changes.
 
 ### Save, reload & import
-- **Filter presets** - save filter combos you reuse (e.g. "6★ tech warmup")
+- **Filter presets** - save filter combos you reuse (e.g. "6★ tech warmup") from the **Presets** button next to Reset, and load one with a tap
 - **Playlist Library** - save and reload whole playlists (cover included)
 - **Gallery** - **Browse the gallery** loads ready-made playlists in one click: three starter lists for new players (BeatSaver's best-rated maps, each set to an easy, medium or harder difficulty) and the official AccSaber pools, all pulled live so they're never stale. New players also get a link to it from the empty results
 - **Library backup** - **Back up library** downloads every saved playlist, preset and saved icon as one file; **Restore backup** merges it back on any computer without overwriting anything
