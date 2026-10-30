@@ -1814,6 +1814,22 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 .tab-short{display:none}
 @media(max-width:700px){.tab-short{display:inline}}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
+/* Falling blocks background (switch under Forget key), off by default; same as Playlist Studio's */
+#blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
+body>main{position:relative;z-index:1}
+.fxrow{display:flex;justify-content:center;margin:10px 0 0}
+button.fxsw{display:inline-flex;align-items:center;gap:11px;font:700 14px system-ui,'Segoe UI',Arial,sans-serif;color:#cfd8e6;background:transparent;border:0;padding:4px;cursor:pointer;letter-spacing:.2px;box-shadow:none;border-radius:10px}
+.fxsw-track{position:relative;width:50px;height:28px;border-radius:9px;background:#0d121b;border:1px solid #28303f;flex:none;transition:.2s}
+.fxsw-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;transition:transform .25s cubic-bezier(.4,1.4,.6,1)}
+.fxsw-knob svg{width:20px;height:20px;display:block}
+.fxsw .k-body{fill:#3a4253;transition:fill .2s}.fxsw .k-arrow{fill:#7f8a9c;transition:fill .2s}
+.fxsw:hover .fxsw-track{border-color:#3a4a66}
+.fxsw:focus-visible{outline:none}.fxsw:focus-visible .fxsw-track{outline:2px solid var(--blue);outline-offset:2px}
+body.blocks-on .fxsw{color:#fff}
+body.blocks-on .fxsw-track{border-color:transparent;background:linear-gradient(#0d121b,#0d121b) padding-box,linear-gradient(90deg,#ff1e3c,#1e6bff) border-box}
+body.blocks-on .fxsw-knob{transform:translateX(22px)}
+body.blocks-on .fxsw .k-body{fill:#ff1e3c}body.blocks-on .fxsw .k-arrow{fill:#fff}
+@media(prefers-reduced-motion:reduce){.fxsw-knob,.fxsw-track{transition:none}}
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
@@ -2020,6 +2036,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 <p class="when" id="gcwhen"></p>
 <div id="fback" class="fback" hidden></div><aside id="fsheet" class="fsheet" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden></aside>
 <p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
+<div class="fxrow"><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
 </div>
 </main>
 <script>
@@ -3412,5 +3429,115 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab); logoSpin();
   if (getKey()) loadSync(); else $('keyrow').classList.remove('hidden');
+})();
+</script>
+<script>
+(function () {
+  // Falling blocks background, off by default and remembered on this device; the same blocks as Playlist Studio's switch.
+  // They keep their size, never overlap, and stay still for reduced motion.
+  function blocksRun(cv) {
+  var cx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var COL = { r: ['#ff3a4e', '#ff0016', '#a8000f'], b: ['#4a5cff', '#0020ff', '#0012a8'] };
+  var SPR = {};
+  function sprite(c, kind, blur) {
+    var k = c + kind + blur; if (SPR[k]) return SPR[k];
+    var S = 96, pad = 24, o = document.createElement('canvas'); o.width = o.height = S + pad * 2;
+    var g = o.getContext('2d'); g.translate(pad, pad); if (blur) g.filter = 'blur(' + blur + 'px)';
+    var p = COL[c];
+    function rr(x, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, x, S - 2 * x, S - 2 * x, r); else g.rect(x, x, S - 2 * x, S - 2 * x); }
+    var ed = g.createLinearGradient(0, 0, S, S); ed.addColorStop(0, p[1]); ed.addColorStop(1, p[2]); g.fillStyle = ed; rr(4, 15); g.fill();
+    var gr = g.createLinearGradient(0, 0, S * .8, S); gr.addColorStop(0, p[0]); gr.addColorStop(.5, p[1]); gr.addColorStop(1, p[2]); g.fillStyle = gr; rr(7, 12); g.fill();
+    var sh = g.createRadialGradient(S * .32, S * .26, 2, S * .32, S * .26, S * .6); sh.addColorStop(0, 'rgba(255,255,255,.32)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sh; g.fill();
+    g.fillStyle = '#fff'; g.shadowColor = 'rgba(255,255,255,.7)'; g.shadowBlur = 6; g.beginPath();
+    var L = S - 8, P = function (x, y) { return [4 + L * x, 4 + L * y]; };
+    if (kind === 'a') { [[1 / 6, 1 / 6], [5 / 6, 1 / 6], [5 / 6, .25], [.5, 5 / 12], [1 / 6, .25]].forEach(function (v, i) { var q = P(v[0], v[1]); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); }
+    else { g.arc(S * .5, S * .5, S * .11, 0, Math.PI * 2); g.fill(); }
+    return (SPR[k] = o);
+  }
+  var B = [];
+  function make(top) {
+    var z = Math.random(), near = z > .9, far = z < .35, sz = 10 + z * 40 + (z > .75 ? (z - .75) * 140 : 0), vy = 14 + z * 46;
+    var q = { x: Math.random() * W, y: top ? -60 - Math.random() * 120 : Math.random() * H, z: z, s: sz,
+      c: Math.random() < .55 ? 'r' : 'b', k: Math.random() < .7 ? 'a' : 'd', blur: near ? 3 : far ? 2 : 0,
+      a: .7 * (far ? .35 + z : near ? .75 : .95), vy: vy, cy: vy, vx: (Math.random() - .5) * 10,
+      r: Math.random() * 6.28, vr: (Math.random() - .5) * .9 };
+    // reach of a block at any spin (half its diagonal) plus its blur and a small gap
+    q.vx0 = q.vx; q.rad = sz * .648 + (q.blur ? q.blur * 1.5 : 0) + 4;
+    return q;
+  }
+  function room(q, skip) { // the clearance between q and the nearest other block (negative = they touch)
+    var m = 1e9; for (var i = 0; i < B.length; i++) { var o = B[i]; if (o === q || o === skip) continue;
+      var c = Math.hypot(o.x - q.x, o.y - q.y) - o.rad - q.rad; if (c < m) m = c; } return m;
+  }
+  function place(top, skip) { // best of several tries: the spot with the most room around it
+    var best = null, br = -1e9;
+    for (var t = 0; t < 16; t++) { var q = make(top); if (top) q.y = -q.rad - Math.random() * 220; var r = room(q, skip); if (r > br) { br = r; best = q; } if (r > 30) break; }
+    if (br < 0 && top) best.y -= best.rad * 2 - br; // still crowded: start it higher up, out of sight
+    best.ok = br >= 0; return best;
+  }
+  function size() {
+    var oW = W, oH = H;
+    DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth || innerWidth; H = cv.clientHeight || innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    // the box can start small and grow (a side panel opening): stretch the field with it so blocks never bunch on one side
+    if (oW && oH) for (var j = 0; j < B.length; j++) { B[j].x *= W / oW; B[j].y *= H / oH; }
+    var n = Math.round(Math.min(38, Math.max(14, W * H / 42000)));
+    for (var tries = 0; B.length < n && tries < n * 3; tries++) { var q = place(false); if (q.ok) B.push(q); }
+    B.length = Math.min(B.length, n);
+    settle(8);
+  }
+  function settle(rounds) { // push apart any blocks that touch; the one behind slows to the speed of the one ahead
+    for (var k = 0; k < rounds; k++) {
+      var moved = false;
+      for (var i = 0; i < B.length; i++) for (var j = i + 1; j < B.length; j++) {
+        var p = B[i], o = B[j], dx = o.x - p.x, dy = o.y - p.y, d = Math.hypot(dx, dy) || .01, need = p.rad + o.rad;
+        if (d >= need) continue;
+        var push = (need - d) / 2, nx = dx / d, ny = dy / d; moved = true;
+        p.x -= nx * push; p.y -= ny * push; o.x += nx * push; o.y += ny * push;
+        var up = p.y < o.y ? p : o, dn = up === p ? o : p;
+        if (up.cy > dn.cy) { up.cy = dn.cy; up.vx = (up.x < dn.x ? -1 : 1) * Math.max(Math.abs(up.vx), 14); } // slow down, then steer around it
+        if (Math.abs(nx) > .5) { p.vx = -Math.abs(p.vx) * Math.sign(nx || 1); o.vx = Math.abs(o.vx) * Math.sign(nx || 1); }
+      }
+      if (!moved) break;
+    }
+  }
+  function draw(dt) {
+    cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, W, H);
+    for (var i = 0; i < B.length; i++) {
+      var q = B[i];
+      q.cy += (q.vy - q.cy) * Math.min(1, dt * .4); q.vx += (q.vx0 - q.vx) * Math.min(1, dt * .5);
+      q.y += q.cy * dt; q.x += q.vx * dt; q.r += q.vr * dt;
+      if (q.y > H + q.rad + 10 || q.x < -q.rad - 10 || q.x > W + q.rad + 10) B[i] = place(true, q);
+    }
+    settle(3);
+    B.sort(function (a, b) { return a.z - b.z; });
+    for (i = 0; i < B.length; i++) {
+      q = B[i]; var sp = sprite(q.c, q.k, q.blur), f = q.s / 96;
+      cx.save(); cx.globalAlpha = q.a; cx.translate(q.x, q.y); cx.rotate(q.r); cx.scale(f, f);
+      cx.drawImage(sp, -sp.width / 2, -sp.height / 2); cx.restore();
+    }
+  }
+  var last = 0, raf = 0, ro = null;
+  function loop(ts) { var dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts; draw(dt); raf = requestAnimationFrame(loop); }
+  function vis() { last = 0; }
+  size(); if (window.ResizeObserver) { ro = new ResizeObserver(function () { size(); if (still) draw(0); }); ro.observe(cv); } else addEventListener('resize', size);
+  if (still) draw(0); else raf = requestAnimationFrame(loop);
+  document.addEventListener('visibilitychange', vis);
+  return function () { cancelAnimationFrame(raf); if (ro) ro.disconnect(); else removeEventListener('resize', size); document.removeEventListener('visibilitychange', vis); };
+  }
+  var KEY = 'studioStats.blocksBg.v1', stop = null, sw = document.getElementById('blocksSw');
+  function set(on, quiet) {
+    var cv = document.getElementById('blocksBg');
+    if (on) {
+      if (!cv) { cv = document.createElement('canvas'); cv.id = 'blocksBg'; cv.setAttribute('aria-hidden', 'true'); document.body.insertBefore(cv, document.body.firstChild); }
+      if (!stop && cv.getContext) stop = blocksRun(cv);
+    } else { if (stop) stop(); stop = null; if (cv) cv.remove(); }
+    on = !!stop; document.body.classList.toggle('blocks-on', on);
+    if (sw) sw.setAttribute('aria-checked', on ? 'true' : 'false');
+    if (!quiet) { try { if (on) localStorage.setItem(KEY, '1'); else localStorage.removeItem(KEY); } catch (e) {} }
+  }
+  if (sw) sw.addEventListener('click', function () { set(!stop); });
+  var was = false; try { was = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  if (was) set(true, true);
 })();
 </script></body></html>`;
