@@ -7428,7 +7428,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function lqSendBack(quiet, force) {
     var ed = state.lq.editing; if (!ed || state.lq.busy) return Promise.resolve(false);
-    if (!state.basket.length) { toast('The playlist is empty. Add maps before sending it back.', 'warn'); return Promise.resolve(false); }
     var x = exportParts();
     if (state.coverSrc !== 'user') x.meta.image = '';   // no cover in the edit: the headset keeps the one it has
     var body = JSON.stringify(BplistExporter.build(x.meta, x.songs));
@@ -7468,7 +7467,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (state.lq.busy) { if ((tries || 0) < 25) setTimeout(function () { lqStopEditing((tries || 0) + 1); }, 400); return; }
     var chg = lqEditDiff(ed);
     var n = state.basket.length, title = n ? lqCurrentTitle() : ed.title, where = lqEdWhere(ed);
-    var unsent = !!n && lqAuto.key === lqAutoKey() && lqSig() !== lqAuto.base;
+    var unsent = lqAuto.key === lqAutoKey() && lqSig() !== lqAuto.base;   // emptied on purpose goes out too
     (unsent ? lqSendBack(true) : Promise.resolve(true)).then(function (ok) {
       if (!ok) { toast('Couldn’t send your last changes, so “' + title + '” stays open. Press Done editing again in a moment.', 'warn'); return; }
       if (state.lq.editing !== ed) return;   // something else took over meanwhile
@@ -8208,7 +8207,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         rd.onerror = function () { res({ bad: f.name, why: 'couldn’t be read' }); };
         rd.onload = function () {
           var text = String(rd.result).replace(/^﻿/, ''), pl = null; try { pl = JSON.parse(text); } catch (e) {}
-          if (!pl || !Array.isArray(pl.songs) || !pl.songs.length) return res({ bad: f.name, why: 'not a playlist with maps' });
+          if (!pl || !Array.isArray(pl.songs)) return res({ bad: f.name, why: 'not a playlist file' });
           if (text.length > 1950000) return res({ bad: f.name, why: 'too big (2 MB max; a smaller cover usually fixes it)' });
           res({ dev: devId, file: f.name, title: String(pl.playlistTitle || f.name.replace(/\.(bplist|json)$/i, '')), text: text, image: plImage(pl) });
         };

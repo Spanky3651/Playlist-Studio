@@ -186,7 +186,7 @@ async function hosted(request, env, ctx, url) {
   if (!(await allowWrite(request, env))) return json({ error: "Too many updates - wait a few minutes" }, 429, cors);
 
   if (path === "/pub" && request.method === "POST") {
-    const pl = await readPlaylist(request);
+    const pl = await readPlaylist(request, true);
     if (pl.error) return json({ error: pl.error }, 400, cors);
     const id = randomId(10), key = randomHex(24);
     const out = finalize(pl.value, url.origin, id);
@@ -229,7 +229,9 @@ async function allowWrite(request, env, bucket, limit) {
 }
 
 // Parse and re-build the playlist from known fields only.
-async function readPlaylist(request) {
+// An empty playlist is fine (a playlist that fills in from its sync link, or one you emptied on purpose),
+// except as a brand-new hosted link, which would share nothing.
+async function readPlaylist(request, needSongs) {
   const len = +(request.headers.get("Content-Length") || 0);
   if (len > MAX_BYTES) return { error: "Playlist is too large (2 MB max - try a smaller cover image)" };
   const text = await request.text();
@@ -237,7 +239,8 @@ async function readPlaylist(request) {
   let p;
   try { p = JSON.parse(text); } catch (e) { return { error: "Not valid JSON" }; }
   if (!p || typeof p !== "object" || !Array.isArray(p.songs)) return { error: "Not a playlist" };
-  if (!p.songs.length || p.songs.length > MAX_SONGS) return { error: "A playlist needs 1 to " + MAX_SONGS + " songs" };
+  if (needSongs && !p.songs.length) return { error: "Add maps to the playlist first" };
+  if (p.songs.length > MAX_SONGS) return { error: "A playlist can have up to " + MAX_SONGS + " songs" };
   const str = (v, n) => (typeof v === "string" ? v.slice(0, n) : "");
   const songs = [];
   for (const s of p.songs) {
