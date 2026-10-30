@@ -12801,6 +12801,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
   }
 
+  // How it works: at the top of the Filters tab for new players (their first 3 visits, until they open it once),
+  // at the bottom after that. Anyone who visited before this existed counts as a returning player.
+  var INTRO_KEY = 'playlistStudio.introPlace.v1';
+  function introPlace() {
+    var ip = el.introPanel, cap = document.querySelector('.col-left .source-cap'); if (!ip) return;
+    var st = null, seen = false;
+    try { st = JSON.parse(localStorage.getItem(INTRO_KEY) || 'null'); seen = !!localStorage.getItem('playlistStudio.introSeen.v1'); } catch (e) {}
+    if (!st || typeof st !== 'object') st = { v: 0, done: seen };
+    st.v = (+st.v || 0) + 1; if (st.v > 3) st.done = true;
+    var save = function () { try { localStorage.setItem(INTRO_KEY, JSON.stringify(st)); } catch (e) {} };
+    save();
+    if (!st.done && cap) { cap.after(ip); ip.classList.add('intro-top'); }
+    ip.addEventListener('toggle', function () { if (ip.open && !st.done) { st.done = true; save(); } });
+  }
   function firstVisitIntro() {
     try {
       if (!localStorage.getItem('playlistStudio.introSeen.v1')) {
@@ -13203,7 +13217,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', function () { ssSync(false); });
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]p=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]p=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); introPlace(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
   }
 
   // ---- a refresh comes back where you were ------------------------------------
