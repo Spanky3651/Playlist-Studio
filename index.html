@@ -1632,8 +1632,6 @@ a.rcard{display:block;position:relative;color:inherit;text-decoration:none;}
 .rp-frame iframe{width:100%;height:100%;border:0;display:block;}
 body.rp-open{overflow:hidden;}
 .rc-nf{color:#ff8597;font-weight:800;}
-body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s ease-in-out 4;}
-@media (prefers-reduced-motion:reduce){body.egg-115 .rcard .rv{animation:none;}}
 @media(min-width:721px){
   .song-list{container:songs/inline-size;}
   body.dense .rcards{flex-basis:100%;margin-top:3px;display:flex;gap:16px;max-width:none;}
@@ -2085,11 +2083,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .pc-link.danger{color:#ff8fa3;}
 .pc-foot [hidden]{display:none !important;}
 /* ---- Easter eggs ---- */
-.egg-rain{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden;}
-.egg-rain span{position:absolute;top:-8vh;font:800 20px var(--mono);color:#ffd23d;text-shadow:0 0 10px rgba(255,210,61,.7);animation:egg-fall linear forwards;}
-@keyframes egg-fall{0%{transform:translateY(0) rotate(0);opacity:0}8%{opacity:1}100%{transform:translateY(118vh) rotate(var(--egg-r,20deg));opacity:.9}}
-body.egg-115 .rb-pp,body.egg-115 .rb-you,body.egg-115 .rb-pred,body.egg-115 .rb-gain,body.egg-115 .rb-clan-ok{animation:egg-gold .55s ease-in-out 4;}
-@keyframes egg-gold{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 2px #ffd23d,0 0 16px rgba(255,210,61,.8);color:#fff2b8;}}
+/* "115": red and blue note blocks falling behind the page, under the solid panels */
+#eggBlocks{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block;opacity:.75;}
 .egg-bomb{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;opacity:.55;vertical-align:middle;cursor:pointer;}
 .egg-bomb:hover,.egg-bomb:focus-visible{opacity:1;box-shadow:none;}
 .egg-bomb svg{width:18px;height:18px;}
@@ -2105,7 +2100,6 @@ body.egg-halloween .brand .logo .egg-spider{display:block;position:absolute;inse
 @media(prefers-reduced-motion:reduce){.egg-spider .sp,.egg-spider .legs{animation:none;}}
 body.egg-halloween .fy-btn{position:relative;}
 body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;width:38px;height:38px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23cfd6e3' stroke-width='.7' stroke-linecap='round'%3E%3Cpath d='M40 0L-4.0 0.0M40 0L-0.7 16.8M40 0L8.9 31.1M40 0L23.2 40.7M40 0L40.0 44.0M31.0 0.0Q32.4 1.5 31.7 3.4Q33.5 4.3 33.6 6.4Q35.7 6.5 36.6 8.3Q38.5 7.6 40.0 9.0M22.0 0.0Q24.8 3.0 23.4 6.9Q27.1 8.6 27.3 12.7Q31.4 12.9 33.1 16.6Q37.0 15.2 40.0 18.0M13.0 0.0Q17.1 4.5 15.1 10.3Q20.6 12.9 20.9 19.1Q27.1 19.4 29.7 24.9Q35.5 22.9 40.0 27.0M4.0 0.0Q9.5 6.1 6.7 13.8Q14.2 17.3 14.5 25.5Q22.7 25.8 26.2 33.3Q33.9 30.5 40.0 36.0'/%3E%3C/svg%3E") no-repeat top right/contain;opacity:.55;pointer-events:none;border-top-right-radius:11px;}
-@media (prefers-reduced-motion:reduce){.egg-rain{display:none;}body.egg-115 .rb-pp,body.egg-115 .rb-you,body.egg-115 .rb-pred{animation:none;}}
 #svClanBtn .new-tag{font:700 11px var(--mono);padding:1px 5px;border-radius:4px;background:var(--red);color:#fff;margin-left:2px;}
 .feat-proj{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2f8cff55;background:radial-gradient(130% 160% at 0% 0%,#10233f,#070b12 65%);}
 .feat-proj .big{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.3px;}
@@ -10199,7 +10193,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   // ---- Easter eggs -------------------------------------------------------------
-  // Left out of the README on purpose. "115" typed outside a text box: badges flash and 115s rain down.
+  // Left out of the README on purpose. "115" typed outside a text box turns on falling note blocks behind the page;
+  // the browser remembers it until its site data is cleared or 115 is typed again.
   // About 1 in 1,000 result rows hides a bomb. Oct 31 only: a jack-o'-lantern logo and cobwebs on the For You cards.
   var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {}, egg115Sent = false, eggKeys = '', eggKeyT = 0;
   var EGG_BOMB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="#4a505c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="6.4" fill="#15171c" stroke="#4a505c" stroke-width="1"/><circle cx="10" cy="10" r="1.6" fill="#6b7280" opacity=".7"/></svg>';
@@ -10224,22 +10219,109 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     toast('You hit a bomb. Combo lost.', 'err');
     track('egg-bomb');
   }
-  function egg115() {
-    var bd = document.body;
-    bd.classList.remove('egg-115'); void bd.offsetWidth; bd.classList.add('egg-115');
-    clearTimeout(egg115.t); egg115.t = setTimeout(function () { bd.classList.remove('egg-115'); }, 2400);
-    var box = document.createElement('div'); box.className = 'egg-rain'; box.setAttribute('aria-hidden', 'true');
-    for (var i = 0; i < 36; i++) {
-      var s = document.createElement('span'); s.textContent = '115';
-      s.style.left = (Math.random() * 96).toFixed(1) + '%';
-      s.style.fontSize = Math.round(14 + Math.random() * 16) + 'px';
-      s.style.animationDuration = (1.6 + Math.random() * 1.1).toFixed(2) + 's';
-      s.style.animationDelay = (Math.random() * 0.9).toFixed(2) + 's';
-      s.style.setProperty('--egg-r', Math.round(Math.random() * 60 - 30) + 'deg');
-      box.appendChild(s);
+  // The falling note blocks, same as the Studio Stats page: they keep their size, never overlap, stay still for reduced motion.
+  function eggBlocksRun(cv) {
+  var cx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var COL = { r: ['#ff3a4e', '#ff0016', '#a8000f'], b: ['#4a5cff', '#0020ff', '#0012a8'] };
+  var SPR = {};
+  function sprite(c, kind, blur) {
+    var k = c + kind + blur; if (SPR[k]) return SPR[k];
+    var S = 96, pad = 24, o = document.createElement('canvas'); o.width = o.height = S + pad * 2;
+    var g = o.getContext('2d'); g.translate(pad, pad); if (blur) g.filter = 'blur(' + blur + 'px)';
+    var p = COL[c];
+    function rr(x, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, x, S - 2 * x, S - 2 * x, r); else g.rect(x, x, S - 2 * x, S - 2 * x); }
+    var ed = g.createLinearGradient(0, 0, S, S); ed.addColorStop(0, p[1]); ed.addColorStop(1, p[2]); g.fillStyle = ed; rr(4, 15); g.fill();
+    var gr = g.createLinearGradient(0, 0, S * .8, S); gr.addColorStop(0, p[0]); gr.addColorStop(.5, p[1]); gr.addColorStop(1, p[2]); g.fillStyle = gr; rr(7, 12); g.fill();
+    var sh = g.createRadialGradient(S * .32, S * .26, 2, S * .32, S * .26, S * .6); sh.addColorStop(0, 'rgba(255,255,255,.32)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sh; g.fill();
+    g.fillStyle = '#fff'; g.shadowColor = 'rgba(255,255,255,.7)'; g.shadowBlur = 6; g.beginPath();
+    var L = S - 8, P = function (x, y) { return [4 + L * x, 4 + L * y]; };
+    if (kind === 'a') { [[1 / 6, 1 / 6], [5 / 6, 1 / 6], [5 / 6, .25], [.5, 5 / 12], [1 / 6, .25]].forEach(function (v, i) { var q = P(v[0], v[1]); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); }
+    else { g.arc(S * .5, S * .5, S * .11, 0, Math.PI * 2); g.fill(); }
+    return (SPR[k] = o);
+  }
+  var B = [];
+  function make(top) {
+    var z = Math.random(), near = z > .9, far = z < .35, sz = 10 + z * 40 + (z > .75 ? (z - .75) * 140 : 0), vy = 14 + z * 46;
+    var q = { x: Math.random() * W, y: top ? -60 - Math.random() * 120 : Math.random() * H, z: z, s: sz,
+      c: Math.random() < .55 ? 'r' : 'b', k: Math.random() < .7 ? 'a' : 'd', blur: near ? 3 : far ? 2 : 0,
+      a: .7 * (far ? .35 + z : near ? .75 : .95), vy: vy, cy: vy, vx: (Math.random() - .5) * 10,
+      r: Math.random() * 6.28, vr: (Math.random() - .5) * .9 };
+    // reach of a block at any spin (half its diagonal) plus its blur and a small gap
+    q.vx0 = q.vx; q.rad = sz * .648 + (q.blur ? q.blur * 1.5 : 0) + 4;
+    return q;
+  }
+  function room(q, skip) { // the clearance between q and the nearest other block (negative = they touch)
+    var m = 1e9; for (var i = 0; i < B.length; i++) { var o = B[i]; if (o === q || o === skip) continue;
+      var c = Math.hypot(o.x - q.x, o.y - q.y) - o.rad - q.rad; if (c < m) m = c; } return m;
+  }
+  function place(top, skip) { // best of several tries: the spot with the most room around it
+    var best = null, br = -1e9;
+    for (var t = 0; t < 16; t++) { var q = make(top); if (top) q.y = -q.rad - Math.random() * 220; var r = room(q, skip); if (r > br) { br = r; best = q; } if (r > 30) break; }
+    if (br < 0 && top) best.y -= best.rad * 2 - br; // still crowded: start it higher up, out of sight
+    best.ok = br >= 0; return best;
+  }
+  function size() {
+    var oW = W, oH = H;
+    DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth || innerWidth; H = cv.clientHeight || innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    // the box can start small and grow (a side panel opening): stretch the field with it so blocks never bunch on one side
+    if (oW && oH) for (var j = 0; j < B.length; j++) { B[j].x *= W / oW; B[j].y *= H / oH; }
+    var n = Math.round(Math.min(38, Math.max(14, W * H / 42000)));
+    for (var tries = 0; B.length < n && tries < n * 3; tries++) { var q = place(false); if (q.ok) B.push(q); }
+    B.length = Math.min(B.length, n);
+    settle(8);
+  }
+  function settle(rounds) { // push apart any blocks that touch; the one behind slows to the speed of the one ahead
+    for (var k = 0; k < rounds; k++) {
+      var moved = false;
+      for (var i = 0; i < B.length; i++) for (var j = i + 1; j < B.length; j++) {
+        var p = B[i], o = B[j], dx = o.x - p.x, dy = o.y - p.y, d = Math.hypot(dx, dy) || .01, need = p.rad + o.rad;
+        if (d >= need) continue;
+        var push = (need - d) / 2, nx = dx / d, ny = dy / d; moved = true;
+        p.x -= nx * push; p.y -= ny * push; o.x += nx * push; o.y += ny * push;
+        var up = p.y < o.y ? p : o, dn = up === p ? o : p;
+        if (up.cy > dn.cy) { up.cy = dn.cy; up.vx = (up.x < dn.x ? -1 : 1) * Math.max(Math.abs(up.vx), 14); } // slow down, then steer around it
+        if (Math.abs(nx) > .5) { p.vx = -Math.abs(p.vx) * Math.sign(nx || 1); o.vx = Math.abs(o.vx) * Math.sign(nx || 1); }
+      }
+      if (!moved) break;
     }
-    bd.appendChild(box); setTimeout(function () { box.remove(); }, 3800);
-    if (!egg115Sent) { egg115Sent = true; track('egg-115'); }
+  }
+  function draw(dt) {
+    cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, W, H);
+    for (var i = 0; i < B.length; i++) {
+      var q = B[i];
+      q.cy += (q.vy - q.cy) * Math.min(1, dt * .4); q.vx += (q.vx0 - q.vx) * Math.min(1, dt * .5);
+      q.y += q.cy * dt; q.x += q.vx * dt; q.r += q.vr * dt;
+      if (q.y > H + q.rad + 10 || q.x < -q.rad - 10 || q.x > W + q.rad + 10) B[i] = place(true, q);
+    }
+    settle(3);
+    B.sort(function (a, b) { return a.z - b.z; });
+    for (i = 0; i < B.length; i++) {
+      q = B[i]; var sp = sprite(q.c, q.k, q.blur), f = q.s / 96;
+      cx.save(); cx.globalAlpha = q.a; cx.translate(q.x, q.y); cx.rotate(q.r); cx.scale(f, f);
+      cx.drawImage(sp, -sp.width / 2, -sp.height / 2); cx.restore();
+    }
+  }
+  var last = 0, raf = 0, ro = null;
+  function loop(ts) { var dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts; draw(dt); raf = requestAnimationFrame(loop); }
+  function vis() { last = 0; }
+  size(); if (window.ResizeObserver) { ro = new ResizeObserver(function () { size(); if (still) draw(0); }); ro.observe(cv); } else addEventListener('resize', size);
+  if (still) draw(0); else raf = requestAnimationFrame(loop);
+  document.addEventListener('visibilitychange', vis);
+  return function () { cancelAnimationFrame(raf); if (ro) ro.disconnect(); else removeEventListener('resize', size); document.removeEventListener('visibilitychange', vis); };
+  }
+  var EGG_BLOCKS_KEY = 'playlistStudio.eggBlocks.v1', eggBlocksStop = null;
+  function eggBlocksSet(on, quiet) {
+    var cv = document.getElementById('eggBlocks');
+    if (on) {
+      if (!cv) { cv = document.createElement('canvas'); cv.id = 'eggBlocks'; cv.setAttribute('aria-hidden', 'true'); document.body.insertBefore(cv, document.body.firstChild); }
+      if (!eggBlocksStop && cv.getContext) eggBlocksStop = eggBlocksRun(cv);
+    } else { if (eggBlocksStop) eggBlocksStop(); eggBlocksStop = null; if (cv) cv.remove(); }
+    if (!quiet) { try { if (on) localStorage.setItem(EGG_BLOCKS_KEY, '1'); else localStorage.removeItem(EGG_BLOCKS_KEY); } catch (e) {} }
+  }
+  function egg115() {
+    var on = !eggBlocksStop; eggBlocksSet(on);
+    if (on && !egg115Sent) { egg115Sent = true; track('egg-115'); }
   }
   function eggKey(e) {
     var tg = e.target, tag = tg && tg.tagName;
@@ -10260,6 +10342,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   function setupEggs() {
     document.addEventListener('keydown', eggKey);
+    var blocksOn = false; try { blocksOn = localStorage.getItem(EGG_BLOCKS_KEY) === '1'; } catch (e) {}
+    if (blocksOn) eggBlocksSet(true, true);
     if (el.resultList) el.resultList.addEventListener('click', function (e) { var b = e.target.closest('.egg-bomb'); if (b) { e.stopPropagation(); eggBoom(b); } });
     eggHalloween();
   }
