@@ -1605,6 +1605,9 @@ h2 small{font-size:14px;color:var(--muted);font-weight:500}
 .top>div:first-child{flex:1 1 0;min-width:0}.top .tools{flex:none;flex-wrap:nowrap}
 .tools button.icon{width:42px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;color:var(--text)}
 .tools button.icon:hover{border-color:#2f7bff;color:#fff}
+#refresh svg{stroke-width:2.8}
+/* desktop: no box behind the refresh icon, a slightly larger icon instead */
+@media(min-width:701px){html:not(.embed) #refresh{background:transparent;border-color:transparent;box-shadow:none}html:not(.embed) #refresh svg{width:23px;height:23px}html:not(.embed) #refresh:hover{border-color:transparent;color:#5296ff}}
 .tools button.icon.spin svg{animation:rspin .9s linear infinite}
 @keyframes rspin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.tools button.icon.spin svg{animation:none;opacity:.5}}
