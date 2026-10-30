@@ -300,6 +300,18 @@ select{cursor:pointer;appearance:none;
   background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
 .row{display:flex;gap:10px;}.row .field{flex:1;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+/* Phones, BeatSaver: Ranked status & sort as one column, the two switches together in a small card at the bottom */
+@media(max-width:720px){
+body.src-beatsaver .sortsec .panel-body{display:flex;flex-direction:column;gap:14px;}
+body.src-beatsaver .sortsec .panel-body>*{order:9;margin:0;}
+body.src-beatsaver .sortsec .grid-2{display:contents;}
+body.src-beatsaver .sortsec .field{margin:0;}
+body.src-beatsaver .sortsec .bs-sortf{order:1;}body.src-beatsaver .sortsec .bs-agef{order:2;}body.src-beatsaver .sortsec .bs-minf{order:3;}body.src-beatsaver .sortsec .scanf{order:4;}
+body.src-beatsaver .sortsec #scanChips{order:5;margin-top:-6px;}body.src-beatsaver .sortsec #scanHint{order:6;margin-top:-8px;}
+body.src-beatsaver .sortsec .bs-sw{order:7;display:flex;flex-direction:row-reverse;justify-content:space-between;align-self:stretch !important;padding:12px 14px !important;background:#0b111c;border:1px solid #1c2638;margin:0;}
+body.src-beatsaver .sortsec .bs-sw1{border-radius:12px 12px 0 0;margin-top:4px;}
+body.src-beatsaver .sortsec .bs-sw2{order:8;border-radius:0 0 12px 12px;border-top:0;margin-top:-14px;}
+}
 
 /* advanced details */
 .adv{margin-top:12px;border:1px solid var(--border);border-radius:9px;background:var(--panel-2);}
@@ -2356,7 +2368,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </section>
 
     <!-- Data Source -->
-    <section class="panel" data-collapsed>
+    <section class="panel sortsec" data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span><h2>Ranked Status &amp; Sort</h2></div>
       <div class="panel-sub"><span class="bl-only">Which slice of BeatLeader to search and how to order it.</span><span class="bs-only">How to order the BeatSaver catalog.</span> <b>Sort by</b> only re-orders results - it never changes which maps match.</div>
       <div class="panel-body">
@@ -2369,18 +2381,18 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="qualified">Qualified</option>
               <option value="all">All</option>
             </select></div>
-          <div class="field bs-only"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Rating (the default) = up/down vote score, so the best-liked maps come first. Latest = newest uploads (best for browsing a tag). Curated = hand-picked by curators. Relevance = best text match - only use it with a mapper/keyword search, it returns junk on its own.">i</span></label>
+          <div class="field bs-only bs-sortf"><label class="field-label">Sort by <span class="info" data-tip="BeatSaver sort. Rating (the default) = up/down vote score, so the best-liked maps come first. Latest = newest uploads (best for browsing a tag). Curated = hand-picked by curators. Relevance = best text match - only use it with a mapper/keyword search, it returns junk on its own.">i</span></label>
             <select id="bsSort">
               <option value="Latest">Latest</option>
               <option value="Rating" selected>Rating</option>
               <option value="Curated">Curated</option>
               <option value="Relevance">Relevance</option>
             </select></div>
-          <label class="switch bs-only" style="align-self:end;padding-bottom:10px;"><input type="checkbox" id="bsCurated" /><span class="track"></span><span class="switch-lbl">Curated only</span></label>
-          <label class="switch bs-only" style="align-self:end;padding-bottom:10px;" title="Hide maps whose lighting was auto-generated (credited as 'Auto Lighter by …' / 'Autolighter'). The note maps are real, only the lighting is auto-made - turn this on to keep them out of your results."><input type="checkbox" id="bsNoAuto" /><span class="track"></span><span class="switch-lbl">Hide auto-lighting maps</span></label>
-          <div class="field bs-only"><label class="field-label">Min rating <small class="muted">(%)</small> <span class="info" data-tip="BeatSaver's weighted up/down vote rating. Set a floor (e.g. 70) to skip poorly-rated maps. Maps with no votes yet are kept.">i</span></label>
+          <label class="switch bs-only bs-sw bs-sw1" style="align-self:end;padding-bottom:10px;"><input type="checkbox" id="bsCurated" /><span class="track"></span><span class="switch-lbl">Curated only</span></label>
+          <label class="switch bs-only bs-sw bs-sw2" style="align-self:end;padding-bottom:10px;" title="Hide maps whose lighting was auto-generated (credited as 'Auto Lighter by …' / 'Autolighter'). The note maps are real, only the lighting is auto-made - turn this on to keep them out of your results."><input type="checkbox" id="bsNoAuto" /><span class="track"></span><span class="switch-lbl">Hide auto-lighting maps</span></label>
+          <div class="field bs-only bs-minf"><label class="field-label">Min rating <small class="muted">(%)</small> <span class="info" data-tip="BeatSaver's weighted up/down vote rating. Set a floor (e.g. 70) to skip poorly-rated maps. Maps with no votes yet are kept.">i</span></label>
             <input type="number" id="bsMinRating" min="0" max="100" step="1" placeholder="e.g. 70" /></div>
-          <div class="field bs-only"><label class="field-label">Uploaded <span class="info" data-tip="Keep only maps uploaded within this window. Great for finding fresh maps.">i</span></label>
+          <div class="field bs-only bs-agef"><label class="field-label">Uploaded <span class="info" data-tip="Keep only maps uploaded within this window. Great for finding fresh maps.">i</span></label>
             <select id="bsAge">
               <option value="any" selected>Any time</option>
               <option value="1w">Past week</option>
@@ -2414,7 +2426,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="desc" selected>High → Low</option>
               <option value="asc">Low → High</option>
             </select></div>
-          <div class="field"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull before filtering in your browser. Higher = more thorough but slower - BeatLeader pages 100 at a time, BeatSaver 20. 2,500 is the default; drop to 300 for a quick pull.">i</span></label>
+          <div class="field scanf"><label class="field-label">Maps to scan <span class="info" data-tip="How many maps to pull before filtering in your browser. Higher = more thorough but slower - BeatLeader pages 100 at a time, BeatSaver 20. 2,500 is the default; drop to 300 for a quick pull.">i</span></label>
             <input type="number" id="fMaxScan" min="20" max="20000" step="20" value="1000" /></div>
         </div>
         <div class="scan-chips" id="scanChips">
