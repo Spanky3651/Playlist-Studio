@@ -1370,8 +1370,6 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
    "reduce motion" setting. When off, the page looks exactly as it
    did before.
    ============================================================ */
-#fxCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.5;display:none;}
-body.anim #fxCanvas{display:block;}
 #fxSlash{position:fixed;top:0;left:-45%;width:45%;height:100%;z-index:250;pointer-events:none;opacity:0;transform:skewX(-16deg);
   background:linear-gradient(100deg,transparent,rgba(255,45,85,0) 42%,rgba(255,255,255,.9) 50%,rgba(47,140,255,0) 58%,transparent);}
 body.anim #fxSlash.go{animation:fx-slash .55s ease-out;}
@@ -2134,9 +2132,8 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
   .foot-count{grid-area:cnt;justify-content:center;}
 }
 @media(max-width:370px){.nf .nf-chip{font-size:12px;}.nf-chip + .nf-chip::before{margin:0 4px;}}
-/* Falling blocks background (footer switch): note blocks fall behind the solid panels; the classic streaks stop */
+/* Falling blocks background (footer switch): note blocks fall behind the solid panels; off means a still background */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block;opacity:.75;}
-body.blocks-on #fxCanvas{display:none !important;}
 .fxsw{display:inline-flex;align-items:center;gap:11px;font:700 14px system-ui,'Segoe UI',Arial,sans-serif;color:#cfd8e6;background:transparent;border:0;padding:4px;cursor:pointer;text-transform:none;letter-spacing:.2px;box-shadow:none;}
 .fxsw:hover{background:transparent;box-shadow:none;}
 .fxsw-track{position:relative;width:50px;height:28px;border-radius:9px;background:#0d121b;border:1px solid var(--border-2);flex:none;transition:.2s;}
@@ -2230,7 +2227,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 <script>/* Quest over USB needs WebUSB on a computer. Hide it on phones, in the Quest's own browser and where WebUSB is missing. */
 (function(){var n=navigator,u=n.userAgent||"",ok=!!n.usb&&!/OculusBrowser|Quest/i.test(u)&&!(n.userAgentData&&n.userAgentData.mobile)&&!/Android.+Mobile|iPhone|iPad|iPod/i.test(u);window.QUEST_USB=ok;if(!ok)document.documentElement.classList.add("no-quest-usb");})();</script>
 
-<canvas id="fxCanvas" aria-hidden="true"></canvas>
 <div id="fxSlash" aria-hidden="true"></div>
 <div id="topLoadBar" aria-hidden="true"><div id="topLoadFill"></div></div>
 
@@ -3136,7 +3132,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-30T22:59Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-30T23:07Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4168,7 +4164,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    'addAllBtn','addTopBtn','addTopN','addRandomBtn','fillRuntimeBtn','fillMins','clearResultsBtn','collapseSongs','hideInPlaylist','hideFromBtn','hideFromFile','hideFromInfo','shuffleBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
    'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','coverTextColor','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput','iconLibraryGrid',
-   'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','topLoadBar','topLoadFill',
+   'mTabbar','mResultsBadge','mPlaylistBadge','fxSlash','topLoadBar','topLoadFill',
    'playlistName','savePlaylistBtn','savedPlaylists','loadPlaylistBtn','deletePlaylistBtn','importBplist',
    'exportHint','exportValidation',
    'quickAddInput','quickAddBtn','quickAddHint','undoClearBtn',
@@ -10285,7 +10281,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     track('egg-bomb');
   }
   // Falling blocks background (the footer switch, off by default): red and blue note blocks fall behind the solid panels.
-  // They keep their size, never overlap, and stay still for reduced motion. While on, the classic streaks and outlines stop.
+  // They keep their size, never overlap, and stay still for reduced motion. With the switch off the background doesn't move.
   function blocksRun(cv) {
   var cx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var COL = { r: ['#ff3a4e', '#ff0016', '#a8000f'], b: ['#4a5cff', '#0020ff', '#0012a8'] };
@@ -12866,42 +12862,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.body.addEventListener('mouseout', function (e) { if (e.target.closest('.info')) el.tipbox.style.display = 'none'; });
   }
 
-  // ---- Beat Saber animations (ambient canvas + UI flourishes) ---------------
-  var FX = { raf: null, cubes: [], streaks: [], W: 0, H: 0, dpr: 1, running: false };
-  function fxRand(a, b) { return a + (b - a) * Math.random(); }
-  function fxResize() { var cv = el.fxCanvas; if (!cv) return; FX.dpr = Math.min(2, window.devicePixelRatio || 1); FX.W = cv.width = Math.floor(window.innerWidth * FX.dpr); FX.H = cv.height = Math.floor(window.innerHeight * FX.dpr); }
-  function fxMkStreak() { return { x: fxRand(0, FX.W), y: fxRand(FX.H*0.15, FX.H), len: fxRand(120,300)*FX.dpr, a: 0, va: fxRand(0.002,0.006), vy: fxRand(-0.6,-1.5)*FX.dpr, col: Math.random()<0.5 ? '#ff2d55' : '#2f8cff' }; }
-  function fxSeed() {
-    var n = window.innerWidth <= 720 ? 7 : 14, i;
-    FX.cubes = [];
-    for (i = 0; i < n; i++) FX.cubes.push({ x: fxRand(0,FX.W), y: fxRand(0,FX.H), s: fxRand(18,44)*FX.dpr, rot: fxRand(0,Math.PI), vr: fxRand(-0.003,0.003), vy: fxRand(-0.28,-0.06)*FX.dpr, col: Math.random()<0.5 ? '#ff2d55' : '#2f8cff', a: fxRand(0.05,0.15) });
-    FX.streaks = []; for (i = 0; i < Math.max(2, Math.floor(n/4)); i++) FX.streaks.push(fxMkStreak());
-  }
-  function fxDraw() {
-    var ctx = el.fxCanvas.getContext('2d'), i, c, s, r, hh;
-    ctx.clearRect(0, 0, FX.W, FX.H);
-    for (i = 0; i < FX.streaks.length; i++) {
-      s = FX.streaks[i];
-      ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(0.45, s.a)); ctx.strokeStyle = s.col; ctx.lineWidth = 2*FX.dpr; ctx.lineCap = 'round'; ctx.shadowColor = s.col; ctx.shadowBlur = 16*FX.dpr;
-      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + s.len*0.5, s.y - s.len); ctx.stroke(); ctx.restore();
-      s.y += s.vy; s.a += s.va; if (s.a > 0.45) s.va = -Math.abs(s.va);
-      if (s.a <= 0) { FX.streaks[i] = fxMkStreak(); FX.streaks[i].y = FX.H + fxRand(20,140)*FX.dpr; }
-    }
-    for (i = 0; i < FX.cubes.length; i++) {
-      c = FX.cubes[i];
-      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot);
-      ctx.globalAlpha = c.a; ctx.strokeStyle = c.col; ctx.lineWidth = 2*FX.dpr; ctx.shadowColor = c.col; ctx.shadowBlur = 12*FX.dpr;
-      r = c.s*0.22; hh = c.s/2;
-      ctx.beginPath(); ctx.moveTo(-hh+r, -hh);
-      ctx.arcTo(hh,-hh,hh,hh,r); ctx.arcTo(hh,hh,-hh,hh,r); ctx.arcTo(-hh,hh,-hh,-hh,r); ctx.arcTo(-hh,-hh,hh,-hh,r); ctx.closePath(); ctx.stroke();
-      ctx.restore();
-      c.y += c.vy; c.rot += c.vr; if (c.y < -c.s) { c.y = FX.H + c.s; c.x = fxRand(0, FX.W); }
-    }
-    FX.raf = requestAnimationFrame(fxDraw);
-  }
-  function fxStart() { if (FX.running || !el.fxCanvas) return; FX.running = true; fxResize(); fxSeed(); FX.raf = requestAnimationFrame(fxDraw); }
-  function fxStop() { FX.running = false; if (FX.raf) cancelAnimationFrame(FX.raf); FX.raf = null; if (el.fxCanvas) { var ctx = el.fxCanvas.getContext('2d'); if (ctx) ctx.clearRect(0, 0, FX.W, FX.H); } }
-  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); if (state.anim && !blocksStop) fxStart(); else fxStop(); }
+  // ---- Beat Saber animations (UI flourishes; the only moving background is the Falling blocks switch) ----
+  function applyAnim() { document.body.classList.toggle('anim', !!state.anim); }
   function fxStagger() {
     var items = document.querySelectorAll('.col-left > .panel, .col-left > .intro, .col-left > .fetch-dock, .col-right > .panel');
     for (var i = 0; i < items.length; i++) { items[i].style.animationDelay = (Math.min(i, 10) * 0.045) + 's'; items[i].classList.add('fx-rise'); }
@@ -12912,7 +12874,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     state.anim = !(mq && mq.matches);
     try { localStorage.removeItem('playlistStudio.anim.v1'); } catch (e) {}
     if (mq) { var onMq = function () { state.anim = !mq.matches; applyAnim(); }; if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq); }
-    window.addEventListener('resize', function () { if (FX.running) fxResize(); });
     applyAnim();
     if (state.anim) fxStagger();
   }
