@@ -3431,7 +3431,6 @@ body>main{position:relative;z-index:1}
     var ed = g.createLinearGradient(0, 0, S, S); ed.addColorStop(0, p[1]); ed.addColorStop(1, p[2]); g.fillStyle = ed; rr(4, 15); g.fill();
     var gr = g.createLinearGradient(0, 0, S * .8, S); gr.addColorStop(0, p[0]); gr.addColorStop(.5, p[1]); gr.addColorStop(1, p[2]); g.fillStyle = gr; rr(7, 12); g.fill();
     var sh = g.createRadialGradient(S * .32, S * .26, 2, S * .32, S * .26, S * .6); sh.addColorStop(0, 'rgba(255,255,255,.32)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sh; g.fill();
-    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2; rr(5, 14); g.stroke();
     g.fillStyle = '#fff'; g.shadowColor = 'rgba(255,255,255,.7)'; g.shadowBlur = 6; g.beginPath();
     var L = S - 8, P = function (x, y) { return [4 + L * x, 4 + L * y]; };
     if (kind === 'a') { [[1 / 6, 1 / 6], [5 / 6, 1 / 6], [5 / 6, .25], [.5, 5 / 12], [1 / 6, .25]].forEach(function (v, i) { var q = P(v[0], v[1]); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); }
