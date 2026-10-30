@@ -2957,7 +2957,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
                   <li id="ssStep1"><b>Install the mod<span id="ssStep1St"></span></b>
                     <p id="ssStep1Done" hidden>Installed it with ModsBeforeFriday or QuestPatcher? Go on to step 2. <button type="button" class="lq-a" id="ssStep1Show">Show the install steps again</button></p>
                     <div id="ssStep1Body">
-                    <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/v0.9.2/StudioSync-1.40.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">v0.9.2 &middot; Beat Saber 1.40.8</a></div>
+                    <div class="ss-dl"><a class="ss-btn" id="ssDlBtn" data-gc="studiosync-download" href="https://github.com/Spanky3651/Studio-Sync/releases/download/0.9.2/StudioSync-1.40.8.qmod" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Studio Sync</a><a class="ss-ver" id="ssVer" data-gc="studiosync-releases" href="https://github.com/Spanky3651/Studio-Sync/releases" target="_blank" rel="noopener" title="Release notes on GitHub">0.9.2 &middot; Beat Saber 1.40.8</a></div>
                     <p>On a PC or Android phone, open <a href="https://lauriethefish.github.io/ModsBeforeFriday/" target="_blank" rel="noopener" data-gc="mbf-link">ModsBeforeFriday</a> in Chrome or Edge and plug in your Quest. Choose <b>Upload Files</b> and pick the <code>.qmod</code>. It adds PlaylistCore, BSML and SongCore for you. QuestPatcher works too.</p>
                     <p class="ss-hmd" id="ssHmd" hidden>You're in the headset browser, so do this step from a PC or phone.</p>
                     </div>
@@ -3076,7 +3076,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-30">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-30T12:16Z">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -9438,7 +9438,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   // The download follows the latest GitHub release, so a new mod version needs no Studio change.
   var SS_REPO = 'https://github.com/Spanky3651/Studio-Sync', SS_REL_KEY = 'playlistStudio.ss.release';
-  var ssRel = { tag: 'v0.9.2', game: '1.40.8', url: SS_REPO + '/releases/download/v0.9.2/StudioSync-1.40.8.qmod', page: SS_REPO + '/releases', size: 0 }, ssRelTried = false;
+  var ssRel = { tag: '0.9.2', game: '1.40.8', url: SS_REPO + '/releases/download/0.9.2/StudioSync-1.40.8.qmod', page: SS_REPO + '/releases', size: 0 }, ssRelTried = false;
   function ssApplyRel() {
     var a = document.getElementById('ssDlBtn'), v = document.getElementById('ssVer'); if (!a || !v) return;
     a.href = ssRel.url; v.href = ssRel.page;
