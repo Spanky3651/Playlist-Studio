@@ -852,7 +852,7 @@ async function linked(request, env, ctx, url) {
     const inv = (await env.PLAYLISTS.get(invKey(id, dv.id), "json")) || { items: [] };
     const out = (await env.PLAYLISTS.get(outKey(id, dv.id), "json")) || { items: [] };
     out.items = await liveOut(env, id, dv.id, out.items);
-    const pendingList = () => out.items.map((x) => Object.assign({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, songs: !!(x.remove && x.songs), at: x.at }, x.v ? { v: x.v } : {}));
+    const pendingList = () => out.items.map((x) => Object.assign({ id: x.id, k: x.k, file: x.file, title: x.title || "", create: !!x.create, restore: x.restore || 0, remove: !!x.remove, songs: !!(x.remove && x.songs), at: x.at }, x.v ? { v: x.v } : {}, typeof x.maps === "number" ? { maps: x.maps, uniq: x.uniq } : {}));
     // The newest version of a playlist: a send still waiting for the headset, else the headset's copy.
     // "" = not known (a restore or delete is waiting, or the headset hasn't shared this copy yet): no check.
     const latestV = (file, item) => {
@@ -872,7 +872,12 @@ async function linked(request, env, ctx, url) {
       const w = { id: randomId(10), k, file, title: String(title || "").slice(0, 200), create: create || prev.some((x) => x.create), at: nowSec() };
       if (opts.restore) w.restore = opts.restore;
       else if (opts.remove) { w.remove = true; if (opts.songs) w.songs = true; }
-      else { await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body)); w.v = await plVersion(body); }
+      else {
+        await putTtl(env, "outb:" + id + ":" + dv.id + ":" + w.id, JSON.stringify(body)); w.v = await plVersion(body);
+        // How many maps the waiting version has, so Studio's row can show "3 -> 4 maps" until the headset takes it.
+        const songs = body && Array.isArray(body.songs) ? body.songs : null;
+        if (songs) { w.maps = songs.length; w.uniq = new Set(songs.map((x) => String((x && x.hash) || "").toLowerCase()).filter(Boolean)).size; }
+      }
       out.items.push(w);
       if (!opts.later) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id); }
       return w;
