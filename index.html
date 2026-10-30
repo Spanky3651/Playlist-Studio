@@ -3056,7 +3056,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-29">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-30">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -8137,7 +8137,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (c && !c.src && c.v !== 2) c = null;
     if (c && (c.at === it.at || it.waiting || c.at === 'w')) {
       if (c.at === 'w' && it.at && !it.waiting) { c.at = it.at; lqThumbSave(); }   // what Studio sent is what the headset wrote
-      if (typeof c.m !== 'number' && typeof it.maps !== 'number' && it.ready && !it.waiting && it.at && !lqThumbTried[key + '|' + it.at]) {
+      if ((typeof c.m !== 'number' && typeof it.maps !== 'number' || !('su' in c)) && it.ready && !it.waiting && it.at && !lqThumbTried[key + '|' + it.at]) {   // maps or sync link not read yet
         lqThumbTried[key + '|' + it.at] = 'q'; lqThumbQ.push({ dev: d.id, k: it.k, at: it.at, keep: true }); setTimeout(lqThumbPump, 0);
       }
       return c.src;
@@ -8160,7 +8160,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (pl && Array.isArray(pl.songs)) bp = lqBodyPut(job.dev, job.k, job.at, pl);
         if (bp) lqMapsRedraw();
         if (job.keep && !bp) return;
-        return lqMakeThumb(plImage(pl)).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src, false, bp ? bp.m : null); });
+        var su = lqSyncUrlOf(pl);
+        return lqMakeThumb(plImage(pl)).then(function (src) { lqThumbPut(job.dev, job.k, job.at, src, false, bp ? bp.m : null, su); });
       }, function () { lqThumbTried[job.dev + '|' + job.k + '|' + job.at] = 'x'; if (!job.keep) lqThumbPut(job.dev, job.k, null, '', true); }).then(function () { lqThumbBusy--; lqThumbPump(); });
     })(lqThumbQ.shift());
   }
@@ -8192,9 +8193,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       im.src = src;
     });
   }
-  function lqThumbPut(dev, k, at, src, screenOnly, maps) {
+  function lqThumbPut(dev, k, at, src, screenOnly, maps, su) {
     var key = dev + '|' + k;
-    if (!screenOnly) { lqThumbStore()[key] = { at: at, src: src, u: Date.now(), v: 2, m: typeof maps === 'number' ? maps : undefined }; lqThumbSave(); }
+    if (!screenOnly) { var tc = { at: at, src: src, u: Date.now(), v: 2, m: typeof maps === 'number' ? maps : undefined }; if (typeof su === 'string') tc.su = su; lqThumbStore()[key] = tc; lqThumbSave(); }
     Array.prototype.forEach.call(document.querySelectorAll('[data-lq-thumb]'), function (x) { if (x.getAttribute('data-lq-thumb') === key) x.outerHTML = lqThumbHtml(key, src); });
   }
   // ---- Add playlist: send .bplist files from this computer straight to a headset ----
@@ -8915,6 +8916,51 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       track('lq-download');
     }, function (err) { toast((err && err.message) || 'Couldn\u2019t download it.', 'warn'); });
   }
+  // ---- Sync from link: a playlist that carries a sync link (customData.syncURL, the one PlaylistManager's in-game
+  // Sync button uses) can be brought up to date from Studio. Studio reads the link (straight from the site when it
+  // allows that, otherwise through the Worker) and sends that version to the headset, which keeps the old one as a backup.
+  var lqSyncNote = {};
+  function lqSyncUrlOf(pl) { var u = pl && pl.customData && pl.customData.syncURL; u = typeof u === 'string' ? u.trim() : ''; return /^https:\/\/[^\s]+$/i.test(u) ? u : ''; }
+  function lqSyncOf(dev, k) { var key = dev + '|' + k, pc = lqPeekCache[key], c = lqThumbStore()[key]; return (pc && pc.pl ? lqSyncUrlOf(pc.pl) : '') || (c && c.su) || ''; }
+  function lqHostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return 'its link'; } }
+  function lqFetchLink(u) {
+    var get = function (url, ms) { var ctrl = new AbortController(), tm = setTimeout(function () { ctrl.abort(); }, ms); return fetch(url, { cache: 'no-store', signal: ctrl.signal }).then(function (r) { clearTimeout(tm); return r; }, function (e) { clearTimeout(tm); throw e; }); };
+    return get(u, 15000).then(function (r) { if (!r.ok) throw new Error('direct'); return r.text(); }).then(null, function () {
+      return get(PUB_BASE + '/synclink?url=' + encodeURIComponent(u), 25000).then(function (r) {
+        return r.text().then(function (t) { if (r.ok) return t; var j = null; try { j = JSON.parse(t); } catch (e) {} throw new Error((j && j.error) || 'That link couldn\u2019t be read.'); });
+      });
+    }).then(function (text) {
+      var pl = null; try { pl = JSON.parse(String(text).replace(/^\uFEFF/, '')); } catch (e) {}
+      if (!pl || !Array.isArray(pl.songs)) throw new Error('The link didn\u2019t give back a playlist.');
+      return pl;
+    });
+  }
+  function lqSyncFromLink(dev, k) {
+    var u = lqSyncOf(dev, k), t = lqTitleOf(dev, k), host = lqHostOf(u), diff = null; if (!u) return;
+    if (lqIsEditing(dev, k)) { toast('\u201c' + t + '\u201d is open in Your Playlist. Close it first, then sync it from its link.', 'warn'); return; }
+    toast('Getting the latest \u201c' + t + '\u201d from ' + host + '\u2026');
+    lqFetchLink(u).then(function (rp) {
+      return lqChange(dev, k, function (pl) {
+        var hs = function (list) { var o = {}; (list || []).forEach(function (x) { if (x && x.hash) o[String(x.hash).toLowerCase()] = 1; }); return o; };
+        var oh = hs(pl.songs), nh = hs(rp.songs), before = JSON.stringify(pl);
+        diff = { a: Object.keys(nh).filter(function (h) { return !oh[h]; }).length, r: Object.keys(oh).filter(function (h) { return !nh[h]; }).length };
+        pl.songs = rp.songs;
+        ['playlistTitle', 'playlistAuthor', 'playlistDescription'].forEach(function (f) { if (typeof rp[f] === 'string' && rp[f]) pl[f] = rp[f]; });
+        var img = (typeof rp.imageString === 'string' && rp.imageString) || (typeof rp.image === 'string' && rp.image) || '';
+        if (img) { pl.image = img; if ('imageString' in pl || rp.imageString) pl.imageString = img; }
+        if (rp.customData && typeof rp.customData === 'object') pl.customData = Object.assign({}, pl.customData || {}, rp.customData);
+        if (!lqSyncUrlOf(pl)) { pl.customData = pl.customData || {}; pl.customData.syncURL = u; }
+        return JSON.stringify(pl) !== before;
+      });
+    }).then(function (r) {
+      if (r.same) { toast('\u201c' + t + '\u201d already matches ' + host + '.', 'ok'); return; }
+      var bits = []; if (diff.a) bits.push(diff.a + ' added'); if (diff.r) bits.push(diff.r + ' removed'); if (!bits.length) bits.push('updated');
+      lqSyncNote[dev + '|' + k] = { txt: bits.join(', '), t: Date.now() };
+      lqGlow(dev, k, 'Synced');
+      toast('Synced \u201c' + t + '\u201d from ' + host + ': ' + bits.join(', ') + '. It arrives on ' + lqDevName(dev) + ' on its next sync, and the old version is kept as a backup.', 'ok');
+      track('lq-synclink'); lqRender();
+    }, function (err) { toast((err && err.message) || 'Couldn\u2019t sync it from its link.', 'warn'); });
+  }
   function lqCopyTo(dev, k, to) {
     var t = lqTitleOf(dev, k);
     lqLatest(dev, k).then(function (got) {
@@ -8935,6 +8981,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!pw) delete lqSent[key];
     if (sent && curM != null && sent.maps !== curM) sizeL = curM + ' \u2192 ' + mapsLabel(sent.maps, sent.songs);
     if (sizeL) meta.push('<span class="lq-nw">' + sizeL + '</span>');
+    var sn = lqSyncNote[key]; if (sn && (pw || Date.now() - sn.t < 300000)) meta.push('<span class="lq-wait">from its link: ' + esc(sn.txt) + '</span>'); else if (sn && !pw) delete lqSyncNote[key];
     var miss = !it.waiting && lqNext(d.id, 'missing') ? lqMissOf(d.id, it) : 0, adlOn = it.waiting || !lqNext(d.id, 'autodl') || lqAutoOf(d.id, it);
     if (miss) meta.push('<span class="lq-miss">' + miss.toLocaleString() + ' missing</span>');
     if (!adlOn) meta.push('<span class="lq-noadl">no auto-download' + (lqAutoWaiting(d.id, it.k) ? ' (waiting)' : '') + '</span>');
@@ -8973,6 +9020,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       lq.devices.forEach(function (o) { if (o.id !== d.id) mi += lqMi(lqIco('copy') + 'Copy to ' + esc(lqDevName(o.id)), 'data-lq-copy="' + id + '|' + esc(o.id) + '"'); });
     }
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
+    var slu = !removing && !it.waiting ? lqSyncOf(d.id, it.k) : '';
+    if (slu) mi = '<div class="lq-ph">Sync link</div>' + lqMi(lqIco('refresh') + 'Sync from ' + esc(lqHostOf(slu)), 'data-lq-synclink="' + id + '" title="Gets the latest version from ' + esc(slu) + ' and sends it to ' + dn + '. The old version is kept as a backup."') + (mi ? '<div class="lq-hr"></div>' + mi : '');
     var open = !!mi && lq.menuOpen === key;
     var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
     var gl = lqGlowFor(key), gd = gl ? ' style="animation-delay:-' + gl.ms + 'ms"' : '';
@@ -9474,6 +9523,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-plrn')) { state.lq.plRename = t.getAttribute('data-lq-plrn') || null; lqRender(); var pri = document.getElementById('lqPlRenameIn'); if (pri) { pri.focus(); pri.select(); } }
       else if (t.hasAttribute('data-lq-plrnsave')) { var prs = t.getAttribute('data-lq-plrnsave').split('|'), prv = document.getElementById('lqPlRenameIn'); lqPlRename(prs[0], prs[1], prv ? prv.value : ''); }
       else if (t.hasAttribute('data-lq-dl')) { var dls = t.getAttribute('data-lq-dl').split('|'); lqDownload(dls[0], dls[1]); }
+      else if (t.hasAttribute('data-lq-synclink')) { var sls = t.getAttribute('data-lq-synclink').split('|'); lqSyncFromLink(sls[0], sls[1]); }
       else if (t.hasAttribute('data-lq-copy')) { var cps = t.getAttribute('data-lq-copy').split('|'); lqCopyTo(cps[0], cps[1], cps[2]); }
       else if (t.hasAttribute('data-lq-delask')) { state.lq.delAsk = t.getAttribute('data-lq-delask') || null; state.lq.delSongs = false; lqRender(); }
       else if (t.hasAttribute('data-lq-select')) { state.lq.sel = { dev: t.getAttribute('data-lq-select'), keys: {}, ask: false }; state.lq.delAsk = null; state.lq.menuOpen = null; state.lq.delSongs = false; track('lq-select'); lqRender(); }

@@ -26,6 +26,10 @@ export default {
       try { return await hosted(request, env, ctx, url); }
       catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
     }
+    if (url.pathname === "/synclink") {
+      try { return await syncLink(request, env, url); }
+      catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
+    }
     if (url.pathname === "/seen") {
       try { return await seenPost(request, env, ctx); }
       catch (e) { return json({ ok: false }, 500, writeCors(request)); }
@@ -70,6 +74,33 @@ async function relay(request, url) {
   headers.set("Content-Type", upstream.headers.get("Content-Type") || "application/json");
   headers.set("Cache-Control", "public, max-age=60");
   return new Response(upstream.body, { status: upstream.status, headers });
+}
+
+// ---------------------------------------------------------------- a playlist's sync link (/synclink)
+// Studio Sync's "Sync from <site>" reads a headset playlist's sync link (customData.syncURL). Most sites don't let a
+// browser read them, so Studio asks here instead. Only from Studio's page, rate-limited, https only, at most 2 MB,
+// and only passed back when it really is a playlist, so this can't be used to fetch anything else.
+async function syncLink(request, env, url) {
+  const cors = Object.assign({ "Cache-Control": "no-store" }, writeCors(request));
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (request.method !== "GET") return json({ error: "Not allowed." }, 405, cors);
+  if (!env.PLAYLISTS || !originOk(request)) return json({ error: "Not allowed." }, 403, cors);
+  if (!(await allowWrite(request, env, "synclink", 30))) return json({ error: "Too many links checked. Try again in a few minutes." }, 429, cors);
+  let t; try { t = new URL(url.searchParams.get("url") || ""); } catch (e) { return json({ error: "That isn't a link." }, 400, cors); }
+  const host = t.hostname.toLowerCase();
+  if (t.protocol !== "https:" || t.username || t.password || (t.port && t.port !== "443") || host === "localhost" || host.endsWith(".localhost")
+    || /^[0-9.]+$/.test(host) || host.includes(":") || host === new URL(request.url).hostname) return json({ error: "Only https links to a website can be synced." }, 400, cors);
+  let r;
+  try { r = await fetch(t.toString(), { headers: { "User-Agent": "PlaylistStudioSyncLink", "Accept": "application/json, */*" }, redirect: "follow" }); }
+  catch (e) { return json({ error: t.hostname + " didn't answer." }, 502, cors); }
+  if (!r.ok) return json({ error: t.hostname + " answered " + r.status + "." }, 502, cors);
+  if (+(r.headers.get("Content-Length") || 0) > MAX_BYTES) return json({ error: "That playlist is too big." }, 413, cors);
+  const buf = await r.arrayBuffer();
+  if (buf.byteLength > MAX_BYTES) return json({ error: "That playlist is too big." }, 413, cors);
+  const text = new TextDecoder().decode(buf).replace(/^\uFEFF/, "");
+  let pl = null; try { pl = JSON.parse(text); } catch (e) {}
+  if (!pl || typeof pl !== "object" || !Array.isArray(pl.songs) || pl.songs.length > MAX_SONGS) return json({ error: "That link isn't a playlist." }, 422, cors);
+  return new Response(text, { status: 200, headers: Object.assign({ "Content-Type": "application/json; charset=utf-8" }, cors) });
 }
 
 // ---------------------------------------------------------------- when a profile was connected (/seen)
@@ -2318,6 +2349,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'lq-rename-pl': ['Studio Sync', 'Renamed a playlist', 'Renamed a playlist on the headset'],
     'lq-restore': ['Studio Sync', 'Restored a playlist', 'Brought back a deleted or older playlist'],
     'lq-copy': ['Studio Sync', 'Copied to another headset', 'Copied a playlist to their other Quest'],
+    'lq-synclink': ['Studio Sync', 'Sync from link', 'Brought a headset playlist up to date from its sync link'],
     'lq-download': ['Studio Sync', 'Downloaded from headset', 'Downloaded a headset playlist as a file'],
     'lq-select': ['Studio Sync', 'Select mode', 'Selected several headset playlists'],
     'lq-hide': ['Studio Sync', 'Hid the panel', 'Hid the Studio Sync panel'],
