@@ -1548,7 +1548,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,'Se
 main{max-width:980px;margin:0 auto}
 h1{font-size:26px;margin:0}
 .brand{display:flex;align-items:center;gap:12px;margin:0 0 6px}
-.brand img{width:44px;height:44px;border-radius:11px;box-shadow:0 0 16px rgba(47,123,255,.25);flex:none}
+.brand img{width:44px;height:44px;border-radius:11px;box-shadow:0 0 16px rgba(47,123,255,.25);flex:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
 .lspin{animation:lspin 1s cubic-bezier(.4,0,.2,1) 1}
 @keyframes lspin{0%{transform:rotate(0) scale(1)}55%{transform:rotate(320deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
 @media(prefers-reduced-motion:reduce){.lspin{animation:none}}
@@ -1814,22 +1814,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 .tab-short{display:none}
 @media(max-width:700px){.tab-short{display:inline}}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
-/* Falling blocks background (switch under Forget key), off by default; same as Playlist Studio's */
+/* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
-.fxrow{display:flex;justify-content:center;margin:10px 0 0}
-button.fxsw{display:inline-flex;align-items:center;gap:11px;font:700 14px system-ui,'Segoe UI',Arial,sans-serif;color:#cfd8e6;background:transparent;border:0;padding:4px;cursor:pointer;letter-spacing:.2px;box-shadow:none;border-radius:10px}
-.fxsw-track{position:relative;width:50px;height:28px;border-radius:9px;background:#0d121b;border:1px solid #28303f;flex:none;transition:.2s}
-.fxsw-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;transition:transform .25s cubic-bezier(.4,1.4,.6,1)}
-.fxsw-knob svg{width:20px;height:20px;display:block}
-.fxsw .k-body{fill:#3a4253;transition:fill .2s}.fxsw .k-arrow{fill:#7f8a9c;transition:fill .2s}
-.fxsw:hover .fxsw-track{border-color:#3a4a66}
-.fxsw:focus-visible{outline:none}.fxsw:focus-visible .fxsw-track{outline:2px solid var(--blue);outline-offset:2px}
-body.blocks-on .fxsw{color:#fff}
-body.blocks-on .fxsw-track{border-color:transparent;background:linear-gradient(#0d121b,#0d121b) padding-box,linear-gradient(90deg,#ff1e3c,#1e6bff) border-box}
-body.blocks-on .fxsw-knob{transform:translateX(22px)}
-body.blocks-on .fxsw .k-body{fill:#ff1e3c}body.blocks-on .fxsw .k-arrow{fill:#fff}
-@media(prefers-reduced-motion:reduce){.fxsw-knob,.fxsw-track{transition:none}}
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
@@ -2036,7 +2023,6 @@ body.blocks-on .fxsw .k-body{fill:#ff1e3c}body.blocks-on .fxsw .k-arrow{fill:#ff
 <p class="when" id="gcwhen"></p>
 <div id="fback" class="fback" hidden></div><aside id="fsheet" class="fsheet" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden></aside>
 <p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
-<div class="fxrow"><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
 </div>
 </main>
 <script>
@@ -3436,7 +3422,7 @@ body.blocks-on .fxsw .k-body{fill:#ff1e3c}body.blocks-on .fxsw .k-arrow{fill:#ff
 </script>
 <script>
 (function () {
-  // Falling blocks background, off by default and remembered on this device; the same blocks as Playlist Studio's switch.
+  // Falling blocks background: double-click the Studio Stats logo to turn it on or off. Off by default, remembered on this device.
   // They keep their size, never overlap, and stay still for reduced motion.
   function blocksRun(cv) {
   var cx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -3528,7 +3514,7 @@ body.blocks-on .fxsw .k-body{fill:#ff1e3c}body.blocks-on .fxsw .k-arrow{fill:#ff
   document.addEventListener('visibilitychange', vis);
   return function () { cancelAnimationFrame(raf); if (ro) ro.disconnect(); else removeEventListener('resize', size); document.removeEventListener('visibilitychange', vis); };
   }
-  var KEY = 'studioStats.blocksBg.v1', stop = null, sw = document.getElementById('blocksSw');
+  var KEY = 'studioStats.blocksBg.v1', stop = null, logo = document.querySelector('.brand img');
   function set(on, quiet) {
     var cv = document.getElementById('blocksBg');
     if (on) {
@@ -3536,10 +3522,9 @@ body.blocks-on .fxsw .k-body{fill:#ff1e3c}body.blocks-on .fxsw .k-arrow{fill:#ff
       if (!stop && cv.getContext) stop = blocksRun(cv);
     } else { if (stop) stop(); stop = null; if (cv) cv.remove(); }
     on = !!stop; document.body.classList.toggle('blocks-on', on);
-    if (sw) sw.setAttribute('aria-checked', on ? 'true' : 'false');
     if (!quiet) { try { if (on) localStorage.setItem(KEY, '1'); else localStorage.removeItem(KEY); } catch (e) {} }
   }
-  if (sw) sw.addEventListener('click', function () { set(!stop); });
+  if (logo) logo.addEventListener('dblclick', function (e) { e.preventDefault(); set(!stop); });
   var was = false; try { was = localStorage.getItem(KEY) === '1'; } catch (e) {}
   if (was) set(true, true);
 })();
