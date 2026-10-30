@@ -1245,6 +1245,10 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 .source-switch button.active{background:var(--blue);color:#fff;box-shadow:0 0 14px rgba(47,140,255,.35);}
 .source-switch button svg{width:15px;height:15px;}
 .source-cap{font-size:12.5px;color:var(--muted-2);margin:-6px 0 12px;line-height:1.5;text-align:center;}
+.cap-help{display:inline-flex;align-items:center;gap:4px;margin:0 0 0 6px;padding:0;border:0;background:none;box-shadow:none;min-height:0;color:#8fbaff;font:inherit;font-weight:600;cursor:pointer;vertical-align:baseline;white-space:nowrap;}
+.cap-help[hidden]{display:none;}.cap-help:hover{color:#cfe4ff;background:none;}.cap-help svg{width:14px;height:14px;align-self:center;}
+.sd.sd-help{width:min(560px,100vw);}
+#helpBody .intro{border:0;background:none;box-shadow:none;}#helpBody .intro>summary{display:none;}#helpBody .intro-body{padding:0;}
 .tag-legend{font-size:12px;color:var(--muted-2);margin:2px 0 8px;font-family:var(--mono);}
 .tag-legend b{color:var(--blue-text);} .tag-legend i{color:var(--red);font-style:normal;}
 .tag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;}
@@ -2197,7 +2201,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       <button type="button" data-source="beatsaver" role="tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>BeatSaver</button>
     </div>
-    <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> - tech, speed, genres - incl. unranked.</span></p>
+    <p class="source-cap"><span class="bl-only">Ranked catalog with stars, PP and your scores.</span><span class="bs-only">Whole catalog by <b>tags</b> - tech, speed, genres - incl. unranked.</span> <button type="button" class="cap-help" id="helpLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>How it works</button></p>
 
     <!-- Your Profile (BeatLeader) -->
     <section class="panel" id="profilePanel">
@@ -3077,6 +3081,12 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
 <div class="sd-back" id="sdBack"></div>
+<!-- How it works for returning players: opened from the link on the source line -->
+<div class="sd-back" id="helpBack"></div>
+<aside class="sd sd-help" id="helpPanel" aria-label="How it works" aria-hidden="true">
+  <div class="sd-head"><h2>How it works</h2><button type="button" class="ghost sd-x" id="helpClose" aria-label="Close How it works"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>
+  <div class="sd-body" id="helpBody"></div>
+</aside>
 <aside class="sd" id="sdPanel" aria-label="Player stats" aria-hidden="true">
   <div class="sd-head">
     <h2>Player stats</h2>
@@ -12814,6 +12824,25 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     save();
     if (!st.done && cap) { cap.after(ip); ip.classList.add('intro-top'); }
     ip.addEventListener('toggle', function () { if (ip.open && !st.done) { st.done = true; save(); } });
+    if (st.done) helpSetup(ip);
+  }
+  // Returning players: the guide lives in a sheet opened by "How it works" on the source line (from the right on a
+  // computer, from the bottom on a phone, where pulling its top bar down closes it).
+  function helpSetup(ip) {
+    var panel = document.getElementById('helpPanel'), back = document.getElementById('helpBack'), body = document.getElementById('helpBody'), link = document.getElementById('helpLink');
+    if (!panel || !back || !body || !link) return;
+    ip.open = true; body.appendChild(ip); link.hidden = false;
+    var open = function () { panel.classList.add('open'); back.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); document.body.classList.add('sd-lock'); track('help-open'); };
+    var close = function () { panel.classList.remove('open'); back.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); if (!document.querySelector('.sd.open')) document.body.classList.remove('sd-lock'); };
+    link.addEventListener('click', open);
+    document.getElementById('helpClose').addEventListener('click', close);
+    back.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+    var head = panel.querySelector('.sd-head'), y0 = null, dy = 0;
+    head.addEventListener('touchstart', function (e) { if (!window.matchMedia('(max-width:720px)').matches || (e.target.closest && e.target.closest('a,button'))) return; y0 = e.touches[0].clientY; dy = 0; panel.classList.add('drag'); }, { passive: true });
+    head.addEventListener('touchmove', function (e) { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); panel.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+    var end = function () { if (y0 === null) return; y0 = null; panel.classList.remove('drag'); panel.style.transform = ''; if (dy > 90) close(); };
+    head.addEventListener('touchend', end); head.addEventListener('touchcancel', end);
   }
   function firstVisitIntro() {
     try {
