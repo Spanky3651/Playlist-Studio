@@ -2095,9 +2095,14 @@ body.egg-115 .rb-pp,body.egg-115 .rb-you,body.egg-115 .rb-pred,body.egg-115 .rb-
 .egg-bomb svg{width:18px;height:18px;}
 .egg-redflash{position:fixed;inset:0;z-index:9999;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(255,39,64,.05) 30%,rgba(255,39,64,.5) 100%);animation:egg-red .6s ease-out forwards;}
 @keyframes egg-red{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
-.brand .logo .egg-pumpkin{display:none;}
-body.egg-halloween .brand .logo .logo-svg{display:none;}
-body.egg-halloween .brand .logo .egg-pumpkin{display:block;position:absolute;inset:0;width:100%;height:100%;}
+.brand .logo .egg-spider{display:none;}
+/* October 31: a cobweb in the logo's corner and a spider that drops on its thread, bobs, then climbs back up */
+body.egg-halloween .brand .logo .egg-spider{display:block;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
+@keyframes egg-drop{0%,100%{transform:translateY(-34px)}25%,70%{transform:translateY(0)}35%{transform:translateY(-3px)}45%{transform:translateY(0)}55%{transform:translateY(-2px)}}
+@keyframes egg-legs{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
+.egg-spider .sp{animation:egg-drop 7s infinite cubic-bezier(.5,0,.3,1);}
+.egg-spider .legs{transform-box:fill-box;transform-origin:center;animation:egg-legs .5s infinite;}
+@media(prefers-reduced-motion:reduce){.egg-spider .sp,.egg-spider .legs{animation:none;}}
 body.egg-halloween .fy-btn{position:relative;}
 body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;width:38px;height:38px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23cfd6e3' stroke-width='.7' stroke-linecap='round'%3E%3Cpath d='M40 0L-4.0 0.0M40 0L-0.7 16.8M40 0L8.9 31.1M40 0L23.2 40.7M40 0L40.0 44.0M31.0 0.0Q32.4 1.5 31.7 3.4Q33.5 4.3 33.6 6.4Q35.7 6.5 36.6 8.3Q38.5 7.6 40.0 9.0M22.0 0.0Q24.8 3.0 23.4 6.9Q27.1 8.6 27.3 12.7Q31.4 12.9 33.1 16.6Q37.0 15.2 40.0 18.0M13.0 0.0Q17.1 4.5 15.1 10.3Q20.6 12.9 20.9 19.1Q27.1 19.4 29.7 24.9Q35.5 22.9 40.0 27.0M4.0 0.0Q9.5 6.1 6.7 13.8Q14.2 17.3 14.5 25.5Q22.7 25.8 26.2 33.3Q33.9 30.5 40.0 36.0'/%3E%3C/svg%3E") no-repeat top right/contain;opacity:.55;pointer-events:none;border-top-right-radius:11px;}
 @media (prefers-reduced-motion:reduce){.egg-rain{display:none;}body.egg-115 .rb-pp,body.egg-115 .rb-you,body.egg-115 .rb-pred{animation:none;}}
@@ -3076,7 +3081,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="foot-more"><span class="fm-label">More Beat Saber tools: </span><span class="fm-links"><a href="https://spanky3651.github.io/HSV-Config-Generator/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio"><span class="fm-long">HSV Config Generator</span><span class="fm-short">HSV Generator</span></a><span class="sep">&middot;</span><a href="https://spanky3651.github.io/ReeSaber-Studio/?utm_source=playlist-studio&amp;utm_campaign=footer-playlist-studio">ReeSaber Studio</a><span class="sep">&middot;</span><a href="#studio-sync" data-ss-open="footer"><span class="fm-long">Studio Sync for Quest</span><span class="fm-short">Studio Sync</span></a></span></div>
-  <div class="foot-updated" id="footUpdated" data-updated="2026-10-30T12:16Z">Last updated recently</div>
+  <div class="foot-updated" id="footUpdated" data-updated="2026-10-30">Last updated recently</div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
@@ -10198,7 +10203,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // About 1 in 1,000 result rows hides a bomb. Oct 31 only: a jack-o'-lantern logo and cobwebs on the For You cards.
   var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {}, egg115Sent = false, eggKeys = '', eggKeyT = 0;
   var EGG_BOMB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="#4a505c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="6.4" fill="#15171c" stroke="#4a505c" stroke-width="1"/><circle cx="10" cy="10" r="1.6" fill="#6b7280" opacity=".7"/></svg>';
-  var EGG_PUMPKIN = '<svg class="egg-pumpkin" viewBox="0 0 64 64" aria-hidden="true"><path d="M30 15c0-5 2-8 7-10l2 3c-3 2-4 4-4 7z" fill="#4caf50"/><ellipse cx="20" cy="38" rx="13" ry="18" fill="#d9590b"/><ellipse cx="44" cy="38" rx="13" ry="18" fill="#d9590b"/><ellipse cx="32" cy="38" rx="14" ry="20" fill="#ff7a1a"/><path d="M17 36l6-8 6 8zM35 36l6-8 6 8z" fill="#ffd23d"/><path d="M16 43h32l-4 8-4-4-4 5-4-5-4 5-4-5-4 4z" fill="#ffd23d"/></svg>';
+  var EGG_SPIDER = '<svg class="egg-spider" viewBox="0 0 64 64" aria-hidden="true">' +
+    '<g stroke="#c9d1df" stroke-opacity=".45" stroke-width=".5" fill="none"><path d="M64 0L44 0M64 0L64 20M64 0L50 14M64 0L46 6M64 0L58 18"/><path d="M50.5 0.2Q55 4 63.8 6.5M47 1.5Q55 8 62.5 13M52 0Q56 2 64 3"/></g>' +
+    '<g class="sp"><line x1="55" y1="-40" x2="55" y2="22" stroke="#d9dfe9" stroke-opacity=".7" stroke-width=".5"/><g transform="translate(55 24)">' +
+    '<g class="legs" stroke="#e6e9ef" stroke-width=".8" fill="none" stroke-linecap="round"><path d="M-1.5-1l-4-2.5-1.5-2.5M-1.5 0l-4.5-.5-2 1.5M-1.5 1l-4 2-1 2.5M1.5-1l4-2.5 1.5-2.5M1.5 0l4.5-.5 2 1.5M1.5 1l4 2 1 2.5"/></g>' +
+    '<ellipse cx="0" cy="1.2" rx="2.4" ry="3" fill="#e6e9ef"/><circle cx="0" cy="-2" r="1.6" fill="#e6e9ef"/><circle cx="-.6" cy="-2.2" r=".35" fill="#ff2740"/><circle cx=".6" cy="-2.2" r=".35" fill="#ff2740"/></g></g></svg>';
 
   // count.js loads at the end of the page; events fired during start-up wait for it.
   function trackSoon(name) { var n = 0; (function go() { if (window.goatcounter && window.goatcounter.count) track(name); else if (++n < 30) setTimeout(go, 500); })(); }
@@ -10240,9 +10249,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     else eggKeys = '';
   }
   function eggHalloween() {
+    // October 31 every year, by the visitor's own date; any other day the logo is the normal one.
     var d = new Date(); if (d.getMonth() !== 9 || d.getDate() !== 31) return;
-    var lg = document.querySelector('.brand .logo'); if (lg && !lg.querySelector('.egg-pumpkin')) lg.insertAdjacentHTML('beforeend', EGG_PUMPKIN);
+    var lg = document.querySelector('.brand .logo'); if (lg && !lg.querySelector('.egg-spider')) lg.insertAdjacentHTML('beforeend', EGG_SPIDER);
     document.body.classList.add('egg-halloween'); trackSoon('egg-halloween');
+    // Left open past midnight: back to the normal logo when November 1 starts.
+    var mid = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime() - Date.now();
+    setTimeout(function () { document.body.classList.remove('egg-halloween'); var sp = lg && lg.querySelector('.egg-spider'); if (sp) sp.remove(); }, Math.max(1000, mid));
   }
 
   function setupEggs() {
