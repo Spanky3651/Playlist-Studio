@@ -718,7 +718,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-favlist.gone{border-color:#23406f;background:#0c1527;}
 .lq-favlist .lq-peek{margin-top:0;}
 .lq-fav-off{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border:1px dashed #2a3850;border-radius:12px;background:#070b12;font-size:13.5px;color:var(--muted);line-height:1.5;}
-.lq-fav-off .ic{color:#5d6f8a;font-size:18px;}
+.lq-fav-off .ic{color:#5d6f8a;display:inline-flex;flex:none;}.lq-fav-off .ic svg{width:18px;height:18px;}
 .lq-heart{flex:none;display:grid;place-items:center;width:28px;height:28px;min-width:0;min-height:0;padding:0;border:0;border-radius:7px;background:none;box-shadow:none;color:#3f4f68;font-size:17px;line-height:1;cursor:pointer;}
 .lq-heart.on{color:#ff3b63;}
 .lq-peek li .pk-heart{margin-left:-4px;}
@@ -728,7 +728,7 @@ body.anim .lq-wb-ic::after{content:'';position:absolute;inset:0;border-radius:50
 .lq-peek li.off .pk-n{opacity:.5;}
 .lq-fav-st{font-size:12px;flex:none;}
 .lq-fav-more{display:block;margin:6px auto 2px;}
-.lq-mi-heart{color:#ff5c8a;width:16px;text-align:center;font-size:15px;line-height:1;flex:none;}
+.lq-mi-heart{display:inline-flex;width:16px;flex:none;}.lq-mi .lq-mi-heart svg{width:16px;height:16px;color:#ff3b63;}
 .lq-mi-n{margin-left:auto;padding-left:10px;color:var(--muted);font-size:12px;}
 .row-btn.fav{color:#3f4f68;font-size:16px;}
 .row-btn.fav.on{color:#ff3b63;} .lq-noadl{white-space:nowrap;}
@@ -1667,6 +1667,7 @@ body.egg-115 .rcard.gain .rv,body.egg-115 .rcard.you .rv{animation:egg-gold .55s
 .play-chip.active .pc-n{color:#d6e5ff;background:rgba(30,107,255,.3);}
 .play-chip.zero:not(.active){opacity:.55;}
 .feat-tile .ft-v small{font-size:.6em;font-weight:600;color:var(--muted);}
+.play-chip.fav-chip .fav-h,#favAddBtn .fav-h{width:13px;height:13px;color:#ff3b63;flex:none;vertical-align:-2px;margin-right:2px;}
 .play-chip.fav-chip.active{background:rgba(255,59,99,.16);border-color:#ff3b63;color:#fff;box-shadow:0 0 9px rgba(255,59,99,.25);}
 .play-chip.fav-chip.active .pc-n{color:#ffd0da;background:rgba(255,59,99,.3);}
 .sort-order .so-a{font-weight:700;}
@@ -2628,7 +2629,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
             <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
             <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
-            <button type="button" class="play-chip fav-chip" id="favChip" hidden aria-pressed="false" title="Only songs you've favorited on your Quest. Works with the other chips.">♥ Favorites</button>
+            <button type="button" class="play-chip fav-chip" id="favChip" hidden aria-pressed="false" title="Only songs you've favorited on your Quest. Works with the other chips."><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Favorites</button>
             <button type="button" class="play-chip play-more" id="playMoreBtn" aria-expanded="false" aria-controls="playMoreRow" title="Last played and accuracy filters">More <span class="pm-n" id="playMoreN"></span></button>
           </div>
           <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
@@ -2702,7 +2703,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="panel-head"><span class="ph-ic accent-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span><h2>Your Playlist</h2><span class="count" id="playlistCount"></span><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
           <div class="pl-name" id="plNameRow" hidden><label class="pl-name-lbl" for="plNameIn">Name</label><input type="text" id="plNameIn" class="pl-name-in" maxlength="80" autocomplete="off" spellcheck="false" /><span class="pl-name-tag" id="plNameTag" title="Studio picked this name from your maps. It's used when you save or send the playlist. Type to rename it." hidden>Suggested</span></div>
           <div class="list-actions">
-            <button class="ghost sm" id="favAddBtn" type="button" hidden title="Add every favorite on your Quest to this playlist">♥ Add favorites</button>
+            <button class="ghost sm" id="favAddBtn" type="button" hidden title="Add every favorite on your Quest to this playlist"><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Add favorites</button>
             <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
             <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
             <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
@@ -5656,7 +5657,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     rc.title = rows.length ? (allN > avail.length ? avail.length + ' shown of ' + allN + ' that match your search filters' : avail.length + ' maps match your filters') : '';
     var aan = document.getElementById('addAllN'); if (aan) aan.textContent = rows.length ? fmtN(rows.length) : '';
     var pc = state.playCounts, fch = document.getElementById('favChip');
-    if (fch) { var fn = state.favCount; fch.innerHTML = '\u2665 Favorites' + (fn != null && state.raw.length ? '<span class="pc-n">' + fmtN(fn) + '</span>' : ''); fch.classList.toggle('zero', fn === 0 && !state.favOnly); }
+    if (fch) { var fn = state.favCount; fch.innerHTML = favHeartSvg(true) + 'Favorites' + (fn != null && state.raw.length ? '<span class="pc-n">' + fmtN(fn) + '</span>' : ''); fch.classList.toggle('zero', fn === 0 && !state.favOnly); }
     Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip[data-ps]'), function (b) {
       if (b.dataset.lbl == null) b.dataset.lbl = b.textContent.trim();
       var n = pc ? pc[b.dataset.ps] : null;
@@ -7797,7 +7798,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function lqFavHtml(d) {
     var f = lqFavData(d.id); if (!f) return '';
     var q = state.lq.quest[d.id] || {}, dn = esc(lqDevName(d.id)), dv = esc(d.id);
-    if (!f.shared) return '<div class="lq-fav-off"><span class="ic">\u2661</span><span>Favorites aren\u2019t shared from ' + dn + '. Turn them on in <b>Sharing...</b> in the Studio Sync tab to see and edit them here.</span></div>';
+    if (!f.shared) return '<div class="lq-fav-off"><span class="ic">' + favHeartSvg(false) + '</span><span>Favorites aren\u2019t shared from ' + dn + '. Turn them on in <b>Sharing...</b> in the Studio Sync tab to see and edit them here.</span></div>';
     var bs = q.favBackups || [], b0 = bs[0], on = lqFavOn(d.id), n = on.length;
     // Empty now, but Studio has a copy with songs in it: most likely a reinstall or cleared game data.
     if (!f.n && b0 && b0.n > 0 && !lqFavWaitN(d.id) && !lqFavKept(d.id, b0.t))
@@ -9010,7 +9011,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var favOk = lqFavShared(d.id) && it.count > 0;
     if (!removing && !it.waiting && (miss && !lqGmWaiting(d.id) || lqNext(d.id, 'autodl') || favOk)) {
       mi += (mi ? '<div class="lq-hr"></div>' : '') + '<div class="lq-ph">Songs</div>';
-      if (favOk) mi += lqMi('<span class="lq-mi-heart" aria-hidden="true">\u2665</span>Add all songs to favorites', 'data-lq-favpl2="' + id + '" title="Favorites every song in this playlist on ' + dn + '. Favorites you already have stay as they are."');
+      if (favOk) mi += lqMi('<span class="lq-mi-heart" aria-hidden="true">' + favHeartSvg(true) + '</span>Add all songs to favorites', 'data-lq-favpl2="' + id + '" title="Favorites every song in this playlist on ' + dn + '. Favorites you already have stay as they are."');
       if (miss && !lqGmWaiting(d.id)) mi += lqMi(lqIco('down') + 'Get its ' + miss.toLocaleString() + ' missing song' + (miss === 1 ? '' : 's'), 'data-lq-gm1="' + id + '"');
       if (lqNext(d.id, 'autodl')) mi += lqMi(lqIco('refresh') + (adlOn ? 'Turn off auto-download' : 'Turn on auto-download'), 'data-lq-adl="' + id + '|' + (adlOn ? 0 : 1) + '" title="' + (adlOn ? 'Songs this playlist is missing won\u2019t download on their own' : 'Songs this playlist is missing download on their own when it changes') + '"');
     }
