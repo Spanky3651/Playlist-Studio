@@ -1542,7 +1542,7 @@ const ADMIN_PAGE = `<!doctype html>
 <meta name="robots" content="noindex"><title>Studio Stats</title>
 <link rel="icon" type="image/png" href="${ADMIN_LOGO}">
 <style>
-:root{--bg:#000;--card:rgba(8,11,18,.66);--card2:rgba(12,17,28,.62);--line:#1c2638;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--cyan:#38bdf8;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
+:root{--bg:#000;--card:#0a0e16;--card2:#0d1320;--line:#1c2638;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--cyan:#38bdf8;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,'Segoe UI',Arial,sans-serif;padding:24px 16px 48px}
 main{max-width:980px;margin:0 auto}
@@ -1814,12 +1814,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 .tab-short{display:none}
 @media(max-width:700px){.tab-short{display:inline}}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
-#blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.9}
-body>main{position:relative;z-index:1}
-/* falling note blocks behind the page, seen through frosted-glass cards */
-.card,.bars,.chart,.site,.pchip,.pdet,.plist,.gcmsg,.skcard,.skchart,.skbars{-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2)}
-.pchip{background:rgba(10,14,22,.7)}
-</style></head><body><canvas id="blocksBg" aria-hidden="true"></canvas><main>
+</style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
 <div class="tools hidden" id="tools"><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
@@ -3417,96 +3412,5 @@ body>main{position:relative;z-index:1}
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab); logoSpin();
   if (getKey()) loadSync(); else $('keyrow').classList.remove('hidden');
-})();
-</script>
-<script>
-(function () {
-  var cv = document.getElementById('blocksBg'); if (!cv || !cv.getContext) return;
-  var cx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var COL = { r: ['#ff3a4e', '#ff0016', '#a8000f'], b: ['#4a5cff', '#0020ff', '#0012a8'] };
-  var SPR = {};
-  function sprite(c, kind, blur) {
-    var k = c + kind + blur; if (SPR[k]) return SPR[k];
-    var S = 96, pad = 24, o = document.createElement('canvas'); o.width = o.height = S + pad * 2;
-    var g = o.getContext('2d'); g.translate(pad, pad); if (blur) g.filter = 'blur(' + blur + 'px)';
-    var p = COL[c];
-    function rr(x, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, x, S - 2 * x, S - 2 * x, r); else g.rect(x, x, S - 2 * x, S - 2 * x); }
-    var ed = g.createLinearGradient(0, 0, S, S); ed.addColorStop(0, p[1]); ed.addColorStop(1, p[2]); g.fillStyle = ed; rr(4, 15); g.fill();
-    var gr = g.createLinearGradient(0, 0, S * .8, S); gr.addColorStop(0, p[0]); gr.addColorStop(.5, p[1]); gr.addColorStop(1, p[2]); g.fillStyle = gr; rr(7, 12); g.fill();
-    var sh = g.createRadialGradient(S * .32, S * .26, 2, S * .32, S * .26, S * .6); sh.addColorStop(0, 'rgba(255,255,255,.32)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sh; g.fill();
-    g.fillStyle = '#fff'; g.shadowColor = 'rgba(255,255,255,.7)'; g.shadowBlur = 6; g.beginPath();
-    var L = S - 8, P = function (x, y) { return [4 + L * x, 4 + L * y]; };
-    if (kind === 'a') { [[1 / 6, 1 / 6], [5 / 6, 1 / 6], [5 / 6, .25], [.5, 5 / 12], [1 / 6, .25]].forEach(function (v, i) { var q = P(v[0], v[1]); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); }
-    else { g.arc(S * .5, S * .5, S * .11, 0, Math.PI * 2); g.fill(); }
-    return (SPR[k] = o);
-  }
-  var B = [];
-  function make(top) {
-    var z = Math.random(), near = z > .9, far = z < .35, sz = 10 + z * 40 + (z > .75 ? (z - .75) * 140 : 0), vy = 14 + z * 46;
-    var q = { x: Math.random() * W, y: top ? -60 - Math.random() * 120 : Math.random() * H, z: z, s: sz,
-      c: Math.random() < .55 ? 'r' : 'b', k: Math.random() < .7 ? 'a' : 'd', blur: near ? 3 : far ? 2 : 0,
-      a: .7 * (far ? .35 + z : near ? .75 : .95), vy: vy, cy: vy, vx: (Math.random() - .5) * 10,
-      r: Math.random() * 6.28, vr: (Math.random() - .5) * .9 };
-    // reach of a block at any spin (half its diagonal) plus its blur and a small gap
-    q.vx0 = q.vx; q.rad = sz * .648 + (q.blur ? q.blur * 1.5 : 0) + 4;
-    return q;
-  }
-  function room(q, skip) { // the clearance between q and the nearest other block (negative = they touch)
-    var m = 1e9; for (var i = 0; i < B.length; i++) { var o = B[i]; if (o === q || o === skip) continue;
-      var c = Math.hypot(o.x - q.x, o.y - q.y) - o.rad - q.rad; if (c < m) m = c; } return m;
-  }
-  function place(top, skip) { // best of several tries: the spot with the most room around it
-    var best = null, br = -1e9;
-    for (var t = 0; t < 16; t++) { var q = make(top); if (top) q.y = -q.rad - Math.random() * 220; var r = room(q, skip); if (r > br) { br = r; best = q; } if (r > 30) break; }
-    if (br < 0 && top) best.y -= best.rad * 2 - br; // still crowded: start it higher up, out of sight
-    best.ok = br >= 0; return best;
-  }
-  function size() {
-    var oW = W, oH = H;
-    DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth || innerWidth; H = cv.clientHeight || innerHeight;
-    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-    // the box can start small and grow (a side panel opening): stretch the field with it so blocks never bunch on one side
-    if (oW && oH) for (var j = 0; j < B.length; j++) { B[j].x *= W / oW; B[j].y *= H / oH; }
-    var n = Math.round(Math.min(24, Math.max(9, W * H / 65000)));
-    for (var tries = 0; B.length < n && tries < n * 3; tries++) { var q = place(false); if (q.ok) B.push(q); }
-    B.length = Math.min(B.length, n);
-    settle(8);
-  }
-  function settle(rounds) { // push apart any blocks that touch; the one behind slows to the speed of the one ahead
-    for (var k = 0; k < rounds; k++) {
-      var moved = false;
-      for (var i = 0; i < B.length; i++) for (var j = i + 1; j < B.length; j++) {
-        var p = B[i], o = B[j], dx = o.x - p.x, dy = o.y - p.y, d = Math.hypot(dx, dy) || .01, need = p.rad + o.rad;
-        if (d >= need) continue;
-        var push = (need - d) / 2, nx = dx / d, ny = dy / d; moved = true;
-        p.x -= nx * push; p.y -= ny * push; o.x += nx * push; o.y += ny * push;
-        var up = p.y < o.y ? p : o, dn = up === p ? o : p;
-        if (up.cy > dn.cy) { up.cy = dn.cy; up.vx = (up.x < dn.x ? -1 : 1) * Math.max(Math.abs(up.vx), 14); } // slow down, then steer around it
-        if (Math.abs(nx) > .5) { p.vx = -Math.abs(p.vx) * Math.sign(nx || 1); o.vx = Math.abs(o.vx) * Math.sign(nx || 1); }
-      }
-      if (!moved) break;
-    }
-  }
-  function draw(dt) {
-    cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, W, H);
-    for (var i = 0; i < B.length; i++) {
-      var q = B[i];
-      q.cy += (q.vy - q.cy) * Math.min(1, dt * .4); q.vx += (q.vx0 - q.vx) * Math.min(1, dt * .5);
-      q.y += q.cy * dt; q.x += q.vx * dt; q.r += q.vr * dt;
-      if (q.y > H + q.rad + 10 || q.x < -q.rad - 10 || q.x > W + q.rad + 10) B[i] = place(true, q);
-    }
-    settle(3);
-    B.sort(function (a, b) { return a.z - b.z; });
-    for (i = 0; i < B.length; i++) {
-      q = B[i]; var sp = sprite(q.c, q.k, q.blur), f = q.s / 96;
-      cx.save(); cx.globalAlpha = q.a; cx.translate(q.x, q.y); cx.rotate(q.r); cx.scale(f, f);
-      cx.drawImage(sp, -sp.width / 2, -sp.height / 2); cx.restore();
-    }
-  }
-  var last = 0;
-  function loop(ts) { var dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts; draw(dt); requestAnimationFrame(loop); }
-  size(); if (window.ResizeObserver) new ResizeObserver(function () { size(); if (still) draw(0); }).observe(cv); else addEventListener('resize', size);
-  if (still) draw(0); else requestAnimationFrame(loop);
-  document.addEventListener('visibilitychange', function () { last = 0; });
 })();
 </script></body></html>`;
