@@ -1211,7 +1211,7 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 .sync-hosthint.bad{color:#e6a9b2;}
 .sync-hosthint code{font-family:var(--mono);color:#6aa6ff;background:#0c1622;padding:1px 5px;border-radius:4px;font-size:12px;}
 
-/* ---------- Refine Playlist ---------- */
+/* ---------- Prune ---------- */
 .refine-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .refine-quick[hidden]{display:none;}
 #refineStarWrap[hidden]{display:none;}
@@ -1514,6 +1514,9 @@ body.sd-lock .toast.show{z-index:950}
 }
 #sendPanel{container:send/inline-size;}
 #plTools{container:tools/inline-size;}
+/* Phones: the five tool tabs on one row (the Tools label makes way) */
+@container tools (max-width:440px){#plTools .tg-lbl{display:none;}#plTools .tg-tabs{gap:6px;}#plTools .tg-tab{padding:7px 10px;}}
+@container tools (max-width:350px){#plTools .tg-tabs{gap:4px;}#plTools .tg-tab{padding:7px 7px;font-size:13.5px;}}
 /* Save and send or the playlist tools in one of those three columns: the tabs stay on one line, and the On Quest line
    drops the sync time (the device chip above it has it). Wide screens only, so phones keep their own look. */
 @media(min-width:1800px){
@@ -2734,7 +2737,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="list-actions">
             <button class="ghost sm" id="favAddBtn" type="button" hidden title="Add every favorite on your Quest to this playlist"><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Add favorites</button>
             <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
-            <button class="ghost sm" id="sortPlaylistBtn" disabled title="Sort playlist by star rating, ascending - good for warmup → hard">↑ Sort by ★</button>
             <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
             <button class="ghost sm" id="refreshStarsBtn" disabled title="Refresh every map's stars &amp; NPS from BeatLeader - catches rating changes">★ Refresh ratings</button>
             <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
@@ -2764,7 +2766,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button type="button" role="tab" class="tg-tab" data-tg="infoPanel">Info</button>
             <button type="button" role="tab" class="tg-tab" data-tg="coverPanel">Cover</button>
             <button type="button" role="tab" class="tg-tab" data-tg="panelRefine">Prune</button>
-            <button type="button" role="tab" class="tg-tab" data-tg="rampPanel">Warm-up order</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="rampPanel">Warm-up</button>
           </div>
           <div class="tg-body">
           <!-- Playlist Stats -->
@@ -2775,9 +2777,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <div id="statsBody"><p class="feat-empty">Add maps to see your playlist stats.</p></div>
             </div>
           </section>
-            <!-- Refine Playlist -->
+            <!-- Prune -->
           <section class="panel tg-pane" id="panelRefine">
-            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Refine Playlist</h2></div>
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span><h2>Prune</h2></div>
             <div class="panel-sub">Prune the maps already in <b>Your Playlist</b> by your play history or difficulty - handy right after importing a big list. Score-based tools need your BeatLeader profile connected.</div>
             <div class="panel-body">
               <div class="refine-quick" id="refineQuick">
@@ -2824,9 +2826,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               </div>
             </div>
           </section>
-            <!-- Session Ramp -->
+            <!-- Warm-up -->
           <section class="panel tg-pane" id="rampPanel">
-            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Session Ramp</h2></div>
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span><h2>Warm-up</h2></div>
             <div class="panel-sub">Reorder Your Playlist into a smooth difficulty climb, so it plays like a real session instead of a random pile.</div>
             <div class="panel-body">
               <div class="field"><label class="field-label">Order by</label>
@@ -2837,8 +2839,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               </div>
               <div class="feat-lbl">Preview</div>
               <div id="rampPreview"><p class="feat-empty">Add maps to preview the ramp.</p></div>
-              <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply ramp order</button>
-              <button class="ghost sm" id="rampUndoBtn" type="button" hidden style="width:100%;margin-top:8px;">&#8617; Undo ramp</button>
+              <button class="primary" id="rampApplyBtn" type="button" style="width:100%;margin-top:12px;" disabled>&#8597; Apply warm-up</button>
+              <button class="ghost sm" id="rampUndoBtn" type="button" hidden style="width:100%;margin-top:8px;">&#8617; Undo warm-up</button>
             </div>
           </section>
             <!-- Playlist Info -->
@@ -4104,7 +4106,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    'fetchProgress','barFill','fetchProgressText','statusPill','statusText','brandCount',
    'matchCount','basketCount','basketTime','basketUnique','counterMeta',
    'resultCount','playlistCount','resultList','basketList',
-   'addAllBtn','addTopBtn','addTopN','addRandomBtn','fillRuntimeBtn','fillMins','clearResultsBtn','collapseSongs','hideInPlaylist','hideFromBtn','hideFromFile','hideFromInfo','shuffleBtn','sortPlaylistBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
+   'addAllBtn','addTopBtn','addTopN','addRandomBtn','fillRuntimeBtn','fillMins','clearResultsBtn','collapseSongs','hideInPlaylist','hideFromBtn','hideFromFile','hideFromInfo','shuffleBtn','clearBasketBtn','enrichBtn','refreshStarsBtn','staleHint',
    'coverCanvas','coverStyleGrid','coverAccentRow','coverText','coverSubtitle','coverTextPos','coverTextColor','regenCoverBtn',
    'useCustomImage','customFileField','customImageInput','iconLibraryGrid',
    'mTabbar','mResultsBadge','mPlaylistBadge','fxCanvas','fxSlash','topLoadBar','topLoadFill',
@@ -5512,7 +5514,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     for (var i = state.basket.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; }
     toast('Shuffled.', 'ok'); renderBasketArea();
   }
-  function sortBasketByStar() { state.basket.sort(function (a, b) { return (a.stars || 0) - (b.stars || 0); }); toast('Sorted by ★ (warmup → hard).', 'ok'); renderBasketArea(); }
   function moveBasket(key, dir) {
     var i = basketIndex(key); if (i < 0) return; var j = i + dir; if (j < 0 || j >= state.basket.length) return;
     var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; renderBasketArea();
@@ -6003,7 +6004,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var hasResults = state.filtered.length > 0, hasBasket = state.basket.length > 0;
     el.addAllBtn.disabled = !hasResults; el.addTopBtn.disabled = !hasResults; el.addRandomBtn.disabled = !hasResults; el.fillRuntimeBtn.disabled = !hasResults;
     el.clearResultsBtn.disabled = state.raw.length === 0;
-    el.shuffleBtn.disabled = el.sortPlaylistBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
+    el.shuffleBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
     // Fill data / Re-check only make sense once there ARE maps (and something to fill) - hide otherwise.
     var canFill = needsEnrich().length > 0;
     el.enrichBtn.hidden = !canFill; el.enrichBtn.disabled = state.enriching || !canFill;
@@ -6043,7 +6044,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // is unchanged, so the (expensive) Search Results list doesn't need re-rendering.
   function renderBasketArea() { renderBasket(); renderControls(); renderSummary(); renderExport(); featRefresh(); saveSession(); }
 
-  // ---- Session Ramp --------------------------------------------------------
+  // ---- Warm-up (tab) -------------------------------------------------------
   var rampBy = 'stars', rampDir = 'up', rampPrevOrder = null, rampSnapLen = 0;
   function rampMetric(e) { return rampBy === 'nps' ? (e.nps || 0) : (e.stars || 0); }
   function setChipOn(container, chip) { Array.prototype.forEach.call(container.children, function (ch) { ch.classList.remove('on'); }); chip.classList.add('on'); }
@@ -6052,7 +6053,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (rampPrevOrder && state.basket.length !== rampSnapLen) { rampPrevOrder = null; if (el.rampUndoBtn) el.rampUndoBtn.hidden = true; }
     if (el.rampApplyBtn) el.rampApplyBtn.disabled = state.basket.length < 2;
     var vals = state.basket.map(rampMetric).filter(function (v) { return v > 0; });
-    if (vals.length < 2) { box.innerHTML = '<p class="feat-empty">Add rated maps to preview the ramp.</p>'; return; }
+    if (vals.length < 2) { box.innerHTML = '<p class="feat-empty">Add rated maps to preview the warm-up.</p>'; return; }
     vals.sort(function (a, b) { return a - b; }); if (rampDir === 'down') vals.reverse();
     var W = 260, H = 70, mx = 0; vals.forEach(function (v) { if (v > mx) mx = v; }); if (!mx) mx = 1;
     var pts = vals.map(function (v, i) { var x = i / (vals.length - 1) * W; var y = H - v / mx * H; return x.toFixed(1) + ' ' + y.toFixed(1); });
@@ -6067,7 +6068,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (state.basket.length < 2) return;
     rampPrevOrder = state.basket.slice(); rampSnapLen = state.basket.length;
     state.basket.sort(function (a, b) { var d = rampMetric(a) - rampMetric(b); return rampDir === 'down' ? -d : d; });
-    toast('Ramped by ' + (rampBy === 'nps' ? 'NPS' : 'stars') + ' (' + (rampDir === 'up' ? 'warmup \u2192 peak' : 'peak \u2192 cooldown') + ').', 'ok');
+    toast('Warm-up applied by ' + (rampBy === 'nps' ? 'NPS' : 'stars') + ' (' + (rampDir === 'up' ? 'warmup \u2192 peak' : 'peak \u2192 cooldown') + ').', 'ok');
     if (el.rampUndoBtn) el.rampUndoBtn.hidden = false;
     track('session-ramp');
     renderBasketArea();
@@ -12999,7 +13000,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.fillRuntimeBtn.addEventListener('click', fillToRuntime);
     el.shuffleBtn.addEventListener('click', shuffleBasket);
     var favAddBtn = document.getElementById('favAddBtn'); if (favAddBtn) favAddBtn.addEventListener('click', lqFavAddAll);
-    el.sortPlaylistBtn.addEventListener('click', sortBasketByStar);
     if (el.rampByChips) el.rampByChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-by]'); if (!c) return; rampBy = c.getAttribute('data-ramp-by'); setChipOn(el.rampByChips, c); renderRampPreview(); });
     if (el.rampDirChips) el.rampDirChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-dir]'); if (!c) return; rampDir = c.getAttribute('data-ramp-dir'); setChipOn(el.rampDirChips, c); renderRampPreview(); });
     if (el.rampApplyBtn) el.rampApplyBtn.addEventListener('click', applyRamp);

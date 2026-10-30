@@ -58,7 +58,7 @@ Already know the maps you want? Skip searching. Paste one or more **BSR codes**,
 - Add one at a time, **Add all**, **Add top N**, or **⚄ Random** (on phones these live under **+ Add** in the Search Results header)
 - **Name** it right at the top of Your Playlist. A new list you haven't named shows a suggested name from its maps (like "Unplayed 5.3-8.3★ (Oct 27)"), and the first download or send keeps that name so it doesn't change later. Playlists you open from a file, the library, a share link or your headset always keep their own name.
 - Exported playlists say they were built with Playlist Studio and link back to it in the description (only while the description is the automatic one)
-- **Reorder** (▲▼), remove, **Shuffle**, **Sort by ★** (warmup → hard)
+- **Reorder** (▲▼), remove, **Shuffle**, and **Warm-up** in Tools to order it easy → hard
 - **Undo and redo** any change to Your Playlist (adds, removes, reorders, shuffles, sorts, imports) with the **Undo** / **Redo** buttons or **Ctrl+Z** / **Ctrl+Y**
 - **Clear playlist** empties the list and resets its name, cover and sync to a fresh start - with a one-tap **Undo clear** if you didn't mean it (Ctrl+Z brings the name and cover back too)
 - **Clear results** - a separate button that empties the results and resets your filters to defaults (your playlist is kept)
@@ -203,7 +203,7 @@ Covers come from the playlists the headset shares: Studio reads each one once, k
 - **BeatLeader enrichment** - `↻ Fill data` fills in stars / NPS / duration / cover for imported songs by hash; `★ Re-check` re-checks every song in the playlist to catch rating recalcs
 
 ### Refine an imported (or built) playlist
-Import a big list, then prune it down in place - no spreadsheet, no re-adding maps one by one. The **Refine Playlist** panel runs bulk actions on whatever's in **Your Playlist**, using the same play-history definitions as the search filters.
+Import a big list, then prune it down in place - no spreadsheet, no re-adding maps one by one. The **Prune** tab runs bulk actions on whatever's in **Your Playlist**, using the same play-history definitions as the search filters.
 
 - **Quick actions** - one tap each: **Remove played**, **Remove FC'd**, **Keep unplayed**, **Keep near-FC**. "Import my playlist, drop everything I've already played, re-export" is a single click.
 - **Any criterion, two directions** - pick a criterion and either **Remove matching** or **Keep only matching**:
@@ -219,9 +219,9 @@ Typical uses: refresh a grind list by dropping everything you've now FC'd, thin 
 
 A collapsible **Playlist Stats** panel gives you a quick read on the shape of whatever is in Your Playlist: song count, total runtime, average stars, average PP and mapper count, plus a star-rating histogram, an NPS spread curve, and a tech-vs-speed balance bar. All computed in your browser from the maps you have added, with no extra calls.
 
-### Session Ramp
+### Warm-up
 
-**Session Ramp** reorders Your Playlist into a smooth difficulty climb, so a set plays like a real practice session instead of a random pile. Order by stars or NPS, choose warmup-to-peak or peak-to-cooldown, see a live preview of the curve, and apply it in one tap.
+**Warm-up** reorders Your Playlist into a smooth difficulty climb, so a set plays like a real practice session instead of a random pile. Order by stars or NPS, choose warmup-to-peak or peak-to-cooldown, see a live preview of the curve, and apply it in one tap.
 
 ### In-game sync (optional)
 Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button - no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** - it lives under **Hosted link** in the **Share** tab of Save and send, and does nothing unless you set it up.
