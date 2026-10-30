@@ -1505,7 +1505,7 @@ async function gcAllStats(env, range, fresh, tz) {
         const f = await gcStats(env, range, fresh, "", tz);
         sites.push({ key, code: cfg.code, visitors: f.visitors, prevVisitors: f.prevVisitors, days: f.days, pages: (f.pages || []).slice(0, 8),
           locations: (f.locations || []).map((c) => ({ id: c.id, name: c.name, count: c.count })),
-          players: (f.players || []).map((x) => ({ name: x.name, id: x.id, avatar: x.avatar || "", lastT: x.lastT || 0, last: x.last || "", me: !!x.me })) });
+          players: (f.players || []).map((x) => ({ name: x.name, id: x.id, avatar: x.avatar || "", lastT: x.lastT || 0, last: x.last || "", first: x.first || "", me: !!x.me })) });
       } catch (x) {
         if (x && x.message === "gc-auth") throw x;
         sites.push({ key, code: cfg.code, error: "down", visitors: 0, prevVisitors: null, days: [], pages: [], locations: [], players: [] });
@@ -2068,7 +2068,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
         var fresh = had && glowOn() && !o, kept = had && o && String(o.g) === String(glowGen);
         if (fresh || kept) {
           e.classList.add('chg-new'); if (fresh) e.classList.add('chg-ring'); e.setAttribute('data-mg', glowGen);
-          var nm = e.querySelector('span:not(.pav2)'); if (nm) nm.insertAdjacentHTML('afterend', '<b class="newtag" title="New since the last refresh">NEW</b>');
+          var nm = e.querySelector('span:not(.pav2)'); if (nm && !e.querySelector('.newtag')) nm.insertAdjacentHTML('afterend', '<b class="newtag" title="New since the last refresh">NEW</b>');
         }
         return;
       }
@@ -2720,7 +2720,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
       pls.slice(0, 40).map(function (p) {
         var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
-        return '<a class="pchip" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
+        return '<a class="pchip' + (p.isNew ? ' chg-new' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
   }
   function renderAll() {
@@ -2748,10 +2748,11 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
         if (total) stats.push(['Share', Math.round((hero.visitors || 0) / total * 100) + '%', '']);
       }
       var when = { today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days', all: 'since you started counting' }[d.range] || '';
-      var strip = pStrip(hero.players || [], 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
+      var today = dayKey(Date.now() / 1000);   // new today: first ever connect (players) or headset linked (Studio Sync) is today
+      var strip = pStrip((hero.players || []).map(function (x) { return Object.assign({}, x, { isNew: x.first === today ? 'First connected today' : '' }); }), 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
       if (sync && sync.users) {
         var from = d.range === 'all' ? 0 : Date.parse(d.start + 'T00:00:00') / 1000 || 0;
-        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, avatar: u.avatar, lastT: u.last }; });
+        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
         strip += pStrip(su, 'Studio Sync user', 'Studio Sync users', 'synced a headset ' + when, 'sync', 'Studio Sync');
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
