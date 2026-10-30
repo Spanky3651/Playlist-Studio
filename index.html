@@ -1390,8 +1390,8 @@ body.sd-lock{overflow:hidden}
 .sd.ssa iframe{flex:1;width:100%;border:0;background:#000}
 .sd.ssa a.sd-link{text-decoration:none}
 .sd.ssa .ssa-logo{width:30px;height:30px;border-radius:8px;flex:none;box-shadow:0 0 12px rgba(47,123,255,.25)}
-/* On phones Studio stats rises from the bottom as a sheet; drag the top bar down to close it. */
-@media(max-width:720px){.sd.ssa{top:auto;left:0;right:0;width:100vw;height:92vh;height:92dvh;border-left:0;border-top:1px solid var(--border-2);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -30px 60px -20px rgba(0,0,0,.9);transform:translateY(102%)}.sd.ssa.open{transform:none}.sd.ssa.drag{transition:none}.sd.ssa .sd-head{position:relative;padding-top:18px;touch-action:none}.sd.ssa .sd-head::before{content:"";position:absolute;top:7px;left:50%;width:44px;height:5px;margin-left:-22px;border-radius:3px;background:#33415c}.sd.ssa .sd-x{display:none}}
+/* On phones Player stats and Studio Stats rise from the bottom as a sheet; drag the top bar down to close it. */
+@media(max-width:720px){.sd{top:auto;left:0;right:0;width:100vw;height:92vh;height:92dvh;border-left:0;border-top:1px solid var(--border-2);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -30px 60px -20px rgba(0,0,0,.9);transform:translateY(102%)}.sd.open{transform:none}.sd.drag{transition:none}.sd .sd-head{position:relative;padding-top:18px;touch-action:none}.sd .sd-head::before{content:"";position:absolute;top:7px;left:50%;width:44px;height:5px;margin-left:-22px;border-radius:3px;background:#33415c}.sd .sd-x{display:none}}
 .sv-hero{position:relative;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--panel)}
 .sv-hero .cvr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22}
 .sv-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--panel) 20%,rgba(11,14,20,.5) 65%,var(--panel));pointer-events:none}
@@ -4604,6 +4604,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
     svEl('sdClose').addEventListener('click', svClose);
     svEl('sdBack').addEventListener('click', svClose);
+    // Phones: pull the sheet down by its top bar to close it, like Studio Stats.
+    var sp = svEl('sdPanel'), sh = sp && sp.querySelector('.sd-head'), sy0 = null, sdy = 0;
+    if (sh) {
+      sh.addEventListener('touchstart', function (e) { if (!window.matchMedia('(max-width:720px)').matches || (e.target.closest && e.target.closest('a,button'))) return; sy0 = e.touches[0].clientY; sdy = 0; sp.classList.add('drag'); }, { passive: true });
+      sh.addEventListener('touchmove', function (e) { if (sy0 === null) return; sdy = Math.max(0, e.touches[0].clientY - sy0); sp.style.transform = 'translateY(' + sdy + 'px)'; }, { passive: true });
+      var sEnd = function () { if (sy0 === null) return; sy0 = null; sp.classList.remove('drag'); sp.style.transform = ''; if (sdy > 90) svClose(); };
+      sh.addEventListener('touchend', sEnd); sh.addEventListener('touchcancel', sEnd);
+    }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && svEl('sdPanel').classList.contains('open')) svClose(); });
     svEl('sdShare').addEventListener('click', function () {
       var url = svShareUrl();
