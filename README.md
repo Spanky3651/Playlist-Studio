@@ -179,6 +179,7 @@ From then on:
 - **+ adds to**: above Search Results, pick one of your headset playlists and **+** sends a map straight into it (**✓** takes it out), no Edit needed. On a computer you can also drag a result onto a headset playlist. Pick **Your Playlist** to go back to building as usual.
 - The **•••** menu also has **Rename**, **Download .bplist** (the newest copy, as a backup or to share) and, with more than one headset linked, **Copy to** the other headset.
 - A playlist that carries a sync link (its `syncURL`, the one PlaylistManager's in-game **Sync** button uses) gets **Sync from** *its site* at the top of its **•••** menu. Studio reads the link and sends that version to the headset, showing how many songs were added and removed. The old version is kept as a backup, so **Restore a backup** brings it back. Only https links work.
+- **Add a sync link…** (or **Change sync link…** when it has one) in the same menu writes a link into a playlist that's already on the headset, or takes it off with **Remove link**.
 - **Favorites** (Studio Sync 0.9.2 and later) is pinned above a headset's playlists when the mod shares them. **Open** lists your in-game favorites with your best score under each song (accuracy, pp and when you played it; misses and leaderboard rank on unranked maps; or Not played yet) and a heart on each to unfavorite or favorite it. The list's sort menu covers the song (name, artist, mapper), your scores (best accuracy, most pp, last played, not FC'd first, not played first) and the map (stars, longest, highest BPM, BeatSaver rating, newest upload, not downloaded first). The hearts on songs in Your Playlist, in Search Results and in a headset playlist's song list do the same for that headset. Changes go one song at a time, so hearts changed in game and in Studio both stay. Its **•••** menu has **Show in Search Results** (every filter and the Your plays chips then work on them), **Make a playlist from favorites** (or only the ones not played yet, not FC'd yet or ranked), **Cancel the waiting changes**, **Clean up** (unfavorites songs that aren't downloaded or are gone from BeatSaver, after asking), **Get the missing songs**, **Copy favorites to** another headset (adds only), **Download favorites .bplist** and **Restore from a backup**. In Search Results, the **♥ Favorites** chip in the Your plays bar shows only your favorites (and stacks with the other chips), and **Favorites** in the sort puts them first. **Prune** can keep or remove favorites from Your Playlist, and **Stats** counts them. **Add favorites** above Your Playlist adds them all to the list you're building, and a headset playlist's **•••** menu has **Add all songs to favorites**. If the game is reset and the favorites come back empty, Studio offers to restore its last copy. When favorites aren't shared (the **Favorites** switch under **Sharing...** in the mod), the hearts and these options stay hidden.
 - **Edit** opens a headset playlist in Your Playlist. Whatever you're editing saves itself: changes go to the library and to the headset a couple of seconds after you stop, and the headset replaces its copy on the next sync, keeping a backup.
 - Nothing gets replaced by surprise. If the playlist changes somewhere else while you edit it (in game, in another browser, or from a script using your library key), Studio pauses saving and asks: use the newer version, or keep yours. A playlist with a change still on its way to the headset opens as that change.
@@ -223,17 +224,17 @@ A collapsible **Playlist Stats** panel gives you a quick read on the shape of wh
 **Session Ramp** reorders Your Playlist into a smooth difficulty climb, so a set plays like a real practice session instead of a random pile. Order by stars or NPS, choose warmup-to-peak or peak-to-cooldown, see a live preview of the curve, and apply it in one tap.
 
 ### In-game sync (optional)
-Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button - no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** - it lives in its own **In-Game Sync** panel and does nothing unless you turn it on.
+Keep a playlist you host online, and refresh it inside Beat Saber with [PlaylistManager](https://github.com/rithik-b/PlaylistManager)'s **Sync** button - no re-importing. This writes a `syncURL` into the exported file's `customData`; when the mod sees it, the playlist gets a Sync button that re-downloads the file from your address. **Off by default** - it lives under **Hosted link** in the **Share** tab of Save and send, and does nothing unless you set it up.
 
 - **Your own host, or Studio's.** Paste your own address and nothing is uploaded - the app only writes the address you paste. Or hit **Host this playlist** and Studio keeps a copy for you and fills in the address (see *Hosted sync* below).
-- **One box** - turn the panel on and paste the URL your `.bplist` will live at (e.g. `https://mysite.com/playlists/mix.bplist`). Whatever you type goes straight into `customData.syncURL`; a live hint confirms it's a valid link.
+- **One box** - open **Use my own host instead** under Hosted link and paste the URL your `.bplist` will live at (e.g. `https://mysite.com/playlists/mix.bplist`). Whatever you type goes straight into `customData.syncURL`; a live hint confirms it's a valid link.
 - **Round-trips on import** - open a `.bplist` that already has a `syncURL` and the box fills itself back in.
 - Your URL is remembered in your browser, so re-publishing is just: edit → export → re-upload to the same spot.
 
 > The URL must point at the **raw file** (not a web page) and stay constant. If you move or rename the hosted file later, existing copies stop syncing - keep the same path and just overwrite the file to push an update.
 
 #### Hosted sync
-No website? Turn on **In-Game Sync** and hit **Host this playlist**. Studio stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
+No website? Open the **Share** tab and hit **Host this playlist** under Hosted link. Studio stores a copy on the Playlist Studio relay and writes its address into the file. Load the file on your headset once, then the in-game **Sync** button pulls every update. **Update hosted copy** pushes changes and **Stop hosting** deletes it. Each hosted playlist has a private edit key kept in your browser (and in library backups). Lists expire 180 days after their last update unless a headset keeps syncing them.
 
 ### Share by link
 
@@ -282,7 +283,7 @@ With a cable: switch the Export panel to **Quest** and hit **Send to Quest**. Pl
 
 ### Keeping a playlist in sync
 
-Want the playlist to update itself in-game whenever you change it? Turn on the **In-Game Sync** panel before exporting (see *In-game sync* above):
+Want the playlist to update itself in-game whenever you change it? Set up a **Hosted link** in the **Share** tab before exporting (see *In-game sync* above):
 
 No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 

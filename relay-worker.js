@@ -2353,6 +2353,8 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'lq-restore': ['Studio Sync', 'Restored a playlist', 'Brought back a deleted or older playlist'],
     'lq-copy': ['Studio Sync', 'Copied to another headset', 'Copied a playlist to their other Quest'],
     'lq-synclink': ['Studio Sync', 'Sync from link', 'Brought a headset playlist up to date from its sync link'],
+    'lq-synclink-set': ['Studio Sync', 'Set a sync link', 'Added or changed the sync link on a headset playlist'],
+    'lq-synclink-remove': ['Studio Sync', 'Removed a sync link', 'Took the sync link off a headset playlist'],
     'lq-download': ['Studio Sync', 'Downloaded from headset', 'Downloaded a headset playlist as a file'],
     'lq-select': ['Studio Sync', 'Select mode', 'Selected several headset playlists'],
     'lq-hide': ['Studio Sync', 'Hid the panel', 'Hid the Studio Sync panel'],
@@ -2584,7 +2586,7 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
     'play-filter': 'Search Results › Your plays', 'results': 'Search Results', 'export': 'Top right › Export .bplist', 'playlist': 'Your Playlist',
     'playlist-tools': 'Your Playlist › Shuffle, Sort, Refresh ratings, Undo', 'stats-tab': 'Your Playlist › Tools › Stats', 'prune-tab': 'Your Playlist › Tools › Prune',
     'ramp-tab': 'Your Playlist › Tools › Warm-up order', 'info-tab': 'Your Playlist › Tools › Info', 'cover-tab': 'Your Playlist › Tools › Cover',
-    'download-tab': 'Save and send › Download', 'quest-usb': 'Save and send › Download › Quest (USB)', 'sync-tab': 'Save and send › Sync link',
+    'download-tab': 'Save and send › Download', 'quest-usb': 'Save and send › Download › Quest (USB)', 'sync-tab': 'Save and send › Share › Hosted link',
     'share-tab': 'Save and send › Share link', 'share-copy': 'Save and send › Share link › Copy link', 'library-tab': 'Save and send › Library',
     'save': 'Save and send › Library › Save playlist', 'combine': 'Save and send › Library › Combine playlists', 'gallery': 'Save and send › Library › Browse the gallery',
     'backup': 'Save and send › Library › Back up library', 'studio-sync': 'Save and send › Studio Sync', 'lq-link': 'Save and send › Studio Sync › Setup'

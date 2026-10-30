@@ -764,6 +764,10 @@ body.anim .lq-added{animation:lqfade 4s ease-out both;}
 .lq-mi{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:8px;background:transparent;font-size:14px;color:#e6edf6;font-weight:500;text-align:left;white-space:normal;}
 .lq-mi:hover{background:#13233b;box-shadow:none;border:0;}
 .lq-mi svg{width:16px;height:16px;color:var(--muted);flex:none;}
+.lq-sled{display:flex;flex-direction:column;gap:8px;border-color:#23406b;background:#0b1424;}
+.lq-sledh{display:flex;align-items:center;gap:7px;font-size:14px;color:#e9edf5;}.lq-sledh svg{width:14px;height:14px;color:#8fbaff;flex:none;}
+.lq-sled input{font-size:13px;}.lq-slnote{font-size:12px;color:#7f8a9c;margin:0;}
+.lq-sled .lq-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}.lq-sled .sp{flex:1;}
 .lq-mi .lq-m{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap;}
 .lq-mi.danger,.lq-mi.danger svg{color:#ff8597;}
 .lq-hr{height:1px;background:#1f3456;margin:5px 4px;}
@@ -1190,6 +1194,19 @@ a.credit .c3{font-family:var(--mono);font-size:11px;color:var(--red);}
 /* ---------- In-Game Sync ---------- */
 #syncBody[hidden]{display:none;}
 .sync-hosthint{font-size:13px;color:var(--muted);line-height:1.55;margin:8px 0 0;}
+.sh-pane{display:flex;flex-direction:column;gap:12px;}
+.sh-card{border:1px solid var(--border-2);border-radius:12px;padding:12px 14px;background:#070b12;}
+.sh-card.host{border-color:#23406b;background:linear-gradient(180deg,#081426,#060c16);}
+.sh-h{display:flex;align-items:center;gap:8px;font-size:14.5px;color:#fff;flex-wrap:wrap;}.sh-h svg{width:16px;height:16px;color:#8fbaff;flex:none;}
+.sh-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid var(--border-2);color:var(--muted);}
+.sh-p{font-size:13px;color:var(--muted);margin:6px 0 10px;line-height:1.5;}
+.sh-row{display:flex;gap:8px;align-items:center;}.sh-row input{flex:1;min-width:0;font-size:13px;}
+.sh-info{display:block;font-family:var(--mono);font-size:11px;margin-top:6px;}.sh-info:empty{display:none;}
+.sh-card .pub-box,.panel-body .sh-card .pub-box{margin:0;padding:0;border:0;background:none;}
+.sh-card .pub-info{margin-top:10px;word-break:normal;}.sh-card .pub-info .sh-row{margin-bottom:6px;}
+.sh-own{margin-top:10px;font-size:13px;}.sh-own summary{cursor:pointer;color:#8fbaff;font-weight:600;}.sh-own[open] summary{margin-bottom:8px;}.sh-own[hidden]{display:none;}
+.sh-card .pub-box[hidden] ~ .sh-own summary{display:none;}
+.sh-imp .feat-lbl{margin:2px 0 6px;}
 .sync-hosthint.ok{color:#8fe6c4;}
 .sync-hosthint.bad{color:#e6a9b2;}
 .sync-hosthint code{font-family:var(--mono);color:#6aa6ff;background:#0c1622;padding:1px 5px;border-radius:4px;font-size:12px;}
@@ -2893,8 +2910,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="tg-tabs" role="tablist" aria-label="Save and send">
             <button type="button" role="tab" class="tg-tab" data-tg="exportPanel">Download</button>
             <button type="button" role="tab" class="tg-tab" data-tg="lqPanel" hidden>Studio Sync</button>
-            <button type="button" role="tab" class="tg-tab" data-tg="syncPanel">Sync link</button>
-            <button type="button" role="tab" class="tg-tab" data-tg="sharePanel">Share link</button>
+            <button type="button" role="tab" class="tg-tab" data-tg="sharePanel">Share</button>
             <button type="button" role="tab" class="tg-tab" data-tg="libraryPanel">Library</button>
           </div>
           <div class="tg-body">
@@ -2981,35 +2997,33 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             </div>
           </section>
             <!-- In-Game Sync -->
-          <section class="panel tg-pane" id="syncPanel">
-            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h2>In-Game Sync</h2>
-              <label class="switch head-switch"><input type="checkbox" id="syncEnable" /><span class="track"></span><span class="switch-lbl">Enable</span></label>
-            </div>
-            <div class="panel-sub">Optional. Bakes a <code>syncURL</code> into the <code>.bplist</code> so PlaylistManager's in-game <b>Sync</b> button re-downloads the playlist. Turn it on, then let Studio host the file or paste your own host's address. With your own host nothing is uploaded - Studio just writes the address you paste.</div>
-            <div class="panel-body" id="syncBody" hidden>
-              <div class="pub-box" id="pubBox" hidden>
-                <div class="pub-head"><b>Hosted sync</b><span class="pub-badge">no hosting needed</span></div>
-                <p>Studio keeps a copy of this playlist online and writes its address into the file. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then the in-game <b>Sync</b> button pulls every update. On Quest, the <a href="#studio-sync" data-ss-open="sync">Studio Sync mod</a> skips that first step.</p>
-                <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
-                <div class="pub-info" id="pubInfo"></div>
-              </div>
-              <div class="pub-or" id="pubOr">or use your own host</div>
-              <div class="field"><label class="field-label">Sync URL <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
-                <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
-                <p class="sync-hosthint" id="syncHint">Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.</p>
-              </div>
-            </div>
-          </section>
-            <!-- Share by link -->
+          <!-- Share: a link that carries the maps, or a hosted link that stays up to date (the playlist's sync link) -->
           <section class="panel tg-pane" id="sharePanel">
-            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share Playlist</h2></div>
-            <div class="panel-sub">Pack this playlist into a link. No hosting, no account. Anyone who opens it imports the maps instantly, so it is great for tournament pools and sending a set to a friend.</div>
-            <div class="panel-body">
-              <div class="field"><label class="field-label">Your share link</label>
-                <input type="text" id="shareLink" readonly placeholder="Add maps to build a share link" /></div>
-              <div class="preset-row"><button class="ghost sm" id="shareCopyBtn" disabled>&#8690; Copy link</button><span class="muted" id="shareInfo" style="font-family:var(--mono);font-size:11px;"></span></div>
-              <div class="feat-lbl" style="margin-top:14px;">Import a shared playlist</div>
-              <div class="preset-row"><input type="text" id="shareImportInput" placeholder="Paste a share link or code…" /><button class="ghost sm" id="shareImportBtn">Import</button></div>
+            <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share</h2></div>
+            <div class="panel-body sh-pane">
+              <div class="sh-card">
+                <div class="sh-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg><b>Share link</b><span class="sh-tag">one-time copy</span></div>
+                <p class="sh-p">Packs the maps into the link itself. No hosting, no account. Whoever opens it gets the playlist as it is right now, so it's great for tournament pools and sending a set to a friend.</p>
+                <div class="sh-row"><input type="text" id="shareLink" readonly placeholder="Add maps to build a share link" /><button class="ghost sm" id="shareCopyBtn" disabled>&#8690; Copy</button></div>
+                <span class="muted sh-info" id="shareInfo"></span>
+              </div>
+              <div class="sh-card host" id="syncCard">
+                <div class="sh-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg><b>Hosted link</b><span class="pub-badge" id="pubBadge">stays up to date</span></div>
+                <label class="switch" hidden><input type="checkbox" id="syncEnable" /></label>
+                <div class="pub-box" id="pubBox" hidden>
+                  <p class="sh-p" id="pubNote">Studio keeps a copy online and writes its address into the file as its sync link. Get the file onto your headset once (Download<span data-needs-usb> or Send to Quest</span>), then PlaylistManager's in-game <b>Sync</b> pulls every update you host. On Quest, the <a href="#studio-sync" data-ss-open="sync">Studio Sync mod</a> skips that first step, and its <b>Sync from</b> uses the same link.</p>
+                  <div class="pub-actions"><button type="button" class="primary" id="pubBtn" disabled>&#9729; Host this playlist</button><button type="button" class="ghost sm danger" id="pubStopBtn" hidden>Stop hosting</button></div>
+                  <div class="pub-info" id="pubInfo"></div>
+                </div>
+                <details class="sh-own" id="syncOwn"><summary>Use my own host instead</summary>
+                  <div id="syncBody"><div class="field"><label class="field-label">Sync link <span class="info" data-tip="Goes straight into the file's customData.syncURL. Paste the address your .bplist will live at, upload the exported file there, and import it once - the in-game Sync button then refreshes it from that address whenever you update the file.">i</span></label>
+                    <input type="text" id="syncUrl" placeholder="https://mysite.com/playlists/mix.bplist" />
+                    <p class="sync-hosthint" id="syncHint">The address your <code>.bplist</code> will live at. Studio only writes it into the file; you upload the file there yourself. It must serve the raw file, not a web page, and stay the same.</p>
+                  </div></div>
+                </details>
+              </div>
+              <div class="sh-imp"><div class="feat-lbl">Import a shared playlist</div>
+                <div class="preset-row"><input type="text" id="shareImportInput" placeholder="Paste a share link or code…" /><button class="ghost sm" id="shareImportBtn">Import</button></div></div>
             </div>
           </section>
             <!-- Playlist Library -->
@@ -6507,21 +6521,28 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function getSyncUrl() { return el.syncEnable.checked ? buildSyncUrl() : ''; }
   function updateSyncUI() {
     var on = el.syncEnable.checked, raw = el.syncUrl.value.trim(), hint = el.syncHint;
-    el.syncBody.hidden = !on;
+    syncOwnUI();
     if (!on || !raw) { hint.className = 'sync-hosthint'; hint.innerHTML = 'Paste the address your <code>.bplist</code> will live at. It must serve the raw file, not a web page, and stay constant - if you move or rename it later, existing copies stop syncing.'; }
     else if (isHttpUrl(raw)) { hint.className = 'sync-hosthint ok'; hint.innerHTML = 'Ready - this URL is written into <code>customData.syncURL</code> on export.'; }
     else { hint.className = 'sync-hosthint bad'; hint.textContent = "That doesn't look like a full http(s) URL."; }
     saveSyncCfg();
   }
+  // "Use my own host instead": hidden while Studio hosts this playlist (the link is the hosted one), open when a link of your own is set.
+  function syncOwnUI() {
+    var own = document.getElementById('syncOwn'), box = document.getElementById('pubBox'); if (!own) return;
+    var raw = el.syncUrl.value.trim(), p = state.publish;
+    own.hidden = !!(p && raw === p.url);
+    if (!own.hidden && (raw || (box && box.hidden && state.pubAvailable === false))) own.open = true;   // no hosting: your own host is the only way, so it's open
+  }
   function saveSyncCfg() { try { localStorage.setItem(SYNC_KEY, JSON.stringify({ enabled: !!el.syncEnable.checked, url: el.syncUrl.value.trim() })); } catch (e) {} }
   function loadSyncCfg() {
     var c; try { c = JSON.parse(localStorage.getItem(SYNC_KEY) || 'null'); } catch (e) { c = null; }
-    if (c) { el.syncEnable.checked = !!c.enabled; el.syncUrl.value = c.url || ''; }
+    if (c) { el.syncUrl.value = c.enabled ? c.url || '' : ''; el.syncEnable.checked = !!el.syncUrl.value.trim(); }
     updateSyncUI();
   }
   function bindSyncUI() {
     el.syncEnable.addEventListener('change', function () { updateSyncUI(); toast(el.syncEnable.checked ? (state.pubAvailable ? 'In-game Sync on - host it with Studio or paste your own URL.' : 'In-game Sync on - paste your host URL.') : 'In-game Sync off.', 'ok'); });
-    el.syncUrl.addEventListener('input', updateSyncUI);
+    el.syncUrl.addEventListener('input', function () { el.syncEnable.checked = !!el.syncUrl.value.trim(); updateSyncUI(); });
   }
 
   // ---- refine playlist (prune the basket) -----------------------------------
@@ -6999,9 +7020,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     btn.disabled = !state.basket.length || !!state.pubBusy;
     btn.innerHTML = state.pubBusy ? 'Working&hellip;' : (p ? '&#9729; Update hosted copy' : '&#9729; Host this playlist');
     stop.hidden = !p;
-    var or = document.getElementById('pubOr'); if (or) or.textContent = p ? 'address written into the file' : 'or use your own host';
-    info.innerHTML = p ? 'Hosted at <code>' + esc(p.url) + '</code>' + (p.at ? ' &middot; updated ' + agoStr(Math.floor(p.at / 1000)) : '') +
-      '<br>Loaded this playlist on your headset before hosting it? ' + (window.QUEST_USB ? 'Download or send it once more' : 'Download it and load it once more') + ' so it knows this address.' : '';
+    var badge = document.getElementById('pubBadge'); if (badge) badge.textContent = p ? 'on' + (p.at ? ' \u00b7 updated ' + agoStr(Math.floor(p.at / 1000)) : '') : 'stays up to date';
+    var note = document.getElementById('pubNote'); if (note) note.hidden = !!p;
+    info.innerHTML = p ? '<div class="sh-row"><input type="text" readonly value="' + esc(p.url) + '" aria-label="Hosted link" /><button type="button" class="ghost sm" id="pubCopy">&#8690; Copy</button></div>' +
+      'This playlist\u2019s sync link. After you change the playlist, press <b>Update hosted copy</b>, then in-game Sync pulls it. Loaded it on your headset before hosting it? ' + (window.QUEST_USB ? 'Download or send it once more' : 'Download it and load it once more') + ' so it knows this address.' : '';
+    var pc = document.getElementById('pubCopy');
+    if (pc) pc.onclick = function () { var v = p.url; var ok = function () { toast('Hosted link copied.', 'ok'); }; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(ok, function () { toast(v, 'ok'); }); else toast(v, 'ok'); };
+    syncOwnUI();
     if (typeof lqRender === 'function') lqRender();
   }
   function applyPublishToSync() {
@@ -8109,6 +8134,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return '';
   }
   var LQ_ICO = {
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
     funnel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg>',
     broom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6M4 20l8-8M9 21l-5-5 5-2 4 4z"/></svg>',
@@ -8940,7 +8966,33 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Sync button uses) can be brought up to date from Studio. Studio reads the link (straight from the site when it
   // allows that, otherwise through the Worker) and sends that version to the headset, which keeps the old one as a backup.
   var lqSyncNote = {};
-  function lqSyncUrlOf(pl) { var u = pl && pl.customData && pl.customData.syncURL; u = typeof u === 'string' ? u.trim() : ''; return /^https:\/\/[^\s]+$/i.test(u) ? u : ''; }
+  function lqSyncUrlOf(pl) { var u = pl && pl.customData && pl.customData.syncURL; u = typeof u === 'string' ? u.trim() : ''; return /^https?:\/\/[^\s]+$/i.test(u) ? u : ''; }
+  // Change sync link... / Add a sync link... in the menu: a small editor under the row writes the link into the playlist on the headset.
+  function lqSlEditHtml(d, it, id) {
+    var cur = lqSyncOf(d.id, it.k), name = it.title || it.file;
+    return '<div class="lq-confirm lq-sled"><div class="lq-sledh">' + lqIco('link') + '<b>Sync link for \u201c' + esc(name) + '\u201d</b></div>' +
+      '<input type="text" id="lqSlIn" value="' + esc(cur) + '" placeholder="https://mysite.com/playlists/mix.bplist" aria-label="Sync link" />' +
+      '<p class="lq-slnote">Written into the playlist on ' + esc(lqDevName(d.id)) + ' on its next sync. PlaylistManager\u2019s in-game Sync and Sync from here both read it. Leave it empty to take the link off.</p>' +
+      '<div class="lq-row">' + lqBtn('Save', 'data-lq-slsave="' + id + '"', 'primary sm') + lqBtn('Cancel', 'data-lq-sledit=""') + '<span class="sp"></span>' + (cur ? lqBtn('Remove link', 'data-lq-slrm="' + id + '"', 'ghost sm danger') : '') + '</div></div>';
+  }
+  function lqSlSave(dev, k, url) {
+    url = String(url || '').trim(); var t = lqTitleOf(dev, k), key = dev + '|' + k;
+    if (url && !/^https?:\/\/[^\s]+$/i.test(url)) { toast('A sync link has to be a full http(s) address.', 'warn'); return; }
+    if (lqIsEditing(dev, k)) { toast('\u201c' + t + '\u201d is open in Your Playlist. Close it first, then change its sync link.', 'warn'); return; }
+    lqChange(dev, k, function (pl) {
+      var cd = pl.customData && typeof pl.customData === 'object' ? pl.customData : null, was = cd && typeof cd.syncURL === 'string' ? cd.syncURL.trim() : '';
+      if (was === url) return false;
+      if (url) { pl.customData = Object.assign({}, cd || {}, { syncURL: url }); }
+      else { delete cd.syncURL; }
+      return true;
+    }).then(function (r) {
+      state.lq.slEdit = null;
+      var tc = lqThumbStore()[key]; if (tc) { tc.su = lqSyncUrlOf(r.pl); lqThumbSave(); }
+      if (r.same) toast(url ? '\u201c' + t + '\u201d already has that sync link.' : '\u201c' + t + '\u201d has no sync link.', 'ok');
+      else { toast((url ? 'Sync link saved for \u201c' + t + '\u201d.' : 'Took the sync link off \u201c' + t + '\u201d.') + ' ' + lqDevName(dev) + ' gets it on its next sync, and the old version is kept as a backup.', 'ok'); track(url ? 'lq-synclink-set' : 'lq-synclink-remove'); }
+      lqRender();
+    }, function (err) { toast((err && err.message) || 'Couldn\u2019t change the sync link.', 'warn'); });
+  }
   function lqSyncOf(dev, k) { var key = dev + '|' + k, pc = lqPeekCache[key], c = lqThumbStore()[key]; return (pc && pc.pl ? lqSyncUrlOf(pc.pl) : '') || (c && c.su) || ''; }
   function lqHostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return 'its link'; } }
   function lqFetchLink(u) {
@@ -9041,7 +9093,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
     if (!removing && !it.waiting && lqCan(d.id, 'delete')) mi += (mi ? '<div class="lq-hr"></div>' : '') + lqMi(lqIco('trash') + 'Delete from ' + dn, 'data-lq-delask="' + id + '"', 'danger');
     var slu = !removing && !it.waiting ? lqSyncOf(d.id, it.k) : '';
-    if (slu) mi = '<div class="lq-ph">Sync link</div>' + lqMi(lqIco('refresh') + 'Sync from ' + esc(lqHostOf(slu)), 'data-lq-synclink="' + id + '" title="Gets the latest version from ' + esc(slu) + ' and sends it to ' + dn + '. The old version is kept as a backup."') + (mi ? '<div class="lq-hr"></div>' + mi : '');
+    if (!removing && !it.waiting) mi = '<div class="lq-ph">Sync link</div>' +
+      (/^https:/i.test(slu) ? lqMi(lqIco('refresh') + 'Sync from ' + esc(lqHostOf(slu)), 'data-lq-synclink="' + id + '" title="Gets the latest version from ' + esc(slu) + ' and sends it to ' + dn + '. The old version is kept as a backup."') : '') +
+      lqMi(lqIco('link') + (slu ? 'Change sync link\u2026' : 'Add a sync link\u2026'), 'data-lq-sledit="' + id + '"') + (mi ? '<div class="lq-hr"></div>' + mi : '');
     var open = !!mi && lq.menuOpen === key;
     var act = removing ? lqBtn(lqIco('undo') + 'Undo', 'data-lq-cancel="' + id + '"') : editing ? '<span class="lq-pill">Editing</span>' : lqBtn(lqIco('edit') + '<span class="lq-lbl">Edit</span>', 'data-lq-edit="' + id + '" title="Edit"');
     var gl = lqGlowFor(key), gd = gl ? ' style="animation-delay:-' + gl.ms + 'ms"' : '';
@@ -9053,6 +9107,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       (mi ? '<button type="button" class="ghost lq-ib' + (open ? ' on' : '') + '" data-lq-menu="' + id + '" title="More" aria-label="More for ' + esc(name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + lqIco('more') + '</button>' : '<span class="lq-ib-sp"></span>') +
       (open ? '<div class="lq-menu" role="menu">' + mi + '</div>' : '') + '</div>';
     if (lq.peek === key && !removing) row += lqPeekHtml(d, it, key, id);
+    if (lq.slEdit === key && !removing) row += lqSlEditHtml(d, it, id);
     if (lq.delAsk === key && !removing) row += '<div class="lq-confirm">Delete “' + esc(name) + '” from ' + dn + '? It moves to Recently deleted on the headset, where you can bring it back for 30 days.' + lqSongsChk(d.id, typeof it.solo === 'number' ? it.solo : null) + '<div class="lq-row">' +
       lqBtn(lqIco('trash') + 'Delete', 'data-lq-delete="' + id + '"', 'ghost sm danger') + lqBtn('Keep it', 'data-lq-delask=""') + '</div></div>';
     return row;
@@ -9543,6 +9598,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (t.hasAttribute('data-lq-plrn')) { state.lq.plRename = t.getAttribute('data-lq-plrn') || null; lqRender(); var pri = document.getElementById('lqPlRenameIn'); if (pri) { pri.focus(); pri.select(); } }
       else if (t.hasAttribute('data-lq-plrnsave')) { var prs = t.getAttribute('data-lq-plrnsave').split('|'), prv = document.getElementById('lqPlRenameIn'); lqPlRename(prs[0], prs[1], prv ? prv.value : ''); }
       else if (t.hasAttribute('data-lq-dl')) { var dls = t.getAttribute('data-lq-dl').split('|'); lqDownload(dls[0], dls[1]); }
+      else if (t.hasAttribute('data-lq-sledit')) { var sle = t.getAttribute('data-lq-sledit'); state.lq.slEdit = sle ? sle.split('|').join('|') : null; lqRender(); if (sle) setTimeout(function () { var i = document.getElementById('lqSlIn'); if (i) { i.focus(); i.select(); } }, 0); }
+      else if (t.hasAttribute('data-lq-slsave')) { var sls2 = t.getAttribute('data-lq-slsave').split('|'), sin = document.getElementById('lqSlIn'); lqSlSave(sls2[0], sls2[1], sin ? sin.value : ''); }
+      else if (t.hasAttribute('data-lq-slrm')) { var slr = t.getAttribute('data-lq-slrm').split('|'); lqSlSave(slr[0], slr[1], ''); }
       else if (t.hasAttribute('data-lq-synclink')) { var sls = t.getAttribute('data-lq-synclink').split('|'); lqSyncFromLink(sls[0], sls[1]); }
       else if (t.hasAttribute('data-lq-copy')) { var cps = t.getAttribute('data-lq-copy').split('|'); lqCopyTo(cps[0], cps[1], cps[2]); }
       else if (t.hasAttribute('data-lq-delask')) { state.lq.delAsk = t.getAttribute('data-lq-delask') || null; state.lq.delSongs = false; lqRender(); }
@@ -13188,7 +13246,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     'stats-tab': ['.tg-tab[data-tg="statsPanel"]', '#statsPanel', 'playlist'], 'prune-tab': ['.tg-tab[data-tg="panelRefine"]', '#panelRefine', 'playlist'],
     'ramp-tab': ['.tg-tab[data-tg="rampPanel"]', '#rampPanel', 'playlist'], 'info-tab': ['.tg-tab[data-tg="infoPanel"]', '#infoPanel', 'playlist'],
     'cover-tab': ['.tg-tab[data-tg="coverPanel"]', '#coverPanel', 'playlist'], 'download-tab': ['.tg-tab[data-tg="exportPanel"]', '#exportPanel', 'playlist'],
-    'quest-usb': ['#platTabs', '#exportPanel', 'playlist'], 'sync-tab': ['.tg-tab[data-tg="syncPanel"]', '#syncPanel', 'playlist'],
+    'quest-usb': ['#platTabs', '#exportPanel', 'playlist'], 'sync-tab': ['.tg-tab[data-tg="sharePanel"]', '#syncCard', 'playlist'],
 'share-tab': ['.tg-tab[data-tg="sharePanel"]', '#sharePanel', 'playlist'],
     'share-copy': ['#shareCopyBtn', '#sharePanel', 'playlist'], 'library-tab': ['.tg-tab[data-tg="libraryPanel"]', '#libraryPanel', 'playlist'],
     'save': ['#savePlaylistBtn', '#libraryPanel', 'playlist'], 'combine': ['#combineBtn', '#libraryPanel', 'playlist'],
