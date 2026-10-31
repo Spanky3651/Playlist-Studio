@@ -770,6 +770,7 @@ body.anim .lq-added{animation:lqfade 4s ease-out both;}
 @keyframes lqfade{0%,75%{opacity:1;}100%{opacity:0;}}
 .lq-pill{font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:20px;border:1px solid #1c4f8f;color:#9cc2ff;background:rgba(30,107,255,.12);white-space:nowrap;flex:none;}
 .lq-menu{position:absolute;right:8px;top:calc(100% - 4px);z-index:20;width:290px;max-width:calc(100% - 16px);padding:6px;border:1px solid #2a4a7a;border-radius:12px;background:#0c1626;box-shadow:0 16px 40px rgba(0,0,0,.6);}
+.lq-menu.up{top:auto;bottom:calc(100% - 4px);}
 .lq-ph{font-family:var(--mono);font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);padding:6px 10px 4px;}
 .lq-mi{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:8px;background:transparent;font-size:14px;color:#e6edf6;font-weight:500;text-align:left;white-space:normal;}
 .lq-mi:hover{background:#13233b;box-shadow:none;border:0;}
@@ -3218,7 +3219,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T13:36Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T15:52Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -9268,7 +9269,22 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return row;
   }
   function lqBtn(label, attrs, cls) { return '<button type="button" class="' + (cls || 'ghost sm') + '" ' + attrs + (state.lq.busy || state.pubBusy ? ' disabled' : '') + '>' + label + '</button>'; }
-  function lqRender() {
+  // A ••• menu near the bottom of the panel would be cut off by it: open it upward when there's room above,
+  // otherwise let the panel grow until the menu fits.
+  function lqFitMenu() {
+    var p = document.getElementById('lqPanel'); if (!p) return;
+    p.style.paddingBottom = '';
+    var m = p.querySelector('.lq-menu'); if (!m || p.hidden) return;
+    m.classList.remove('up');
+    var sp = p.closest('#sendPanel') || p, pr = p.getBoundingClientRect(), sr = sp.getBoundingClientRect();
+    var top = Math.max(pr.top, sr.top) + 6, bot = Math.min(pr.bottom, sr.bottom) - 6, mr = m.getBoundingClientRect();
+    if (mr.bottom <= bot) return;
+    var host = m.offsetParent ? m.offsetParent.getBoundingClientRect() : mr;
+    if (host.top + 4 - mr.height >= top) { m.classList.add('up'); return; }
+    p.style.paddingBottom = Math.ceil(mr.bottom - bot + 12) + 'px';
+  }
+  function lqRender() { var r = lqRender0(); lqFitMenu(); return r; }
+  function lqRender0() {
     if (lqDrag) { lqDrag.dirty = true; return; }
     try { lqAddToRender(); } catch (e) {}   // not under a finger mid-drag; it draws when the drag ends
     var panel = document.getElementById('lqPanel'); if (!panel || !state.lq) return;
