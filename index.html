@@ -2148,8 +2148,35 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .cmp-av.lg{width:58px;height:58px;box-shadow:0 0 0 3px #000,0 0 0 5px var(--border-2);}.cmp-av.lg i{font-size:22px;}
 .cmp-load{display:flex;align-items:center;gap:10px;font:13px var(--mono);color:var(--muted);padding:20px 0;}
 .cmp-load.err{color:#ff9fb2;}
-.cmp-spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--blue);animation:cmp-spin .8s linear infinite;flex:none;}
+/* Loading: your blue saber and their red saber clash between the two avatars */
+.cmp-ld{padding:4px 0 6px;}
+.cmp-ldvs{display:flex;align-items:center;justify-content:center;gap:6px;}
+.cmp-ldvs .cmp-p{flex:0 1 112px;min-width:70px;}
+.cmp-av.me{background:linear-gradient(135deg,#1e6bff,#0b2f80);box-shadow:0 0 0 3px #000,0 0 0 5px var(--blue),0 0 18px rgba(30,107,255,.5);}
+.cmp-av.th{background:linear-gradient(135deg,#ff1e3c,#7a0a18);box-shadow:0 0 0 3px #000,0 0 0 5px var(--red),0 0 18px rgba(255,30,60,.5);}
+.cmp-clash{position:relative;flex:0 1 180px;min-width:150px;height:120px;--off:72px;--hit:46deg;--sy:37px;}
+@media(max-width:720px){.cmp-clash{flex-basis:140px;min-width:116px;--off:54px;--hit:32deg;--sy:23px;}}
+.cmp-sab{position:absolute;bottom:16px;width:6px;height:96px;border-radius:3px;transform-origin:50% 100%;}
+.cmp-sab::after{content:"";position:absolute;left:-2px;right:-2px;bottom:-16px;height:20px;border-radius:3px;background:linear-gradient(90deg,#3a414d,#9aa3b1,#3a414d);}
+.cmp-sab.b{left:calc(50% - var(--off));background:linear-gradient(#fff,#a9c8ff 18%,#1e6bff);box-shadow:0 0 8px #1e6bff,0 0 22px #1e6bff;animation:cmp-swb 1.5s infinite cubic-bezier(.55,0,.35,1);}
+.cmp-sab.r{right:calc(50% - var(--off));background:linear-gradient(#fff,#ffb1bd 18%,#ff1e3c);box-shadow:0 0 8px #ff1e3c,0 0 22px #ff1e3c;animation:cmp-swr 1.5s infinite cubic-bezier(.55,0,.35,1);}
+@keyframes cmp-swb{0%,100%{transform:rotate(-28deg)}40%{transform:rotate(var(--hit))}47%{transform:rotate(calc(var(--hit) - 9deg))}54%{transform:rotate(var(--hit))}}
+@keyframes cmp-swr{0%,100%{transform:rotate(28deg)}40%{transform:rotate(calc(var(--hit) * -1))}47%{transform:rotate(calc(var(--hit) * -1 + 9deg))}54%{transform:rotate(calc(var(--hit) * -1))}}
+.cmp-spark{position:absolute;left:50%;top:var(--sy);width:0;height:0;}
+.cmp-spark s{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff,0 0 10px #c9a9ff;opacity:0;animation:cmp-sp 1.5s infinite;}
+@keyframes cmp-sp{0%,39%{opacity:0;transform:translate(0,0)}41%{opacity:1;transform:translate(0,0)}62%{opacity:0;transform:translate(var(--dx),var(--dy))}100%{opacity:0}}
+.cmp-flash{position:absolute;left:50%;top:var(--sy);width:46px;height:46px;margin:-23px;border-radius:50%;background:radial-gradient(#fff,rgba(190,150,255,.5) 35%,transparent 70%);opacity:0;animation:cmp-fl 1.5s infinite;}
+@keyframes cmp-fl{0%,39%,60%,100%{opacity:0;transform:scale(.3)}42%{opacity:1;transform:scale(1)}}
+.cmp-steps{display:grid;gap:9px;margin:20px 0 0;}
+.cmp-st{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;font:14px var(--mono);color:#5d6880;}
+.cmp-st > span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmp-st i{width:14px;height:14px;border-radius:50%;border:2px solid #333d50;justify-self:center;}
+.cmp-st.on{color:#e9edf5;}.cmp-st.on i{border-color:var(--blue);border-top-color:transparent;animation:cmp-spin .8s linear infinite;}
+.cmp-st.done{color:#aeb8ca;}.cmp-st.done i{border:0;width:16px;height:16px;background:var(--green);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3L13 4.5' stroke='black' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3L13 4.5' stroke='black' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;}
+.cmp-st em{font-style:normal;color:#e9edf5;font-weight:700;}
 @keyframes cmp-spin{to{transform:rotate(360deg)}}
+.cmp-pbar{height:8px;border-radius:5px;background:#111827;overflow:hidden;margin-top:14px;}
+.cmp-pbar u{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),#8a5cff 55%,var(--red));box-shadow:0 0 12px rgba(138,92,255,.6);transition:width .3s;}
 .cmp-vs{display:flex;align-items:center;justify-content:center;gap:18px;margin:0 0 14px;}
 .cmp-p{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;flex:1;text-align:center;}
 .cmp-p b{font-size:16px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.cmp-p small{font:12px var(--mono);color:var(--muted);}
@@ -2179,7 +2206,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .cmp-note{margin:10px 0 0;font:12px var(--mono);color:var(--muted-2);}
 .cmp-again{display:flex;justify-content:center;margin-top:4px;}
 @media(max-width:720px){.cmp-pad{padding:16px 14px 28px;}.cmp-vs{gap:10px;}}
-@media(prefers-reduced-motion:reduce){.cmp-spin{animation:none;}}
+@media(prefers-reduced-motion:reduce){.cmp-sab.b{animation:none;transform:rotate(var(--hit));}.cmp-sab.r{animation:none;transform:rotate(calc(var(--hit) * -1));}.cmp-spark s,.cmp-flash,.cmp-st.on i{animation:none;}.cmp-pbar u{transition:none;}}
 /* Falling blocks background (footer switch): note blocks fall behind the solid panels; off means a still background */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block;opacity:.75;}
 .fxsw{display:inline-flex;align-items:center;gap:11px;font:700 14px system-ui,'Segoe UI',Arial,sans-serif;color:#cfd8e6;background:transparent;border:0;padding:4px;cursor:pointer;text-transform:none;letter-spacing:.2px;box-shadow:none;}
@@ -3191,7 +3218,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T13:16Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T13:36Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -11568,18 +11595,44 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }, function () { draw([]); });
   }
   // Step 2: load both profiles and their ranked plays, then line them up against your synced scores.
+  // Loading: two avatars with a saber clash between them, then the real steps and a progress bar
+  function cmpLdP(p, side) {
+    var me = side === 'me';
+    return cmpAva(p, 'lg ' + side) + '<b>' + esc(me ? state.player.name : (p && p.name) || 'Finding…') + '</b><small>' + (me ? (state.player.rank ? '#' + state.player.rank.toLocaleString('en-US') : 'You') : p && p.rank ? '#' + p.rank.toLocaleString('en-US') : '&nbsp;') + '</small>';
+  }
+  function cmpLoadHtml(known) {
+    var sp = '';
+    for (var i = 0; i < 12; i++) { var a = i / 12 * 6.283 + .2, d = 22 + (i % 3) * 9; sp += '<s style="--dx:' + (Math.cos(a) * d).toFixed(1) + 'px;--dy:' + (Math.sin(a) * d).toFixed(1) + 'px"></s>'; }
+    return '<div class="cmp-pad"><div class="cmp-ld" role="status" aria-live="polite"><div class="cmp-ldvs"><div class="cmp-p">' + cmpLdP(state.player, 'me') + '</div>' +
+      '<div class="cmp-clash" aria-hidden="true"><i class="cmp-sab b"></i><i class="cmp-sab r"></i><i class="cmp-flash"></i><i class="cmp-spark">' + sp + '</i></div>' +
+      '<div class="cmp-p" id="cmpLdThem">' + cmpLdP(known, 'th') + '</div></div><div class="cmp-steps" id="cmpSteps"></div><div class="cmp-pbar"><u id="cmpPbar"></u></div></div></div>';
+  }
+  function cmpLoadStep(ld, them, n) {
+    var st = cmpEl('cmpSteps'), bar = cmpEl('cmpPbar'); if (!st) return;
+    var nm = (them && them.name) || 'that player', tot = ld.total, f = function (x) { return x.toLocaleString('en-US'); };
+    var rows = [['Your scores', ld.ph > 0 ? 'synced' : ''], [ld.ph > 1 ? 'Found ' + nm : 'Finding ' + nm, ''],
+      ['Their ranked plays', ld.ph >= 2 ? '<em>' + f(n) + '</em>' + (tot ? ' / ' + f(Math.max(tot, n)) : '') : ''], ['Lining up the head to head', '']];
+    st.innerHTML = rows.map(function (r, i) { return '<div class="cmp-st' + (i < ld.ph ? ' done' : i === ld.ph ? ' on' : '') + '"><i></i><span>' + esc(r[0]) + '</span><span>' + r[1] + '</span></div>'; }).join('');
+    var pct = ld.ph === 0 ? 4 : ld.ph === 1 ? 10 : ld.ph === 2 ? 10 + 82 * Math.min(1, n / (tot || 1000)) : 96;
+    if (bar) bar.style.width = pct + '%';
+  }
   function cmpRun(token) {
     var id = parsePlayerId(String(token || '')); if (!id) { toast('Paste a BeatLeader profile URL, ID, or username.', 'warn'); return; }
     var tok = ++cmp.tok, ok = function () { return tok === cmp.tok; };
-    var body = cmpEl('cmpBody'), say = function (t) { if (ok()) body.innerHTML = '<div class="cmp-pad"><div class="cmp-load"><span class="cmp-spin"></span>' + esc(t) + '</div></div>'; };
-    say('Finding that player…');
-    var them, mine, plays = [], pages = 0;
+    var body = cmpEl('cmpBody'), them, mine, plays = [], pages = 0;
     var needSync = !Object.keys(state.scores || {}).length;
-    (needSync ? syncScores(false) : Promise.resolve()).then(function () { return resolvePlayerToken(id); }).then(function (p) {
+    var known = (cmp.mates || []).concat(cmpRecent()).filter(function (p) { return p && String(p.id) === String(id); })[0];
+    var ld = { ph: needSync ? 0 : 1, total: 0 };
+    body.innerHTML = cmpLoadHtml(known);
+    var step = function () { if (ok()) cmpLoadStep(ld, them || known, plays.length); };
+    step();
+    (needSync ? syncScores(false) : Promise.resolve()).then(function () { ld.ph = 1; step(); return resolvePlayerToken(id); }).then(function (p) {
       if (!ok()) return;
       if (String(p.id) === String(state.player.id)) throw new Error('self');
       them = p; cmpEl('cmpTitle').textContent = 'You vs ' + (p.name || 'them');
-      say('Loading ' + (p.name || 'their') + '’s ranked plays…');
+      ld.ph = 2; ld.total = Math.min(1000, (p.scoreStats && p.scoreStats.rankedPlayCount) || 0);
+      var tp = cmpEl('cmpLdThem'); if (tp) tp.innerHTML = cmpLdP(p, 'th');
+      step();
       return relayFetch(API_BASE + '/player/' + encodeURIComponent(state.player.id), validPlayer).then(function (m) { mine = m; }, function () { mine = null; });
     }).then(function () {
       if (!ok() || !them) return;
@@ -11588,11 +11641,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           if (!ok()) return;
           var items = (d && d.data) || [], ranked = 0; pages = n;
           items.forEach(function (sc) { if (sc && sc.pp > 0 && sc.leaderboard && sc.leaderboard.song && sc.leaderboard.song.hash) { plays.push(sc); ranked++; } });
-          say('Loading ' + (them.name || 'their') + '’s ranked plays… ' + plays.length.toLocaleString('en-US'));
+          step();
           if (items.length === 100 && ranked === 100 && n < 10) return delay(120).then(function () { return page(n + 1); });
         });
       };
       return page(1);
+    }).then(function () {
+      if (!ok() || !them) return;
+      ld.ph = 3; ld.total = plays.length; step();
+      return delay(220);
     }).then(function () {
       if (!ok() || !them) return;
       cmp.res = cmpCrunch(them, mine, plays);
