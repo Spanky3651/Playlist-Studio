@@ -2132,6 +2132,59 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
   .foot-count{grid-area:cnt;justify-content:center;}
 }
 @media(max-width:370px){.nf .nf-chip{font-size:12px;}.nf-chip + .nf-chip::before{margin:0 4px;}}
+/* Compare with a player (account menu) */
+.sd-cmp{width:min(620px,100vw);}
+.sd-cmp .sd-head h2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#pcCmpBtn svg{color:var(--blue-text);}
+.cmp-pad{padding:18px 18px 28px;}
+.cmp-lead{margin:0 0 12px;color:var(--muted);font-size:14.5px;line-height:1.55;}
+.cmp-in{display:flex;gap:8px;}.cmp-in input{flex:1;min-width:0;}
+.cmp-h{margin:20px 0 8px;font:600 11.5px var(--mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--muted-2);display:flex;gap:8px;align-items:center;}
+.cmp-h span{font-size:10.5px;padding:1px 6px;border:1px solid var(--border-2);border-radius:5px;letter-spacing:.6px;color:#cfd8e6;}
+.cmp-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.cmp-wait{font:12.5px var(--mono);color:var(--muted);}
+.cmp-chip{display:inline-flex;align-items:center;gap:9px;padding:5px 12px 5px 5px;border:1px solid var(--border-2);border-radius:999px;background:#070a0f;color:#e9edf5;font:700 13.5px var(--sans);cursor:pointer;text-transform:none;letter-spacing:0;box-shadow:none;min-height:0;}
+.cmp-chip:hover{border-color:var(--blue);background:#0b111c;}
+.cmp-chip > span{text-align:left;line-height:1.25;}
+.cmp-chip small{display:block;font:500 11px var(--mono);color:var(--muted);}
+.cmp-av{position:relative;width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;flex:none;overflow:hidden;background:linear-gradient(135deg,#2f7bff,#ff2740);}
+.cmp-av i{font:800 13px var(--sans);font-style:normal;color:#fff;}
+.cmp-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.cmp-av.lg{width:58px;height:58px;box-shadow:0 0 0 3px #000,0 0 0 5px var(--border-2);}.cmp-av.lg i{font-size:22px;}
+.cmp-load{display:flex;align-items:center;gap:10px;font:13px var(--mono);color:var(--muted);padding:20px 0;}
+.cmp-load.err{color:#ff9fb2;}
+.cmp-spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--blue);animation:cmp-spin .8s linear infinite;flex:none;}
+@keyframes cmp-spin{to{transform:rotate(360deg)}}
+.cmp-vs{display:flex;align-items:center;justify-content:center;gap:18px;margin:0 0 14px;}
+.cmp-p{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;flex:1;text-align:center;}
+.cmp-p b{font-size:16px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.cmp-p small{font:12px var(--mono);color:var(--muted);}
+.cmp-x{font:800 15px var(--mono);color:var(--muted-2);letter-spacing:2px;}
+.cmp-card{border:1px solid var(--border);border-radius:var(--r);background:linear-gradient(180deg,var(--panel),var(--panel-2));padding:14px 16px;margin-bottom:12px;}
+.cmp-ct{font:600 11.5px var(--mono);letter-spacing:1.3px;text-transform:uppercase;color:var(--muted-2);margin-bottom:8px;}
+.cmp-ct2{font:600 11px var(--mono);letter-spacing:1.3px;text-transform:uppercase;color:var(--muted-2);margin:14px 0 4px;}
+.cmp-hr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--border);}
+.cmp-ct + .cmp-hr{border-top:0;}
+.cmp-l{font:12px var(--mono);color:var(--muted);text-align:center;white-space:nowrap;}
+.cmp-v{font:700 16px var(--sans);color:#cfd8e6;min-width:0;}.cmp-v.r{text-align:right;}
+.cmp-v small{display:block;font:500 11.5px var(--mono);color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmp-v.w{color:var(--green);}
+.cmp-score{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--muted);}.cmp-score b{font-size:20px;color:#fff;margin:0 3px;}
+.cmp-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:8px 0;background:#111827;}
+.cmp-bar i{background:linear-gradient(90deg,#1f5fe0,var(--blue));}.cmp-bar em{background:linear-gradient(90deg,#c41e33,var(--red));}
+.cmp-sub{font:12.5px var(--mono);color:#c3cad8;line-height:1.6;}
+.cmp-f{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px dashed var(--border-2);}
+.cmp-fc{width:4px;height:30px;border-radius:2px;background:var(--dc);}
+.cmp-fs{min-width:0;}.cmp-fs b{display:block;font-size:14.5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.cmp-fs small{font:12px var(--mono);color:var(--muted);}
+.cmp-fa{display:flex;gap:7px;align-items:baseline;font:600 13.5px var(--mono);color:#cfd8e6;}.cmp-fa i{font-style:normal;color:var(--muted-2);font-size:11px;}.cmp-fa .w{color:var(--green);}
+.cmp-b{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--border);}
+.cmp-ct + .cmp-b{border-top:0;}
+.cmp-bi{width:36px;height:36px;border-radius:10px;border:1px solid var(--border-2);background:#070a0f;display:grid;place-items:center;color:var(--blue-text);}.cmp-bi svg{width:18px;height:18px;}
+.cmp-bt b{display:block;font-size:14.5px;color:#fff;}.cmp-bt b span{font:700 12px var(--mono);color:var(--blue-text);margin-left:4px;}
+.cmp-bt small{display:block;font-size:13px;color:var(--muted);line-height:1.45;}
+.cmp-note{margin:10px 0 0;font:12px var(--mono);color:var(--muted-2);}
+.cmp-again{display:flex;justify-content:center;margin-top:4px;}
+@media(max-width:720px){.cmp-pad{padding:16px 14px 28px;}.cmp-vs{gap:10px;}}
+@media(prefers-reduced-motion:reduce){.cmp-spin{animation:none;}}
 /* Falling blocks background (footer switch): note blocks fall behind the solid panels; off means a still background */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block;opacity:.75;}
 .fxsw{display:inline-flex;align-items:center;gap:11px;font:700 14px system-ui,'Segoe UI',Arial,sans-serif;color:#cfd8e6;background:transparent;border:0;padding:4px;cursor:pointer;text-transform:none;letter-spacing:.2px;box-shadow:none;}
@@ -2279,6 +2332,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <div class="pc-menu" id="pcMenu" role="menu" hidden>
           <div class="h"><b id="pcMenuName"></b>BeatLeader · connected</div>
           <button type="button" role="menuitem" id="pcSwitchBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/></svg><span>Switch player<small>Connect a different BeatLeader profile</small></span></button>
+          <button type="button" role="menuitem" id="pcCmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4L3 8l4 4"/><path d="M3 8h13"/><path d="M17 20l4-4-4-4"/><path d="M21 16H8"/></svg><span>Compare with a player<small>Head to head, and playlists from it</small></span></button>
           <button type="button" role="menuitem" class="d" id="pcByeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Disconnect<small>Clears your scores from this browser</small></span></button>
         </div></div>
       <div class="panel-sub">Connect your <b>BeatLeader</b> profile to see your score on every map and filter by what you've played. Public data only - no login. <b>Stats</b> adds your ScoreSaber and AccSaber ranks, recent scores and replays.</div>
@@ -2521,7 +2575,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="myDate">Last played</option>
               <option value="improve">Improvement</option><option value="complexity">AccSaber complexity</option>
               <option value="fav" hidden>Favorites</option>
-              <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
+              <option value="vsGap" hidden>Gap to them</option><option value="vsPp" hidden>Their pp</option><option value="clanRank" hidden>Clan priority</option>
             </select></div>
         </div>
         <div class="grid-2">
@@ -2765,7 +2819,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <option value="pp">PP @ target acc</option>
             <option value="improve">Improvement</option><option value="complexity">AccSaber complexity</option>
             <option value="fav" hidden>Favorites</option>
-            <option value="vsGap" hidden>Gap to them</option><option value="clanRank" hidden>Clan priority</option>
+            <option value="vsGap" hidden>Gap to them</option><option value="vsPp" hidden>Their pp</option><option value="clanRank" hidden>Clan priority</option>
           </select>
           <button type="button" class="sort-order" id="sortInlineOrder" title="Flip the sort direction">↓ Newest first</button>
           <span class="sort-bar-sep"></span>
@@ -3142,13 +3196,19 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T11:31Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T12:53Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
 
 <!-- ============ PLAYER STATS DRAWER ============ -->
 <div class="sd-back" id="sdBack"></div>
+<!-- Compare with a player: opened from the account menu on Your Profile -->
+<div class="sd-back" id="cmpBack"></div>
+<aside class="sd sd-cmp" id="cmpPanel" aria-label="Compare players" aria-hidden="true">
+  <div class="sd-head"><h2 id="cmpTitle">Compare with a player</h2><button type="button" class="ghost sd-x" id="cmpClose" aria-label="Close compare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>
+  <div class="sd-body" id="cmpBody"></div>
+</aside>
 <!-- How it works for returning players: opened from the link on the source line -->
 <div class="sd-back" id="helpBack"></div>
 <aside class="sd sd-help" id="helpPanel" aria-label="How it works" aria-hidden="true">
@@ -5666,7 +5726,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (e.duration) t.push('<b>' + fmtDur(e.duration) + '</b>');
     if (t.length) b.push('<span class="rf-txt">' + t.join(' · ') + '</span>');
     if (!state.player && PP.isRanked(e) && ppBadgesOn()) { var pp = PP.ppFor(e, state.ppAcc, state.ppMod); if (pp != null) b.push('<span class="rb rb-pp" title="Raw PP at ' + state.ppAcc + '%' + (state.ppMod ? ' with ' + modCode(state.ppMod) : '') + ' - set in the PP Range panel; open the map for the full calculator">≈' + PP.fmtShort(pp) + 'pp' + (state.ppMod ? ' ' + modCode(state.ppMod) : '') + '</span>'); }
-    if (e.vsAcc) b.push('<span class="rb rb-vs" title="' + esc(e.vsName) + '\'s accuracy, ' + e.vsGap.toFixed(2) + ' points ahead of yours">' + esc(String(e.vsName).slice(0, 14)) + ' ' + (e.vsAcc * 100).toFixed(2) + '%</span>');
+    if (e.vsAcc) b.push('<span class="rb rb-vs" title="' + esc(e.vsName) + (e.vsGap != null ? '\'s accuracy, ' + e.vsGap.toFixed(2) + ' points ahead of yours' : '\'s score on a map you haven\'t played') + '">' + esc(String(e.vsName).slice(0, 14)) + ' ' + (e.vsAcc * 100).toFixed(2) + '%' + (e.vsGap == null && e.vsPp ? ' \u00b7 ' + Math.round(e.vsPp) + 'pp' : '') + '</span>');
     if (e._sim != null) b.push('<span class="rb rb-sim" title="How closely this matches the map you searched from">' + e._sim + '% match</span>');
     if (e._rec) {
       b.push('<span class="rb rb-gain" title="Projected weighted PP this map would add to your profile">+' + e._rec.gain.toFixed(1) + 'pp</span>');
@@ -6032,6 +6092,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       ? matched + ' picks for ' + ascMissionName() + '. Add the ones you want to play.'
       : state.viewMode === 'clan'
       ? matched + (clan.tab === 'def' ? ' maps where your run adds the most to ' : ' capture targets for ') + (clan.sel ? clan.sel.tag : 'your clan') + '. Add the ones you want to play.'
+      : state.viewMode === 'versus' && state.vsKind === 'new'
+      ? matched + ' of ' + ((state.raw[0] && state.raw[0].vsName) || 'their') + '\'s best ranked maps you haven\'t played, highest pp first. Add the ones you want to try.'
+      : state.viewMode === 'versus' && state.vsKind === 'snipe'
+      ? matched + ' maps where you\'re under 0.5% behind ' + ((state.raw[0] && state.raw[0].vsName) || 'them') + ', closest first. Add the ones you want to snipe.'
       : state.viewMode === 'versus'
       ? matched + ' maps where ' + ((state.raw[0] && state.raw[0].vsName) || 'they') + ' beats you, closest gaps first. Add the ones you want to chase.'
       : state.viewMode === 'plays'
@@ -11115,8 +11179,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     [el.fSort, el.sortInline].forEach(function (sel) { var o = sel && sel.querySelector('option[value="fav"]'); if (o) o.hidden = !favOk; });
     if (!favOk && el.fSort.value === 'fav') { el.fSort.value = 'stars'; }
     if (!showable) return;
-    var vo = el.sortInline && el.sortInline.querySelector('option[value="vsGap"]'); if (vo) vo.hidden = state.viewMode !== 'versus';
-    if (state.viewMode !== 'versus' && el.fSort.value === 'vsGap') { el.fSort.value = 'stars'; }
+    var vo = el.sortInline && el.sortInline.querySelector('option[value="vsGap"]'); if (vo) vo.hidden = state.viewMode !== 'versus' || state.vsKind === 'new';
+    var vp = el.sortInline && el.sortInline.querySelector('option[value="vsPp"]'); if (vp) vp.hidden = state.viewMode !== 'versus' || state.vsKind !== 'new';
+    if ((state.viewMode !== 'versus' || state.vsKind === 'new') && el.fSort.value === 'vsGap') { el.fSort.value = state.viewMode === 'versus' ? 'vsPp' : 'stars'; }
+    if ((state.viewMode !== 'versus' || state.vsKind !== 'new') && el.fSort.value === 'vsPp') { el.fSort.value = state.viewMode === 'versus' ? 'vsGap' : 'stars'; }
     if (el.sortInline && el.sortInline.value !== el.fSort.value) el.sortInline.value = el.fSort.value;
     var rsg = document.getElementById('rankSeg');
     if (rsg && el.rankInline) Array.prototype.forEach.call(rsg.querySelectorAll('button[data-rv]'), function (b) {
@@ -11450,6 +11516,204 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     ctx.strokeStyle = '#ffcf3a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(xmin), Y(M.pAcc(xmin) * 100)); ctx.lineTo(X(xmax), Y(M.pAcc(xmax) * 100)); ctx.stroke();
     if (fitEl) fitEl.innerHTML = 'Fit: acc ≈ ' + (M.intc * 100).toFixed(1) + '% − ' + (Math.abs(M.slope) * 100).toFixed(2) + '%/★ · ±' + M.mae.toFixed(2) + '% over ' + M.n + ' plays · max played ' + M.maxStar.toFixed(2) + '★. Dots are your scores; line is the prediction; shaded past your max is extrapolated.';
   }
+  // ---- Compare with a player (account menu): head to head on the ranked maps you've both played, and playlists from it ----
+  var CMP_KEY = 'playlistStudio.compare.v1', cmp = { tok: 0, res: null, mates: null, matesFor: '' };
+  function cmpEl(id) { return document.getElementById(id); }
+  function cmpRecent() { try { var a = JSON.parse(localStorage.getItem(CMP_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function cmpRemember(p) {
+    var a = cmpRecent().filter(function (x) { return x && String(x.id) !== String(p.id); });
+    a.unshift({ id: String(p.id), name: p.name || '', avatar: p.avatar || '', t: Date.now() });
+    try { localStorage.setItem(CMP_KEY, JSON.stringify(a.slice(0, 6))); } catch (e) {}
+  }
+  function cmpAva(p, cls) {
+    var nm = String((p && p.name) || '?'), ch = esc(nm.charAt(0).toUpperCase() || '?');
+    return '<span class="cmp-av' + (cls ? ' ' + cls : '') + '">' + (p && p.avatar ? '<img src="' + esc(p.avatar) + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '<i>' + ch + '</i></span>';
+  }
+  function cmpChip(p, sub) {
+    return '<button type="button" class="cmp-chip" data-cmp-id="' + esc(p.id) + '">' + cmpAva(p) + '<span>' + esc(p.name || p.id) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>';
+  }
+  function cmpOpen() {
+    if (!state.player) { focusProfileConnect(); return; }
+    var p = cmpEl('cmpPanel'), b = cmpEl('cmpBack'); if (!p || !b) return;
+    pcMenu(false); p.classList.add('open'); b.classList.add('open'); p.setAttribute('aria-hidden', 'false'); document.body.classList.add('sd-lock');
+    cmpPick(); track('compare-open');
+    setTimeout(function () { var i = cmpEl('cmpIn'); if (i && !isMobileView()) i.focus(); }, 250);
+  }
+  function cmpClose() {
+    var p = cmpEl('cmpPanel'), b = cmpEl('cmpBack'); if (!p || !b) return;
+    p.classList.remove('open'); b.classList.remove('open'); p.setAttribute('aria-hidden', 'true');
+    if (!document.querySelector('.sd.open')) document.body.classList.remove('sd-lock');
+    cmp.tok++;
+  }
+  // Step 1: who to compare with. Clanmates and players compared lately are one tap away.
+  function cmpPick() {
+    cmp.tok++; cmp.res = null;
+    cmpEl('cmpTitle').textContent = 'Compare with a player';
+    var me = String(state.player.id), rec = cmpRecent().filter(function (x) { return x && x.id !== me; });
+    var clan = pcc && pcc.bl && pcc.bl[0];
+    var h = '<div class="cmp-pad"><p class="cmp-lead">Put in another BeatLeader player to see how you stack up on the ranked maps you’ve both played, then build playlists from it.</p>' +
+      '<div class="cmp-in"><input type="text" id="cmpIn" placeholder="BeatLeader username, ID, or profile URL" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true"><button type="button" class="primary" id="cmpGo">Compare</button></div>';
+    if (clan) h += '<div class="cmp-h">Your clanmates <span>' + esc(clan.tag) + '</span></div><div class="cmp-chips" id="cmpMates"><span class="cmp-wait">Loading ' + esc(clan.tag) + '…</span></div>';
+    if (rec.length) h += '<div class="cmp-h">Compared lately</div><div class="cmp-chips">' + rec.map(function (x) { return cmpChip(x, x.t ? agoStr(Math.floor(x.t / 1000)) : ''); }).join('') + '</div>';
+    cmpEl('cmpBody').innerHTML = h + '</div>';
+    if (clan) cmpMates(clan, me);
+  }
+  function cmpMates(clan, me) {
+    var draw = function (list) {
+      var box = cmpEl('cmpMates'); if (!box) return;
+      var l = (list || []).filter(function (p) { return p && String(p.id) !== me; }).slice(0, 8);
+      box.innerHTML = l.length ? l.map(function (p) { return cmpChip(p, p.rank ? '#' + Number(p.rank).toLocaleString('en-US') : ''); }).join('') : '<span class="cmp-wait">No clanmates to show.</span>';
+    };
+    if (cmp.matesFor === String(clan.id) && cmp.mates) { draw(cmp.mates); return; }
+    relayFetch(API_BASE + '/clan/id/' + encodeURIComponent(clan.id) + '?page=1&count=12&sort=pp&order=desc', function (j) { return j && Array.isArray(j.data); })
+      .then(function (j) {
+        cmp.matesFor = String(clan.id);
+        cmp.mates = (j.data || []).map(function (p) { return { id: String(p.id), name: p.name || '', avatar: p.avatar || '', rank: p.rank || 0 }; });
+        draw(cmp.mates);
+      }, function () { draw([]); });
+  }
+  // Step 2: load both profiles and their ranked plays, then line them up against your synced scores.
+  function cmpRun(token) {
+    var id = parsePlayerId(String(token || '')); if (!id) { toast('Paste a BeatLeader profile URL, ID, or username.', 'warn'); return; }
+    var tok = ++cmp.tok, ok = function () { return tok === cmp.tok; };
+    var body = cmpEl('cmpBody'), say = function (t) { if (ok()) body.innerHTML = '<div class="cmp-pad"><div class="cmp-load"><span class="cmp-spin"></span>' + esc(t) + '</div></div>'; };
+    say('Finding that player…');
+    var them, mine, plays = [], pages = 0;
+    var needSync = !Object.keys(state.scores || {}).length;
+    (needSync ? syncScores(false) : Promise.resolve()).then(function () { return resolvePlayerToken(id); }).then(function (p) {
+      if (!ok()) return;
+      if (String(p.id) === String(state.player.id)) throw new Error('self');
+      them = p; cmpEl('cmpTitle').textContent = 'You vs ' + (p.name || 'them');
+      say('Loading ' + (p.name || 'their') + '’s ranked plays…');
+      return relayFetch(API_BASE + '/player/' + encodeURIComponent(state.player.id), validPlayer).then(function (m) { mine = m; }, function () { mine = null; });
+    }).then(function () {
+      if (!ok() || !them) return;
+      var page = function (n) {
+        return relayFetch(API_BASE + '/player/' + encodeURIComponent(them.id) + '/scores?page=' + n + '&count=100&sortBy=pp&order=desc', function (j) { return j && Array.isArray(j.data); }).then(function (d) {
+          if (!ok()) return;
+          var items = (d && d.data) || [], ranked = 0; pages = n;
+          items.forEach(function (sc) { if (sc && sc.pp > 0 && sc.leaderboard && sc.leaderboard.song && sc.leaderboard.song.hash) { plays.push(sc); ranked++; } });
+          say('Loading ' + (them.name || 'their') + '’s ranked plays… ' + plays.length.toLocaleString('en-US'));
+          if (items.length === 100 && ranked === 100 && n < 10) return delay(120).then(function () { return page(n + 1); });
+        });
+      };
+      return page(1);
+    }).then(function () {
+      if (!ok() || !them) return;
+      cmp.res = cmpCrunch(them, mine, plays);
+      cmpRemember(them); cmpRender(); track('compare-run');
+    }).catch(function (e) {
+      if (!ok()) return;
+      if (e && e.message === 'self') { toast('That’s you. Pick another player to compare with.', 'warn'); cmpPick(); return; }
+      body.innerHTML = '<div class="cmp-pad"><div class="cmp-load err">Couldn’t load that player. Check the name or link and try again.</div></div>';
+      setTimeout(function () { if (ok()) cmpPick(); }, 2600);
+    });
+  }
+  function cmpCrunch(them, mine, plays) {
+    var name = them.name || 'They', both = 0, youW = 0, themW = 0, bands = [[0, 6, 'Under 6★'], [6, 8, '6 to 8★'], [8, 99, '8★ and up']].map(function (b) { return { lo: b[0], hi: b[1], lab: b[2], y: 0, t: 0 }; });
+    var beat = [], fresh = [], fights = [], seen = {};
+    plays.forEach(function (sc) {
+      var pe = normalize(sc.leaderboard), k = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
+      if (seen[k]) return; seen[k] = 1;
+      var my = state.scores[k], theirs = sc.accuracy || 0;
+      if (!my) { pe.vsAcc = theirs; pe.vsGap = null; pe.vsPp = sc.pp || 0; pe.vsName = name; fresh.push(pe); return; }
+      if (my.src === 'ss' || !(my.a > 0)) return;
+      both++;
+      var gap = Math.round((theirs - my.a) * 10000) / 100, st = pe.stars || 0, bd = bands.filter(function (b) { return st >= b.lo && st < b.hi; })[0];
+      if (theirs > my.a) { themW++; if (bd) bd.t++; var be = Object.assign({}, pe, { vsAcc: theirs, vsGap: gap, vsName: name }); beat.push(be); }
+      else if (theirs < my.a) { youW++; if (bd) bd.y++; }
+      fights.push({ e: pe, me: my.a, them: theirs, d: Math.abs(theirs - my.a) });
+    });
+    fights.sort(function (a, b) { return a.d - b.d; });
+    beat.sort(function (a, b) { return a.vsGap - b.vsGap; });
+    fresh.sort(function (a, b) { return b.vsPp - a.vsPp; });
+    var myTop = null; Object.keys(state.scores).forEach(function (k) { var s = state.scores[k]; if (s && s.src !== 'ss' && s.pp > 0 && (!myTop || s.pp > myTop.pp)) myTop = { pp: s.pp, k: k }; });
+    var myTopName = myTop && state.playIndex && state.playIndex[myTop.k] ? state.playIndex[myTop.k].songName : '';
+    var ss = function (p) { return (p && p.scoreStats) || {}; };
+    return { them: { id: String(them.id), name: name, avatar: them.avatar || '', rank: them.rank || 0, pp: them.pp || 0, acc: ss(them).averageRankedAccuracy || 0, ranked: ss(them).rankedPlayCount || 0, top: plays[0] ? plays[0].pp : (ss(them).topPp || 0), topName: plays[0] ? normalize(plays[0].leaderboard).songName : '', clan: them.clans && them.clans[0] ? them.clans[0].tag : '' },
+      me: { name: state.player.name, avatar: state.player.avatar || '', rank: (mine && mine.rank) || state.player.rank || 0, pp: (mine && mine.pp) || state.player.pp || 0, acc: ss(mine).averageRankedAccuracy || 0, ranked: ss(mine).rankedPlayCount || state.player.ranked || 0, top: myTop ? myTop.pp : (ss(mine).topPp || 0), topName: myTopName },
+      both: both, youW: youW, themW: themW, bands: bands, fights: fights.slice(0, 3), beat: beat, fresh: fresh, snipe: beat.filter(function (e) { return e.vsGap < 0.5; }), loaded: plays.length };
+  }
+  // Step 3: the comparison.
+  function cmpRender() {
+    var r = cmp.res; if (!r) return;
+    var a = r.me, t = r.them, fmt = function (n) { return Math.round(n || 0).toLocaleString('en-US'); }, pct = function (x) { return x > 0 ? (x * 100).toFixed(2) + '%' : '–'; };
+    var row = function (lab, av, bv, aw, bw, ah, bh) {
+      return '<div class="cmp-hr"><div class="cmp-v' + (aw ? ' w' : '') + '">' + av + (ah ? '<small>' + esc(ah) + '</small>' : '') + '</div><div class="cmp-l">' + lab + '</div><div class="cmp-v r' + (bw ? ' w' : '') + '">' + bv + (bh ? '<small>' + esc(bh) + '</small>' : '') + '</div></div>';
+    };
+    var h = '<div class="cmp-pad">';
+    h += '<div class="cmp-vs"><div class="cmp-p">' + cmpAva(a, 'lg') + '<b>' + esc(a.name) + '</b><small>You</small></div><div class="cmp-x">VS</div>' +
+      '<div class="cmp-p">' + cmpAva(t, 'lg') + '<b>' + esc(t.name) + '</b><small>' + (t.clan ? esc(t.clan) : '&nbsp;') + '</small></div></div>';
+    h += '<div class="cmp-card"><div class="cmp-ct">Head to head</div>' +
+      row('Global rank', a.rank ? '#' + fmt(a.rank) : '–', t.rank ? '#' + fmt(t.rank) : '–', a.rank && (!t.rank || a.rank < t.rank), t.rank && (!a.rank || t.rank < a.rank)) +
+      row('PP', fmt(a.pp), fmt(t.pp), a.pp > t.pp, t.pp > a.pp) +
+      row('Avg ranked acc', pct(a.acc), pct(t.acc), a.acc > t.acc, t.acc > a.acc) +
+      row('Ranked plays', fmt(a.ranked), fmt(t.ranked), a.ranked > t.ranked, t.ranked > a.ranked) +
+      row('Top play', a.top ? fmt(a.top) + 'pp' : '–', t.top ? fmt(t.top) + 'pp' : '–', a.top > t.top, t.top > a.top, a.topName, t.topName) + '</div>';
+    if (r.both) {
+      var yw = r.youW + r.themW ? Math.round(r.youW / (r.youW + r.themW) * 100) : 50;
+      var bandTxt = r.bands.filter(function (b) { return b.y + b.t; }).map(function (b) {
+        return b.lab + ': ' + (b.y > b.t ? 'you lead ' + b.y + ' to ' + b.t : b.t > b.y ? esc(t.name) + ' leads ' + b.t + ' to ' + b.y : 'even at ' + b.y);
+      }).join(' · ');
+      h += '<div class="cmp-card"><div class="cmp-ct">On the ' + fmt(r.both) + ' ranked map' + (r.both === 1 ? '' : 's') + ' you’ve both played</div>' +
+        '<div class="cmp-score"><span>You win <b>' + fmt(r.youW) + '</b></span><span><b>' + fmt(r.themW) + '</b> ' + esc(t.name) + ' wins</span></div>' +
+        '<div class="cmp-bar"><i style="width:' + yw + '%"></i><em style="width:' + (100 - yw) + '%"></em></div>' +
+        (bandTxt ? '<div class="cmp-sub">' + bandTxt + '</div>' : '');
+      if (r.fights.length) h += '<div class="cmp-ct2">Closest fights</div>' + r.fights.map(function (f) {
+        var d = SV_DIFF[f.e.difficultyName] || [f.e.difficultyName || '', '#888'];
+        return '<div class="cmp-f"><span class="cmp-fc" style="--dc:' + d[1] + '"></span><div class="cmp-fs"><b>' + esc(f.e.songName) + '</b><small><span style="color:' + d[1] + '">' + esc(d[0]) + '</span>' + (f.e.stars ? ' · ' + f.e.stars.toFixed(2) + '★' : '') + '</small></div>' +
+          '<div class="cmp-fa"><span class="' + (f.me > f.them ? 'w' : '') + '">' + pct(f.me) + '</span><i>vs</i><span class="' + (f.them > f.me ? 'w' : '') + '">' + pct(f.them) + '</span></div></div>';
+      }).join('');
+      h += '</div>';
+    } else {
+      h += '<div class="cmp-card"><div class="cmp-sub">You and ' + esc(t.name) + ' haven’t played any of the same ranked maps yet' + (r.loaded >= 1000 ? ' (Studio looked at their top 1,000 ranked plays)' : '') + '.</div></div>';
+    }
+    var bld = function (kind, title, n, desc, ic) {
+      return '<div class="cmp-b"><div class="cmp-bi">' + ic + '</div><div class="cmp-bt"><b>' + title + ' <span>' + fmt(n) + '</span></b><small>' + desc + '</small></div><button type="button" class="ghost sm" data-cmp-build="' + kind + '"' + (n ? '' : ' disabled') + '>Build</button></div>';
+    };
+    h += '<div class="cmp-card"><div class="cmp-ct">Build a playlist</div>' +
+      bld('beat', 'Maps ' + esc(t.name) + ' beats you on', r.beat.length, 'Closest gaps first, so the easiest to take back are on top.', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>') +
+      bld('new', 'Their best maps you haven’t played', r.fresh.length, esc(t.name) + '’s highest-pp ranked maps you’ve never played.', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21.1l1.5-7L2 9.3l7-.8z"/></svg>') +
+      bld('snipe', 'Snipe list', r.snipe.length, 'You’re under 0.5% behind. Realistic wins in a few attempts.', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>') +
+      '<p class="cmp-note">Each one fills Search Results, then Add all, Prune and Save and send work as usual.' + (r.loaded >= 1000 ? ' Based on ' + esc(t.name) + '’s top 1,000 ranked plays.' : '') + '</p></div>';
+    h += '<div class="cmp-again"><button type="button" class="ghost sm" id="cmpAgain">Compare with someone else</button></div></div>';
+    cmpEl('cmpBody').innerHTML = h; cmpEl('cmpBody').scrollTop = 0;
+  }
+  function cmpBuild(kind) {
+    var r = cmp.res; if (!r) return;
+    var src = kind === 'new' ? r.fresh : kind === 'snipe' ? r.snipe : r.beat; if (!src.length) return;
+    if (state.fetching || state.syncing) { toast('Hang on - a fetch is already running.', 'warn'); return; }
+    ensureBL();
+    state.viewMode = 'versus'; state.vsKind = kind; state.raw = src.map(function (e) { return Object.assign({}, e); }); state.fetched = true; state.lastSig = 'vs:' + r.them.id + ':' + kind;
+    if (kind === 'new') { el.fSort.value = 'vsPp'; el.fOrder.value = 'desc'; } else { el.fSort.value = 'vsGap'; el.fOrder.value = 'asc'; }
+    applyClientFilters();
+    setStatus(kind === 'new' ? src.length + ' of ' + r.them.name + '’s maps to try' : r.them.name + ' leads on ' + src.length + ' maps', 'on');
+    cmpClose();
+    toast(kind === 'new' ? r.them.name + '’s ' + src.length + ' best ranked maps you haven’t played are in Search Results, highest pp first.'
+      : kind === 'snipe' ? src.length + ' maps where you’re under 0.5% behind ' + r.them.name + ' are in Search Results, closest first.'
+      : r.them.name + ' beats you on ' + src.length + ' maps. They’re in Search Results, closest gaps first.', 'ok');
+    track('compare-build-' + kind);
+    if (isMobileView()) setMobileView('results');
+  }
+  function setupCompare() {
+    var p = cmpEl('cmpPanel'), b = cmpEl('cmpBack'), mi = cmpEl('pcCmpBtn'); if (!p || !b) return;
+    if (mi) mi.addEventListener('click', cmpOpen);
+    cmpEl('cmpClose').addEventListener('click', cmpClose); b.addEventListener('click', cmpClose);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && p.classList.contains('open')) cmpClose(); });
+    cmpEl('cmpBody').addEventListener('click', function (e) {
+      var c = e.target.closest('[data-cmp-id]'); if (c) { cmpRun(c.getAttribute('data-cmp-id')); return; }
+      if (e.target.closest('#cmpGo')) { cmpRun(cmpEl('cmpIn').value); return; }
+      var bb = e.target.closest('[data-cmp-build]'); if (bb) { cmpBuild(bb.getAttribute('data-cmp-build')); return; }
+      if (e.target.closest('#cmpAgain')) cmpPick();
+    });
+    cmpEl('cmpBody').addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && e.target.id === 'cmpIn') cmpRun(e.target.value); });
+    // Phones: pull the sheet down by its top bar to close it.
+    var head = p.querySelector('.sd-head'), y0 = null, dy = 0;
+    head.addEventListener('touchstart', function (e) { if (!window.matchMedia('(max-width:720px)').matches || (e.target.closest && e.target.closest('a,button'))) return; y0 = e.touches[0].clientY; dy = 0; p.classList.add('drag'); }, { passive: true });
+    head.addEventListener('touchmove', function (e) { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); p.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+    var end = function () { if (y0 === null) return; y0 = null; p.classList.remove('drag'); p.style.transform = ''; if (dy > 90) cmpClose(); };
+    head.addEventListener('touchend', end); head.addEventListener('touchcancel', end);
+  }
   // Maps another player beats you on: their ranked plays (top 300 by pp) that you have also played
   // on BeatLeader, where their accuracy is higher. Closest gaps first, so the easiest catches lead.
   function buildVersus(id, name) {
@@ -11483,7 +11747,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         return;
       }
       ensureBL();
-      state.viewMode = 'versus'; state.raw = list; state.fetched = true; state.lastSig = 'vs:' + id;
+      state.viewMode = 'versus'; state.vsKind = 'beat'; state.raw = list; state.fetched = true; state.lastSig = 'vs:' + id;
       el.fSort.value = 'vsGap'; el.fOrder.value = 'asc';
       applyClientFilters();
       setStatus(name + ' leads on ' + list.length + ' maps', 'on');
@@ -13314,7 +13578,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.buildPlaysBtn.addEventListener('click', buildFromPlays);
     el.disconnectBtn.addEventListener('click', disconnectPlayer); bindPcMenu();
     ['pcClans', 'pcWar'].forEach(function (id) { var n = document.getElementById(id); if (n) n.addEventListener('click', pcClanClick); });
-    setupStats();
+    setupStats(); setupCompare();
     setupClan();
     el.topChips.addEventListener('click', function (e) { var b = e.target.closest('button[data-top]'); if (b) buildTopPlays(parseInt(b.dataset.top, 10)); });
     el.playStatus.addEventListener('change', applyClientFilters);
@@ -13786,7 +14050,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays;
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
-     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build,
+     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>,
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
