@@ -2160,6 +2160,16 @@ body.egg-halloween .brand .logo .egg-spider{display:block;position:absolute;inse
 .egg-spider .sp{animation:egg-drop 7s infinite cubic-bezier(.5,0,.3,1);}
 .egg-spider .legs{transform-box:fill-box;transform-origin:center;animation:egg-legs .5s infinite;}
 @media(prefers-reduced-motion:reduce){.egg-spider .sp,.egg-spider .legs{animation:none;}}
+/* October 31: every 9 seconds the play button pops into a scary jack-o'-lantern for about 3 seconds, then back */
+.brand .logo .egg-playwrap,.brand .logo .egg-pk{transform-box:view-box;transform-origin:32px 32px;}
+.brand .logo .egg-pk{opacity:0;}
+@keyframes egg-play-out{0%,52%{opacity:1;transform:scale(1)}58%{opacity:0;transform:scale(.6)}88%{opacity:0;transform:scale(.6)}94%,100%{opacity:1;transform:scale(1)}}
+@keyframes egg-pk-in{0%,54%{opacity:0;transform:scale(.55)}60%{opacity:1;transform:scale(1.12)}64%,86%{opacity:1;transform:scale(1)}92%,100%{opacity:0;transform:scale(.55)}}
+@keyframes egg-pk-flick{0%,100%{opacity:1}8%{opacity:.7}11%{opacity:1}30%{opacity:.85}33%{opacity:1}52%{opacity:.65}54%{opacity:1}78%{opacity:.8}80%{opacity:1}}
+body.egg-halloween .brand .logo .egg-playwrap{animation:egg-play-out 9s infinite cubic-bezier(.4,0,.2,1);}
+body.egg-halloween .brand .logo .egg-pk{animation:egg-pk-in 9s infinite cubic-bezier(.4,0,.2,1);}
+.brand .logo .egg-pk-glow{animation:egg-pk-flick 1.3s infinite;}
+@media(prefers-reduced-motion:reduce){body.egg-halloween .brand .logo .egg-playwrap,body.egg-halloween .brand .logo .egg-pk,.brand .logo .egg-pk-glow{animation:none;}}
 body.egg-halloween .fy-btn{position:relative;}
 body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;width:38px;height:38px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23cfd6e3' stroke-width='.7' stroke-linecap='round'%3E%3Cpath d='M40 0L-4.0 0.0M40 0L-0.7 16.8M40 0L8.9 31.1M40 0L23.2 40.7M40 0L40.0 44.0M31.0 0.0Q32.4 1.5 31.7 3.4Q33.5 4.3 33.6 6.4Q35.7 6.5 36.6 8.3Q38.5 7.6 40.0 9.0M22.0 0.0Q24.8 3.0 23.4 6.9Q27.1 8.6 27.3 12.7Q31.4 12.9 33.1 16.6Q37.0 15.2 40.0 18.0M13.0 0.0Q17.1 4.5 15.1 10.3Q20.6 12.9 20.9 19.1Q27.1 19.4 29.7 24.9Q35.5 22.9 40.0 27.0M4.0 0.0Q9.5 6.1 6.7 13.8Q14.2 17.3 14.5 25.5Q22.7 25.8 26.2 33.3Q33.9 30.5 40.0 36.0'/%3E%3C/svg%3E") no-repeat top right/contain;opacity:.55;pointer-events:none;border-top-right-radius:11px;}
 #svClanBtn .new-tag{font:700 11px var(--mono);padding:1px 5px;border-radius:4px;background:var(--red);color:#fff;margin-left:2px;}
@@ -3132,7 +3142,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-30T23:31Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T11:31Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -10257,7 +10267,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   // ---- Easter eggs -------------------------------------------------------------
-  // Left out of the README on purpose. About 1 in 1,000 result rows hides a bomb. Oct 31 only: a jack-o'-lantern logo and cobwebs on the For You cards.
+  // Left out of the README on purpose. About 1 in 1,000 result rows hides a bomb. Oct 31 only: a spider on the logo, its play button turning into a jack-o'-lantern, and cobwebs on the For You cards.
   var EGG_SEED = Math.floor(Math.random() * 1e9), eggBombHit = {};
   var EGG_BOMB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="#4a505c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="6.4" fill="#15171c" stroke="#4a505c" stroke-width="1"/><circle cx="10" cy="10" r="1.6" fill="#6b7280" opacity=".7"/></svg>';
   var EGG_SPIDER = '<svg class="egg-spider" viewBox="0 0 64 64" aria-hidden="true">' +
@@ -10265,6 +10275,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     '<g class="sp"><line x1="55" y1="-40" x2="55" y2="22" stroke="#d9dfe9" stroke-opacity=".7" stroke-width=".5"/><g transform="translate(55 24)">' +
     '<g class="legs" stroke="#e6e9ef" stroke-width=".8" fill="none" stroke-linecap="round"><path d="M-1.5-1l-4-2.5-1.5-2.5M-1.5 0l-4.5-.5-2 1.5M-1.5 1l-4 2-1 2.5M1.5-1l4-2.5 1.5-2.5M1.5 0l4.5-.5 2 1.5M1.5 1l4 2 1 2.5"/></g>' +
     '<ellipse cx="0" cy="1.2" rx="2.4" ry="3" fill="#e6e9ef"/><circle cx="0" cy="-2" r="1.6" fill="#e6e9ef"/><circle cx="-.6" cy="-2.2" r=".35" fill="#ff2740"/><circle cx=".6" cy="-2.2" r=".35" fill="#ff2740"/></g></g></svg>';
+
+  var EGG_PUMPKIN = '<g class="egg-pk"><defs>' +
+    '<radialGradient id="eggPkBody" cx="45%" cy="35%" r="72%"><stop offset="0" stop-color="#ff9a2a"/><stop offset=".5" stop-color="#e2540a"/><stop offset="1" stop-color="#7a2400"/></radialGradient>' +
+    '<radialGradient id="eggPkShade" cx="50%" cy="40%" r="60%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>' +
+    '<radialGradient id="eggPkCut" cx="50%" cy="45%" r="65%"><stop offset="0" stop-color="#fffbe0"/><stop offset=".55" stop-color="#ffd23a"/><stop offset="1" stop-color="#ff7a00"/></radialGradient></defs>' +
+    '<path d="M31.2 19.8c-.4-2.4.4-4.6 2.4-6.2l.8 1c-1.4 1.6-1.9 3.2-1.5 5.3z" fill="#2b3a14"/><path d="M33 14.4c1.8-.8 3.2-.4 4 .6" stroke="#2b3a14" stroke-width=".9" fill="none" stroke-linecap="round"/>' +
+    '<g fill="url(#eggPkBody)" stroke="#5a1d00" stroke-width=".7"><ellipse cx="24.2" cy="33" rx="7.4" ry="11.6"/><ellipse cx="39.8" cy="33" rx="7.4" ry="11.6"/><ellipse cx="28" cy="33" rx="6.8" ry="12.6"/><ellipse cx="36" cy="33" rx="6.8" ry="12.6"/><ellipse cx="32" cy="33" rx="6.4" ry="13"/></g>' +
+    '<ellipse cx="32" cy="33" rx="14.6" ry="13" fill="url(#eggPkShade)"/>' +
+    '<g fill="#2a0a00" stroke="#2a0a00" stroke-width="1.6" stroke-linejoin="round"><path d="M21.8 27.4l8.6 3.6-5.6 3.2z"/><path d="M42.2 27.4l-8.6 3.6 5.6 3.2z"/><path d="M30.8 35.6h2.4l-1.2-2.4z"/><path d="M20.6 36c2.8 7.6 20 7.6 22.8 0l-2.8 1.4-1 3.8-2-2.6-1.9 2-1.2-3-1.5 5.2-1.5-5.2-1.2 3-1.9-2-2 2.6-1-3.8z"/></g>' +
+    '<g class="egg-pk-glow" fill="url(#eggPkCut)" style="filter:drop-shadow(0 0 2px #ff7a00)"><path d="M21.8 27.4l8.6 3.6-5.6 3.2z"/><path d="M42.2 27.4l-8.6 3.6 5.6 3.2z"/><path d="M30.8 35.6h2.4l-1.2-2.4z"/><path d="M20.6 36c2.8 7.6 20 7.6 22.8 0l-2.8 1.4-1 3.8-2-2.6-1.9 2-1.2-3-1.5 5.2-1.5-5.2-1.2 3-1.9-2-2 2.6-1-3.8z"/></g></g>';
 
   // count.js loads at the end of the page; events fired during start-up wait for it.
   function trackSoon(name) { var n = 0; (function go() { if (window.goatcounter && window.goatcounter.count) track(name); else if (++n < 30) setTimeout(go, 500); })(); }
@@ -10390,10 +10410,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // October 31 every year, by the visitor's own date; any other day the logo is the normal one.
     var d = new Date(); if (d.getMonth() !== 9 || d.getDate() !== 31) return;
     var lg = document.querySelector('.brand .logo'); if (lg && !lg.querySelector('.egg-spider')) lg.insertAdjacentHTML('beforeend', EGG_SPIDER);
+    // The play button gets a wrapper to animate (its own kick animation stays on .ptri), and the pumpkin sits on top.
+    var svg = lg && lg.querySelector('.logo-svg'), pt = svg && svg.querySelector('.ptri');
+    if (pt && !svg.querySelector('.egg-pk')) {
+      var wrap = document.createElementNS('http://www.w3.org/2000/svg', 'g'); wrap.setAttribute('class', 'egg-playwrap');
+      pt.parentNode.insertBefore(wrap, pt); wrap.appendChild(pt); svg.insertAdjacentHTML('beforeend', EGG_PUMPKIN);
+    }
     document.body.classList.add('egg-halloween'); trackSoon('egg-halloween');
     // Left open past midnight: back to the normal logo when November 1 starts.
     var mid = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime() - Date.now();
-    setTimeout(function () { document.body.classList.remove('egg-halloween'); var sp = lg && lg.querySelector('.egg-spider'); if (sp) sp.remove(); }, Math.max(1000, mid));
+    setTimeout(function () {
+      document.body.classList.remove('egg-halloween'); var sp = lg && lg.querySelector('.egg-spider'); if (sp) sp.remove();
+      var pk = svg && svg.querySelector('.egg-pk'), w = svg && svg.querySelector('.egg-playwrap'); if (pk) pk.remove();
+      if (w) { while (w.firstChild) w.parentNode.insertBefore(w.firstChild, w); w.remove(); }
+    }, Math.max(1000, mid));
   }
 
   function setupEggs() {
