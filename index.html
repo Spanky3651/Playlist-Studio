@@ -564,11 +564,6 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-alt #lqKeyBox p{margin:8px 0;}
 .lq-now{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:12px 14px;margin-bottom:16px;border:1px solid #23406b;border-radius:12px;background:linear-gradient(180deg,#0b1a30,#081222);}
 .lq-now[hidden]{display:none;}
-.lq-now.idle{padding:9px 14px;margin-bottom:12px;background:#0a0e15;border-color:var(--border-2);border-style:dashed;}
-.lq-now.idle .lq-nowl{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;}
-.lq-now.idle .lq-k{display:none;}
-.lq-now.idle .lq-nowt{font-size:14.5px;color:#d7e3f2;}
-.lq-now.idle .lq-m{margin:0;}
 .lq-nowl{flex:1 1 260px;min-width:0;}
 .lq-nowc{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #2a4a7a;flex:none;box-shadow:0 0 18px rgba(30,107,255,.25);}
 .lq-now.hascov .lq-nowl{flex:1 1 200px;}
@@ -3196,7 +3191,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T12:53Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-10-31T13:16Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -9332,8 +9327,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           (n ? songs + (ech ? ' &middot; ' + (ech.add || ech.rem ? lqDiffText(ech) : 'same as') + ' ' + (ech.add || ech.rem ? 'vs ' : '') + esc(lqDevName(ed.dev)) : '') + (lq.openName ? ' &middot; in Playlist Library as “' + esc(lq.openName) + '”' : '') + ' &middot; ' : '') + lqSaveNote() +
           (epend ? ' &middot; <span class="lq-wait">sent, waiting for the headset</span>' : earr ? ' &middot; <span class="lq-ok">arrived ' + esc(lqClock(earr.t)) + '</span>' : ', the headset updates on its next sync and keeps a backup'),
           lqBtn('Done editing', 'data-lq-stopedit'));
-      } else if (!n) {
-        h = nowCard('This playlist', 'Nothing to send yet', 'Build one in Your Playlist, or press Edit on a playlist below.', '');
       } else if (lq.dup) {
         var all = lq.dup.hits.length === lq.dup.devs.length;
         var onWhere = all ? (lq.dup.devs.length > 1 ? 'all ' + lq.dup.devs.length + ' headsets' : lqDevName(lq.dup.hits[0])) : lq.dup.hits.map(lqDevName).join(', ');
@@ -9359,8 +9352,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           pick + lqBtn(lqIco('send') + (lq.busy ? 'Sending…' : (toAll ? 'Send to all headsets' : 'Send to Quest')), 'data-lq-send', 'primary'));
       }
       var hasCov = !!(n && state.coverDataUrl);
-      card.className = 'lq-now' + (wide ? ' wide' : '') + (hasCov ? ' hascov' : '') + (!n && !ed ? ' idle' : '');
+      card.className = 'lq-now' + (wide ? ' wide' : '') + (hasCov ? ' hascov' : '');
       card.innerHTML = h;
+      // Nothing built and nothing open for editing: no card at all
+      if (!n && !ed) card.hidden = true;
       if (hasCov) {
         var ci = lqRender.cov || (lqRender.cov = document.createElement('img'));
         ci.className = 'lq-nowc'; ci.alt = '';
