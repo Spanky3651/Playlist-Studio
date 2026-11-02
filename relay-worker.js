@@ -2450,6 +2450,7 @@ body>main{position:relative;z-index:1}
     'search-beatleader': ['Search', 'Searched BeatLeader', 'Ran a search of the ranked BeatLeader catalog'],
     'map-style-*': ['Search', 'Map style', 'Picked a BeatLeader map style (Acc, Tech, Midspeed or Speed)'],
     'empty-loosen': ['Search', 'Search without the blocker', 'Searched again without the filter that hid every match'],
+    'empty-auto': ['Search', 'Showed auto-generated maps', 'Pressed Show them when only auto-generated BeatSaver maps matched'],
     'empty-clear-*': ['Search', 'Cleared a hiding filter', 'Cleared the one filter that hid every result'],
     'empty-reset': ['Search', 'Reset from no matches', 'Reset filters when they hid every result'],
     'search-beatsaver': ['Search', 'Searched BeatSaver', 'Ran a search of BeatSaver by tags or text'],

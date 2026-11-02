@@ -1091,6 +1091,7 @@ button[hidden],.filebtn[hidden]{display:none !important;}
 .rb{font-size:12px;font-weight:700;font-family:var(--mono);padding:2px 7px;border-radius:5px;border:1px solid var(--border-2);color:var(--muted);white-space:nowrap;letter-spacing:.2px;}
 .rb-star{color:var(--amber);border-color:rgba(255,194,61,.4);background:rgba(255,194,61,.08);}
 .rb-ur{color:var(--muted);}
+.rb-ai{color:#c9b3ff;}
 .rb-diff{color:#6aa6ff;border-color:rgba(47,140,255,.4);background:rgba(47,140,255,.08);}
 .rb-mode{color:var(--magenta);border-color:rgba(217,75,255,.35);}
 
@@ -3278,7 +3279,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T23:25Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T23:46Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5126,6 +5127,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     else if (sort === 'Relevance') sort = 'Latest';
     p.set('sortOrder', sort);
     // Do NOT send automapper=false: on BeatSaver that INCLUDES AI (Beat Sage) maps. The default already excludes them.
+    // automapper=true adds them; sent only after the empty-search message's Show them button.
+    if (o.withAuto) p.set('automapper', 'true');
     var ts = tagState(), tag = o.noTags ? '' : buildTagParam(ts); if (tag) p.set('tags', tag);
     if (el.bsCurated.checked && !o.noCurated) p.set('curated', 'true');
     if (f.npsMin != null) p.set('minNps', f.npsMin);
@@ -5165,7 +5168,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       stars: diffs.reduce(function (m, d) { return Math.max(m, d.stars || 0); }, 0),
       difficultyName: '', modeName: (charSet['Standard'] ? 'Standard' : (hardest.characteristic || 'Standard')),
       modes: modes, diffSet: Object.keys(diffSet), diffCount: diffs.length, bsScore: score, uploaded: upT,
-      nps: hardest.nps || 0, njs: hardest.njs || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, _bs: true };
+      nps: hardest.nps || 0, njs: hardest.njs || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, ai: !!map.automapper, _bs: true };
   }
   // The keyword box can hold a direct map reference: a BSR code, a beatsaver.com/maps link, or a
   // 40-char hash. Link / hash / !-prefixed / bsr-prefixed forms are unambiguous (explicit); a bare
@@ -5202,8 +5205,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (isMobileView()) setMobileView('results');
     var collected = [], mapsSeen = 0, page = 0, capMaps = f.maxScan, total = null, totalPages = null, rateLimited = false, bsrMode = false;
     var hop = state.bsHop; state.bsHop = null; state.emptyProbe = null; bsProbeTok++;
+    var withAuto = !!state.bsAutoOnce; state.bsAutoOnce = false; state.bsLastAuto = withAuto;
     function step() {
-      return fetch(buildBeatSaverUrl(page, f)).then(function (r) {
+      return fetch(buildBeatSaverUrl(page, f, withAuto ? { withAuto: true } : null)).then(function (r) {
         if (r.status === 429) { rateLimited = true; return null; }   // stop paging, keep what we have
         if (!r.ok) throw new Error('BeatSaver returned HTTP ' + r.status); return r.json();
       }).then(function (data) {
@@ -5244,7 +5248,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (!collected.length) { setStatus('No maps found', 'err'); if (bsrMode) toast('No BeatSaver map matched that code or link - double-check it.', 'warn'); else emptyProbe(f); }
       else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited - search again to pull the rest.', 'warn'); }
       else if (bsrMode) { setStatus('Found ' + collected.length + ' map' + (collected.length === 1 ? '' : 's'), 'on'); toast((collected.length === 1 ? 'Found “' + collected[0].songName + '”' : 'Found ' + collected.length + ' maps') + (hop ? ' on BeatSaver (BSR codes are BeatSaver maps). Tap BeatLeader up top to go back.' : collected.length === 1 ? ' - add it below.' : ' - add the ones you want below.'), 'ok'); }
-      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); if (hop) toast('Searched BeatSaver for this one. Tap BeatLeader up top to go back.', 'ok'); }
+      else { setStatus('Loaded ' + mapsSeen + ' maps', 'on'); if (hop) toast('Searched BeatSaver for this one. Tap BeatLeader up top to go back.', 'ok'); else if (withAuto) toast('Auto-generated maps are included for this search. They\'re marked AI.', 'ok'); }
       applyClientFilters();
       if (collected.length && isMobileView()) setMobileView('results');
       if (state.bsrAutoOpen && bsrMode && collected.length === 1) openPreview(collected[0]);
@@ -5905,6 +5909,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     else if (e.ssStars > 0) b.push('<span class="rb rb-ss" title="ScoreSaber star rating (not on BeatLeader\'s ranked list)">SS ' + e.ssStars.toFixed(2) + '★</span>');
     else b.push('<span class="rb rb-ur">UR</span>');
     if (e.modeName && e.modeName !== 'Standard') b.push('<span class="rb rb-mode">' + esc(e.modeName) + '</span>');
+    if (e.ai) b.push('<span class="rb rb-ai" title="Marked as auto-generated (AI) on BeatSaver">AI</span>');
     var t = [];
     if (e.nps) t.push('<b>' + e.nps.toFixed(1) + '</b> NPS');
     if (e.njs) t.push('<span title="Note jump speed"><b>' + (Math.round(e.njs * 10) / 10) + '</b> NJS</span>');
@@ -6082,6 +6087,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (f.npsMin != null || f.npsMax != null) steps.push({ k: 'nps', t: 'your NPS limits', pl: 1, go: function (x) { x.npsMin = x.npsMax = null; } });
     if (f.bpmMin != null || f.bpmMax != null) steps.push({ k: 'bpm', t: 'your BPM limits', pl: 1, go: function (x) { x.bpmMin = x.bpmMax = null; } });
     if (f.durMin != null || f.durMax != null) steps.push({ k: 'dur', t: 'your length limits', pl: 1, go: function (x) { x.durMin = x.durMax = null; } });
+    if (state.bsLastAuto) o.withAuto = true;
+    else if (q) steps.push({ k: 'auto', t: 'auto-generated', go: function () { o.withAuto = true; } });
     state.emptyProbe = { sig: sig, q: q, busy: !!steps.length, none: !steps.length, src: 'BeatSaver' };
     if (!steps.length) return;
     var i = 0, live = function () { return tok === bsProbeTok && state.source === 'beatsaver' && !state.raw.length && state.lastSig === sig; };
@@ -6101,6 +6108,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (pr.busy) return '<p><b>No maps matched' + q + '.</b></p><p>Checking which filter is in the way…</p>';
     var bsSrc = pr.src === 'BeatSaver';
     if (pr.none) return '<p><b>Nothing on ' + (bsSrc ? 'BeatSaver' : 'BeatLeader') + ' matches' + (q || ' this search') + '.</b></p><p>' + (q ? (bsSrc ? 'Check the spelling, or try fewer words.' : 'Check the spelling, or look on BeatSaver.') : (bsSrc ? 'Try different tags or a song name.' : 'Try loosening your filters.')) + '</p>' + (!bsSrc && emptyBsBtn() ? '<p>' + emptyBsBtn() + '</p>' : '');
+    if (pr.steps.some(function (x) { return x.k === 'auto'; })) {
+      var oth = pr.steps.filter(function (x) { return x.k !== 'auto'; }), on = oth.map(function (x) { return x.t; });
+      var ol = on.length > 1 ? on.slice(0, -1).join(', ') + ' and ' + on[on.length - 1] : on[0];
+      return '<p><b>' + pr.n.toLocaleString() + (pr.more ? '+' : '') + ' auto-generated map' + (pr.n === 1 ? '' : 's') + ' match' + (pr.n === 1 ? 'es' : '') + q + '.</b></p>' +
+        '<p>BeatSaver hides maps marked as auto-generated (Beat Sage and other AI maps) unless you ask for them' + (ol ? ', and ' + ol + (on.length > 1 || oth[0].pl ? ' hide ' : ' hides ') + (pr.n === 1 ? 'it' : 'them') + ' too' : '') + '.</p>' +
+        '<p class="empty-fix"><button type="button" class="ghost sm" id="emptyLoosen">Show ' + (pr.n === 1 ? 'it' : 'them') + '</button></p>';
+    }
     var names = pr.steps.map(function (x) { return x.t; }), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0], many = names.length > 1 || !!pr.steps[0].pl;
     return '<p><b>' + pr.n.toLocaleString() + (pr.more ? '+' : '') + ' map' + (pr.n === 1 ? '' : 's') + ' match' + (pr.n === 1 ? 'es' : '') + q + ', but ' + list + (many ? ' hide' : ' hides') + ' ' + (pr.n === 1 ? 'it' : 'them') + '.</b></p>' +
       '<p class="empty-fix"><button type="button" class="ghost sm" id="emptyLoosen">Search without ' + (many ? 'them' : 'it') + '</button></p>';
@@ -6117,8 +6131,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (x.k === 'nps') el.fNpsMin.value = el.fNpsMax.value = '';
       else if (x.k === 'bpm') el.fBpmMin.value = el.fBpmMax.value = '';
       else if (x.k === 'dur') el.fDurMin.value = el.fDurMax.value = '';
+      else if (x.k === 'auto') state.bsAutoOnce = true;
     });
-    track('empty-loosen'); runFetch();
+    track(pr.steps.some(function (x) { return x.k === 'auto'; }) ? 'empty-auto' : 'empty-loosen'); runFetch();
   }
   function renderResults() {
     var avail = resultsAvailable(), rows = collapseList(avail), list = el.resultList;
@@ -14471,7 +14486,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays;
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
-     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-reset, aswroom-<feed|us|them>,
+     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-auto, empty-reset, aswroom-<feed|us|them>,
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
