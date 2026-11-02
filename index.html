@@ -2027,6 +2027,35 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asw-fit{font:700 12.5px var(--mono);text-align:right;} .asw-fit.g{color:var(--green);} .asw-fit.a{color:var(--amber);}
 .asw-you small{display:block;font-size:13px;color:#c3cbd9;margin-top:3px;} .asw-you small.r{color:#ff9fb2;}
 .asw-feed{display:flex;flex-direction:column;gap:4px;font-size:13.5px;}
+.awr{margin-top:10px;}
+.awr-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border-2);margin:0 0 10px;overflow-x:auto;scrollbar-width:none;}
+.awr-tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:#aab4c6;font:700 14px var(--sans);padding:7px 10px;white-space:nowrap;min-height:0;box-shadow:none;}
+.awr-tabs button.on{color:#fff;border-bottom-color:var(--asc,#e8335a);}
+.awr-tabs button small{font:600 12px var(--mono);color:var(--muted-2);margin-left:5px;}
+.awr-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.awr-chips button{background:#070a0f;border:1px solid var(--border-2);color:#aab4c6;font:600 13px var(--sans);border-radius:999px;padding:4px 11px;min-height:0;box-shadow:none;text-transform:none;letter-spacing:0;}
+.awr-chips button.on{border-color:#4a6fa8;color:#fff;background:#0e1626;}
+.awr-chips button i{font-style:normal;color:var(--muted-2);margin-left:5px;font-weight:500;}
+.awr-day{font:700 11.5px var(--mono);letter-spacing:1px;color:var(--muted-2);text-transform:uppercase;margin:10px 0 2px;}
+.awr-fi{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:5px 4px;font-size:13.5px;border-top:1px solid #0f1520;}
+.awr-fi time{color:var(--muted);font:12.5px var(--mono);}
+.awr-fi .w{min-width:0;color:#c3cbd9;}.awr-fi .w b{font-weight:600;}.awr-fi .g b{color:#7ff0c6;}.awr-fi .r b{color:#ff9fb2;}
+.awr-fi .w small{display:block;color:var(--muted-2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.awr-fi .d{font:700 13px var(--mono);color:#c3cbd9;text-align:right;white-space:nowrap;}
+.awr-fi.me{background:linear-gradient(90deg,rgba(232,51,90,.10),transparent);}
+.awr-brk{font:800 10.5px var(--mono);letter-spacing:.5px;border-radius:4px;padding:1px 5px;margin-left:6px;}
+.awr-brk.g{background:rgba(34,224,161,.15);color:#7ff0c6;}.awr-brk.r{background:rgba(255,77,109,.16);color:#ff9fb2;}
+.awr-more{display:block;width:100%;margin-top:8px;background:#070a0f;border:1px solid var(--border-2);color:#c3cbd9;font:600 13.5px var(--sans);border-radius:9px;padding:8px;min-height:0;box-shadow:none;text-transform:none;letter-spacing:0;}
+.awr-stat{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 8px;font-size:13px;color:#aab4c6;}.awr-stat b{color:#fff;font-size:15px;margin-right:4px;}
+.awr-m{display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;gap:8px;align-items:center;padding:5px 4px;font-size:14px;border-radius:7px;}
+.awr-m b{color:#fff;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.awr-m small{display:block;font-size:12px;color:var(--muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.awr-m .asw-pb{margin:0;}.awr-m .gn{font:700 12.5px var(--mono);text-align:right;color:#c3cbd9;}
+.awr-m .bk{grid-column:2/4;text-align:right;font-size:12.5px;font-weight:600;color:#ff9fb2;white-space:nowrap;}
+.awr-m.me{background:rgba(232,51,90,.12);}.awr-m.down{opacity:.7;}.awr-m.hot b{color:#ffe08a;}
+.awr-you{font:700 10.5px var(--mono);color:#ff9fb2;border:1px solid rgba(255,77,109,.5);border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:1px;}
+.asw-pb i.awr-hi{background:var(--green);}.asw-pb i.awr-mid{background:var(--amber);}.asw-pb i.awr-lo{background:var(--danger);}
+@media (max-width:620px){.awr-m{grid-template-columns:minmax(0,1fr) 70px 30px;gap:7px;}.awr-m .bk{white-space:normal;line-height:1.3;}.awr-stat{gap:6px 14px;}.awr-fi{grid-template-columns:58px minmax(0,1fr) auto;}}
 .asw-feed div{display:flex;gap:8px;} .asw-feed time{color:var(--muted);flex:none;width:62px;font-family:var(--mono);font-size:12.5px;}
 .asw-feed .g{color:#7ff0c6;} .asw-feed .r{color:#ff9fb2;}
 .asw-res.won{border-color:rgba(34,224,161,.45);} .asw-res.lost{border-color:rgba(255,77,109,.5);}
@@ -3238,7 +3267,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T18:57Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T23:10Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -12827,11 +12856,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function aswWarLoad(w, live) {
     var id = encodeURIComponent(w.id), aid = asc.link.aid;
     return Promise.all([asGet('/clans/wars/' + id), aswPages('/clans/wars/' + id + '/participants', 4),
-      aswSoft(aswPages('/clans/wars/' + id + '/hits?userId=' + encodeURIComponent(aid), 5)), aswSoft(asGet('/clans/wars/' + id + '/hits?page=0&size=8'))]).then(function (r) {
+      aswSoft(aswPages('/clans/wars/' + id + '/hits?userId=' + encodeURIComponent(aid), 5)), aswSoft(asGet('/clans/wars/' + id + '/hits?page=0&size=100'))]).then(function (r) {
       if (!live() || !asc.war || asc.war.w.id !== w.id) return null;
       var d = r[0] || {}, W = asc.war;
       W.w = d.war || w; W.team = aswTeamOf(W.w, asc.link.clan.id) || W.team; W.pool = d.pool || []; W.timeline = d.timeline || []; W.rules = d.strikeRules || {};
-      W.parts = r[1] || []; W.mine = r[2] || []; W.feed = (r[3] && r[3].content) || []; W.model = null;
+      W.parts = r[1] || []; W.mine = r[2] || []; W.feed = (r[3] && r[3].content) || []; W.feedTotal = r[3] && +r[3].totalElements > 0 ? +r[3].totalElements : W.feed.length; W.model = null;
       renderClanBar();
       return Promise.all(W.pool.map(function (it) {
         var dif = (it && it.difficulty) || {}; if (!dif.id) return null;
@@ -13034,16 +13063,67 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         (g2 > 0 ? '' : '<small class="r">Broken' + (me.reviveAt ? ', back ' + esc(ascWhen(me.reviveAt)) : '') + '.</small>') +
         (worst ? '<small>' + esc(worst) + ' has hit you ' + (hitMe[worst].n === 1 ? 'once' : hitMe[worst].n + ' times') + (hitMe[worst].map ? ' (latest on ' + esc(hitMe[worst].map) + ')' : '') + '. Beating their score on a war map hits them back.</small>' : '') + '</div>';
     } else right += '<p class="asw-note">You aren\'t on this war\'s roster, so the war maps below are a preview of what you could hit.</p>';
-    if (W.feed.length) {
-      var us2 = aswTeamClans(W.team), clanOf = {}; W.parts.forEach(function (p) { if (p.player) clanOf[p.player.id] = p.clanId; });
-      right += '<div class="asw-ch" style="margin:10px 0 4px"><b>Latest</b></div><div class="asw-feed">' + W.feed.slice(0, 6).map(function (x) {
-        var ours = !!us2[clanOf[x.attacker && x.attacker.id]], t = new Date(x.createdAt), hm = isNaN(t) ? '' : t.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        return '<div><time>' + esc(hm) + '</time><span class="' + (ours ? 'g' : 'r') + '">' + esc(x.attacker ? x.attacker.name : '?') + (x.broke ? ' broke ' : x.chip ? ' chipped ' : ' hit ') + esc(x.victim ? x.victim.name : '?') + (x.map ? ' on ' + esc(x.map.songName) : '') + ' · ' + (+x.damage || 0).toFixed(1) + '</span></div>';
-      }).join('') + '</div>';
-    }
     h += '<div class="asw-two"><div class="asw-card"><div class="asw-ch"><b>Best targets for you</b><span>enemies you can hit, closest to breaking first</span></div><div class="asw-tg">' + left + '</div></div><div class="asw-card"><div class="asw-ch"><b>You</b></div>' + right + '</div></div>';
-    return h;
+    return h + aswRoom();
   }
+  // War room (Nov 2026): one card with three tabs. Feed is every hit loaded (newest 100), with filters and days;
+  // the team tabs list each side's players lowest guard first, broken ones last with when they're back.
+  var awr = { war: null, tab: 'feed', f: 'all', n: 20 };
+  function awrDay(t) {
+    var d = new Date(t), n = new Date(); if (isNaN(d)) return '';
+    var k = function (x) { return x.getFullYear() + '-' + x.getMonth() + '-' + x.getDate(); }, y = new Date(n); y.setDate(n.getDate() - 1);
+    return k(d) === k(n) ? 'Today' : k(d) === k(y) ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function aswRoom() {
+    var W = asc.war; if (!W || !W.parts) return '';
+    if (awr.war !== W.w.id) awr = { war: W.w.id, tab: 'feed', f: 'all', n: 20 };
+    var us = aswTeamClans(W.team), aid = String(asc.link.aid), gm = +(W.rules && W.rules.guard) || 100;
+    var mine = W.parts.filter(function (p) { return us[p.clanId]; }), theirs = W.parts.filter(function (p) { return !us[p.clanId]; });
+    var usTag = esc(aswTags(W.w, W.team).join(' + ')), themTag = esc(aswOpp());
+    var up = function (l) { return l.filter(function (p) { return +p.guard > 0; }).length; };
+    var tab = function (k, lbl, l) { return '<button type="button" role="tab" aria-selected="' + (awr.tab === k) + '" class="' + (awr.tab === k ? 'on' : '') + '" data-awr-tab="' + k + '">' + lbl + (l ? '<small>' + up(l) + '/' + l.length + '</small>' : '') + '</button>'; };
+    var body = '';
+    if (awr.tab === 'feed') {
+      var clanOf = {}; W.parts.forEach(function (p) { if (p.player) clanOf[p.player.id] = p.clanId; });
+      var ours = function (x) { return !!us[clanOf[x.attacker && x.attacker.id]]; }, mineX = function (x) { return (x.attacker && String(x.attacker.id) === aid) || (x.victim && String(x.victim.id) === aid); };
+      var F = { all: function () { return true; }, us: ours, them: function (x) { return !ours(x); }, brk: function (x) { return !!x.broke; }, you: mineX };
+      var feed = W.feed || [], list = feed.filter(F[awr.f] || F.all), last = null;
+      body += '<div class="awr-chips">' + [['all', 'All'], ['us', usTag], ['them', themTag], ['brk', 'Breaks'], ['you', 'You']].map(function (c) {
+        var n = c[0] === 'all' ? (W.feedTotal || feed.length) : feed.filter(F[c[0]]).length;
+        return '<button type="button" class="' + (awr.f === c[0] ? 'on' : '') + '" data-awr-f="' + c[0] + '">' + c[1] + '<i>' + aswNum(n) + '</i></button>';
+      }).join('') + '</div>';
+      if (!list.length) body += '<p class="asw-note">' + (feed.length ? 'No hits like that yet.' : 'No hits yet in this war.') + '</p>';
+      list.slice(0, awr.n).forEach(function (x) {
+        var t = new Date(x.createdAt), day = awrDay(x.createdAt), o = ours(x), me = mineX(x);
+        if (day !== last) { body += '<div class="awr-day">' + esc(day) + '</div>'; last = day; }
+        body += '<div class="awr-fi' + (me ? ' me' : '') + '"><time>' + (isNaN(t) ? '' : esc(t.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))) + '</time><span class="w ' + (o ? 'g' : 'r') + '"><b>' + esc(x.attacker ? x.attacker.name : '?') + '</b> ' + (x.broke ? 'broke' : x.chip ? 'chipped' : 'hit') + ' <b>' + esc(x.victim ? x.victim.name : '?') + '</b>' +
+          (x.broke ? '<span class="awr-brk ' + (o ? 'g' : 'r') + '">BREAK</span>' : '') + (x.map ? '<small>on ' + esc(x.map.songName) + '</small>' : '') + '</span><span class="d">' + (+x.damage || 0).toFixed(1) + '</span></div>';
+      });
+      if (list.length > awr.n) body += '<button type="button" class="awr-more" data-awr-more>Show ' + Math.min(20, list.length - awr.n) + ' more</button>';
+      else if (awr.f === 'all' && W.feedTotal > feed.length) body += '<p class="asw-note">Showing the newest ' + feed.length + ' of ' + aswNum(W.feedTotal) + ' hits. <a class="cb-link" href="https://accsaber.com/clans/wars/' + encodeURIComponent(W.w.id) + '" target="_blank" rel="noopener">All of them on AccSaber ↗</a></p>';
+    } else {
+      var team = awr.tab === 'us' ? mine : theirs, X = aswModel(), canHit = {};
+      if (awr.tab === 'them' && X) X.targets.forEach(function (t) { if (t.p && t.p.player) canHit[t.p.player.id] = 1; });
+      var live = team.filter(function (p) { return +p.guard > 0; }), down = team.filter(function (p) { return !(+p.guard > 0); });
+      live.sort(function (a, b) { return (+a.guard || 0) - (+b.guard || 0); });
+      down.sort(function (a, b) { return (a.reviveAt ? new Date(a.reviveAt).getTime() : 9e15) - (b.reviveAt ? new Date(b.reviveAt).getTime() : 9e15); });
+      var avg = live.length ? Math.round(live.reduce(function (n, p) { return n + (+p.guard || 0); }, 0) / live.length) : 0;
+      var brk = team.reduce(function (n, p) { return n + (+p.breaksSuffered || 0); }, 0), con = team.reduce(function (n, p) { return n + (+p.contribution || 0); }, 0);
+      body += '<div class="awr-stat"><span><b>' + live.length + '/' + team.length + '</b>up</span><span><b>' + avg + '</b>avg guard</span><span><b>' + aswNum(brk) + '</b>' + (brk === 1 ? 'break' : 'breaks') + ' taken</span>' + (con > 0 ? '<span><b>' + aswNum(Math.round(con)) + '</b>contribution</span>' : '') + '</div>';
+      if (!team.length) body += '<p class="asw-note">No players on this side yet.</p>';
+      live.concat(down).forEach(function (p) {
+        var g = +p.guard || 0, nm = (p.player && p.player.name) || '?', me = p.player && String(p.player.id) === aid, hot = !!(p.player && canHit[p.player.id]);
+        var sub = (+p.skill > 0 ? 'skill ' + (+p.skill).toFixed(1) : '') + (hot ? ' · you can hit' : +p.contribution > 0 ? ' · contribution ' + aswNum(Math.round(+p.contribution)) : '');
+        var pct = Math.max(0, Math.min(100, g / gm * 100)), cls = pct >= 70 ? 'hi' : pct >= 35 ? 'mid' : 'lo';
+        body += '<div class="awr-m' + (me ? ' me' : '') + (g > 0 ? '' : ' down') + (hot ? ' hot' : '') + '"><span><b>' + esc(nm) + (me ? '<span class="awr-you">YOU</span>' : '') + '</b><small>' + sub.replace(/^ · /, '') + '</small></span>' +
+          (g > 0 ? '<span class="asw-pb"><i class="awr-' + cls + '" style="width:' + pct.toFixed(0) + '%"></i></span><span class="gn">' + Math.round(g) + '</span>'
+            : '<span class="bk">broken' + (p.reviveAt && ascLeft(p.reviveAt) ? ' · back in ' + esc(ascLeft(p.reviveAt)) : '') + '</span>') + '</div>';
+      });
+    }
+    return '<div class="asw-card awr" id="awrCard"><div class="asw-ch"><b>War room</b><span>' + (awr.tab === 'feed' ? 'every hit this war, newest first' : 'lowest guard first') + '</span></div><div class="awr-tabs" role="tablist">' +
+      tab('feed', 'Feed') + tab('us', usTag, mine) + tab('them', themTag, theirs) + '</div>' + body + '</div>';
+  }
+  function awrPaint() { var c = document.getElementById('awrCard'); if (c) c.outerHTML = aswRoom(); }
   function aswCard(sel) {
     var W = asc.war, p = aswPhase(W.w), X = aswModel(), top = X && X.maps[0];
     var you = !W.ready ? 'Loading war maps…' : !X ? '' : top && top.hits.length ? 'Best for you: <b>' + esc(top.e.songName) + '</b>' + (top.best ? ' · ≈' + top.best.d.toFixed(0) + ' a hit' : '') : 'No hits at your usual accuracy yet';
@@ -13198,6 +13278,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     bar.innerHTML = h;
   }
   function ascClick(e) {
+    var rt = e.target.closest('[data-awr-tab],[data-awr-f],[data-awr-more]');
+    if (rt) {
+      if (rt.hasAttribute('data-awr-tab')) { awr.tab = rt.getAttribute('data-awr-tab'); track('aswroom-' + awr.tab); }
+      else if (rt.hasAttribute('data-awr-f')) { awr.f = rt.getAttribute('data-awr-f'); awr.n = 20; }
+      else awr.n += 20;
+      awrPaint(); return;
+    }
     var t = e.target.closest('[data-asm]');
     if (t) {
       var i = +t.getAttribute('data-asm');
@@ -14371,7 +14458,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays;
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
-     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-reset,
+     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-reset, aswroom-<feed|us|them>,
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;

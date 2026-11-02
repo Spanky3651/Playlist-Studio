@@ -1786,18 +1786,20 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
-.kgrid .value{font-size:32px}.kgrid .value.k{color:#ff5e5b}
+.kgrid .value{font-size:32px}.kgrid .value.k{color:#3ddc84}
 .kpanel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:0}
 .phead{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}.phead b{font-size:15px}.phead small{color:var(--muted);font-size:13.5px}.phead .sp{flex:1}
-.tip{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #141c2a}
-.tip:first-child{border-top:0}
+.tip{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 10px;margin:0 -10px;border-radius:12px}
+.tip+.tip{margin-top:2px}.tip:hover{background:#0f1624}
 .tav{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(135deg,#ff5e5b,#b8323a)}
 .tav.p{background:#1a2336;color:#7f8a9c}
 .tn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.tn b{font-size:15.5px;overflow-wrap:anywhere}
 .kpill{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:#14213a;color:#9cc0ff;border:1px solid #1f3456;white-space:nowrap}
 .kpill.m{background:rgba(61,220,132,.1);color:#3ddc84;border-color:#1f5a3c}.kpill.s{background:rgba(255,194,61,.1);color:#ffc23d;border-color:#5a4a1f}
 .tmsg{margin-top:4px;font-size:14.5px;color:#c9d3e3;font-style:italic;overflow-wrap:anywhere}.tmsg.none{font-style:normal;color:#5d6880}
-.tamt{text-align:right}.tamt b{display:block;font-size:19px;color:#fff;white-space:nowrap}.tamt small{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.tamt{display:flex;align-items:center;gap:8px}.tamt b{font-size:19px;color:#3ddc84;white-space:nowrap}
+.tw{font-size:13px;color:#7f8a9c;white-space:nowrap}
+.kpill.h{background:#11161f;color:#8792a6;border-color:#232c3b}
 .kfoot{margin-top:10px;font-size:13px;color:#7f8a9c}
 .phead .kadd{margin-left:auto;padding:5px 12px;font-size:13.5px;font-weight:700;border-radius:9px}
 .kform{display:grid;grid-template-columns:minmax(0,1.4fr) 110px 150px 130px;gap:8px;margin:6px 0 12px;padding:12px;border:1px solid #1f3456;border-radius:12px;background:#0b111c}
@@ -1808,8 +1810,8 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .kform .krow label input{width:18px;height:18px;padding:0;accent-color:#ff5e5b}
 .kform .krow button{padding:8px 16px;font-size:14.5px}
 .kform .kerr{grid-column:1/-1;color:#ff8a98;font-size:14px}
-.tip .kdel{display:block;margin:4px 0 0 auto;padding:2px 8px;font-size:12px;font-weight:600;border-radius:7px}
-.tmark{display:block;font-size:11.5px;color:#7f8a9c;font-weight:600;white-space:nowrap}
+.tip .kdel{width:28px;height:28px;padding:0;border-radius:8px;font-size:17px;line-height:1;font-weight:500;color:#7f8a9c;display:inline-grid;place-items:center}
+.tip .kdel:hover{color:#ff8a98;border-color:#5a2230}.tip .kdel.sure{width:auto;padding:0 10px;font-size:12.5px;font-weight:700;color:#ff8a98;border-color:#5a2230}
 .wkempty{grid-column:1/-1;align-self:center;text-align:center;color:var(--muted);font-size:14.5px}
 @media(max-width:760px){.kform{grid-template-columns:1fr 1fr}.kform .kname{grid-column:1/-1}}
 .ktwo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
@@ -2498,6 +2500,7 @@ body>main{position:relative;z-index:1}
     'profile-clan-bl': ['Clans', 'BeatLeader clan chip', 'Opened their BeatLeader clan from the profile chip'],
     'profile-clan-as': ['Clans', 'AccSaber clan chip', 'Opened their AccSaber clan from the profile chip'],
     'profile-clan-war': ['Clans', 'Clan war banner', 'Pressed Fight on the clan war banner'],
+    'aswroom-*': ['Clans', 'War room tab', 'Opened a War room tab (feed or a team) in the AccSaber clan war view'],
     'ss-sync': ['Profile', 'ScoreSaber pull', 'Pulled their ScoreSaber plays'],
     'ss-sync-auto': ['Profile', 'ScoreSaber refresh', 'Sync scores also refreshed ScoreSaber'],
     'stats-open': ['Stats', 'Opened Stats', 'Opened the Stats card'],
@@ -3046,7 +3049,7 @@ body>main{position:relative;z-index:1}
     $('k-list').innerHTML = tips.length ? tips.slice(-8).reverse().map(function (x) {
       var pill = x.type === 'Shop Order' ? '<span class="kpill s">Shop</span>' : x.sub ? '<span class="kpill m">Monthly' + (x.tier ? ' &middot; ' + esc(x.tier) : '') + (x.first ? ' &middot; new' : '') + '</span>' : x.type === 'Commission' ? '<span class="kpill s">Commission</span>' : '<span class="kpill">Tip</span>';
       var nm = x.pub && x.name ? x.name : 'Someone', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
-      return '<div class="tip"><span class="tav' + (x.pub ? '' : ' p') + '">' + (x.pub && x.name ? esc(x.name.charAt(0).toUpperCase()) : '?') + '</span><div><div class="tn"><b>' + esc(nm) + '</b>' + pill + '</div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b><small>' + esc(kAgo(x.t)) + '</small>' + (x.manual ? '<span class="tmark">added by hand</span><button class="ghost kdel" type="button" data-kdel="' + esc(x.id) + '">Remove</button>' : '') + '</div></div>';
+      return '<div class="tip"><span class="tav' + (x.pub ? '' : ' p') + '">' + (x.pub && x.name ? esc(x.name.charAt(0).toUpperCase()) : '?') + '</span><div><div class="tn"><b>' + esc(nm) + '</b>' + pill + (x.manual ? '<span class="kpill h" title="Added on this page, not sent by Ko-fi">by hand</span>' : '') + '<span class="tw">' + esc(kAgo(x.t)) + '</span></div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b>' + (x.manual ? '<button class="ghost kdel" type="button" data-kdel="' + esc(x.id) + '" title="Remove this tip" aria-label="Remove this tip">&times;</button>' : '') + '</div></div>';
     }).join('') : '<p class="empty">No tips yet. They show up here as soon as Ko-fi sends them.</p>';
     // clicks: per day from GoatCounter, all sites added up
     var day = function (t) { var x = new Date(t * 1000); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
@@ -3107,7 +3110,7 @@ body>main{position:relative;z-index:1}
   });
   $('k-list').addEventListener('click', function (e) {
     var b = e.target.closest('[data-kdel]'); if (!b) return;
-    if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Remove?'; return; }
+    if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.classList.add('sure'); b.textContent = 'Remove?'; return; }
     b.disabled = true; kPost('/admin/kofi/del', { id: b.getAttribute('data-kdel') }).then(function () { loadKofi(false); });
   });
   function kAgoDate(t) { var x = new Date(t * 1000); return MON[x.getMonth()] + ' ' + x.getDate() + (x.getFullYear() !== new Date().getFullYear() ? ', ' + x.getFullYear() : ''); }
