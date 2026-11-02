@@ -1131,7 +1131,8 @@ async function admin(request, env, url) {
       "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
-  if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
+  const kofiEdit = request.method === "POST" && (url.pathname === "/admin/kofi/add" || url.pathname === "/admin/kofi/del");
+  if (!kofiEdit && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
   // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
@@ -1153,6 +1154,7 @@ async function admin(request, env, url) {
     }
   }
   if (url.pathname === "/admin/kofi") return json(await kofiStats(env, url.searchParams.get("fresh") === "1"), 200, nocache);
+  if (kofiEdit) return kofiEditTips(request, env, url, nocache);
   return json(await adminStats(env), 200, nocache);
 }
 
@@ -1189,6 +1191,31 @@ async function kofiHook(request, env) {
   }
   return new Response("ok");
 }
+// Ko-fi has no history to read, so tips from before the webhook was set up are added by hand on the Ko-fi tab.
+// Only those hand-added ones can be removed again.
+async function kofiEditTips(request, env, url, nocache) {
+  let b = null; try { b = await request.json(); } catch (e) {}
+  if (!b || typeof b !== "object") return json({ error: "Bad request" }, 400, nocache);
+  const list = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
+  if (url.pathname === "/admin/kofi/del") {
+    const id = String(b.id || "");
+    const keep = list.filter((x) => !(x.id === id && x.manual));
+    if (keep.length === list.length) return json({ error: "Only tips you added by hand can be removed" }, 400, nocache);
+    await env.PLAYLISTS.put("kofi:tips", JSON.stringify(keep));
+    return json({ ok: true }, 200, nocache);
+  }
+  const str = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
+  const amt = Math.round((Number(b.amount) || 0) * 100) / 100, name = str(b.name, 60), day = str(b.date, 10);
+  const t = /^\d{4}-\d{2}-\d{2}$/.test(day) ? Math.floor(Date.parse(day + "T12:00:00Z") / 1000) : 0;
+  if (!(amt > 0 && amt < 100000) || !t || t > nowSec() + 86400) return json({ error: "Add an amount and a date" }, 400, nocache);
+  const type = { tip: "Donation", monthly: "Subscription", shop: "Shop Order" }[b.kind] || "Donation", pub = b.public !== false;
+  const rec = { id: "manual-" + nowSec().toString(36) + Math.random().toString(36).slice(2, 7), t, type, amt, cur: (str(b.currency, 3) || "USD").toUpperCase(),
+    pub, name: pub ? name : "", msg: pub ? str(b.message, 300) : "", tier: type === "Subscription" ? str(b.tier, 60) : "", sub: type === "Subscription", first: false, items: 0,
+    who: (await sha256((name || "someone").toLowerCase())).slice(0, 16), manual: true };
+  list.push(rec); list.sort((a, c) => a.t - c.t);
+  await env.PLAYLISTS.put("kofi:tips", JSON.stringify(list.slice(-3000)));
+  return json({ ok: true, tip: rec }, 200, nocache);
+}
 async function kofiStats(env, fresh) {
   const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
   const test = await env.PLAYLISTS.get("kofi:test", "json");
@@ -1198,7 +1225,7 @@ async function kofiStats(env, fresh) {
 }
 // Support me clicks (the kofi-click event) per day for the last 8 weeks, on every site that counts them.
 async function kofiClicks(env, fresh) {
-  const ck = "kofi:clicks", cached = await env.PLAYLISTS.get(ck, "json");
+  const ck = "kofi:clicks2", cached = await env.PLAYLISTS.get(ck, "json");
   if (cached && nowSec() - cached.generated < (fresh ? 300 : 3600)) return cached;
   if (!env.GC_TOKEN) return null;
   const now = nowSec(), DAY = 86400, start = Math.floor(now / DAY) * DAY - 55 * DAY;
@@ -1206,12 +1233,14 @@ async function kofiClicks(env, fresh) {
   const sites = [];
   for (const [key, name, cfg] of SITES) {
     const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
-    let hit = null;
+    // The Support me button counts as the event app/kofi-click on every site; GoatCounter can return just that path.
+    let hit = null, asked = false;
     try {
-      const j = await gcGet(e, "/stats/hits", { start: gcIso(start), end: gcIso(now), limit: 20, group: "day", filter: "kofi-click" });
+      const j = await gcGet(e, "/stats/hits", { start: gcIso(start), end: gcIso(now), limit: 5, group: "day", include_paths: "app/kofi-click", path_by_name: "true" });
+      asked = true;
       hit = ((j && j.hits) || []).find((h) => /(^|\/)kofi-click$/.test(h.path || ""));
     } catch (x) { if (x && x.message === "gc-auth" && key === "studio") throw x; }
-    if (!hit) {
+    if (!asked) {
       try { const all = await gcHits(e, start, now); const h = all.find((x) => /(^|\/)kofi-click$/.test(x.path || "")); if (h) hit = { stats: h.days.map((d) => ({ day: d[0], daily: d[1] })) }; }
       catch (x) { if (x && x.message === "gc-auth" && key === "studio") throw x; sites.push({ key, name, error: true, days: [] }); continue; }
     }
@@ -1770,6 +1799,19 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .tmsg{margin-top:4px;font-size:14.5px;color:#c9d3e3;font-style:italic;overflow-wrap:anywhere}.tmsg.none{font-style:normal;color:#5d6880}
 .tamt{text-align:right}.tamt b{display:block;font-size:19px;color:#fff;white-space:nowrap}.tamt small{font-size:12.5px;color:var(--muted);white-space:nowrap}
 .kfoot{margin-top:10px;font-size:13px;color:#7f8a9c}
+.phead .kadd{margin-left:auto;padding:5px 12px;font-size:13.5px;font-weight:700;border-radius:9px}
+.kform{display:grid;grid-template-columns:minmax(0,1.4fr) 110px 150px 130px;gap:8px;margin:6px 0 12px;padding:12px;border:1px solid #1f3456;border-radius:12px;background:#0b111c}
+.kform input,.kform select{width:100%;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 10px;font-size:15px;font-family:inherit}
+.kform .kmsg{grid-column:1/-1}
+.kform .krow{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.kform .krow label{display:inline-flex;align-items:center;gap:7px;font-size:14.5px;color:#c9d3e3;margin-right:auto}
+.kform .krow label input{width:18px;height:18px;padding:0;accent-color:#ff5e5b}
+.kform .krow button{padding:8px 16px;font-size:14.5px}
+.kform .kerr{grid-column:1/-1;color:#ff8a98;font-size:14px}
+.tip .kdel{display:block;margin:4px 0 0 auto;padding:2px 8px;font-size:12px;font-weight:600;border-radius:7px}
+.tmark{display:block;font-size:11.5px;color:#7f8a9c;font-weight:600;white-space:nowrap}
+.wkempty{grid-column:1/-1;align-self:center;text-align:center;color:var(--muted);font-size:14.5px}
+@media(max-width:760px){.kform{grid-template-columns:1fr 1fr}.kform .kname{grid-column:1/-1}}
 .ktwo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
 .wk{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;align-items:end;height:180px;margin:10px 0 6px;padding-top:8px}
 .wkc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0}
@@ -1916,6 +1958,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 }
 .tab-short{display:none}
 @media(max-width:700px){.tab-short{display:inline}}
+.tabs.tight{gap:0}.tabs.tight button{padding:10px 5px;font-size:14.5px;gap:5px}
+.tabs.tight .tab-long{display:none}.tabs.tight .tab-short{display:inline}
+.tabs.more{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
@@ -1929,12 +1974,12 @@ body>main{position:relative;z-index:1}
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
 <div class="tabs" role="tablist" id="tabs">
-<button role="tab" data-tab="all" aria-selected="false">All sites</button>
+<button role="tab" data-tab="all" aria-selected="false"><span class="tab-long">All sites</span><span class="tab-short">All</span></button>
 <button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
 <button role="tab" data-tab="ply" aria-selected="false">Players</button>
 <button role="tab" data-tab="feat" aria-selected="false">Features</button>
 <button role="tab" data-tab="src" aria-selected="false">Sources</button>
-<button role="tab" data-tab="sync" aria-selected="false">Studio Sync</button>
+<button role="tab" data-tab="sync" aria-selected="false"><span class="tab-long">Studio Sync</span><span class="tab-short">Sync</span></button>
 <button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader</span><span class="tab-short">BeatLeader</span></button>
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
@@ -2135,7 +2180,16 @@ body>main{position:relative;z-index:1}
 <div class="card"><div class="label">Supporters</div><div class="value" id="k-sup">-</div><div class="note" id="k-supn"></div></div>
 <div class="card"><div class="label">Monthly members</div><div class="value" id="k-mem">-</div><div class="note" id="k-memn"></div></div>
 </div>
-<div class="kpanel"><div class="phead"><b>Latest</b><small>names and messages only when the supporter made them public</small></div>
+<div class="kpanel"><div class="phead"><b>Latest</b><small>names and messages only when the supporter made them public</small><button class="ghost kadd" id="k-addbtn" type="button">+ Add a past tip</button></div>
+<div class="kform hidden" id="k-form">
+<input class="kname" id="kf-name" type="text" maxlength="60" placeholder="Name (e.g. Nic)" autocomplete="off">
+<input id="kf-amt" type="number" min="0.01" step="0.01" placeholder="Amount" inputmode="decimal">
+<input id="kf-date" type="date">
+<select id="kf-kind"><option value="tip">Tip</option><option value="monthly">Monthly</option><option value="shop">Shop</option></select>
+<input class="kmsg" id="kf-msg" type="text" maxlength="300" placeholder="Message (optional)" autocomplete="off">
+<div class="krow"><label><input id="kf-pub" type="checkbox" checked> Show name and message</label><button class="ghost" id="kf-cancel" type="button">Cancel</button><button id="kf-save" type="button">Add tip</button></div>
+<div class="kerr hidden" id="kf-err"></div>
+</div>
 <div id="k-list"></div><div class="kfoot">Emails and shipping addresses from Ko-fi are never stored.</div></div>
 <h2>Support me clicks &rarr; tips <small>last 8 weeks</small></h2>
 <div class="kgrid">
@@ -2991,7 +3045,7 @@ body>main{position:relative;z-index:1}
     $('k-list').innerHTML = tips.length ? tips.slice(-8).reverse().map(function (x) {
       var pill = x.type === 'Shop Order' ? '<span class="kpill s">Shop</span>' : x.sub ? '<span class="kpill m">Monthly' + (x.tier ? ' &middot; ' + esc(x.tier) : '') + (x.first ? ' &middot; new' : '') + '</span>' : x.type === 'Commission' ? '<span class="kpill s">Commission</span>' : '<span class="kpill">Tip</span>';
       var nm = x.pub && x.name ? x.name : 'Someone', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
-      return '<div class="tip"><span class="tav' + (x.pub ? '' : ' p') + '">' + (x.pub && x.name ? esc(x.name.charAt(0).toUpperCase()) : '?') + '</span><div><div class="tn"><b>' + esc(nm) + '</b>' + pill + '</div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b><small>' + esc(kAgo(x.t)) + '</small></div></div>';
+      return '<div class="tip"><span class="tav' + (x.pub ? '' : ' p') + '">' + (x.pub && x.name ? esc(x.name.charAt(0).toUpperCase()) : '?') + '</span><div><div class="tn"><b>' + esc(nm) + '</b>' + pill + '</div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b><small>' + esc(kAgo(x.t)) + '</small>' + (x.manual ? '<span class="tmark">added by hand</span><button class="ghost kdel" type="button" data-kdel="' + esc(x.id) + '">Remove</button>' : '') + '</div></div>';
     }).join('') : '<p class="empty">No tips yet. They show up here as soon as Ko-fi sends them.</p>';
     // clicks: per day from GoatCounter, all sites added up
     var day = function (t) { var x = new Date(t * 1000); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
@@ -3019,16 +3073,42 @@ body>main{position:relative;z-index:1}
       wk.push({ c: c, tp: tp, lab: MON[sd.getMonth()] + ' ' + sd.getDate(), before: !first || e < first });
     }
     var mx = Math.max.apply(null, wk.map(function (w) { return w.c; }).concat([1]));
-    $('k-wk').innerHTML = wk.map(function (w) {
+    var anyWk = wk.some(function (w) { return w.c || w.tp; });
+    $('k-wk').innerHTML = !anyWk ? '<p class="wkempty">No Support me clicks or tips in the last 8 weeks.</p>' : wk.map(function (w) {
       var dots = w.tp > 5 ? '<i></i><b>' + w.tp + '</b>' : w.tp ? new Array(w.tp + 1).join('<i></i>') : '<em>' + (w.before ? '' : '-') + '</em>';
       return '<div class="wkc" title="' + w.c + ' click' + (w.c === 1 ? '' : 's') + ', ' + w.tp + ' tip' + (w.tp === 1 ? '' : 's') + '"><div class="wkt">' + dots + '</div><span class="wkn">' + w.c + '</span><div class="wkb" style="height:' + Math.round(w.c / mx * 110) + 'px"></div></div>';
     }).join('');
     $('k-wkx').innerHTML = wk.map(function (w) { return '<span>' + w.lab + '</span>'; }).join('');
     var CLS = { studio: 'site-studio', rs: 'site-rs', hsv: 'site-hsv' };
     var wr = sites.map(function (s) { return [esc(s.name) + (s.error ? ' <span class="note">(no answer)</span>' : ''), (s.days || []).reduce(function (n, x) { return n + (x[1] || 0); }, 0), CLS[s.key] || '']; }).sort(function (a, b) { return b[1] - a[1]; });
-    bars('k-where', wr.filter(function (r) { return r[1] > 0; }), '', d.clicks ? 'No Support me clicks in 8 weeks.' : (d.clickErr || 'GoatCounter isn’t connected.'));
+    bars('k-where', wr.filter(function (r) { return r[1] > 0 || /no answer/.test(r[0]); }), '', d.clicks ? 'No Support me clicks in 8 weeks.' : (d.clickErr || 'GoatCounter isn’t connected.'));
     txt('k-when', 'Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '. Tips arrive the moment Ko-fi sends them; clicks are kept for an hour.');
   }
+  function kFormOpen(on) {
+    $('k-form').classList.toggle('hidden', !on); $('k-addbtn').classList.toggle('hidden', on); $('kf-err').classList.add('hidden');
+    if (on) { var d = new Date(); $('kf-date').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); $('kf-name').focus(); }
+  }
+  function kPost(path, body) {
+    return fetch(path, { method: 'POST', headers: { Authorization: 'Bearer ' + getKey(), 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); });
+  }
+  $('k-addbtn').addEventListener('click', function () { kFormOpen(true); });
+  $('kf-cancel').addEventListener('click', function () { kFormOpen(false); });
+  $('kf-save').addEventListener('click', function () {
+    var err = $('kf-err'), b = { name: $('kf-name').value, amount: $('kf-amt').value, date: $('kf-date').value, kind: $('kf-kind').value, message: $('kf-msg').value, public: $('kf-pub').checked, currency: (kofi && kofi.tips && kofi.tips.length ? kofi.tips[kofi.tips.length - 1].cur : 'USD') };
+    if (!(Number(b.amount) > 0) || !b.date) { err.textContent = 'Add an amount and a date.'; err.classList.remove('hidden'); return; }
+    $('kf-save').disabled = true;
+    kPost('/admin/kofi/add', b).then(function (res) {
+      $('kf-save').disabled = false;
+      if (!res.ok) { err.textContent = res.j.error || 'Couldn’t add it.'; err.classList.remove('hidden'); return; }
+      ['kf-name', 'kf-amt', 'kf-msg'].forEach(function (id) { $(id).value = ''; }); kFormOpen(false); loadKofi(false);
+    }, function () { $('kf-save').disabled = false; err.textContent = 'Couldn’t reach the Worker.'; err.classList.remove('hidden'); });
+  });
+  $('k-list').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-kdel]'); if (!b) return;
+    if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Remove?'; return; }
+    b.disabled = true; kPost('/admin/kofi/del', { id: b.getAttribute('data-kdel') }).then(function () { loadKofi(false); });
+  });
   function kAgoDate(t) { var x = new Date(t * 1000); return MON[x.getMonth()] + ' ' + x.getDate() + (x.getFullYear() !== new Date().getFullYear() ? ', ' + x.getFullYear() : ''); }
   // Each tab's icon: the site's logo, or what the tab shows.
   function tabIcons() {
@@ -3350,7 +3430,17 @@ body>main{position:relative;z-index:1}
     var f = toolFeat(t, e.name);
     return ['<span class="sl" data-ev="' + esc(e.name) + '" data-site="' + t + '">' + areaIcon(f.area) + '<span class="fl"><b>' + esc(f.label) + '</b><span class="fd">' + esc(f.desc ? f.desc : f.area) + '<span class="fdc"> · <code>' + esc(e.name) + '</code></span></span></span></span>', e.count, cls || ''];
   }
+  // Tabs: tighter, with short names, when they don't fit in one row; a fade on the right when they still scroll.
+  function fitTabs() {
+    var tb = $('tabs'); if (!tb) return;
+    tb.classList.remove('tight', 'more');
+    if (tb.scrollWidth > tb.clientWidth + 1) tb.classList.add('tight');
+    var more = function () { tb.classList.toggle('more', tb.scrollWidth > tb.clientWidth + 1 && tb.scrollLeft + tb.clientWidth < tb.scrollWidth - 2); };
+    more(); if (!tb._fitBound) { tb._fitBound = 1; tb.addEventListener('scroll', more, { passive: true }); }
+  }
+  window.addEventListener('resize', function () { fitTabs(); });
   function tabIntoView() {
+    fitTabs();
     var tbx = $('tabs'), sel = tbx && tbx.querySelector('button[aria-selected="true"]'); if (!sel) return;
     var a = sel.getBoundingClientRect(), c = tbx.getBoundingClientRect();
     if (c.width && (a.left < c.left || a.right > c.right)) tbx.scrollLeft += a.left - c.left - 24;
