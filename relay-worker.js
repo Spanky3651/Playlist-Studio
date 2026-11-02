@@ -2240,6 +2240,10 @@ body>main{position:relative;z-index:1}
   // [area, short name, what the person did]. Names ending in * cover a family (the rest of the name is shown).
   var FEAT = {
     'search-beatleader': ['Search', 'Searched BeatLeader', 'Ran a search of the ranked BeatLeader catalog'],
+    'map-style-*': ['Search', 'Map style', 'Picked a BeatLeader map style (Acc, Tech, Midspeed or Speed)'],
+    'empty-loosen': ['Search', 'Search without the blocker', 'Searched again without the filter that hid every match'],
+    'empty-clear-*': ['Search', 'Cleared a hiding filter', 'Cleared the one filter that hid every result'],
+    'empty-reset': ['Search', 'Reset from no matches', 'Reset filters when they hid every result'],
     'search-beatsaver': ['Search', 'Searched BeatSaver', 'Ran a search of BeatSaver by tags or text'],
     'search-recommend': ['For You', 'Top pp gains search', 'Loaded the unplayed maps that add the most pp'],
     'bsr-hop': ['Search', 'Searched a BSR code', 'Typed a BSR code into search and jumped to that map'],

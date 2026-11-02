@@ -1255,6 +1255,11 @@ body.src-beatsaver .bl-only{display:none !important;} .rb-gain{background:#123d2
 .tag-chip{background:var(--panel-2);border:1px solid var(--border-2);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;transition:.13s;user-select:none;}
 .tag-chip:hover{color:var(--text);border-color:var(--blue-dim);}
 .tag-chip[data-state="1"]{background:rgba(47,140,255,.16);border-color:var(--blue);color:#cfe4ff;}
+.style-grid{margin-bottom:0;}
+.style-grid .tag-chip{font-size:13.5px;padding:6px 14px;}
+.empty-fix{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px !important;}
+.empty-fix .ghost{display:inline-flex;align-items:center;gap:8px;}
+.empty-fix .ef-n{font:600 12px var(--mono);color:var(--green);}
 .tag-chip[data-state="2"]{background:rgba(255,30,60,.14);border-color:var(--red);color:#ffc3cc;text-decoration:line-through;}
 
 /* ---------- Toast ---------- */
@@ -2444,6 +2449,20 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       </div>
     </section>
 
+    <!-- Map style (BeatLeader) -->
+    <section class="panel bl-only" id="stylePanel">
+      <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><h2>Map style</h2><span class="count" id="styleCount"></span></div>
+      <div class="panel-sub">BeatLeader sorts ranked maps by style. Pick one or more to keep only those. Unranked maps have no style, so they drop out while one is picked.</div>
+      <div class="panel-body">
+        <div class="tag-grid style-grid" id="styleChips" role="group" aria-label="Map style">
+          <button type="button" class="tag-chip" data-style="1" data-state="0" aria-pressed="false">Acc</button>
+          <button type="button" class="tag-chip" data-style="2" data-state="0" aria-pressed="false">Tech</button>
+          <button type="button" class="tag-chip" data-style="4" data-state="0" aria-pressed="false">Midspeed</button>
+          <button type="button" class="tag-chip" data-style="8" data-state="0" aria-pressed="false">Speed</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Star Rating (BeatLeader) -->
     <section class="panel bl-only">
       <div class="panel-head"><span class="ph-ic star"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h2>Star Rating</h2><span class="count" id="starRangeLabel">0.0★ – 15.0★</span></div>
@@ -3219,7 +3238,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-01T16:55Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T18:44Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4364,8 +4383,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       durMin: num(el.fDurMin, null), durMax: num(el.fDurMax, null),
       bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null),
       ppMin: num(el.ppMin, null), ppMax: num(el.ppMax, null),
-      bsMinRating: num(el.bsMinRating, null), bsAge: el.bsAge.value
+      bsMinRating: num(el.bsMinRating, null), bsAge: el.bsAge.value, style: styleMask()
     };
+  }
+  // Map style chips (BeatLeader's Acc / Tech / Midspeed / Speed): a bit mask, 0 = any style.
+  var STYLE_NAMES = { 1: 'Acc', 2: 'Tech', 4: 'Midspeed', 8: 'Speed' };
+  function styleMask() {
+    var m = 0, box = document.getElementById('styleChips');
+    if (box) Array.prototype.forEach.call(box.querySelectorAll('.tag-chip[data-state="1"]'), function (c) { m |= +c.dataset.style; });
+    return m;
+  }
+  function setStyleMask(m) {
+    var box = document.getElementById('styleChips'); if (!box) return;
+    Array.prototype.forEach.call(box.querySelectorAll('.tag-chip'), function (c) { var on = !!(m & +c.dataset.style); c.dataset.state = on ? '1' : '0'; c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    var n = document.getElementById('styleCount'); if (n) n.textContent = m ? Object.keys(STYLE_NAMES).filter(function (k) { return m & k; }).map(function (k) { return STYLE_NAMES[k]; }).join(' · ') : '';
   }
   function buildUrl(page, f) {
     var p = new URLSearchParams();
@@ -4374,6 +4405,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var serverSearch = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
     if (serverSearch) p.set('search', serverSearch);
     if (f.modes.length === 1) p.set('mode', f.modes[0]);
+    if (f.style) { p.set('mapType', f.style); p.set('allTypes', '0'); }
     return API_BASE + '/leaderboards?' + p.toString();
   }
 
@@ -4879,7 +4911,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       bpm: song.bpm || 0, duration: song.duration || 0, cover: song.coverImage || '',
       stars: diff.stars || 0, difficultyName: diff.difficultyName || 'ExpertPlus', modeName: diff.modeName || 'Standard',
       nps: diff.nps || 0, njs: diff.njs || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0,
-      mods: modsFrom(diff.modifiersRating)
+      mods: modsFrom(diff.modifiersRating), mapType: diff.type != null ? +diff.type || 0 : null
     };
   }
   function fetchLoaderHTML() {
@@ -4934,7 +4966,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             }
           });
         }
-        if (!collected.length) { setStatus('No maps returned', 'err'); toast(f.type === 'ranked' ? 'No ranked maps matched - try Ranked status → All for the full catalog.' : 'BeatLeader returned no maps for this query.', 'warn'); }
+        state.emptyProbe = null;
+        if (!collected.length) { setStatus('No maps returned', 'err'); emptyProbe(f); }
         else setStatus('Loaded ' + collected.length + ' maps', 'on');
         applyClientFilters();
         if (collected.length && isMobileView()) setMobileView('results');
@@ -5008,6 +5041,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function bindSourceUI() {
     buildTagChips();
+    var styleBox = document.getElementById('styleChips');
+    if (styleBox) styleBox.addEventListener('click', function (e) {
+      var c = e.target.closest('.tag-chip'); if (!c) return;
+      var m = styleMask() ^ +c.dataset.style; setStyleMask(m);
+      if (m & +c.dataset.style) track('map-style-' + STYLE_NAMES[c.dataset.style].toLowerCase());
+      applyClientFilters();
+    });
     var _recRun = document.getElementById('recRun'); if (_recRun) _recRun.addEventListener('click', runFetchRecommend);
     el.sourceSwitch.addEventListener('click', function (e) {
       var b = e.target.closest('button[data-source]'); if (b) setSource(b.dataset.source);
@@ -5194,6 +5234,51 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (unplayed) el.playRecency.value = 'any';
     el.playRecency.disabled = unplayed;
   }
+  // Song / keyword (Nov 2026): every word you type has to show up somewhere in the song, artist or mapper, in any
+  // order. Case, accents and punctuation don't matter ("dont" finds Don't, "pokemon" finds Pokémon), part of a word
+  // is enough ("camel"), and a word of 4+ letters may be off by one letter (8+ by two), like BeatLeader's own search.
+  function kwNorm(t) {
+    t = String(t || '').toLowerCase(); try { t = t.normalize('NFKD').replace(/[\u0300-\u036f]/g, ''); } catch (e) {}
+    t = t.replace(/['\u2019`\u00b4]/g, '');
+    try { return t.replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); } catch (e) { return t.replace(/[\s!-\/:-@\[-`{-~]+/g, ' ').trim(); }
+  }
+  function kwWords(q) { var n = kwNorm(q); return n ? n.split(' ') : []; }
+  function kwEdits(a, b, max) {   // edit distance (with swaps), giving up past max
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    var prev2 = null, prev = [], i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      var cur = [i], best = i;
+      for (j = 1; j <= b.length; j++) {
+        var v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+        cur[j] = v; if (v < best) best = v;
+      }
+      if (best > max) return max + 1;
+      prev2 = prev; prev = cur;
+    }
+    return prev[b.length];
+  }
+  var kwCache = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function kwHay(s) {
+    var h = kwCache && kwCache.get(s);
+    if (!h) {
+      var t = kwNorm(s.songName + ' ' + s.subName + ' ' + s.author + ' ' + s.mapper);
+      h = { t: ' ' + t + ' ', flat: t.replace(/ /g, ''), w: t ? t.split(' ') : [] };
+      if (kwCache) kwCache.set(s, h);
+    }
+    return h;
+  }
+  function kwMatch(s, words) {
+    if (!words.length) return true;
+    var h = kwHay(s);
+    return words.every(function (w) {
+      if (h.t.indexOf(w) !== -1 || h.flat.indexOf(w) !== -1) return true;
+      if (w.length < 4) return false;
+      var max = w.length >= 8 ? 2 : 1;
+      return h.w.some(function (x) { return kwEdits(w, x, max) <= max || (x.length > w.length && kwEdits(w, x.slice(0, w.length), max) <= max); });
+    });
+  }
   function applyClientFilters() {
     syncRecencyControl();
     var f = getFilters();
@@ -5209,7 +5294,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var psWant = f.playStatus, pc = { any: 0, unplayed: 0, played: 0, fc: 0, nofc: 0, nearfc: 0, nf: 0 };
     var favDev = lqFavDev(), favOnly = !!(state.favOnly && favDev);
     f.playStatus = 'any';
-    var out = state.raw.filter(function (s) {
+    var counting = true;
+    function keepRow(s) {
       if (exact) return true;
       if (hideAuto && hasAutoCredit(s.mapper)) return false;   // "Hide auto-lighting maps" toggle
       if (state.source === 'beatsaver') {
@@ -5260,10 +5346,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       // Song/keyword filter: BeatLeader only. On BeatSaver the query IS the server search (q), and
       // re-filtering here would drop legitimate matches whose romanized/alt title isn't stored (this
       // is why non-Latin song-name searches returned nothing).
-      if (state.source !== 'beatsaver' && f.search) {
-        var blob = (s.songName + ' ' + s.subName + ' ' + s.mapper + ' ' + s.author).toLowerCase();
-        if (blob.indexOf(f.search.toLowerCase()) === -1) return false;
-      }
+      if (state.source !== 'beatsaver' && f.search && !kwMatch(s, kwWords(f.search))) return false;
+      // Map style: maps BeatLeader hasn't given a style (unranked) drop out; rows that carry no style info at all stay.
+      if (state.source === 'beatleader' && f.style && s.mapType != null && !(s.mapType & f.style)) return false;
       // Mapper filter: applies on BOTH sources. On BeatSaver the server `q` also matches song name,
       // artist and description, so narrow to maps whose MAPPER actually contains the term - and strip
       // auto-generated lighting credits ("Auto Lighter by X") so they don't flood a mapper search.
@@ -5281,13 +5366,50 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }
       if (favOnly && !lqIsFav(favDev, s.hash)) return false;
       if (state.player && !exact) {
-        var pq = playInfo(s); pc.any++;
-        if (!pq) pc.unplayed++; else { pc.played++; if (pq.fc) pc.fc++; else { pc.nofc++; if (pq.near) pc.nearfc++; } if (pq.nf) pc.nf++; }
+        var pq = playInfo(s);
+        if (counting) { pc.any++; if (!pq) pc.unplayed++; else { pc.played++; if (pq.fc) pc.fc++; else { pc.nofc++; if (pq.near) pc.nearfc++; } if (pq.nf) pc.nf++; } }
         return psWant === 'any' || (psWant === 'unplayed' ? !pq : psWant === 'played' ? !!pq : psWant === 'fc' ? !!(pq && pq.fc)
           : psWant === 'nofc' ? !!(pq && !pq.fc) : psWant === 'nearfc' ? !!(pq && pq.near && !pq.fc) : psWant === 'nf' ? !!(pq && pq.nf) : true);
       }
       return true;
-    });
+    }
+    var out = state.raw.filter(keepRow);
+    // Nothing left: for each filter that's on, count what clearing just that one would bring back.
+    state.emptyWhy = null;
+    if (!out.length && state.raw.length && !exact && state.viewMode !== 'clan' && state.viewMode !== 'recommend') {
+      counting = false;
+      var base = f, saved = [hideAuto, ageCutoff, favOnly, psWant], why = [];
+      var tryOff = function (k, on, off) {
+        if (!on) return;
+        f = Object.assign({}, base); off(); var n = state.raw.filter(keepRow).length;
+        hideAuto = saved[0]; ageCutoff = saved[1]; favOnly = saved[2]; psWant = saved[3];
+        if (n) why.push({ k: k, n: n });
+      };
+      var bl = state.source === 'beatleader';
+      tryOff('search', bl && base.search, function () { f.search = ''; });
+      tryOff('mapper', base.mapperTerms.length, function () { f.mapperTerms = []; });
+      tryOff('mapperEx', base.mapperExclude.length, function () { f.mapperExclude = []; });
+      tryOff('style', bl && base.style, function () { f.style = 0; });
+      tryOff('stars', bl && (base.starMin > 0 || base.starMax < 15), function () { f.starMin = 0; f.starMax = 15; });
+      tryOff('rank', bl && base.rankView && base.rankView !== 'all', function () { f.rankView = 'all'; });
+      tryOff('mode', base.modes.length, function () { f.modes = []; });
+      tryOff('diff', base.diffEnabled && base.diffs.length, function () { f.diffEnabled = false; });
+      tryOff('play', state.player && psWant !== 'any', function () { psWant = 'any'; });
+      tryOff('acc', state.player && base.accMax != null, function () { f.accMax = null; });
+      tryOff('recency', state.player && base.recency !== 'any', function () { f.recency = 'any'; });
+      tryOff('nps', base.npsMin != null || base.npsMax != null, function () { f.npsMin = f.npsMax = null; });
+      tryOff('njs', base.njsMin != null || base.njsMax != null, function () { f.njsMin = f.njsMax = null; });
+      tryOff('dur', base.durMin != null || base.durMax != null, function () { f.durMin = f.durMax = null; });
+      tryOff('bpm', base.bpmMin != null || base.bpmMax != null, function () { f.bpmMin = f.bpmMax = null; });
+      tryOff('pp', bl && (base.ppMin != null || base.ppMax != null), function () { f.ppMin = f.ppMax = null; });
+      tryOff('rating', !bl && base.bsMinRating != null, function () { f.bsMinRating = null; });
+      tryOff('age', !bl && ageCutoff != null, function () { ageCutoff = undefined; });
+      tryOff('auto', hideAuto, function () { hideAuto = false; });
+      tryOff('fav', favOnly, function () { favOnly = false; });
+      f = base; counting = true;
+      why.sort(function (a, b) { return b.n - a.n; });
+      state.emptyWhy = why;
+    }
     f.playStatus = psWant; state.playCounts = state.player && !exact ? pc : null;
     state.favCount = favDev ? (favOnly ? out.length : out.filter(function (x) { return lqIsFav(favDev, x.hash); }).length) : null;
     var key = f.sort;
@@ -5332,7 +5454,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Signature of filters that change the SERVER query; when it drifts from the
   // last fetch, the scanned set is incomplete and a re-fetch is warranted.
   function serverSig(f) {
-    return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
+    return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(','), f.style || 0].join('|');
   }
   function updateStale() {
     if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
@@ -5855,6 +5977,77 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var q = el.fSearch.value.trim();
     return state.source === 'beatleader' && state.viewMode === 'search' && q ? ' <button type="button" class="ghost sm" id="emptySearchBs">Search BeatSaver for “' + esc(q.length > 40 ? q.slice(0, 40) + '…' : q) + '”</button>' : '';
   }
+  // What clearing each filter means, for the "nothing matched" buttons.
+  var EMPTY_CLEAR = {
+    search: ['Song / keyword', function () { el.fSearch.value = ''; fireChange(el.fSearch); }],
+    mapper: ['Mapper', function () { el.fMapper.value = ''; fireChange(el.fMapper); }],
+    mapperEx: ['Exclude mapper', function () { el.fMapperExclude.value = ''; fireChange(el.fMapperExclude); }],
+    style: ['Map style', function () { setStyleMask(0); applyClientFilters(); }],
+    stars: ['Star rating', function () { setBand(0, 15, false, '0-15'); applyClientFilters(); }],
+    rank: ['Show: ranked / unranked', function () { el.rankInline.value = 'all'; fireChange(el.rankInline); }],
+    mode: ['Game mode', function () { document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = true; }); applyClientFilters(); }],
+    diff: ['Difficulty', function () { el.diffEnable.checked = false; fireChange(el.diffEnable); }],
+    play: ['Your plays', function () { el.playStatus.value = 'any'; fireChange(el.playStatus); }],
+    acc: ['My acc below', function () { el.accMax.value = ''; fireChange(el.accMax); applyClientFilters(); }],
+    recency: ['Last played', function () { el.playRecency.value = 'any'; fireChange(el.playRecency); }],
+    nps: ['NPS', function () { el.fNpsMin.value = el.fNpsMax.value = ''; fireChange(el.fNpsMin); }],
+    njs: ['NJS', function () { el.fNjsMin.value = el.fNjsMax.value = ''; fireChange(el.fNjsMin); }],
+    dur: ['Duration', function () { el.fDurMin.value = el.fDurMax.value = ''; fireChange(el.fDurMin); }],
+    bpm: ['BPM', function () { el.fBpmMin.value = el.fBpmMax.value = ''; fireChange(el.fBpmMin); }],
+    pp: ['PP range', function () { el.ppMin.value = el.ppMax.value = ''; fireChange(el.ppMin); }],
+    rating: ['Min rating', function () { el.bsMinRating.value = ''; fireChange(el.bsMinRating); }],
+    age: ['Uploaded', function () { el.bsAge.value = 'any'; fireChange(el.bsAge); }],
+    auto: ['Hide auto-lighting', function () { el.bsNoAuto.checked = false; fireChange(el.bsNoAuto); }],
+    fav: ['Favorites only', function () { state.favOnly = false; applyClientFilters(); }]
+  };
+  function fireChange(x) { if (x) x.dispatchEvent(new Event('change', { bubbles: true })); }
+  function emptyWhyMsg() {
+    var why = state.emptyWhy, n = state.raw.length;
+    if (!why.length) return '<p><b>No matches.</b></p><p>Studio found ' + n.toLocaleString() + ' map' + (n === 1 ? '' : 's') + ', but it takes more than one of your filters to hide them all.</p><p class="empty-fix"><button type="button" class="ghost sm" data-empty-reset>Reset filters</button></p>';
+    return '<p><b>No matches.</b></p><p>Studio found ' + n.toLocaleString() + ' map' + (n === 1 ? '' : 's') + ', but your filters hide ' + (n === 1 ? 'it' : 'all of them') + '. Clear one to bring some back:</p><p class="empty-fix">' +
+      why.slice(0, 3).map(function (w) { return '<button type="button" class="ghost sm" data-empty-clear="' + w.k + '">Clear ' + esc(EMPTY_CLEAR[w.k][0]) + ' <span class="ef-n">+' + w.n.toLocaleString() + '</span></button>'; }).join('') + '</p>';
+  }
+  // Searched BeatLeader and got nothing back: ask it (one map at a time) whether the star range, map style, ranked
+  // status or game mode is what's in the way, so the empty list can say so.
+  function emptyProbe(f) {
+    var sig = state.lastSig, g = Object.assign({}, f), steps = [];
+    var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
+    if (f.type !== 'unranked' && (f.starMin > 0 || f.starMax < 15)) steps.push({ k: 'stars', t: 'your star range (' + f.starMin.toFixed(1) + ' to ' + f.starMax.toFixed(1) + '★)', go: function (x) { x.starMin = 0; x.starMax = 15; } });
+    if (f.style) steps.push({ k: 'style', t: 'your map style', go: function (x) { x.style = 0; } });
+    if (f.type !== 'all') steps.push({ k: 'type', t: 'Ranked status (' + (el.fType.options[el.fType.selectedIndex] || {}).text + ')', go: function (x) { x.type = 'all'; } });
+    if (f.modes.length === 1) steps.push({ k: 'mode', t: 'the ' + f.modes[0] + ' mode', go: function (x) { x.modes = []; } });
+    state.emptyProbe = { sig: sig, q: q, busy: !!steps.length, none: !steps.length };
+    if (!steps.length) return;
+    var i = 0;
+    (function next() {
+      steps[i].go(g);
+      relayFetch(buildUrl(1, g).replace(/([?&])count=\d+/, '$1count=1'), function (j) { return j && j.metadata; }).then(function (j) {
+        if (state.lastSig !== sig || state.raw.length || !state.emptyProbe || state.emptyProbe.sig !== sig) return;
+        var n = (j.metadata && j.metadata.total) || 0;
+        if (n > 0) { state.emptyProbe = { sig: sig, q: q, n: n, steps: steps.slice(0, i + 1) }; renderResults(); return; }
+        if (++i < steps.length) return next();
+        state.emptyProbe = { sig: sig, q: q, none: true }; renderResults();
+      }, function () { if (state.emptyProbe && state.emptyProbe.sig === sig) { state.emptyProbe = null; renderResults(); } });
+    })();
+  }
+  function emptyProbeMsg() {
+    var pr = state.emptyProbe, q = pr.q ? ' “' + esc(pr.q.length > 40 ? pr.q.slice(0, 40) + '…' : pr.q) + '”' : '';
+    if (pr.busy) return '<p><b>No maps matched' + q + '.</b></p><p>Checking which filter is in the way…</p>';
+    if (pr.none) return '<p><b>Nothing on BeatLeader matches' + (q || ' this search') + '.</b></p><p>' + (q ? 'Check the spelling, or look on BeatSaver.' : 'Try loosening your filters.') + '</p>' + (emptyBsBtn() ? '<p>' + emptyBsBtn() + '</p>' : '');
+    var names = pr.steps.map(function (x) { return x.t; }), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+    return '<p><b>' + pr.n.toLocaleString() + ' map' + (pr.n === 1 ? '' : 's') + ' match' + (pr.n === 1 ? 'es' : '') + q + ', but ' + list + (names.length > 1 ? ' hide' : ' hides') + ' ' + (pr.n === 1 ? 'it' : 'them') + '.</b></p>' +
+      '<p class="empty-fix"><button type="button" class="ghost sm" id="emptyLoosen">Search without ' + (names.length > 1 ? 'them' : 'it') + '</button></p>';
+  }
+  function emptyLoosen() {
+    var pr = state.emptyProbe; if (!pr || !pr.steps) return;
+    pr.steps.forEach(function (x) {
+      if (x.k === 'stars') setBand(0, 15, false, '0-15');
+      else if (x.k === 'style') setStyleMask(0);
+      else if (x.k === 'type') { el.fType.value = 'all'; rememberRankType(); }
+      else if (x.k === 'mode') document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = true; });
+    });
+    track('empty-loosen'); runFetch();
+  }
   function renderResults() {
     var avail = resultsAvailable(), rows = collapseList(avail), list = el.resultList;
     var ra = document.getElementById('resultActions'); if (ra) ra.hidden = !state.fetched && !state.raw.length && !state.excludeHashes;
@@ -5874,6 +6067,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       } else if (!state.raw.length) {
         if (!state.fetched) {
           msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b>.</p><p class="empty-alt">New here? <button type="button" class="link-btn" data-open-gallery>Start from a ready-made playlist</button></p>';
+        } else if (state.source === 'beatleader' && state.viewMode === 'search' && state.emptyProbe && state.emptyProbe.sig === state.lastSig) {
+          msg = emptyProbeMsg();
         } else if (el.fType.value === 'ranked') {
           msg = '<p><b>No ranked maps matched.</b></p><p>Most community maps aren\'t ranked. Switch <b>Ranked status</b> to <b>All</b> to search the full catalog, or loosen your other filters.</p><p><button type="button" class="ghost sm" id="emptySwitchAll">Search all maps instead</button>' + emptyBsBtn() + '</p>';
         } else {
@@ -5886,6 +6081,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         msg = nfn
           ? '<p><b>Your other filters hide your ' + nfn + ' No Fail run' + (nfn === 1 ? '' : 's') + '.</b></p><p>Check <b>Last played</b>, <b>Show</b> (ranked or unranked) and the Mode chips in Ranked Status &amp; Sort.</p>'
           : '<p><b>Nothing to retry yet.</b></p><p>None of your best BeatLeader scores is a No Fail run. When you fail a map with No Fail on, it shows up here until you pass it.</p>';
+      } else if (state.emptyWhy && !state.filtered.length) {
+        msg = emptyWhyMsg();
       } else {
         var why = [];
         if (state.player && el.playStatus.value !== 'any') why.push('your <b>“' + playStatusLabel(el.playStatus.value) + '”</b> play filter');
@@ -5901,6 +6098,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (_sw) _sw.addEventListener('click', function () { el.fType.value = 'all'; rememberRankType(); runFetch(); });
       var _bs = document.getElementById('emptySearchBs');
       if (_bs) _bs.addEventListener('click', function () { track('bsr-hop-text'); searchBeatSaverOnce(null, 'text'); });
+      var _lo = document.getElementById('emptyLoosen'); if (_lo) _lo.addEventListener('click', emptyLoosen);
+      Array.prototype.forEach.call(list.querySelectorAll('[data-empty-clear]'), function (b) {
+        b.addEventListener('click', function () { var k = b.getAttribute('data-empty-clear'); track('empty-clear-' + k); EMPTY_CLEAR[k][1](); });
+      });
+      var _rs = list.querySelector('[data-empty-reset]'); if (_rs) _rs.addEventListener('click', function () { track('empty-reset'); resetFilters(); });
       return;
     }
     var MAX = 400, items = [], byHash = {};
@@ -10559,13 +10761,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
       npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value, njsMin: el.fNjsMin.value, njsMax: el.fNjsMax.value,
       durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value,
-      ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod, favOnly: !!state.favOnly };
+      ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod, favOnly: !!state.favOnly, style: styleMask() };
   }
   function applyPreset(p) {
     el.fType.value = p.type || 'ranked'; el.fSort.value = p.sort || 'stars'; el.fOrder.value = p.order || 'desc'; state.sortTouched = true; state.favOnly = !!p.favOnly;
     el.fMaxScan.value = p.maxScan || savedMaxScan(); el.starMinNum.value = p.starMin || '0'; el.starMaxNum.value = p.starMax || '15';
     state.bandAuto = (parseFloat(el.starMinNum.value) <= 0 && parseFloat(el.starMaxNum.value) >= 15); markLvl(null);
-    el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || '';
+    el.fMapper.value = p.mapper || ''; el.fSearch.value = p.search || ''; setStyleMask(+p.style || 0);
     el.fNpsMin.value = p.npsMin || ''; el.fNpsMax.value = p.npsMax || ''; el.fNjsMin.value = p.njsMin || ''; el.fNjsMax.value = p.njsMax || ''; el.fDurMin.value = p.durMin || '';
     el.fDurMax.value = p.durMax || ''; el.fBpmMin.value = p.bpmMin || ''; el.fBpmMax.value = p.bpmMax || '';
     var modes = p.modes || ['Standard'];
@@ -13167,7 +13369,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
     if (el.playStatus) el.playStatus.value = 'any'; if (el.playRecency) el.playRecency.value = 'any'; if (el.accMax) el.accMax.value = '';
-    el.ppMin.value = ''; el.ppMax.value = '';
+    el.ppMin.value = ''; el.ppMax.value = ''; setStyleMask(0);
     state.bandAuto = true; markLvl(null);
     refreshStarUI(); applyClientFilters(); if (silent !== true) toast('Filters reset (your playlist is kept).', 'ok');
   }
@@ -14134,7 +14336,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays;
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
-     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>,
+     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-reset,
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;
