@@ -1958,8 +1958,9 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 }
 .tab-short{display:none}
 @media(max-width:700px){.tab-short{display:inline}}
-.tabs.tight{gap:0}.tabs.tight button{padding:10px 5px;font-size:14.5px;gap:5px}
-.tabs.tight .tab-long{display:none}.tabs.tight .tab-short{display:inline}
+.tabs{justify-content:space-between}
+.tabs.short .tab-long{display:none}.tabs.short .tab-short{display:inline}
+.tabs.tight{gap:2px}.tabs.tight button{padding:10px 4px}
 .tabs.more{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
@@ -3433,7 +3434,9 @@ body>main{position:relative;z-index:1}
   // Tabs: tighter, with short names, when they don't fit in one row; a fade on the right when they still scroll.
   function fitTabs() {
     var tb = $('tabs'); if (!tb) return;
-    tb.classList.remove('tight', 'more');
+    // full names first, then short names with the usual spacing, then a little less spacing; the rest of the line is shared out evenly
+    tb.classList.remove('short', 'tight', 'more');
+    if (tb.scrollWidth > tb.clientWidth + 1) tb.classList.add('short');
     if (tb.scrollWidth > tb.clientWidth + 1) tb.classList.add('tight');
     var more = function () { tb.classList.toggle('more', tb.scrollWidth > tb.clientWidth + 1 && tb.scrollLeft + tb.clientWidth < tb.scrollWidth - 2); };
     more(); if (!tb._fitBound) { tb._fitBound = 1; tb.addEventListener('scroll', more, { passive: true }); }
