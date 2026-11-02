@@ -34,6 +34,10 @@ export default {
       try { return await seenPost(request, env, ctx); }
       catch (e) { return json({ ok: false }, 500, writeCors(request)); }
     }
+    if (url.pathname === "/kofi") {
+      try { return await kofiHook(request, env); }
+      catch (e) { return new Response("Server error", { status: 500 }); }
+    }
     if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
       try { return await admin(request, env, url); }
       catch (e) { return json({ error: "Server error" }, 500, { "Cache-Control": "no-store" }); }
@@ -1127,7 +1131,7 @@ async function admin(request, env, url) {
       "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
-  if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
+  if ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi") || request.method !== "GET") return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
   // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
@@ -1148,7 +1152,74 @@ async function admin(request, env, url) {
       return json({ error: "GoatCounter didn't respond. Try again in a moment." }, 502, nocache);
     }
   }
+  if (url.pathname === "/admin/kofi") return json(await kofiStats(env, url.searchParams.get("fresh") === "1"), 200, nocache);
   return json(await adminStats(env), 200, nocache);
+}
+
+// ---------------------------------------------------------------- Ko-fi (webhook in, Studio Stats out)
+// Ko-fi posts every tip, monthly payment and shop order here (Ko-fi: More > API > Webhooks, URL .../kofi). The
+// verification token from that page is a Worker secret: npx wrangler secret put KOFI_TOKEN. Only what the page
+// shows is kept: amount, type, tier and when, plus the name and message when the supporter made them public.
+// Emails and shipping addresses are never stored; a short hash of the email tells repeat supporters apart.
+const KOFI_TEST_ID = "00000000-1111-2222-3333-444444444444";
+async function kofiHook(request, env) {
+  if (request.method !== "POST") return new Response("Not found", { status: 404 });
+  if (!env.KOFI_TOKEN || !env.PLAYLISTS) return new Response("Not set up", { status: 503 });
+  if (Number(request.headers.get("Content-Length") || 0) > 65536) return new Response("Too big", { status: 413 });
+  let d = null;
+  try { const form = await request.formData(); d = JSON.parse(String(form.get("data") || "")); } catch (e) {}
+  if (!d || typeof d !== "object") return new Response("Bad request", { status: 400 });
+  if (!safeEqual(await sha256(String(d.verification_token || "")), await sha256(env.KOFI_TOKEN))) return new Response("Unauthorized", { status: 401 });
+  const now = nowSec(), str = (v, n) => String(v == null ? "" : v).slice(0, n);
+  if (d.kofi_transaction_id === KOFI_TEST_ID) {
+    await env.PLAYLISTS.put("kofi:test", JSON.stringify({ t: now, type: str(d.type, 30) }));
+    return new Response("ok");
+  }
+  const pub = d.is_public !== false;
+  const items = Array.isArray(d.shop_items) ? d.shop_items.reduce((a, x) => a + (Number(x && x.quantity) || 1), 0) : 0;
+  const who = (await sha256(str(d.email || d.from_name, 200).trim().toLowerCase() || str(d.kofi_transaction_id, 80))).slice(0, 16);
+  const rec = { id: str(d.message_id || d.kofi_transaction_id, 80), t: Math.floor(Date.parse(d.timestamp) / 1000) || now, type: str(d.type, 30),
+    amt: Math.round((Number(d.amount) || 0) * 100) / 100, cur: str(d.currency, 8).toUpperCase(), pub, name: pub ? str(d.from_name, 60) : "",
+    msg: pub ? str(d.message, 300) : "", tier: str(d.tier_name, 60), sub: !!d.is_subscription_payment, first: !!d.is_first_subscription_payment, items, who };
+  if (!rec.id) return new Response("Bad request", { status: 400 });
+  const list = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
+  if (!list.some((x) => x.id === rec.id)) {
+    list.push(rec); list.sort((a, b) => a.t - b.t);
+    await env.PLAYLISTS.put("kofi:tips", JSON.stringify(list.slice(-3000)));
+  }
+  return new Response("ok");
+}
+async function kofiStats(env, fresh) {
+  const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
+  const test = await env.PLAYLISTS.get("kofi:test", "json");
+  let clicks = null, clickErr = "";
+  try { clicks = await kofiClicks(env, fresh); } catch (e) { clickErr = e && e.message === "gc-auth" ? "GoatCounter refused the key" : "GoatCounter didn't answer"; }
+  return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, clicks, clickErr };
+}
+// Support me clicks (the kofi-click event) per day for the last 8 weeks, on every site that counts them.
+async function kofiClicks(env, fresh) {
+  const ck = "kofi:clicks", cached = await env.PLAYLISTS.get(ck, "json");
+  if (cached && nowSec() - cached.generated < (fresh ? 300 : 3600)) return cached;
+  if (!env.GC_TOKEN) return null;
+  const now = nowSec(), DAY = 86400, start = Math.floor(now / DAY) * DAY - 55 * DAY;
+  const SITES = [["studio", "Playlist Studio", { code: env.GC_SITE || "playliststudio", token: env.GC_TOKEN }], ["rs", "ReeSaber Studio", GC_OTHER.rs(env)], ["hsv", "HSV Config", GC_OTHER.hsv(env)]];
+  const sites = [];
+  for (const [key, name, cfg] of SITES) {
+    const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
+    let hit = null;
+    try {
+      const j = await gcGet(e, "/stats/hits", { start: gcIso(start), end: gcIso(now), limit: 20, group: "day", filter: "kofi-click" });
+      hit = ((j && j.hits) || []).find((h) => /(^|\/)kofi-click$/.test(h.path || ""));
+    } catch (x) { if (x && x.message === "gc-auth" && key === "studio") throw x; }
+    if (!hit) {
+      try { const all = await gcHits(e, start, now); const h = all.find((x) => /(^|\/)kofi-click$/.test(x.path || "")); if (h) hit = { stats: h.days.map((d) => ({ day: d[0], daily: d[1] })) }; }
+      catch (x) { if (x && x.message === "gc-auth" && key === "studio") throw x; sites.push({ key, name, error: true, days: [] }); continue; }
+    }
+    sites.push({ key, name, days: hit ? (hit.stats || []).map((x) => [x.day, x.daily || 0]) : [] });
+  }
+  const out = { generated: now, start: gcDay(start), end: gcDay(now), sites };
+  await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 7200 });
+  return out;
 }
 
 async function adminStats(env) {
@@ -1685,6 +1756,33 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:8px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.kgrid .value{font-size:32px}.kgrid .value.k{color:#ff5e5b}
+.kpanel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:0}
+.phead{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}.phead b{font-size:15px}.phead small{color:var(--muted);font-size:13.5px}.phead .sp{flex:1}
+.tip{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #141c2a}
+.tip:first-child{border-top:0}
+.tav{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(135deg,#ff5e5b,#b8323a)}
+.tav.p{background:#1a2336;color:#7f8a9c}
+.tn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.tn b{font-size:15.5px;overflow-wrap:anywhere}
+.kpill{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:#14213a;color:#9cc0ff;border:1px solid #1f3456;white-space:nowrap}
+.kpill.m{background:rgba(61,220,132,.1);color:#3ddc84;border-color:#1f5a3c}.kpill.s{background:rgba(255,194,61,.1);color:#ffc23d;border-color:#5a4a1f}
+.tmsg{margin-top:4px;font-size:14.5px;color:#c9d3e3;font-style:italic;overflow-wrap:anywhere}.tmsg.none{font-style:normal;color:#5d6880}
+.tamt{text-align:right}.tamt b{display:block;font-size:19px;color:#fff;white-space:nowrap}.tamt small{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.kfoot{margin-top:10px;font-size:13px;color:#7f8a9c}
+.ktwo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
+.wk{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;align-items:end;height:180px;margin:10px 0 6px;padding-top:8px}
+.wkc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0}
+.wkb{width:100%;max-width:46px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#5aa0ff,#1f5fe0);min-height:2px}
+.wkn{font-size:12.5px;color:#9cc0ff;font-weight:700;line-height:1}
+.wkt{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;min-height:18px;align-items:center}
+.wkt i{width:14px;height:14px;border-radius:50%;background:#ff5e5b;box-shadow:0 0 8px rgba(255,94,91,.6)}.wkt em{font-style:normal;font-size:12px;color:#5d6880}.wkt b{font-size:12.5px;color:#ff8f8c}
+.wkx{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;font-size:12px;color:#7f8a9c;text-align:center}
+.klg{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:#c9d3e3;margin-top:10px}.klg span{display:inline-flex;align-items:center;gap:7px}
+.klg .b{width:12px;height:12px;border-radius:3px;background:#2f7bff}.klg .t{width:12px;height:12px;border-radius:50%;background:#ff5e5b}
+.kpanel .bar{grid-template-columns:minmax(110px,170px) 1fr 44px}
+.kset ol{margin:8px 0 0;padding-left:22px;color:#c9d3e3;font-size:15px;line-height:1.7}.kset code{color:#cfe0ff;font-size:13.5px;overflow-wrap:anywhere}
+@media(max-width:760px){.kgrid{grid-template-columns:1fr 1fr}.kgrid .value{font-size:26px}.ktwo{grid-template-columns:1fr}.wk{gap:6px;height:160px}.wkx{gap:6px;font-size:11px}.tip{grid-template-columns:32px minmax(0,1fr) auto;gap:10px}.tav{width:32px;height:32px}}
 .alert{display:flex;gap:10px;align-items:flex-start;background:rgba(255,39,64,.08);border:1px solid rgba(255,39,64,.45);border-radius:12px;padding:11px 14px;font-size:15px;margin:0 0 16px;color:#ffc2cb}
 .alert b{color:#fff}
 .gcmsg{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--muted);font-size:15px}
@@ -1840,6 +1938,7 @@ body>main{position:relative;z-index:1}
 <button role="tab" data-tab="bl" aria-selected="false"><span class="tab-long">BeatLeader</span><span class="tab-short">BeatLeader</span></button>
 <button role="tab" data-tab="hsv" aria-selected="false"><span class="tab-long">HSV Config</span><span class="tab-short">HSV</span></button>
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
+<button role="tab" data-tab="kofi" aria-selected="false">Ko-fi</button>
 </div>
 <div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="false">Today</button><button data-r="7d" aria-pressed="true">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
@@ -2025,6 +2124,36 @@ body>main{position:relative;z-index:1}
 <h2>Headsets by last sync</h2><div class="bars" id="activeBars"></div>
 <p class="when" id="when"></p>
 </section>
+
+<section data-sec="kofi" class="hidden">
+<div id="k-setup" class="gcmsg kset hidden"></div>
+<div id="k-body">
+<h2>Supporters <small id="k-since">from Ko-fi</small></h2>
+<div class="kgrid">
+<div class="card"><div class="label">This month</div><div class="value k" id="k-month">-</div><div class="note" id="k-monthn"></div></div>
+<div class="card"><div class="label">All time</div><div class="value" id="k-all">-</div><div class="note" id="k-alln"></div></div>
+<div class="card"><div class="label">Supporters</div><div class="value" id="k-sup">-</div><div class="note" id="k-supn"></div></div>
+<div class="card"><div class="label">Monthly members</div><div class="value" id="k-mem">-</div><div class="note" id="k-memn"></div></div>
+</div>
+<div class="kpanel"><div class="phead"><b>Latest</b><small>names and messages only when the supporter made them public</small></div>
+<div id="k-list"></div><div class="kfoot">Emails and shipping addresses from Ko-fi are never stored.</div></div>
+<h2>Support me clicks &rarr; tips <small>last 8 weeks</small></h2>
+<div class="kgrid">
+<div class="card"><div class="label">Clicks, 30 days</div><div class="value" id="k-clk">-</div><div class="note" id="k-clkn">Support me buttons, all sites</div></div>
+<div class="card"><div class="label">Tips, 30 days</div><div class="value k" id="k-t30">-</div><div class="note" id="k-t30n"></div></div>
+<div class="card"><div class="label">Click to tip</div><div class="value" id="k-rate">-</div><div class="note" id="k-raten"></div></div>
+<div class="card"><div class="label">Average tip</div><div class="value" id="k-avg">-</div><div class="note" id="k-avgn"></div></div>
+</div>
+<div class="ktwo">
+<div class="kpanel"><div class="phead"><b>Each week</b><span class="sp"></span><small>bars are clicks, dots are tips</small></div>
+<div class="wk" id="k-wk"></div><div class="wkx" id="k-wkx"></div>
+<div class="klg"><span><i class="b"></i>Support me clicks</span><span><i class="t"></i>Tips that week</span></div></div>
+<div class="kpanel"><div class="phead"><b>Where the clicks come from</b></div><div id="k-where"></div>
+<div class="kfoot">Ko-fi doesn't say which click led to a tip, so these compare totals.</div></div>
+</div>
+</div>
+<p class="when" id="k-when"></p>
+</section>
 <p class="when" id="gcwhen"></p>
 <div id="fback" class="fback" hidden></div><aside id="fsheet" class="fsheet" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden></aside>
 <p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
@@ -2118,7 +2247,8 @@ body>main{position:relative;z-index:1}
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
     tabIntoView();
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (s) { s.classList.toggle('hidden', s.getAttribute('data-sec') !== t); });
-    $('range').classList.remove('hidden');
+    $('range').classList.toggle('hidden', t === 'kofi');
+    if (t === 'kofi') { if (kofi) renderKofi(); else if (getKey() && $('out') && !$('out').classList.contains('hidden')) loadKofi(false); }
     $('gcmsg').classList.toggle('hidden', ownTab(t) || !$('gcmsg').textContent);
     $('gcwhen').classList.toggle('hidden', ownTab(t));
     if (t === 'vis' && gc) chart(gc, dailyWhere(BUILD));
@@ -2147,11 +2277,11 @@ body>main{position:relative;z-index:1}
   var gcTok = 0, blTok = 0;
   function rangeName(r) { return { today: 'Today', '7d': '7 days', '30d': '30 days', '90d': '90 days', all: 'All time' }[r] || r; }
   function busyUi() {
-    var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]) || (tab === 'all' && allBusy);
+    var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]) || (tab === 'all' && allBusy) || (tab === 'kofi' && kofiBusy);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on); });
     $('rangeBusy').innerHTML = on ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="8" stroke-linecap="round" fill="none"/></svg>Loading ' + rangeName(range) + '...' : '';
     // First load of a tab: show the page's outline instead of empty cards. Later range changes keep the old numbers dimmed.
-    var sk = on && tab !== 'sync' && !(tab === 'bl' ? bl : isTool(tab) ? toolData[tab] : tab === 'all' ? allData : gc);
+    var sk = on && tab !== 'sync' && !(tab === 'bl' ? bl : isTool(tab) ? toolData[tab] : tab === 'all' ? allData : tab === 'kofi' ? kofi : gc);
     $('skel').classList.toggle('hidden', !sk);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('skel-hide', sk && sx.getAttribute('data-sec') === tab); });
     $('refresh').classList.toggle('spin', on);
@@ -2802,13 +2932,111 @@ body>main{position:relative;z-index:1}
   function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
   document.addEventListener('click', aGo);
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
+  // ---- Ko-fi tab: tips from the Ko-fi webhook, and Support me clicks from GoatCounter ----
+  var KOFI_CUP = '<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8.6 11.2c.6-.9 2-.7 2 .4 0 .9-1.2 1.6-2 2.2-.8-.6-2-1.3-2-2.2 0-1.1 1.4-1.3 2-.4z" fill="#ff5e5b" stroke="none"/></svg>';
+  var kofi = null, kofiBusy = false, kofiTok = 0;
+  function loadKofi(fresh) {
+    var key = getKey(); if (!key) return;
+    var tk = ++kofiTok; kofiBusy = true; busyUi();
+    fetch('/admin/kofi' + (fresh ? '?fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      if (tk !== kofiTok) return;
+      kofiBusy = false; busyUi();
+      if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; } txt('k-when', res.j.error || 'Couldn’t load Ko-fi.'); return; }
+      kofi = res.j; if (tab === 'kofi') renderKofi();
+    }).catch(function () { if (tk !== kofiTok) return; kofiBusy = false; busyUi(); txt('k-when', 'Couldn’t reach the Worker.'); });
+  }
+  function kMoney(n, cur) {
+    var c = cur || 'USD';
+    try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: c, minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n); } catch (e) { return n.toFixed(n % 1 ? 2 : 0) + ' ' + c; }
+  }
+  function kAgo(t) {
+    var s = Math.max(0, Date.now() / 1000 - t), d = new Date(t * 1000);
+    if (s < 3600) return Math.max(1, Math.round(s / 60)) + ' min ago';
+    if (s < 86400) { var h = Math.round(s / 3600); return h + ' hour' + (h === 1 ? '' : 's') + ' ago'; }
+    if (s < 2 * 86400) return 'yesterday';
+    if (s < 7 * 86400) return Math.floor(s / 86400) + ' days ago';
+    return MON[d.getMonth()] + ' ' + d.getDate() + (d.getFullYear() !== new Date().getFullYear() ? ', ' + d.getFullYear() : '');
+  }
+  function renderKofi() {
+    var d = kofi; if (!d) return;
+    var setup = $('k-setup'), tips = (d.tips || []).slice().sort(function (a, b) { return a.t - b.t; });
+    if (d.setup || !tips.length) {
+      setup.classList.remove('hidden');
+      setup.innerHTML = d.setup
+        ? '<b>Ko-fi isn’t connected yet.</b><ol><li>On Ko-fi, open <b>More</b>, then <b>API</b>, then <b>Webhooks</b>. Under <b>Advanced</b>, copy the <b>Verification Token</b>.</li><li>In the Playlist-Studio <code>worker</code> folder run <code>npx wrangler secret put KOFI_TOKEN</code> and paste it.</li><li>Back on Ko-fi, set the webhook URL to <code>' + esc(location.origin) + '/kofi</code> and press <b>Update</b>.</li><li>Press <b>Send Single Donation Test</b>. This tab shows when the test arrives.</li></ol>'
+        : '<b>Ko-fi is connected.</b> ' + (d.test ? 'The test from Ko-fi arrived ' + esc(kAgo(d.test.t)) + '. ' : 'No test has arrived yet: on Ko-fi, press <b>Send Single Donation Test</b> to check it. ') + 'Tips show up here as they come in.';
+    } else setup.classList.add('hidden');
+    // one currency on the cards: the one most tips use
+    var curN = {}; tips.forEach(function (x) { curN[x.cur] = (curN[x.cur] || 0) + 1; });
+    var cur = Object.keys(curN).sort(function (a, b) { return curN[b] - curN[a]; })[0] || 'USD', main = tips.filter(function (x) { return x.cur === cur; }), other = tips.length - main.length;
+    var sum = function (a) { return a.reduce(function (n, x) { return n + (x.amt || 0); }, 0); };
+    var now = new Date(), m0 = new Date(now.getFullYear(), now.getMonth(), 1) / 1000, pm0 = new Date(now.getFullYear(), now.getMonth() - 1, 1) / 1000;
+    var first = tips.length ? tips[0].t : 0, inM = main.filter(function (x) { return x.t >= m0; }), inPM = main.filter(function (x) { return x.t >= pm0 && x.t < m0; });
+    txt('k-since', tips.length ? 'from Ko-fi, since ' + kAgoDate(first) : 'from Ko-fi');
+    txt('k-month', kMoney(sum(inM), cur));
+    var dm = sum(inM) - sum(inPM);
+    $('k-monthn').innerHTML = inM.length + ' payment' + (inM.length === 1 ? '' : 's') + (first && first < pm0 ? ' &middot; <span class="' + (dm >= 0 ? 'up' : 'down') + '">' + (dm >= 0 ? '+' : '-') + esc(kMoney(Math.abs(dm), cur)) + '</span> vs ' + MON[new Date(pm0 * 1000).getMonth()] : '');
+    txt('k-all', kMoney(sum(main), cur));
+    txt('k-alln', tips.length ? 'since ' + kAgoDate(first) + (other ? ', plus ' + other + ' in other currencies' : '') : 'nothing yet');
+    var by = {}; tips.forEach(function (x) { (by[x.who] = by[x.who] || []).push(x); });
+    var people = Object.keys(by), again = people.filter(function (k) { return by[k].length > 1; }).length;
+    txt('k-sup', people.length);
+    txt('k-supn', people.length ? (again ? again + (again === 1 ? ' has' : ' have') + ' given twice or more' : 'nobody twice yet') : 'nobody yet');
+    var cut = Date.now() / 1000 - 35 * 86400, mem = [], tiers = {};
+    people.forEach(function (k) { var subs = by[k].filter(function (x) { return x.sub; }); var last = subs[subs.length - 1]; if (last && last.t >= cut) { mem.push(last); if (last.tier) tiers[last.tier] = (tiers[last.tier] || 0) + 1; } });
+    txt('k-mem', mem.length);
+    txt('k-memn', mem.length ? kMoney(sum(mem.filter(function (x) { return x.cur === cur; })), cur) + ' a month' + (Object.keys(tiers).length > 1 ? ' · ' + Object.keys(tiers).map(function (t) { return tiers[t] + ' ' + t; }).join(', ') : '') : 'paid in the last 35 days');
+    $('k-list').innerHTML = tips.length ? tips.slice(-8).reverse().map(function (x) {
+      var pill = x.type === 'Shop Order' ? '<span class="kpill s">Shop</span>' : x.sub ? '<span class="kpill m">Monthly' + (x.tier ? ' &middot; ' + esc(x.tier) : '') + (x.first ? ' &middot; new' : '') + '</span>' : x.type === 'Commission' ? '<span class="kpill s">Commission</span>' : '<span class="kpill">Tip</span>';
+      var nm = x.pub && x.name ? x.name : 'Someone', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
+      return '<div class="tip"><span class="tav' + (x.pub ? '' : ' p') + '">' + (x.pub && x.name ? esc(x.name.charAt(0).toUpperCase()) : '?') + '</span><div><div class="tn"><b>' + esc(nm) + '</b>' + pill + '</div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b><small>' + esc(kAgo(x.t)) + '</small></div></div>';
+    }).join('') : '<p class="empty">No tips yet. They show up here as soon as Ko-fi sends them.</p>';
+    // clicks: per day from GoatCounter, all sites added up
+    var day = function (t) { var x = new Date(t * 1000); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
+    var cl = {}, sites = (d.clicks && d.clicks.sites) || [];
+    sites.forEach(function (s) { (s.days || []).forEach(function (x) { cl[x[0]] = (cl[x[0]] || 0) + (x[1] || 0); }); });
+    var nowS = Date.now() / 1000, D = 86400, t30 = nowS - 30 * D;
+    var clk30 = 0; Object.keys(cl).forEach(function (k) { if (Date.parse(k + 'T12:00:00') / 1000 >= t30) clk30 += cl[k]; });
+    var tip30 = tips.filter(function (x) { return x.t >= t30; }), tipP = tips.filter(function (x) { return x.t >= t30 - 30 * D && x.t < t30; });
+    txt('k-clk', d.clicks ? fmt(clk30) : '-');
+    txt('k-clkn', d.clicks ? 'Support me buttons, all sites' : (d.clickErr || 'GoatCounter isn’t connected'));
+    txt('k-t30', tip30.length);
+    txt('k-t30n', tip30.length ? kMoney(sum(tip30.filter(function (x) { return x.cur === cur; })), cur) + ' total' : 'none in 30 days');
+    txt('k-rate', tip30.length && clk30 ? '1 in ' + Math.max(1, Math.round(clk30 / tip30.length)) : '-');
+    txt('k-raten', tip30.length && clk30 ? (Math.round(tip30.length / clk30 * 1000) / 10) + '% of clicks' : clk30 ? 'no tips yet to compare' : 'no clicks yet');
+    var avg = function (a) { a = a.filter(function (x) { return x.cur === cur; }); return a.length ? sum(a) / a.length : 0; };
+    txt('k-avg', tip30.length ? kMoney(Math.round(avg(tip30) * 100) / 100, cur) : '-');
+    txt('k-avgn', tipP.length ? 'was ' + kMoney(Math.round(avg(tipP) * 100) / 100, cur) + ' the 30 days before' : 'last 30 days');
+    // 8 weeks, each ending on today's weekday
+    var wk = [], end0 = new Date(); end0.setHours(23, 59, 59, 0);
+    for (var i = 7; i >= 0; i--) {
+      var e = end0 / 1000 - i * 7 * D, s0 = e - 7 * D, c = 0, tp = 0;
+      for (var k = 0; k < 7; k++) c += cl[day(s0 + D / 2 + k * D)] || 0;
+      tips.forEach(function (x) { if (x.t > s0 && x.t <= e) tp++; });
+      var sd = new Date((s0 + 1) * 1000);
+      wk.push({ c: c, tp: tp, lab: MON[sd.getMonth()] + ' ' + sd.getDate(), before: !first || e < first });
+    }
+    var mx = Math.max.apply(null, wk.map(function (w) { return w.c; }).concat([1]));
+    $('k-wk').innerHTML = wk.map(function (w) {
+      var dots = w.tp > 5 ? '<i></i><b>' + w.tp + '</b>' : w.tp ? new Array(w.tp + 1).join('<i></i>') : '<em>' + (w.before ? '' : '-') + '</em>';
+      return '<div class="wkc" title="' + w.c + ' click' + (w.c === 1 ? '' : 's') + ', ' + w.tp + ' tip' + (w.tp === 1 ? '' : 's') + '"><div class="wkt">' + dots + '</div><span class="wkn">' + w.c + '</span><div class="wkb" style="height:' + Math.round(w.c / mx * 110) + 'px"></div></div>';
+    }).join('');
+    $('k-wkx').innerHTML = wk.map(function (w) { return '<span>' + w.lab + '</span>'; }).join('');
+    var CLS = { studio: 'site-studio', rs: 'site-rs', hsv: 'site-hsv' };
+    var wr = sites.map(function (s) { return [esc(s.name) + (s.error ? ' <span class="note">(no answer)</span>' : ''), (s.days || []).reduce(function (n, x) { return n + (x[1] || 0); }, 0), CLS[s.key] || '']; }).sort(function (a, b) { return b[1] - a[1]; });
+    bars('k-where', wr.filter(function (r) { return r[1] > 0; }), '', d.clicks ? 'No Support me clicks in 8 weeks.' : (d.clickErr || 'GoatCounter isn’t connected.'));
+    txt('k-when', 'Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '. Tips arrive the moment Ko-fi sends them; clicks are kept for an hour.');
+  }
+  function kAgoDate(t) { var x = new Date(t * 1000); return MON[x.getMonth()] + ' ' + x.getDate() + (x.getFullYear() !== new Date().getFullYear() ? ', ' + x.getFullYear() : ''); }
   // Each tab's icon: the site's logo, or what the tab shows.
   function tabIcons() {
     var TI = { all: '<span class="ti gl"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2.5" fill="#ff2740"/><rect x="13" y="3" width="8" height="8" rx="2.5" fill="#2f7bff"/><rect x="3" y="13" width="8" height="8" rx="2.5" fill="#2f7bff"/><rect x="13" y="13" width="8" height="8" rx="2.5" fill="#ff2740"/></svg></span>', vis: '<span class="ti"><img src="' + MY_ICONS.ps + '" alt=""></span>',
       ply: '<span class="ti gl">' + glyph('people', '#2f7bff') + '</span>', feat: '<span class="ti gl">' + glyph('sparkle', '#d64556') + '</span>',
       src: '<span class="ti gl">' + glyph('link', '#2f7bff') + '</span>', sync: '<span class="ti"><img src="' + MY_ICONS.ss + '" alt=""></span>',
       bl: meAvatar ? '<span class="ti me"><img src="' + esc(meAvatar) + '" alt=""></span>' : '<span class="ti"><img src="/admin/icon?d=beatleader.xyz" alt=""></span>',
-      hsv: '<span class="ti"><img src="' + MY_ICONS.hsv + '" alt=""></span>', rs: '<span class="ti"><img src="' + MY_ICONS.rs + '" alt=""></span>' };
+      hsv: '<span class="ti"><img src="' + MY_ICONS.hsv + '" alt=""></span>', rs: '<span class="ti"><img src="' + MY_ICONS.rs + '" alt=""></span>', kofi: '<span class="ti gl">' + KOFI_CUP + '</span>' };
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button[data-tab]'), function (b) {
       var k = b.getAttribute('data-tab'), old = b.querySelector('.ti'); if (old) old.remove();
       if (TI[k]) b.insertAdjacentHTML('afterbegin', TI[k]);
@@ -3128,7 +3356,7 @@ body>main{position:relative;z-index:1}
     if (c.width && (a.left < c.left || a.right > c.right)) tbx.scrollLeft += a.left - c.left - 24;
   }
   function isTool(t) { return !!TOOLS[t]; }
-  function ownTab(t) { return t === 'bl' || t === 'sync' || t === 'all' || isTool(t); }
+  function ownTab(t) { return t === 'bl' || t === 'sync' || t === 'all' || t === 'kofi' || isTool(t); }
   var toolData = {}, toolBusy = {}, toolTok = {};
   function toolIds(t) { var p = TOOLS[t].p; return { svg: p + '-chart', head: p + '-charth', what: 'Visitors', dots: false }; }
   function toolMsg(t, h) { var el = $(TOOLS[t].p + '-msg'); el.innerHTML = h; el.classList.toggle('hidden', !h); }
@@ -3411,6 +3639,7 @@ body>main{position:relative;z-index:1}
       if (tab === 'bl' && !bl) loadBl(false);
       if (tab === 'all' && !allData) loadAll(false);
       if (isTool(tab) && !toolData[tab]) loadTool(tab, false);
+      if (tab === 'kofi' && !kofi) loadKofi(false);
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
   $('go').addEventListener('click', loadSync);
@@ -3421,12 +3650,12 @@ body>main{position:relative;z-index:1}
   function logoSpin() {
     ['.brand img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
   }
-  function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else loadGc(true); }
+  function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else if (tab === 'kofi') loadKofi(true); else loadGc(true); }
   function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
   $('refresh').addEventListener('click', function () { refreshAll(false); });
   setInterval(autoRefresh, 30000);
   document.addEventListener('visibilitychange', autoRefresh);
-  $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
+  $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; kofi = null; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab); logoSpin();
   if (getKey()) loadSync(); else $('keyrow').classList.remove('hidden');
