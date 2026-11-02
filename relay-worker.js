@@ -1131,7 +1131,7 @@ async function admin(request, env, url) {
       "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
-  const kofiEdit = request.method === "POST" && (url.pathname === "/admin/kofi/add" || url.pathname === "/admin/kofi/del");
+  const kofiEdit = request.method === "POST" && (url.pathname === "/admin/kofi/add" || url.pathname === "/admin/kofi/del" || url.pathname === "/admin/kofi/avatar");
   if (!kofiEdit && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
@@ -1196,6 +1196,18 @@ async function kofiHook(request, env) {
 async function kofiEditTips(request, env, url, nocache) {
   let b = null; try { b = await request.json(); } catch (e) {}
   if (!b || typeof b !== "object") return json({ error: "Bad request" }, 400, nocache);
+  // A supporter's picture, picked on the Ko-fi tab (Ko-fi doesn't send one). Kept by their public name so later
+  // tips from the same name get it too. The page shrinks it to 96px before sending.
+  if (url.pathname === "/admin/kofi/avatar") {
+    const name = String(b.name || "").trim().toLowerCase().slice(0, 60), img = String(b.img || "");
+    if (!name) return json({ error: "Bad request" }, 400, nocache);
+    if (img && (img.length > 60000 || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(img))) return json({ error: "That picture didn't work. Try a PNG or JPG." }, 400, nocache);
+    const av = (await env.PLAYLISTS.get("kofi:avatars", "json")) || {};
+    if (img) av[name] = img; else delete av[name];
+    const keys = Object.keys(av); keys.slice(0, Math.max(0, keys.length - 200)).forEach((k) => { delete av[k]; });
+    await env.PLAYLISTS.put("kofi:avatars", JSON.stringify(av));
+    return json({ ok: true }, 200, nocache);
+  }
   const list = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
   if (url.pathname === "/admin/kofi/del") {
     const id = String(b.id || "");
@@ -1219,9 +1231,10 @@ async function kofiEditTips(request, env, url, nocache) {
 async function kofiStats(env, fresh) {
   const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
   const test = await env.PLAYLISTS.get("kofi:test", "json");
+  const avatars = (await env.PLAYLISTS.get("kofi:avatars", "json")) || {};
   let clicks = null, clickErr = "";
   try { clicks = await kofiClicks(env, fresh); } catch (e) { clickErr = e && e.message === "gc-auth" ? "GoatCounter refused the key" : "GoatCounter didn't answer"; }
-  return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, clicks, clickErr };
+  return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, avatars, clicks, clickErr };
 }
 // Support me clicks (the kofi-click event) per day for the last 8 weeks, on every site that counts them.
 async function kofiClicks(env, fresh) {
@@ -1793,6 +1806,14 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .tip+.tip{margin-top:2px}.tip:hover{background:#0f1624}
 .tav{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(135deg,#ff5e5b,#b8323a)}
 .tav.p{background:#1a2336;color:#7f8a9c}
+button.tav{padding:0;border:0;font-family:inherit;cursor:pointer;position:relative;overflow:hidden}
+button.tav:hover,button.tav:focus-visible{box-shadow:0 0 0 2px #0b0f17,0 0 0 4px #5aa0ff;outline:none}
+.tav img{width:100%;height:100%;object-fit:cover;display:block}
+.tav.p svg{width:24px;height:24px;display:block}
+.tav .cam{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);opacity:0;transition:opacity .15s}
+.tav .cam svg{width:17px;height:17px}
+button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
+.tav.busy{opacity:.5}
 .tn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.tn b{font-size:15.5px;overflow-wrap:anywhere}
 .kpill{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:#14213a;color:#9cc0ff;border:1px solid #1f3456;white-space:nowrap}
 .kpill.m{background:rgba(61,220,132,.1);color:#3ddc84;border-color:#1f5a3c}.kpill.s{background:rgba(255,194,61,.1);color:#ffc23d;border-color:#5a4a1f}
@@ -3048,8 +3069,8 @@ body>main{position:relative;z-index:1}
     txt('k-memn', mem.length ? kMoney(sum(mem.filter(function (x) { return x.cur === cur; })), cur) + ' a month' + (Object.keys(tiers).length > 1 ? ' · ' + Object.keys(tiers).map(function (t) { return tiers[t] + ' ' + t; }).join(', ') : '') : 'paid in the last 35 days');
     $('k-list').innerHTML = tips.length ? tips.slice(-8).reverse().map(function (x) {
       var pill = x.type === 'Shop Order' ? '<span class="kpill s">Shop</span>' : x.sub ? '<span class="kpill m">Monthly' + (x.tier ? ' &middot; ' + esc(x.tier) : '') + (x.first ? ' &middot; new' : '') + '</span>' : x.type === 'Commission' ? '<span class="kpill s">Commission</span>' : '<span class="kpill">Tip</span>';
-      var nm = x.pub && x.name ? x.name : 'Someone', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
-      return '<div class="tip"><span class="tav' + (x.pub ? '' : ' p') + '">' + (x.pub && x.name ? esc(x.name.charAt(0).toUpperCase()) : '?') + '</span><div><div class="tn"><b>' + esc(nm) + '</b>' + pill + (x.manual ? '<span class="kpill h" title="Added on this page, not sent by Ko-fi">by hand</span>' : '') + '<span class="tw">' + esc(kAgo(x.t)) + '</span></div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b>' + (x.manual ? '<button class="ghost kdel" type="button" data-kdel="' + esc(x.id) + '" title="Remove this tip" aria-label="Remove this tip">&times;</button>' : '') + '</div></div>';
+      var nm = x.pub && x.name ? x.name : 'Anonymous', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
+      return '<div class="tip">' + kAvatar(x, d.avatars || {}) + '<div><div class="tn"><b>' + esc(nm) + '</b>' + pill + (x.manual ? '<span class="kpill h" title="Added on this page, not sent by Ko-fi">by hand</span>' : '') + '<span class="tw">' + esc(kAgo(x.t)) + '</span></div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b>' + (x.manual ? '<button class="ghost kdel" type="button" data-kdel="' + esc(x.id) + '" title="Remove this tip" aria-label="Remove this tip">&times;</button>' : '') + '</div></div>';
     }).join('') : '<p class="empty">No tips yet. They show up here as soon as Ko-fi sends them.</p>';
     // clicks: per day from GoatCounter, all sites added up
     var day = function (t) { var x = new Date(t * 1000); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
@@ -3088,6 +3109,37 @@ body>main{position:relative;z-index:1}
     bars('k-where', wr.filter(function (r) { return r[1] > 0 || /no answer/.test(r[0]); }), '', d.clicks ? 'No Support me clicks in 8 weeks.' : (d.clickErr || 'GoatCounter isn’t connected.'));
     txt('k-when', 'Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '. Tips arrive the moment Ko-fi sends them; clicks are kept for an hour.');
   }
+  // Private tips get the incognito face. Public ones show the supporter's picture (or their initial) and the
+  // circle can be clicked to pick a picture for that name.
+  var KANON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 9.6 8.6 4.9c.2-.8 1-1.2 1.8-.9l1.6.6 1.6-.6c.8-.3 1.6.1 1.8.9l1.2 4.7z" fill="#8792a6"/><rect x="3" y="9.6" width="18" height="1.9" rx=".95" fill="#8792a6"/><circle cx="8.3" cy="15.6" r="2.6" fill="none" stroke="#8792a6" stroke-width="1.7"/><circle cx="15.7" cy="15.6" r="2.6" fill="none" stroke="#8792a6" stroke-width="1.7"/><path d="M10.9 15.3c.7-.6 1.5-.6 2.2 0" fill="none" stroke="#8792a6" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  var KCAM = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg>';
+  function kAvatar(x, av) {
+    if (!x.pub || !x.name) return '<span class="tav p" title="Anonymous">' + KANON + '</span>';
+    var img = av[x.name.trim().toLowerCase()];
+    return '<button type="button" class="tav" data-kav="' + esc(x.name) + '" title="Pick a picture for ' + esc(x.name) + '" aria-label="Pick a picture for ' + esc(x.name) + '">' + (img ? '<img src="' + esc(img) + '" alt="">' : esc(x.name.charAt(0).toUpperCase())) + '<span class="cam">' + KCAM + '</span></button>';
+  }
+  var kavFor = '', kavIn = document.createElement('input');
+  kavIn.type = 'file'; kavIn.accept = 'image/png,image/jpeg,image/webp,image/gif'; kavIn.className = 'hidden';
+  document.body.appendChild(kavIn);
+  kavIn.addEventListener('change', function () {
+    var f = kavIn.files && kavIn.files[0], name = kavFor; kavIn.value = ''; if (!f || !name) return;
+    var rd = new FileReader(), im = new Image();
+    rd.onload = function () { im.src = rd.result; };
+    rd.onerror = function () { say('That picture didn’t open. Try a PNG or JPG.', true); };
+    im.onload = function () {
+      var c = document.createElement('canvas'), z = Math.min(im.naturalWidth, im.naturalHeight); c.width = c.height = 96;
+      c.getContext('2d').drawImage(im, (im.naturalWidth - z) / 2, (im.naturalHeight - z) / 2, z, z, 0, 0, 96, 96);
+      var data = c.toDataURL('image/webp', 0.9); if (data.indexOf('data:image/webp') !== 0) data = c.toDataURL('image/png');
+      document.querySelectorAll('[data-kav]').forEach(function (b) { if (b.getAttribute('data-kav') === name) b.classList.add('busy'); });
+      kPost('/admin/kofi/avatar', { name: name, img: data }).then(function (res) {
+        if (res.ok) { kofi.avatars = kofi.avatars || {}; kofi.avatars[name.trim().toLowerCase()] = data; }
+        else say(res.j.error || 'Couldn’t save the picture.', true);
+        renderKofi();
+      }, function () { say('Couldn’t reach the Worker.', true); renderKofi(); });
+    };
+    im.onerror = function () { say('That picture didn’t open. Try a PNG or JPG.', true); };
+    rd.readAsDataURL(f);
+  });
   function kFormOpen(on) {
     $('k-form').classList.toggle('hidden', !on); $('k-addbtn').classList.toggle('hidden', on); $('kf-err').classList.add('hidden');
     if (on) { var d = new Date(); $('kf-date').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); $('kf-name').focus(); }
@@ -3109,6 +3161,7 @@ body>main{position:relative;z-index:1}
     }, function () { $('kf-save').disabled = false; err.textContent = 'Couldn’t reach the Worker.'; err.classList.remove('hidden'); });
   });
   $('k-list').addEventListener('click', function (e) {
+    var a = e.target.closest('[data-kav]'); if (a) { kavFor = a.getAttribute('data-kav'); kavIn.click(); return; }
     var b = e.target.closest('[data-kdel]'); if (!b) return;
     if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.classList.add('sure'); b.textContent = 'Remove?'; return; }
     b.disabled = true; kPost('/admin/kofi/del', { id: b.getAttribute('data-kdel') }).then(function () { loadKofi(false); });

@@ -2021,9 +2021,20 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asw-mom{display:flex;align-items:flex-end;gap:3px;height:60px;}
 .asw-mom span{flex:1;display:flex;align-items:flex-end;gap:1px;height:100%;}
 .asw-mom i{flex:1;display:block;border-radius:2px 2px 0 0;min-height:1px;} .asw-mom i.us{background:var(--asc,#e8335a);} .asw-mom i.them{background:#4a89c9;}
-.asw-tg{display:flex;flex-direction:column;gap:6px;}
-.asw-t{display:grid;grid-template-columns:minmax(0,1fr) 96px 96px;gap:10px;align-items:center;border:1px solid var(--border-2);border-radius:9px;padding:7px 10px;font-size:14px;}
-.asw-t b{color:#fff;} .asw-t small{display:block;font-size:12.5px;color:#aab4c6;}
+.asw-tg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,max(250px,calc(50% - 4px))),1fr));gap:8px;}
+.asw-tg .asw-note{grid-column:1/-1;margin-top:2px;}
+.asw-t{border:1px solid var(--border-2);border-radius:9px;padding:8px 11px;font-size:14px;min-width:0;}
+.asw-t b{color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .asw-t small{display:block;font-size:12.5px;color:#aab4c6;}
+.asw-t .tt{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.asw-t .tt .asw-fit{white-space:nowrap;}
+.asw-t .tg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:6px;}
+.asw-t .tg .asw-pb{margin:0;} .asw-t .tg small{font:700 12px var(--mono);}
+.asw-mt{margin-top:10px;}
+.asw-me{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding-bottom:11px;margin-bottom:11px;border-bottom:1px solid var(--border-2);}
+.asw-me>b{font-size:15.5px;color:#fff;}
+.asw-me .gb small{font-size:13px;color:#c3cbd9;} .asw-me .gb .asw-pb{margin:4px 0 0;}
+.asw-me .ct{text-align:right;} .asw-me .ct small{display:block;font-size:12px;color:#aab4c6;} .asw-me .ct b{font:700 18px var(--mono);color:#fff;}
+.asw-me + .asw-you{margin:-4px 0 11px;}
 .asw-fit{font:700 12.5px var(--mono);text-align:right;} .asw-fit.g{color:var(--green);} .asw-fit.a{color:var(--amber);}
 .asw-you small{display:block;font-size:13px;color:#c3cbd9;margin-top:3px;} .asw-you small.r{color:#ff9fb2;}
 .asw-feed{display:flex;flex-direction:column;gap:4px;font-size:13.5px;}
@@ -2063,7 +2074,7 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .asw-mcard .asm-state{color:#ffb3c0;}
 .asw-mcard .asm-bar span{background:#ff4d6d;}
 .cb-note.soon b{color:#fff;}
-@media (max-width:620px){.asw-t{grid-template-columns:minmax(0,1fr) 70px 74px;gap:6px;}.asw-stake{grid-template-columns:1fr;}.asw-w{grid-template-columns:1fr;}.asw-w .r,.asw-w .vs{text-align:left;}.asw-lr{grid-template-columns:24px 58px 1fr 58px;}}
+@media (max-width:620px){.asw-me{gap:12px;}.asw-stake{grid-template-columns:1fr;}.asw-w{grid-template-columns:1fr;}.asw-w .r,.asw-w .vs{text-align:left;}.asw-lr{grid-template-columns:24px 58px 1fr 58px;}}
 /* Clans: two equal buttons across the card, tag over a quiet note; one clan takes the whole row. */
 .pc-clans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px;}
 .pc-clans[hidden]{display:none;}
@@ -3267,7 +3278,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T23:10Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T23:25Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -13052,18 +13063,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     else if (X && X.targets.length) {
       left = X.targets.slice(0, 4).map(function (t) {
         var g = +t.p.guard || 0, gmax = +(W.rules && W.rules.guard) || 100;
-        return '<div class="asw-t" title="Breaking them moves about ' + aswNum(t.p.breakStanding) + ' standing"><span><b>' + esc(t.p.player.name) + '</b><small>skill ' + (+t.p.skill).toFixed(1) + ' · ≈' + t.perHit.toFixed(1) + ' a hit · ' + t.maps.length + (t.maps.length === 1 ? ' map' : ' maps') + '</small></span><span><small>guard ' + Math.round(g) + '</small><div class="asw-pb"><i class="g" style="width:' + Math.min(100, g / gmax * 100).toFixed(0) + '%"></i></div></span><span class="asw-fit ' + (t.breakIn ? 'g' : 'a') + '">' + (t.breakIn ? 'break in ' + t.breakIn : 'needs ' + t.need + ' hits') + '</span></div>';
+        return '<div class="asw-t" title="Breaking them moves about ' + aswNum(t.p.breakStanding) + ' standing"><div class="tt"><b>' + esc(t.p.player.name) + '</b><span class="asw-fit ' + (t.breakIn ? 'g' : 'a') + '">' + (t.breakIn ? 'break in ' + t.breakIn : 'needs ' + t.need + ' hits') + '</span></div><small>skill ' + (+t.p.skill).toFixed(1) + ' · ≈' + t.perHit.toFixed(1) + ' a hit · ' + t.maps.length + (t.maps.length === 1 ? ' map' : ' maps') + '</small><div class="tg"><div class="asw-pb"><i class="g" style="width:' + Math.min(100, g / gmax * 100).toFixed(0) + '%"></i></div><small>guard ' + Math.round(g) + '</small></div></div>';
       }).join('') + (X.down ? '<p class="asw-note">' + X.down + ' of ' + X.nEnemies + ' enemies are broken right now.</p>' : '');
     } else left = '<p class="asw-note">No enemy you can hit at your usual accuracy right now. ' + (X && X.down ? X.down + ' of ' + X.nEnemies + ' enemies are broken.' : '') + '</p>';
     if (me) {
       var g2 = +me.guard || 0, gm = +(W.rules && W.rules.guard) || 100, hitMe = {};
       W.mine.forEach(function (x) { if (x.victim && String(x.victim.id) === aid && x.attacker) { var o = hitMe[x.attacker.name] = hitMe[x.attacker.name] || { n: 0, map: x.map && x.map.songName }; o.n++; } });
       var worst = Object.keys(hitMe).sort(function (a, b) { return hitMe[b].n - hitMe[a].n; })[0];
-      right += '<div class="asw-you"><small>Your guard ' + Math.round(g2) + ' / ' + gm + (me.contribution > 0 ? ' · contribution ' + aswNum(me.contribution) : '') + '</small><div class="asw-pb big"><i class="g" style="width:' + Math.min(100, g2 / gm * 100).toFixed(0) + '%"></i></div>' +
-        (g2 > 0 ? '' : '<small class="r">Broken' + (me.reviveAt ? ', back ' + esc(ascWhen(me.reviveAt)) : '') + '.</small>') +
-        (worst ? '<small>' + esc(worst) + ' has hit you ' + (hitMe[worst].n === 1 ? 'once' : hitMe[worst].n + ' times') + (hitMe[worst].map ? ' (latest on ' + esc(hitMe[worst].map) + ')' : '') + '. Beating their score on a war map hits them back.</small>' : '') + '</div>';
-    } else right += '<p class="asw-note">You aren\'t on this war\'s roster, so the war maps below are a preview of what you could hit.</p>';
-    h += '<div class="asw-two"><div class="asw-card"><div class="asw-ch"><b>Best targets for you</b><span>enemies you can hit, closest to breaking first</span></div><div class="asw-tg">' + left + '</div></div><div class="asw-card"><div class="asw-ch"><b>You</b></div>' + right + '</div></div>';
+      right += '<div class="asw-me"><b>You</b><div class="gb"><small>guard ' + Math.round(g2) + ' / ' + gm + '</small><div class="asw-pb big"><i class="g" style="width:' + Math.min(100, g2 / gm * 100).toFixed(0) + '%"></i></div></div>' +
+        (me.contribution > 0 ? '<span class="ct"><small>contribution</small><b>' + aswNum(me.contribution) + '</b></span>' : '') + '</div>';
+      var notes = (g2 > 0 ? '' : '<small class="r">Broken' + (me.reviveAt ? ', back ' + esc(ascWhen(me.reviveAt)) : '') + '.</small>') +
+        (worst ? '<small>' + esc(worst) + ' has hit you ' + (hitMe[worst].n === 1 ? 'once' : hitMe[worst].n + ' times') + (hitMe[worst].map ? ' (latest on ' + esc(hitMe[worst].map) + ')' : '') + '. Beating their score on a war map hits them back.</small>' : '');
+      if (notes) right += '<div class="asw-you">' + notes + '</div>';
+    } else right += '<p class="asw-note" style="margin:0 0 10px">You aren\'t on this war\'s roster, so the war maps below are a preview of what you could hit.</p>';
+    h += '<div class="asw-card asw-mt">' + right + '<div class="asw-ch"><b>Best targets for you</b><span>enemies you can hit, closest to breaking first</span></div><div class="asw-tg">' + left + '</div></div>';
     return h + aswRoom();
   }
   // War room (Nov 2026): one card with three tabs. Feed is every hit loaded (newest 100), with filters and days;
