@@ -1140,7 +1140,7 @@ async function admin(request, env, url) {
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
   const kofiEdit = request.method === "POST" && (url.pathname === "/admin/kofi/add" || url.pathname === "/admin/kofi/del" || url.pathname === "/admin/kofi/avatar");
-  if (!kofiEdit && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
+  if (!kofiEdit && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi" && url.pathname !== "/admin/plan") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
   // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
@@ -1162,6 +1162,13 @@ async function admin(request, env, url) {
     }
   }
   if (url.pathname === "/admin/kofi") return json(await kofiStats(env, url.searchParams.get("fresh") === "1"), 200, nocache);
+  if (url.pathname === "/admin/plan") {
+    try { return json(await planUsage(env, url.searchParams.get("fresh") === "1"), 200, nocache); }
+    catch (e) {
+      const m = (e && e.message) || "";
+      return json({ error: m === "auth" ? "Cloudflare refused the API token. Check that it has Account Analytics: Read." : m === "account" ? "Studio Stats couldn't find your Cloudflare account. Run npx wrangler secret put CF_ACCOUNT_ID with the ID from your dashboard's address bar." : "Cloudflare's analytics didn't answer. Try again in a moment." }, 502, nocache);
+    }
+  }
   if (kofiEdit) return kofiEditTips(request, env, url, nocache);
   return json(await adminStats(env), 200, nocache);
 }
@@ -1486,6 +1493,71 @@ async function kofiEditTips(request, env, url, nocache) {
   await env.PLAYLISTS.put("kofi:tips", JSON.stringify(list.slice(-3000)));
   return json({ ok: true, tip: rec }, 200, nocache);
 }
+// ---------------------------------------------------------------- Plan usage (Cloudflare's analytics, all Workers)
+// The Plan strip on Studio Stats' All tab: this billing period's requests and CPU time for every Worker on the account,
+// and KV reads, writes, deletes and lists, against what the Workers Paid plan includes. Needs an account API token with
+// Account Analytics: Read (npx wrangler secret put CF_API_TOKEN). With Billing: Read too, the period matches the bill;
+// without it, the calendar month. Kept for an hour in KV as plan:cache.
+const PLAN_CF = "https://api.cloudflare.com/client/v4";
+async function planUsage(env, fresh) {
+  if (!env.CF_API_TOKEN) return { setup: true };
+  const ck = "plan:cache";
+  if (!fresh) { const c = await env.PLAYLISTS.get(ck, "json"); if (c && c.d && nowSec() - c.t < 3600) return c.d; }
+  const H = { Authorization: "Bearer " + env.CF_API_TOKEN, "Content-Type": "application/json" };
+  const cf = async (path) => { const r = await fetch(PLAN_CF + path, { headers: H }); const j = await r.json().catch(() => null); return r.ok && j && j.success !== false ? j.result : null; };
+  let acct = String(env.CF_ACCOUNT_ID || "").trim();
+  if (!acct) {
+    const r = await fetch(PLAN_CF + "/accounts?per_page=5", { headers: H });
+    if (r.status === 401) throw new Error("auth");
+    const j = await r.json().catch(() => null), list = j && j.result;
+    if (list && list[0] && list[0].id) acct = list[0].id;
+  }
+  if (!/^[0-9a-f]{32}$/.test(acct)) throw new Error("account");
+  const gql = async (query, variables) => {
+    const r = await fetch(PLAN_CF + "/graphql", { method: "POST", headers: H, body: JSON.stringify({ query, variables }) });
+    const j = await r.json().catch(() => null);
+    if (r.status === 401 || r.status === 403) throw new Error("auth");
+    if (!r.ok || !j) throw new Error("cf " + r.status);
+    if (j.errors && j.errors.length) { const m = String(j.errors[0].message || ""); throw new Error(/authoriz|permission|access/i.test(m) && !j.data ? "auth" : "gql " + m.slice(0, 160)); }
+    return j.data && j.data.viewer && j.data.viewer.accounts && j.data.viewer.accounts[0];
+  };
+  // The billing period, when the token can read the subscription; else the calendar month (UTC).
+  let start = 0, end = 0, cycle = "month";
+  try {
+    const subs = (await cf("/accounts/" + acct + "/subscriptions")) || [];
+    const s = subs.find((x) => /worker/i.test(JSON.stringify((x && (x.rate_plan || x.product)) || ""))) || subs.find((x) => x && x.current_period_start);
+    if (s && s.current_period_start && s.current_period_end) { start = Date.parse(s.current_period_start); end = Date.parse(s.current_period_end); if (start && end > start) cycle = "billing"; }
+  } catch (e) {}
+  if (cycle !== "billing") { const d = new Date(); start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1); end = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); }
+  const now = Date.now(), upto = Math.min(now, end), DAY = 86400000;
+  // Workers, a week at a time. CPU time is the exact sum when the dataset has it, else median x requests.
+  const by = {}; let cpuExact = true;
+  const WQ = (f) => "query($a:String!,$s:Time!,$e:Time!){viewer{accounts(filter:{accountTag:$a}){workersInvocationsAdaptive(limit:1000,filter:{datetime_geq:$s,datetime_lt:$e}){" + f + " dimensions{scriptName}}}}}";
+  for (let t = start; t < upto; t += 7 * DAY) {
+    const v = { a: acct, s: new Date(t).toISOString(), e: new Date(Math.min(t + 7 * DAY, upto)).toISOString() };
+    let rows = null;
+    if (cpuExact) { try { rows = (await gql(WQ("sum{requests subrequests errors cpuTimeUs}"), v)).workersInvocationsAdaptive; } catch (e) { if (e.message === "auth") throw e; cpuExact = false; } }
+    if (!rows) rows = (await gql(WQ("sum{requests subrequests errors} quantiles{cpuTimeP50}"), v)).workersInvocationsAdaptive;
+    (rows || []).forEach((r) => {
+      const n = (r.dimensions && r.dimensions.scriptName) || "other", o = by[n] = by[n] || { name: n, req: 0, cpu: 0, sub: 0, err: 0 }, sm = r.sum || {};
+      o.req += +sm.requests || 0; o.sub += +sm.subrequests || 0; o.err += +sm.errors || 0;
+      o.cpu += sm.cpuTimeUs != null ? (+sm.cpuTimeUs || 0) / 1000 : (+sm.requests || 0) * ((r.quantiles && +r.quantiles.cpuTimeP50) || 0) / 1000;
+    });
+  }
+  // KV operations by type, a week of dates at a time (KV keeps 31 days).
+  let kv = { read: 0, write: 0, delete: 0, list: 0 }, kvOk = true;
+  try {
+    for (let t = start; t < upto; t += 7 * DAY) {
+      const v = { a: acct, s: new Date(t).toISOString().slice(0, 10), e: new Date(Math.min(t + 7 * DAY, upto) - 1).toISOString().slice(0, 10) };
+      const rows = (await gql("query($a:String!,$s:Date!,$e:Date!){viewer{accounts(filter:{accountTag:$a}){kvOperationsAdaptiveGroups(limit:1000,filter:{date_geq:$s,date_leq:$e}){sum{requests} dimensions{actionType}}}}}", v)).kvOperationsAdaptiveGroups;
+      (rows || []).forEach((r) => { const k = String((r.dimensions && r.dimensions.actionType) || "").toLowerCase(); if (k in kv) kv[k] += +(r.sum && r.sum.requests) || 0; });
+    }
+  } catch (e) { if (e.message === "auth") throw e; kvOk = false; }
+  const d = { t: nowSec(), cycle, start: Math.floor(start / 1000), end: Math.floor(end / 1000), cpuExact, workers: Object.values(by).sort((a, b) => b.req - a.req), kv: kvOk ? kv : null };
+  await env.PLAYLISTS.put(ck, JSON.stringify({ t: d.t, d }));
+  return d;
+}
+
 async function kofiStats(env, fresh) {
   const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
   const test = await env.PLAYLISTS.get("kofi:test", "json");
@@ -2044,6 +2116,41 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .ctip{position:absolute;top:10px;z-index:2;background:#111a2b;border:1px solid #2a3a58;border-radius:10px;padding:6px 10px;font-size:13.5px;color:var(--muted);pointer-events:none;white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.5)}
 .ctip b{color:#fff;font-size:16px;margin-right:4px}.ctip span{display:block;font-size:12.5px}
 .map{position:relative;background:radial-gradient(ellipse at 50% 40%,#0c1626,#070a12 75%);border:1px solid var(--line);border-radius:16px;padding:12px}
+/* Plan strip (All tab): one line, opens into the usage bars */
+.plan{margin-top:18px}
+.plan:empty{display:none}
+.pl-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;text-align:left;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:11px 14px;color:var(--text);font:inherit;cursor:pointer;min-height:0;box-shadow:none}
+.pl-strip:hover{border-color:#2a3650}
+.pl-ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:rgba(61,220,132,.12);flex:none}
+.pl-ic svg{width:17px;height:17px}
+.pl-strip.a .pl-ic{background:rgba(255,194,61,.14)}
+.pl-strip b{font-size:15.5px}
+.pl-s{font-size:14.5px;color:#c9d3e3}
+.pl-s em{font-style:normal;font-weight:800;color:var(--green)}.pl-strip.a .pl-s em{color:var(--amber)}.pl-strip.n .pl-s em{color:#c9d3e3}
+.pl-mini{flex:1;min-width:110px;max-width:260px;height:8px;border-radius:4px;background:#101828;position:relative;overflow:hidden}
+.pl-mini i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--green)}.pl-strip.a .pl-mini i{background:var(--amber)}
+.pl-ch{margin-left:auto;font-size:13.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pl-ch svg{width:14px;height:14px}.pl-strip.open .pl-ch svg{transform:rotate(180deg)}
+.pl-strip.open{border-radius:14px 14px 0 0;border-bottom-color:#141c2a}
+.pl-card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;padding:14px 18px 16px}
+.pl-cost{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#070b12;border:1px solid #141c2a}
+.pl-cost .v{font-size:28px;font-weight:800;color:var(--green);line-height:1}.pl-cost .v.a{color:var(--amber)}
+.pl-cost .t{font-size:14.5px;color:#c9d3e3}.pl-cost .t b{color:#fff}
+.pl-lg{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:#c9d3e3;margin:0 0 4px}.pl-lg span{display:inline-flex;align-items:center;gap:7px}.pl-lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.pl-lg i.pj{width:0;border-right:2px dashed #7f8a9c;border-radius:0}
+.pl-m{padding:12px 0;border-top:1px solid #141c2a}.pl-m:first-of-type{border-top:0}
+.pl-mh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pl-mh b{font-size:15.5px}.pl-mh .of{font-size:14px;color:var(--muted)}.pl-mh .of em{font-style:normal;color:#fff;font-weight:700;font-size:18px}
+.pl-mh .pct{margin-left:auto;font-weight:800;font-size:18px;color:#fff}.pl-mh .pct.a{color:var(--amber)}
+.pl-bar{position:relative;height:16px;border-radius:8px;background:#101828}
+.pl-bar .sg{position:absolute;top:0;bottom:0}.pl-bar .sg:first-child{border-radius:8px 0 0 8px}
+.pl-bar .pj{position:absolute;top:-3px;bottom:-3px;left:0;border-right:2px dashed #7f8a9c}
+.pl-bar .w8{position:absolute;top:-5px;bottom:-5px;left:80%;border-right:2px solid rgba(255,194,61,.55)}
+.pl-bar .w8::after{content:"80%";position:absolute;top:-17px;left:-12px;font-size:11px;color:var(--amber);font-weight:700}
+.pl-mf{display:flex;gap:14px;flex-wrap:wrap;margin-top:7px;font-size:13px;color:#9aa6b8}.pl-mf .r{margin-left:auto;color:#c9d3e3}
+.pl-foot{margin-top:6px;font-size:13px;color:#7f8a9c;line-height:1.5}
+.pl-card ol{margin:6px 0 4px;padding-left:20px;color:#c9d3e3;font-size:14.5px;line-height:1.6}.pl-card code{background:#0b1220;border:1px solid #1c2638;border-radius:6px;padding:1px 6px;font-size:13px}
+@media(max-width:620px){.pl-mini{display:none}.pl-ch>span{display:none}.pl-card{padding:12px 14px 14px}}
 .map svg{width:100%;height:auto;display:block}
 .map path{stroke:#05070c;stroke-width:.5;transition:opacity .15s}
 .map path.hot:hover{stroke:#fff;stroke-width:1}
@@ -2275,6 +2382,7 @@ body>main{position:relative;z-index:1}
 <div id="a-msg" class="gcmsg hidden"></div>
 <div class="atotal"><div class="atl"><span class="atk" id="a-totaln"></span><span class="atv"><b id="a-total">-</b><span class="atu">visits</span></span></div><span class="tch" id="a-totch"></span></div>
 <div id="a-sites"></div>
+<div id="a-plan" class="plan"></div>
 <div class="blk"><h2>Where visitors are <small>all your sites, hover or tap a country</small></h2><div class="map" id="a-map"></div></div>
 <p class="when" id="a-when"></p>
 </section>
@@ -3170,11 +3278,82 @@ body>main{position:relative;z-index:1}
     if (S.icon === 'me') return meAvatar ? '<span class="ic me' + (cls ? ' ' + cls : '') + '"><img src="' + esc(meAvatar) + '" alt="" data-l="B"></span>' : iconSpan('d:beatleader.xyz', 'B');
     return iconSpan(S.icon, S.name);
   }
+  // ---- Plan strip (All tab): this billing period's use of the Workers Paid plan, from /admin/plan (cached an hour)
+  var plan = null, planBusy = false, planTok = 0, planErr = '', planOpen = false;
+  try { planOpen = localStorage.getItem('studioStatsPlanOpen') === '1'; } catch (e) {}
+  var PLAN_CAP = { req: 10e6, cpu: 30e6, kvr: 10e6, kvw: 1e6, kvd: 1e6, kvl: 1e6 }, PLAN_PRICE = { req: 0.30, cpu: 0.02, kvr: 0.50, kvw: 5, kvd: 5, kvl: 5 };
+  var PLAN_COL = ['#2f7bff', '#ff4d6d', '#a78bfa', '#38bdf8', '#ffc23d', '#3ddc84'];
+  var PL_GAUGE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l3.5-4.5"/></svg>';
+  var PL_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  function plN(n) { n = +n || 0; if (n >= 1e6) return (Math.round(n / 1e5) / 10).toString().replace(/[.]0$/, '') + 'M'; if (n >= 1e4) return Math.round(n / 1e3) + 'k'; if (n >= 1e3) return (Math.round(n / 100) / 10).toString().replace(/[.]0$/, '') + 'k'; return String(Math.round(n)); }
+  function plPct(x) { return x <= 0 ? '0%' : x < 0.1 ? '&lt;0.1%' : (x < 10 ? x.toFixed(1) : Math.round(x)) + '%'; }
+  function plMoney(x) { return '$' + (Math.round(x * 100) / 100).toFixed(2); }
+  function loadPlan(fresh) {
+    var key = getKey(); if (!key || (planBusy && !fresh)) return;
+    var tk = ++planTok; planBusy = true; if (!plan) renderPlan();
+    fetch('/admin/plan' + (fresh ? '?fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (res) {
+      if (tk !== planTok) return;
+      planBusy = false; planErr = res.ok ? '' : (res.j.error || 'Couldn’t load plan usage.'); if (res.ok) plan = res.j; renderPlan();
+    }).catch(function () { if (tk !== planTok) return; planBusy = false; planErr = 'Couldn’t reach the Worker.'; renderPlan(); });
+  }
+  function planRows(d) {
+    var w = d.workers || [], col = {}; w.forEach(function (x, i) { col[x.name] = PLAN_COL[i % PLAN_COL.length]; });
+    var sum = function (k) { return w.reduce(function (a, x) { return a + (+x[k] || 0); }, 0); };
+    var rows = [{ k: 'req', name: 'Requests', used: sum('req'), unit: 'a month', parts: w.map(function (x) { return [x.name, x.req, col[x.name]]; }) },
+      { k: 'cpu', name: 'CPU time', used: sum('cpu'), unit: 'ms', parts: w.map(function (x) { return [x.name, x.cpu, col[x.name]]; }) }];
+    if (d.kv) {
+      rows.push({ k: 'kvr', name: 'KV reads', used: d.kv.read, unit: '', parts: [['all namespaces', d.kv.read, '#38bdf8']] });
+      rows.push({ k: 'kvw', name: 'KV writes', used: d.kv.write, unit: '', parts: [['all namespaces', d.kv.write, '#38bdf8']], extra: 'deletes ' + plN(d.kv.delete) + ' · lists ' + plN(d.kv.list) });
+    }
+    return { rows: rows, col: col };
+  }
+  function renderPlan() {
+    var box = $('a-plan'); if (!box) return;
+    var head = function (cls, txt, mini) {
+      return '<button type="button" class="pl-strip' + cls + (planOpen ? ' open' : '') + '" id="plStrip" aria-expanded="' + (planOpen ? 'true' : 'false') + '"><span class="pl-ic" style="color:' + (/ a/.test(cls) ? 'var(--amber)' : / n/.test(cls) ? 'var(--muted)' : 'var(--green)') + '">' + PL_GAUGE + '</span><b>Plan</b><span class="pl-s">' + txt + '</span>' +
+        (mini != null ? '<span class="pl-mini"><i style="width:' + Math.max(mini > 0 ? 1.2 : 0, Math.min(100, mini)).toFixed(1) + '%"></i></span>' : '') + '<span class="pl-ch"><span>' + (planOpen ? 'Hide' : 'Details') + '</span>' + PL_CHEV + '</span></button>';
+    };
+    if (!plan) { box.innerHTML = head(' n', planBusy ? 'Loading your Cloudflare usage…' : esc(planErr || 'Plan usage hasn’t loaded.'), null) + (planOpen && planErr ? '<div class="pl-card"><p class="pl-foot">' + esc(planErr) + '</p></div>' : ''); return; }
+    if (plan.setup) {
+      box.innerHTML = head(' n', 'Connect Cloudflare to see how much of your plan your Workers use', null) + (planOpen ? '<div class="pl-card"><ol><li>On Cloudflare, open <b>Manage account</b>, then <b>Account API tokens</b>, and create a token with <b>Account Analytics: Read</b>. Add <b>Billing: Read</b> too so the dates match your bill.</li><li>In the Playlist-Studio <code>worker</code> folder run <code>npx wrangler secret put CF_API_TOKEN</code> and paste the token.</li><li>Press refresh at the top of this page.</li></ol></div>' : '');
+      return;
+    }
+    var d = plan, now = Date.now() / 1000, len = Math.max(1, d.end - d.start), el = Math.min(1, Math.max(0.02, (now - d.start) / len));
+    var P = planRows(d), rows = P.rows, top = null, warn = null, over = 0, overP = 0;
+    rows.forEach(function (r) { r.cap = PLAN_CAP[r.k]; r.pct = r.used / r.cap * 100; r.proj = r.used / el; r.pp = r.proj / r.cap * 100; if (!top || r.pct > top.pct) top = r; if (r.pp >= 80 && (!warn || r.pp > warn.pp)) warn = r; });
+    var extra = d.kv ? [['kvd', d.kv.delete], ['kvl', d.kv.list]] : [];
+    rows.map(function (r) { return [r.k, r.used]; }).concat(extra).forEach(function (x) { var c = PLAN_CAP[x[0]], pr = PLAN_PRICE[x[0]]; over += Math.max(0, x[1] - c) / 1e6 * pr; overP += Math.max(0, x[1] / el - c) / 1e6 * pr; });
+    var day = Math.floor((now - d.start) / 86400) + 1, days = Math.round(len / 86400);
+    var txt = warn ? '<em>' + esc(warn.name) + ' ' + plPct(warn.pct) + '</em>, ' + (warn.pct >= 100 ? 'past what’s included' : 'heading past 80%') + ' · about <em>' + plMoney(Math.max(over, overP)) + '</em> over'
+      : '<em>' + plPct(top ? top.pct : 0) + '</em> of your plan used · <em>' + plMoney(over) + '</em> over · day ' + day + ' of ' + days;
+    var h = head(warn ? ' a' : '', txt, top ? top.pct : 0);
+    if (planOpen) {
+      var MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], dd = function (t) { var x = new Date(t * 1000); return MON3[x.getMonth()] + ' ' + x.getDate(); };
+      h += '<div class="pl-card"><div class="pl-cost"><span class="v' + (overP > 0 ? ' a' : '') + '">' + plMoney(over) + '</span><span class="t">over your <b>$5 Paid plan</b> from ' + dd(d.start) + ' to ' + dd(d.end - 1) + (overP > over ? ', and about <b>' + plMoney(overP) + '</b> by the end at this pace' : ', and about <b>' + plMoney(overP) + '</b> at this pace') + '</span></div>';
+      h += '<div class="pl-lg">' + (d.workers || []).map(function (x) { return '<span><i style="background:' + P.col[x.name] + '"></i>' + esc(x.name) + '</span>'; }).join('') + (d.kv ? '<span><i style="background:#38bdf8"></i>KV, all namespaces</span>' : '') + '<span><i class="pj"></i>where the period ends at this pace</span></div>';
+      rows.forEach(function (r) {
+        var shown = r.used > 0 ? Math.min(100, Math.max(r.pct, 1.2)) : 0, left = 0, segs = r.parts.filter(function (x) { return x[1] > 0; }).map(function (x) { var w = r.used ? shown * x[1] / r.used : 0, sg = '<span class="sg" style="left:' + left.toFixed(2) + '%;width:' + w.toFixed(2) + '%;background:' + x[2] + '" title="' + esc(x[0]) + ': ' + fmt(Math.round(x[1])) + '"></span>'; left += w; return sg; }).join('');
+        var pj = Math.min(100, Math.max(r.pp, shown + (r.used > 0 ? 0.6 : 0)));
+        h += '<div class="pl-m"><div class="pl-mh"><b>' + r.name + '</b><span class="of"><em>' + plN(r.used) + '</em> of ' + plN(r.cap) + (r.unit ? ' ' + r.unit : '') + '</span><span class="pct' + (r.pp >= 80 ? ' a' : '') + '">' + plPct(r.pct) + '</span></div>' +
+          '<div class="pl-bar">' + segs + (r.used > 0 ? '<span class="pj" style="width:' + pj.toFixed(2) + '%"></span>' : '') + '<span class="w8"></span></div>' +
+          '<div class="pl-mf"><span>' + (r.parts.length > 1 ? r.parts.map(function (x) { return esc(x[0]) + ' ' + plN(x[1]); }).join(' · ') : r.extra || '') + '</span><span class="r">ends near ' + plN(r.proj) + ' (' + plPct(r.pp) + ')</span></div></div>';
+      });
+      h += '<p class="pl-foot">From Cloudflare’s analytics, updated ' + new Date(d.t * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ' and kept for an hour. Close to your bill but not the invoice itself.' +
+        (d.cycle !== 'billing' ? ' Cloudflare didn’t share your billing dates, so this uses the calendar month; add Billing: Read to the token to match your bill.' : '') + (d.cpuExact ? '' : ' CPU time is estimated from the median per request.') + (d.kv ? '' : ' KV numbers weren’t available.') + '</p></div>';
+    }
+    box.innerHTML = h;
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#plStrip'); if (!b) return;
+    planOpen = !planOpen; try { localStorage.setItem('studioStatsPlanOpen', planOpen ? '1' : '0'); } catch (x) {} renderPlan();
+  });
   function allMsg(h) { var el = $('a-msg'); el.innerHTML = h; el.classList.toggle('hidden', !h); }
   function loadAll(fresh) {
     var key = getKey(); if (!key) return;
     var tok = ++allTok, want = range;
-    allBusy = true; allMsg(''); busyUi();
+    allBusy = true; allMsg(''); busyUi(); if (fresh || !plan) loadPlan(fresh);
     fetch('/admin/gc?site=all&range=' + encodeURIComponent(want) + '&tz=' + new Date().getTimezoneOffset() + (fresh ? '&fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
@@ -3220,6 +3399,7 @@ body>main{position:relative;z-index:1}
   }
   function renderAll() {
     var d = allData; if (!d) return;
+    renderPlan();
     var vr0 = vrFix; vrFix = d.range;
     var total = 0, prevT = 0, prevOk = true, list = d.sites.filter(function (s) { return ALL_SITES[s.key]; });
     list.forEach(function (s) { total += s.visitors || 0; if (!s.error) { if (s.prevVisitors != null) prevT += s.prevVisitors; else prevOk = false; } });
