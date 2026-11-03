@@ -2761,6 +2761,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   // ---- tabs and range ----
   var tab = ls('studioStatsTab2') || 'all', range = '7d', gc = null, gcBusy = false, sync = null;
   function showTab(t) {
+    quietLoad = false;
     if (!document.querySelector('[data-sec="' + t + '"]')) t = 'vis';
     tab = t; ls('studioStatsTab2', t);
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
@@ -2779,7 +2780,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   }
   function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button[data-r]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); kChip(); }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
-  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); glowUntil = 0; showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else if (tab === 'all') loadAll(false); else loadGc(false); });
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); quietLoad = false; glowUntil = 0; showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else if (tab === 'all') loadAll(false); else loadGc(false); });
 
   // ---- GoatCounter ----
   var BUILD = /^(export|quest-send|lq-add|lq-add-to|lq-add-to-mine|lq-upload-.*|share-create)$/;
@@ -2807,16 +2808,19 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     if (w > 0) { setTimeout(bigCheck, w); return; }
     bigHide();
   }
+  // Auto refreshes load quietly: no dimming, no loading text, the numbers just change.
+  var quietLoad = false;
   function busyUi() {
-    var on = busyNow();
+    var on = busyNow(); if (!on) quietLoad = false;
+    var show = on && !quietLoad;
     setTimeout(bigCheck, 0);
-    Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on); });
-    $('rangeBusy').innerHTML = on ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="8" stroke-linecap="round" fill="none"/></svg>Loading ' + rangeName(range) + '...' : '';
+    Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', show); });
+    $('rangeBusy').innerHTML = show ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="8" stroke-linecap="round" fill="none"/></svg>Loading ' + rangeName(range) + '...' : '';
     // First load of a tab: show the page's outline instead of empty cards. Later range changes keep the old numbers dimmed.
     var sk = on && tab !== 'sync' && !(tab === 'bl' ? bl : isTool(tab) ? toolData[tab] : tab === 'all' ? allData : tab === 'kofi' ? kofi : gc);
     $('skel').classList.toggle('hidden', !sk);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('skel-hide', sk && sx.getAttribute('data-sec') === tab); });
-    $('refresh').classList.toggle('spin', on);
+    $('refresh').classList.toggle('spin', show);
   }
   function loadGc(fresh) {
     var key = getKey(); if (!key) return;
@@ -4384,7 +4388,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     ['.brand img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
   }
   function refreshAll(auto) {
-    lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin();
+    lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin(); quietLoad = !!auto;
     if (!auto) bigShow();
     var sp = loadSync(auto);
     if (!auto) Promise.resolve(sp).then(function () { bigSync = false; bigCheck(); }, function () { bigSync = false; bigCheck(); });
