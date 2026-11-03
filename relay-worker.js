@@ -2369,6 +2369,17 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
+/* Ko-fi total at the right end of the Range row (desktop only): tips in the picked range, hidden when there are none */
+.range .kchip{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#0a0f19;border:1px solid #243049;border-radius:999px;padding:3px 12px 3px 10px;font:inherit;color:#e8edf5;cursor:pointer;white-space:nowrap}
+.range .kchip:hover{border-color:#3a4a6a;background:#0d1422}
+.kchip .kc-cup{width:20px;height:20px;display:grid;place-items:center}.kchip .kc-cup svg{width:19px;height:19px;display:block}
+.kchip b{font-size:17px;font-weight:800;color:#3ddc84;letter-spacing:.01em}
+.kchip .kc-av{display:inline-flex;margin-left:2px}
+.kchip .kav{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,#ff5e5b,#b8323a);border:2px solid #0a0f19;margin-left:-6px;overflow:hidden;box-sizing:content-box}
+.kchip .kav:first-child{margin-left:0}
+.kchip .kav img{width:100%;height:100%;object-fit:cover;display:block}
+.kchip .kav.p{background:#1a2336}.kchip .kav.p svg{width:15px;height:15px;display:block}
+@media(max-width:760px){.range .kchip{display:none}}
 /* Refresh: the page dims and blurs, and the logo's arrows spin large in the middle until the new numbers land */
 body>main{transition:opacity .3s ease,filter .3s ease}
 html.bigspin body>main{opacity:.3;filter:blur(2px)}
@@ -2405,7 +2416,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <button role="tab" data-tab="rs" aria-selected="false">ReeSaber</button>
 <button role="tab" data-tab="kofi" aria-selected="false">Ko-fi</button>
 </div>
-<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="false">Today</button><button data-r="7d" aria-pressed="true">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span></div>
+<div class="range" id="range"><span>Range</span><button data-r="today" aria-pressed="false">Today</button><button data-r="7d" aria-pressed="true">7 days</button><button data-r="30d" aria-pressed="false">30 days</button><button data-r="90d" aria-pressed="false">90 days</button><button data-r="all" aria-pressed="false">All time</button><span class="rbusy" id="rangeBusy" aria-live="polite"></span><button type="button" class="kchip hidden" id="kChip"></button></div>
 <div id="gcmsg" class="gcmsg hidden"></div>
 <div id="skel" class="skel hidden" aria-hidden="true"><div class="skcards"><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div><div class="skcard"><span class="sk s1"></span><span class="sk s2"></span><span class="sk s3"></span></div></div><div class="skchart"><svg viewBox="0 0 700 200" preserveAspectRatio="none"><path class="skwave" pathLength="1" d="M10 170 C120 160 170 90 260 105 S420 50 500 80 S640 40 690 45"/></svg></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div><div class="skbars"><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div><div class="skrow"><span class="sk skic"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div></div>
 
@@ -2734,7 +2745,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     if ((!ownTab(t) || t === 'sync') && (!gc || gc.range !== range) && !gcBusy && getKey() && $('out') && !$('out').classList.contains('hidden')) loadGc(false);
     busyUi();
   }
-  function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); }
+  function showRange() { Array.prototype.forEach.call(document.querySelectorAll('#range button[data-r]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-r') === range ? 'true' : 'false'); }); kChip(); }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) showTab(b.getAttribute('data-tab')); });
   $('range').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b || b.getAttribute('data-r') === range) return; range = b.getAttribute('data-r'); glowUntil = 0; showRange(); if (tab === 'bl') loadBl(false); else if (isTool(tab)) loadTool(tab, false); else if (tab === 'all') loadAll(false); else loadGc(false); });
 
@@ -3513,9 +3524,33 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       if (tk !== kofiTok) return;
       kofiBusy = false; busyUi();
       if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); say(res.j.error || 'Wrong key', true); return; } txt('k-when', res.j.error || 'Couldn’t load Ko-fi.'); return; }
-      kofi = res.j; if (tab === 'kofi') renderKofi();
+      kofi = res.j; if (tab === 'kofi') renderKofi(); kChip();
     }).catch(function () { if (tk !== kofiTok) return; kofiBusy = false; busyUi(); txt('k-when', 'Couldn’t reach the Worker.'); });
   }
+  // The Ko-fi total next to the range buttons: tips from the start of the range's first day (today counts as day one),
+  // in the currency most tips use, with the latest three supporters. Hidden when the range has none.
+  function kChip() {
+    var el = $('kChip'); if (!el) return;
+    var tips = (kofi && kofi.tips) || [], N = { today: 1, '7d': 7, '30d': 30, '90d': 90 }[range], s0 = 0;
+    if (N) { var d0 = new Date(); d0.setHours(0, 0, 0, 0); d0.setDate(d0.getDate() - (N - 1)); s0 = d0 / 1000; }
+    var curN = {}; tips.forEach(function (x) { curN[x.cur] = (curN[x.cur] || 0) + 1; });
+    var cur = Object.keys(curN).sort(function (a, b) { return curN[b] - curN[a]; })[0] || 'USD';
+    var inR = tips.filter(function (x) { return x.t >= s0 && x.cur === cur; }).sort(function (a, b) { return b.t - a.t; });
+    var total = inR.reduce(function (n, x) { return n + (x.amt || 0); }, 0);
+    if (!(total > 0)) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+    var seen = {}, who = [], av = (kofi && kofi.avatars) || {};
+    inR.forEach(function (x) { var k = x.pub && x.name ? 'n:' + x.name.trim().toLowerCase() : 'anon'; if (seen[k]) return; seen[k] = 1; who.push(x); });
+    var faces = who.slice(0, 3).map(function (x) {
+      if (!x.pub || !x.name) return '<span class="kav p">' + KANON + '</span>';
+      var img = av[x.name.trim().toLowerCase()];
+      return '<span class="kav">' + (img ? '<img src="' + esc(img) + '" alt="">' : esc(x.name.charAt(0).toUpperCase())) + '</span>';
+    }).join('');
+    var tl = kMoney(total, cur) + ' in tips ' + ({ today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days' }[range] || 'all time') + ' from ' + who.length + ' supporter' + (who.length === 1 ? '' : 's') + '. Open the Ko-fi tab.';
+    el.innerHTML = '<span class="kc-cup">' + KOFI_CUP.replace(/#ff5e5b/g, '#ffffff') + '</span><b>' + esc(kMoney(total, cur)) + '</b><span class="kc-av">' + faces + '</span>';
+    el.title = tl; el.setAttribute('aria-label', tl);
+    el.classList.remove('hidden');
+  }
+  $('kChip').addEventListener('click', function () { showTab('kofi'); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} });
   function kMoney(n, cur) {
     var c = cur || 'USD';
     try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: c, minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n); } catch (e) { return n.toFixed(n % 1 ? 2 : 0) + ' ' + c; }
@@ -4278,7 +4313,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       if (tab === 'bl' && !bl) loadBl(false);
       if (tab === 'all' && !allData) loadAll(false);
       if (isTool(tab) && !toolData[tab]) loadTool(tab, false);
-      if (tab === 'kofi' && !kofi) loadKofi(false);
+      if (!kofi) loadKofi(false);
     }).catch(function () { say('Couldn’t reach the Worker.', true); });
   }
   $('go').addEventListener('click', loadSync);
@@ -4294,7 +4329,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     if (!auto) bigShow();
     var sp = loadSync(auto);
     if (!auto) Promise.resolve(sp).then(function () { bigSync = false; bigCheck(); }, function () { bigSync = false; bigCheck(); });
-    if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else if (tab === 'kofi') loadKofi(true); else loadGc(true); }
+    if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else if (tab === 'kofi') loadKofi(true); else loadGc(true);
+    if (tab !== 'kofi' && kofi) loadKofi(false); }
   function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
   $('refresh').addEventListener('click', function () { refreshAll(false); });
   setInterval(autoRefresh, 30000);
