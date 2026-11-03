@@ -3282,7 +3282,7 @@ body>main{position:relative;z-index:1}
   var ALL_SITES = {
     studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#3ddc84', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
     bl: { name: 'BeatLeader profile', icon: 'me', color: '#5296ff', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
-    hsv: { name: 'HSV Config', icon: 'm:hsv', color: '#a78bfa', tab: 'hsv', unit: 'visitors', home: 'HSV Config Generator home' },
+    hsv: { name: 'HSV Config', icon: 'm:hsv', color: '#ffffff', tab: 'hsv', unit: 'visitors', home: 'HSV Config Generator home' },
     rs: { name: 'ReeSaber Studio', icon: 'm:rs', color: '#ff4d6d', tab: 'rs', unit: 'visitors', home: 'ReeSaber Studio home' }
   };
   var allData = null, allBusy = false, allTok = 0, meAvatar = '';
