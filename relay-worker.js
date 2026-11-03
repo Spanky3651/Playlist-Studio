@@ -2370,9 +2370,8 @@ body{padding-top:14px}
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
 /* Ko-fi total at the right end of the Range row (desktop only): tips in the picked range, hidden when there are none */
-.range .kchip{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#0a0f19;border:1px solid #243049;border-radius:999px;padding:3px 12px 3px 10px;font:inherit;color:#e8edf5;cursor:pointer;white-space:nowrap}
+.range .kchip{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#0a0f19;border:1px solid #243049;border-radius:999px;padding:3px 6px 3px 13px;font:inherit;color:#e8edf5;cursor:pointer;white-space:nowrap}
 .range .kchip:hover{border-color:#3a4a6a;background:#0d1422}
-.kchip .kc-cup{width:20px;height:20px;display:grid;place-items:center}.kchip .kc-cup svg{width:19px;height:19px;display:block}
 .kchip b{font-size:17px;font-weight:800;color:#3ddc84;letter-spacing:.01em}
 .kchip .kc-av{display:inline-flex;margin-left:2px}
 .kchip .kav{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,#ff5e5b,#b8323a);border:2px solid #0a0f19;margin-left:-6px;overflow:hidden;box-sizing:content-box}
@@ -3546,7 +3545,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       return '<span class="kav">' + (img ? '<img src="' + esc(img) + '" alt="">' : esc(x.name.charAt(0).toUpperCase())) + '</span>';
     }).join('');
     var tl = kMoney(total, cur) + ' in tips ' + ({ today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days' }[range] || 'all time') + ' from ' + who.length + ' supporter' + (who.length === 1 ? '' : 's') + '. Open the Ko-fi tab.';
-    el.innerHTML = '<span class="kc-cup">' + KOFI_CUP.replace(/#ff5e5b/g, '#ffffff') + '</span><b>' + esc(kMoney(total, cur)) + '</b><span class="kc-av">' + faces + '</span>';
+    el.innerHTML = '<b>' + esc(kMoney(total, cur)) + '</b><span class="kc-av">' + faces + '</span>';
     el.title = tl; el.setAttribute('aria-label', tl);
     el.classList.remove('hidden');
   }
