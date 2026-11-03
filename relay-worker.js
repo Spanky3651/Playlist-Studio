@@ -2369,6 +2369,22 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
+/* Refresh: the page dims and blurs, and the logo's arrows spin large in the middle until the new numbers land */
+body>main{transition:opacity .3s ease,filter .3s ease}
+html.bigspin body>main{opacity:.3;filter:blur(2px)}
+#bigspin{position:fixed;inset:0;z-index:60;display:grid;place-items:center;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s;background:radial-gradient(closest-side at 50% 50%,rgba(0,0,0,.72),rgba(0,0,0,.35) 70%,rgba(0,0,0,0))}
+html.bigspin #bigspin{opacity:1;visibility:visible;transition:opacity .3s ease}
+.bs-box{display:flex;flex-direction:column;align-items:center;gap:4px;transform:scale(.94);transition:transform .35s ease}
+html.bigspin .bs-box{transform:none}
+.bs-stage{position:relative;width:150px;height:150px;display:grid;place-items:center}
+.bs-halo{position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle,rgba(47,123,255,.35),rgba(255,39,64,.12) 55%,rgba(0,0,0,0) 72%);filter:blur(18px)}
+.bs-tile{position:relative;width:112px;height:112px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.7)) drop-shadow(0 0 1px rgba(255,255,255,.12))}
+.bs-arcs{transform-origin:32px 32px}
+html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite}
+@keyframes bsspin{to{transform:rotate(360deg)}}
+.bs-lbl{font-size:17px;font-weight:500;color:#dfe6f0;margin-top:4px}
+@media(max-width:700px){.bs-stage{width:124px;height:124px}.bs-tile{width:90px;height:90px}.bs-lbl{font-size:16px}}
+@media(prefers-reduced-motion:reduce){html.bigspin .bs-arcs{animation-duration:3s}}
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
@@ -2618,6 +2634,7 @@ body>main{position:relative;z-index:1}
 <p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
 </div>
 </main>
+<div id="bigspin" aria-hidden="true"><div class="bs-box"><div class="bs-stage"><div class="bs-halo"></div><svg class="bs-tile" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="bsg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121722"/><stop offset="1" stop-color="#05070b"/></linearGradient><linearGradient id="bsg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,255,255,.16)"/><stop offset="1" stop-color="rgba(255,255,255,.03)"/></linearGradient></defs><rect x="1" y="1" width="62" height="62" rx="15" fill="url(#bsg1)" stroke="url(#bsg2)"/><g class="bs-arcs"><path d="M15.86 35.43 A16.5 16.5 0 0 1 46.29 23.75" stroke="#ff2740" stroke-width="6.2" stroke-linecap="round" fill="none"/><path d="M49.54 29.38 L50.49 20.63 L41.49 25.83 Z" fill="#ff2740" stroke="#ff2740" stroke-width="1.2" stroke-linejoin="round"/><path d="M48.14 28.57 A16.5 16.5 0 0 1 17.71 40.25" stroke="#2f7bff" stroke-width="6.2" stroke-linecap="round" fill="none"/><path d="M14.46 34.62 L13.51 43.37 L22.51 38.17 Z" fill="#2f7bff" stroke="#2f7bff" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M27 22.5 L27 41.5 L42.5 32 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="bs-lbl">Refreshing&hellip;</div></div></div>
 <script>
 (function () {
   var embedded = /[?&]embed=1/.test(location.search);
@@ -2735,8 +2752,21 @@ body>main{position:relative;z-index:1}
   // so a slow load can't swallow the next click or paint old numbers over new ones.
   var gcTok = 0, blTok = 0;
   function rangeName(r) { return { today: 'Today', '7d': '7 days', '30d': '30 days', '90d': '90 days', all: 'All time' }[r] || r; }
+  function busyNow() { return (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]) || (tab === 'all' && allBusy) || (tab === 'kofi' && kofiBusy); }
+  // The big spinning logo for a refresh you asked for: it stays until Studio Sync and the open tab have both loaded,
+  // and at least 0.7s so it never just flickers. Auto refreshes every 5 minutes stay quiet.
+  var bigT = 0, bigSync = false, bigMax = null;
+  function bigShow() { bigT = Date.now(); bigSync = true; document.documentElement.classList.add('bigspin'); clearTimeout(bigMax); bigMax = setTimeout(bigHide, 20000); }
+  function bigHide() { bigT = 0; bigSync = false; clearTimeout(bigMax); document.documentElement.classList.remove('bigspin'); }
+  function bigCheck() {
+    if (!bigT || bigSync || busyNow()) return;
+    var w = 700 - (Date.now() - bigT);
+    if (w > 0) { setTimeout(bigCheck, w); return; }
+    bigHide();
+  }
   function busyUi() {
-    var on = (gcBusy && (!ownTab(tab) || tab === 'sync')) || (blBusy && tab === 'bl') || (isTool(tab) && !!toolBusy[tab]) || (tab === 'all' && allBusy) || (tab === 'kofi' && kofiBusy);
+    var on = busyNow();
+    setTimeout(bigCheck, 0);
     Array.prototype.forEach.call(document.querySelectorAll('section[data-sec]'), function (sx) { sx.classList.toggle('loading', on); });
     $('rangeBusy').innerHTML = on ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff" stroke-width="8" stroke-linecap="round" fill="none"/></svg>Loading ' + rangeName(range) + '...' : '';
     // First load of a tab: show the page's outline instead of empty cards. Later range changes keep the old numbers dimmed.
@@ -4219,7 +4249,7 @@ body>main{position:relative;z-index:1}
     var key = keyIn.value.trim() || getKey();
     if (!key) { say('Enter your admin key.', true); return; }
     if (auto !== true) say('Loading...');
-    fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+    return fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
       if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); } say(res.j.error || 'Couldn’t load stats.', true); return; }
@@ -4259,7 +4289,12 @@ body>main{position:relative;z-index:1}
   function logoSpin() {
     ['.brand img'].forEach(function (q) { var el = document.querySelector(q); if (!el) return; el.classList.remove('lspin'); void el.offsetWidth; el.classList.add('lspin'); });
   }
-  function refreshAll(auto) { lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin(); loadSync(auto); if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else if (tab === 'kofi') loadKofi(true); else loadGc(true); }
+  function refreshAll(auto) {
+    lastLoad = Date.now(); glowUntil = Date.now() + 30000; glowGen++; logoSpin();
+    if (!auto) bigShow();
+    var sp = loadSync(auto);
+    if (!auto) Promise.resolve(sp).then(function () { bigSync = false; bigCheck(); }, function () { bigSync = false; bigCheck(); });
+    if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else if (tab === 'kofi') loadKofi(true); else loadGc(true); }
   function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
   $('refresh').addEventListener('click', function () { refreshAll(false); });
   setInterval(autoRefresh, 30000);
