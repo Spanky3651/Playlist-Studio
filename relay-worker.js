@@ -3280,8 +3280,8 @@ body>main{position:relative;z-index:1}
 
   // ---- All sites: visitors for every site you track, side by side ----
   var ALL_SITES = {
-    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#5296ff', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
-    bl: { name: 'BeatLeader profile', icon: 'me', color: '#3ddc84', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
+    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#3ddc84', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
+    bl: { name: 'BeatLeader profile', icon: 'me', color: '#5296ff', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
     hsv: { name: 'HSV Config', icon: 'm:hsv', color: '#a78bfa', tab: 'hsv', unit: 'visitors', home: 'HSV Config Generator home' },
     rs: { name: 'ReeSaber Studio', icon: 'm:rs', color: '#ff4d6d', tab: 'rs', unit: 'visitors', home: 'ReeSaber Studio home' }
   };
