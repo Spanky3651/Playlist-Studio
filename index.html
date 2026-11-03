@@ -1922,10 +1922,18 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .cb-since-diff{margin:0;font-size:13px;color:#aab4c6;} .cb-since-diff b{color:#fff;}
 .cb-acts{display:flex;gap:8px;flex-wrap:wrap;}
 /* War alerts: the bell on the AccSaber clan screen and its card */
-.wa-bell{display:inline-flex;align-items:center;gap:6px;}
-.wa-bell svg{width:15px;height:15px;flex:none;}
-.wa-bell.new{border-color:#3a5fb0;background:rgba(47,123,255,.12);color:#cfe0ff;}
+.cb-head{position:relative;}
+.cb-head.has-wa{padding-right:52px;}
+.wa-bell{position:absolute;top:-2px;right:-4px;width:40px;height:40px;min-height:0;padding:0;border-radius:12px;display:grid;place-items:center;
+  border:1px solid #3a5fb0;background:rgba(47,123,255,.12);color:#cfe0ff;box-shadow:none;}
+.wa-bell svg{width:20px;height:20px;display:block;}
+.wa-bell:hover{border-color:#5a83d6;background:rgba(47,123,255,.22);color:#fff;box-shadow:none;}
 .wa-bell.on{border-color:#1f6b4f;background:rgba(34,224,161,.1);color:#9ff5d6;}
+.wa-bell.on:hover{border-color:#2a8a66;background:rgba(34,224,161,.18);color:#c8fbe8;}
+.wa-bell[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(47,123,255,.25);}
+.wa-bell.on[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(34,224,161,.2);}
+.wa-bell .wa-bd{position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green),0 0 0 2px #0a0f17;}
+.wa-bell:focus-visible{outline:2px solid #5aa0ff;outline-offset:2px;}
 .wa-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex:none;}
 .wa-card{border:1px solid var(--border-2);border-radius:12px;padding:12px 15px;background:#05080d;margin:10px 0 0;}
 .wa-ch{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
@@ -3304,7 +3312,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-03T16:00Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-03T18:12Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -12777,7 +12785,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function waBtn() {
     if (!asc.link) return '';
     var st = waGet();
-    return '<button type="button" class="ghost sm wa-bell ' + (st ? 'on' : 'new') + '" data-wa="toggle" aria-expanded="' + (wa.open ? 'true' : 'false') + '" title="Alerts about this war on this device">' + (st ? '<span class="wa-dot"></span>' : '') + WA_BELL + (st ? 'Alerts on' : 'Get war alerts') + '</button>';
+    return '<button type="button" class="wa-bell ' + (st ? 'on' : 'new') + '" data-wa="toggle" aria-expanded="' + (wa.open ? 'true' : 'false') + '" aria-label="' + (st ? 'War alerts are on' : 'Get war alerts') + '">' + WA_BELL + (st ? '<span class="wa-bd"></span>' : '') + '</button>';
   }
   function waCard() {
     if (!wa.open || !asc.link) return '';
@@ -13410,7 +13418,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     bar.hidden = !on; if (!on) { bar.innerHTML = ''; return; }
     var c = link.clan, info = asc.info || {}, ic = info.clan || {}, color = ascColor(ic.tag ? ic : c), tag = esc(c.tag || '?');
     var W = asc.war, ph = W ? aswPhase(W.w) : '', atWar = ph === 'active';
-    var h = '<div class="cb-head">';
+    var h = '<div class="cb-head has-wa">' + waBtn();
     var icon = ic.iconUrl || c.iconUrl;
     if (icon) h += '<img class="cb-ic" src="' + esc(icon) + '" alt="' + tag + ' clan icon" style="--cb:' + esc(color) + '" onerror="this.remove()">';
     var sub = [];
@@ -13421,8 +13429,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var me = asc.me, mine = me ? (me.role ? me.role.charAt(0).toUpperCase() + me.role.slice(1) : '') + (me.strengthShare > 0 ? (me.role ? ' · ' : '') + (me.strengthShare * 100).toFixed(1) + '% of the clan\'s strength' : '') : '';
     h += '<div class="cb-who"><div class="cb-kick">AccSaber clan · ' + (W && ph !== 'ended' ? 'War' : 'Missions') + '</div><div class="cb-name" style="color:' + esc(color) + '">' + tag + ' ' + aswPill() + '</div>' +
       (sub.length ? '<div class="cb-sub">' + sub.join(' · ') + '</div>' : '') + (mine ? '<div class="cb-sub">You: ' + esc(mine) + '</div>' : '') + '</div>';
-    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="ascRecheck"' + (asc.busy ? ' disabled' : '') + ' title="Load the latest standings, war and mission progress and your scores from AccSaber">⟳ Re-check</button>' + waBtn() +
-      (clan.clans && clan.clans.length ? '<button type="button" class="ghost sm" id="ascToBl" title="Maps your BeatLeader clan could defend or capture">&#9873; BeatLeader clan maps · ' + esc(clan.clans[0].tag) + '</button>' : '') +
+    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="ascRecheck"' + (asc.busy ? ' disabled' : '') + ' title="Load the latest standings, war and mission progress and your scores from AccSaber">⟳ Re-check</button>' +
+      (clan.clans && clan.clans.length ? '<button type="button" class="ghost sm" id="ascToBl" title="Maps your BeatLeader clan could defend or capture">&#9873; ' + esc(clan.clans[0].tag) + ' maps</button>' : '') +
       '<a class="cb-link" href="https://accsaber.com/clans/' + encodeURIComponent(ic.slug || c.slug || '') + '" target="_blank" rel="noopener">' + tag + ' on AccSaber ↗</a>' +
       (W && ph !== 'ended' ? '<a class="cb-link" href="https://accsaber.com/clans/wars/' + encodeURIComponent(W.w.id) + '" target="_blank" rel="noopener">War page ↗</a>' : '') +
       '<button type="button" class="ghost sm" id="cbExit">← Back to search</button></div></div>';
