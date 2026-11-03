@@ -1131,7 +1131,16 @@ function safeEqual(a, b) {
 // How many headsets are linked and how many sync, plus the Studio Sync users by BeatLeader profile (only the
 // public profile Studio had connected). No playlist names or headset names leave the Worker. The page is public but empty; the numbers need ADMIN_KEY, a Worker secret
 // (npx wrangler secret put ADMIN_KEY), sent as "Authorization: Bearer <key>".
-let adminFails = [];   // times of recent wrong admin keys, kept in memory only
+let adminFails = [], adminBlocked = 0, adminFlush = 0;
+const ADMIN_GUARD = "admin:guard", ADMIN_LOCKS = "admin:lockouts";
+async function adminLockNote(env, t, wrong, isNew) {
+  try {
+    const L = (await env.PLAYLISTS.get(ADMIN_LOCKS, "json")) || { n: 0, first: 0, last: 0, wrong: 0 };
+    if (isNew && !(L.last && t - L.last < 600)) { L.n++; if (!L.first) L.first = t; L.last = t; }
+    L.wrong = (L.wrong || 0) + wrong;
+    if (L.n) await env.PLAYLISTS.put(ADMIN_LOCKS, JSON.stringify(L));
+  } catch (e) {}
+}
 async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
@@ -1139,17 +1148,28 @@ async function admin(request, env, url) {
       "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
+  const lockPath = (request.method === "GET" && url.pathname === "/admin/lockouts") || (request.method === "POST" && url.pathname === "/admin/lockouts/clear");
   const kofiEdit = request.method === "POST" && (url.pathname === "/admin/kofi/add" || url.pathname === "/admin/kofi/del" || url.pathname === "/admin/kofi/avatar");
-  if (!kofiEdit && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi" && url.pathname !== "/admin/plan") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
+  if (!kofiEdit && !lockPath && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi" && url.pathname !== "/admin/plan") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
   // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
   const t = nowSec();
   adminFails = adminFails.filter((x) => t - x < 600);
-  if (adminFails.length >= 20) return json({ error: "Too many wrong keys - wait a few minutes" }, 429, nocache);
+  let kvFails = [];
+  if (env.PLAYLISTS) { try { const g = await env.PLAYLISTS.get(ADMIN_GUARD, "json"); kvFails = ((g && g.f) || []).filter((x) => t - x < 600); } catch (e) {} }
+  if (Math.max(adminFails.length, kvFails.length) >= 20) {
+    adminBlocked++;
+    if (env.PLAYLISTS && t - adminFlush >= 60) { adminFlush = t; const b = adminBlocked; adminBlocked = 0; await adminLockNote(env, t, b, true); }
+    return json({ error: "Too many wrong keys - wait a few minutes" }, 429, nocache);
+  }
   const m = (request.headers.get("Authorization") || "").match(/^Bearer\s+(\S{8,200})$/);
   if (!m || !env.PLAYLISTS || !safeEqual(await sha256(m[1]), await sha256(env.ADMIN_KEY))) {
-    adminFails.push(t);
+    adminFails.push(t); kvFails.push(t);
+    if (env.PLAYLISTS) {
+      try { await env.PLAYLISTS.put(ADMIN_GUARD, JSON.stringify({ f: kvFails.slice(-25) }), { expirationTtl: 900 }); } catch (e) {}
+      if (Math.max(adminFails.length, kvFails.length) >= 20) { adminFlush = t; await adminLockNote(env, t, Math.max(adminFails.length, kvFails.length), true); }
+    }
     return json({ error: "Wrong key" }, 401, nocache);
   }
   if (url.pathname === "/admin/gc") {
@@ -1170,6 +1190,8 @@ async function admin(request, env, url) {
     }
   }
   if (kofiEdit) return kofiEditTips(request, env, url, nocache);
+  if (url.pathname === "/admin/lockouts") return json((await env.PLAYLISTS.get(ADMIN_LOCKS, "json")) || { n: 0 }, 200, nocache);
+  if (url.pathname === "/admin/lockouts/clear") { await env.PLAYLISTS.delete(ADMIN_LOCKS); return json({ ok: true }, 200, nocache); }
   return json(await adminStats(env), 200, nocache);
 }
 
@@ -2369,6 +2391,16 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
+.lk{display:flex;align-items:center;gap:14px;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1px solid #ff2740;background:linear-gradient(180deg,rgba(255,39,64,.16),rgba(255,39,64,.07));box-shadow:0 0 22px rgba(255,39,64,.18)}
+.lk-sk{width:42px;height:42px;border-radius:12px;background:#ff2740;color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 0 16px rgba(255,39,64,.55)}
+.lk-sk svg{width:28px;height:28px;display:block}
+.lk-t{flex:1;min-width:0}
+.lk-t>b{font-size:17px;color:#fff}
+.lk-n{display:inline-block;margin-left:10px;font-size:13.5px;font-weight:800;color:#fff;background:#ff2740;border-radius:999px;padding:1px 10px;vertical-align:2px}
+.lk-t p{margin:2px 0 0;font-size:14.5px;color:#ffd0d6}.lk-t p b{color:#fff}
+.lk-x{background:transparent;border:1px solid #ff6b7d;color:#ffe3e7;border-radius:10px;padding:7px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;flex:none}
+.lk-x:hover{background:rgba(255,39,64,.18)}.lk-x:disabled{opacity:.6;cursor:default}
+@media(max-width:760px){.lk{flex-wrap:wrap;align-items:flex-start}.lk-t{flex-basis:calc(100% - 56px)}.lk-x{margin-left:56px}.lk-t>b{font-size:16px}.lk-n{margin:4px 0 0;display:table}}
 /* Ko-fi total at the right end of the Range row (desktop only): tips in the picked range, hidden when there are none */
 .range .kchip{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#0a0f19;border:1px solid #243049;border-radius:999px;padding:3px 6px 3px 13px;font:inherit;color:#e8edf5;cursor:pointer;white-space:nowrap}
 .range .kchip:hover{border-color:#3a4a6a;background:#0d1422}
@@ -2403,6 +2435,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
+<div class="lk hidden" id="lockAlert" role="alert"></div>
 <div class="tabs" role="tablist" id="tabs">
 <button role="tab" data-tab="all" aria-selected="false"><span class="tab-long">All sites</span><span class="tab-short">All</span></button>
 <button role="tab" data-tab="vis" aria-selected="true">Visitors</button>
@@ -3528,6 +3561,33 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   }
   // The Ko-fi total next to the range buttons: tips from the start of the range's first day (today counts as day one),
   // in the currency most tips use, with the latest three supporters. Hidden when the range has none.
+  var LK_SKULL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-4.7 0-8.3 3.4-8.3 7.9 0 2.6 1.2 4.6 3.1 5.9v2.4c0 .8.6 1.4 1.4 1.4h7.6c.8 0 1.4-.6 1.4-1.4v-2.4c1.9-1.3 3.1-3.3 3.1-5.9 0-4.5-3.6-7.9-8.3-7.9z" fill="currentColor"/><circle cx="8.7" cy="11" r="2.1" fill="#1a0306"/><circle cx="15.3" cy="11" r="2.1" fill="#1a0306"/><path d="M12 13.4l-1.3 2.3h2.6z" fill="#1a0306"/><path d="M9.6 18.2v2.1M12 18.2v2.1M14.4 18.2v2.1" stroke="#1a0306" stroke-width="1.1" stroke-linecap="round"/></svg>';
+  function lkWhen(t) {
+    var d = new Date(t * 1000), now = new Date(), y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    var tm = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+    if (d.toDateString() === now.toDateString()) return 'today at ' + tm;
+    if (d.toDateString() === y.toDateString()) return 'yesterday at ' + tm;
+    return MON[d.getMonth()] + ' ' + d.getDate() + (d.getFullYear() !== now.getFullYear() ? ', ' + d.getFullYear() : '') + ' at ' + tm;
+  }
+  function lkDay(t) { var d = new Date(t * 1000), now = new Date(); return d.toDateString() === now.toDateString() ? 'today' : MON[d.getMonth()] + ' ' + d.getDate() + (d.getFullYear() !== now.getFullYear() ? ', ' + d.getFullYear() : ''); }
+  function renderLocks(L) {
+    var el = $('lockAlert'); if (!el) return;
+    if (!L || !(L.n > 0)) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+    var w = L.wrong || 0, tail = w ? ', ' + fmt(w) + ' wrong key' + (w === 1 ? '' : 's') + ' in all.' : '.';
+    var when = L.n === 1 ? 'It happened <b>' + esc(lkWhen(L.last)) + '</b>' + tail : 'Last one <b>' + esc(lkWhen(L.last)) + '</b>, first <b>' + esc(lkDay(L.first)) + '</b>' + tail;
+    el.innerHTML = '<span class="lk-sk">' + LK_SKULL + '</span><div class="lk-t"><b>Someone is guessing your key</b><span class="lk-n">' + L.n + ' lockout' + (L.n === 1 ? '' : 's') + '</span>' +
+      '<p>20 wrong keys in 10 minutes locked Studio Stats for everyone. ' + when + '</p></div><button type="button" class="lk-x" id="lockX">Dismiss</button>';
+    el.classList.remove('hidden');
+  }
+  function loadLocks() {
+    var key = getKey(); if (!key) return;
+    fetch('/admin/lockouts', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(renderLocks).catch(function () {});
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#lockX'); if (!b) return;
+    var key = getKey(); if (!key) return; b.disabled = true;
+    fetch('/admin/lockouts/clear', { method: 'POST', headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) { if (r.ok) renderLocks(null); else b.disabled = false; }).catch(function () { b.disabled = false; });
+  });
   function kChip() {
     var el = $('kChip'); if (!el) return;
     var tips = (kofi && kofi.tips) || [], N = { today: 1, '7d': 7, '30d': 30, '90d': 90 }[range], s0 = 0;
@@ -4288,7 +4348,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     }).then(function (res) {
       if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); } say(res.j.error || 'Couldn’t load stats.', true); return; }
       var first = !getKey() || !sync;
-      setKey(key); keyIn.value = ''; signedIn(true);
+      setKey(key); keyIn.value = ''; signedIn(true); loadLocks();
       var s = sync = res.j, players = s.libraries - s.librariesNoHeadset;
       vrFix = 'sync';
       txt('activeDay', s.activeDay); txt('activeWeek', s.activeWeek); txt('activeMonth', s.activeMonth);
