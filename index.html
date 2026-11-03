@@ -1921,6 +1921,31 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
 .cb-since svg{width:120px;height:34px;flex:none;}
 .cb-since-diff{margin:0;font-size:13px;color:#aab4c6;} .cb-since-diff b{color:#fff;}
 .cb-acts{display:flex;gap:8px;flex-wrap:wrap;}
+/* War alerts: the bell on the AccSaber clan screen and its card */
+.wa-bell{display:inline-flex;align-items:center;gap:6px;}
+.wa-bell svg{width:15px;height:15px;flex:none;}
+.wa-bell.new{border-color:#3a5fb0;background:rgba(47,123,255,.12);color:#cfe0ff;}
+.wa-bell.on{border-color:#1f6b4f;background:rgba(34,224,161,.1);color:#9ff5d6;}
+.wa-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex:none;}
+.wa-card{border:1px solid var(--border-2);border-radius:12px;padding:12px 15px;background:#05080d;margin:10px 0 0;}
+.wa-ch{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.wa-ch b{font-size:16px;color:#fff;} .wa-ch span{margin-left:auto;font-size:13px;color:#aab4c6;}
+.wa-card p{margin:4px 0 10px;font-size:14.5px;color:#c3cbd9;line-height:1.5;}
+.wa-card p.r{color:#ff9fb2;}
+.wa-ex{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:5px;}
+.wa-ex li{font-size:14px;color:#c3cbd9;display:flex;gap:8px;align-items:baseline;}
+.wa-ex li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);flex:none;transform:translateY(-1px);}
+.wa-st{font-size:13.5px;color:#9ff5d6;display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.wa-st.r{color:#ff9fb2;}
+.wa-opt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-top:1px solid #141c2a;}
+.wa-opt b{display:block;font-size:15px;color:#fff;font-weight:600;} .wa-opt small{display:block;font-size:13px;color:#aab4c6;margin-top:1px;line-height:1.4;}
+.wa-sw{width:44px;height:26px;border-radius:999px;background:#1a2336;border:0;padding:0;position:relative;cursor:pointer;flex:none;min-height:0;box-shadow:none;}
+.wa-sw::after{content:"";position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;background:#7f8a9c;transition:left .15s;}
+.wa-sw[aria-checked="true"]{background:#1f6b4f;} .wa-sw[aria-checked="true"]::after{left:22px;background:var(--green);}
+.wa-sw:focus-visible{outline:2px solid #5aa0ff;outline-offset:2px;}
+.wa-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:10px;border-top:1px solid #141c2a;}
+.wa-foot .n{font-size:12.5px;color:#8792a6;flex:1;min-width:190px;line-height:1.4;}
+.wa-card .wa-intro + .wa-foot{border-top:0;padding-top:0;}
 .cb-note{display:flex;gap:9px;align-items:flex-start;padding:9px 12px;border-radius:9px;font-size:14px;line-height:1.5;}
 .cb-note.ok{background:rgba(34,224,161,.07);border:1px solid rgba(34,224,161,.35);color:#bff5e2;}
 .cb-note.warn{background:rgba(255,194,61,.06);border:1px solid rgba(255,194,61,.45);color:#ffe2a3;}
@@ -3279,7 +3304,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-02T23:46Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-03T00:22Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4929,6 +4954,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
     statsFromUrl();
+    warFromUrl();
   }
 
   // ---- normalize + fetch ----------------------------------------------------
@@ -12727,6 +12753,152 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     asc.picks = asc.sel === -1 ? aswPicks() : m && asc.model && state.asCache && ascPickable(ascKind(m)) ? ascPicks(m) : [];
     ascApply(); renderClanBar();
   }
+  // ---- War alerts (web push) ----
+  // The bell on the AccSaber clan screen. Turning it on registers sw.js (alerts only, it caches nothing), asks the
+  // browser once and gives Studio's Worker this browser's push address with the AccSaber player and clan. The Worker
+  // checks the war every 5 minutes and sends: hits and breaks on you, your guard coming back, and the war starting,
+  // having 24 hours left and ending, plus new clan missions. Each device keeps its own alerts and switches here.
+  var WA_KEY = 'playlistStudio.warAlerts.v1', wa = { open: false, busy: false, err: '', synced: '' };
+  var WA_BELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
+  var WA_OPTS = [['hit', 'I get hit or broken', 'Who did it, on which map and your guard left. Hits that come in together arrive as one alert.'],
+    ['guard', 'My guard is back', 'When you can play for the clan again after a break, with the enemy closest to breaking.'],
+    ['war', 'War start, last 24 hours, end and missions', 'The stake score at each point, and the new clan missions each Monday.']];
+  function waGet() { try { var o = JSON.parse(localStorage.getItem(WA_KEY) || 'null'); return o && o.id ? o : null; } catch (e) { return null; } }
+  function waSet(o) { try { if (o) localStorage.setItem(WA_KEY, JSON.stringify(o)); else localStorage.removeItem(WA_KEY); } catch (e) {} }
+  function waSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function waIos() { return /iPhone|iPad|iPod/.test(navigator.userAgent || '') && !navigator.standalone; }
+  function waTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } }
+  function waB64(buf) { var u = new Uint8Array(buf), t = ''; for (var i = 0; i < u.length; i++) t += String.fromCharCode(u[i]); return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function waU8(t) { t = String(t).replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; var b = atob(t), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function waPost(path, body) {
+    return fetch(PUB_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j || {} }; }); });
+  }
+  function waBtn() {
+    if (!asc.link) return '';
+    var st = waGet();
+    return '<button type="button" class="ghost sm wa-bell ' + (st ? 'on' : 'new') + '" data-wa="toggle" aria-expanded="' + (wa.open ? 'true' : 'false') + '" title="Alerts about this war on this device">' + (st ? '<span class="wa-dot"></span>' : '') + WA_BELL + (st ? 'Alerts on' : 'Get war alerts') + '</button>';
+  }
+  function waCard() {
+    if (!wa.open || !asc.link) return '';
+    var st = waGet(), who = esc((state.player && state.player.name) || 'you'), tag = esc(asc.link.clan.tag || 'your clan');
+    var h = '<div class="wa-card" id="waCard"><div class="wa-ch"><b>War alerts</b><span>for ' + who + ' in ' + tag + '</span></div>';
+    if (!waSupported()) return h + '<p>' + (waIos() ? 'On iPhone and iPad, alerts only work once Studio is on your home screen: tap Share, then Add to Home Screen, and open Studio from there.' : 'This browser can\'t show alerts from websites. Chrome, Edge and Firefox can.') + '</p></div>';
+    var errs = { blocked: 'Alerts are blocked for Studio in this browser. Allow notifications for this site (the icon left of the address, or the app\'s site settings), then press Turn on again.',
+      dismissed: 'The browser didn\'t get an answer. Press Turn on and choose Allow.', gone: 'Studio\'s server no longer had this device, so alerts were off. Turn them on again.',
+      fail: 'Couldn\'t turn alerts on. Try again in a moment.' };
+    var err = wa.err ? '<p class="r">' + esc(errs[wa.err] || wa.err) + '</p>' : '';
+    if (!st) {
+      return h + '<p class="wa-intro">Studio can tell you when something happens in your clan\'s war, even with Studio closed:</p><ul class="wa-ex"><li>Someone hits or breaks you, and on which map</li><li>Your guard is back and you can play for the clan again</li><li>The war starts, has 24 hours left or ends, and new missions</li></ul>' + err +
+        '<div class="wa-foot"><button type="button" class="primary sm" data-wa="on"' + (wa.busy ? ' disabled' : '') + '>' + (wa.busy ? 'Turning on…' : 'Turn on') + '</button><span class="n">Your browser asks once. Nothing is sent but your AccSaber player and clan. ' + (waIos() ? 'On iPhone, add Studio to your home screen first.' : 'You can turn any of these off later.') + '</span></div></div>';
+    }
+    var denied = Notification.permission === 'denied';
+    h += denied ? '<div class="wa-st r">Notifications are blocked in this browser, so alerts can\'t show. Allow them for this site to get them again.</div>' : '<div class="wa-st"><span class="wa-dot"></span>On in this browser. Studio checks the war every 5 minutes.</div>';
+    WA_OPTS.forEach(function (o) {
+      var on = st.prefs[o[0]] !== false;
+      h += '<div class="wa-opt"><div><b>' + o[1] + '</b><small>' + o[2] + '</small></div><button type="button" class="wa-sw" role="switch" aria-checked="' + on + '" aria-label="' + esc(o[1]) + '" data-wa="pref" data-k="' + o[0] + '"></button></div>';
+    });
+    return h + err + '<div class="wa-foot"><button type="button" class="ghost sm" data-wa="test"' + (wa.busy ? ' disabled' : '') + '>Send a test</button><button type="button" class="ghost sm" data-wa="off"' + (wa.busy ? ' disabled' : '') + '>Turn off on this device</button><span class="n">Quiet from 1 to 8 am: anything then comes as one alert in the morning. Each device you use gets its own alerts.</span></div></div>';
+  }
+  function waPaint() {
+    var b = document.querySelector('#clanBar .wa-bell'); if (b) b.outerHTML = waBtn();
+    var c = document.getElementById('waCard'), html = waCard();
+    if (c) { if (html) c.outerHTML = html; else c.remove(); }
+    else if (html) { var hd = document.querySelector('#clanBar .cb-head'); if (hd) hd.insertAdjacentHTML('afterend', html); }
+  }
+  function waReg() { return navigator.serviceWorker.register('sw.js').then(function () { return navigator.serviceWorker.ready; }); }
+  function waOn() {
+    var link = asc.link; if (!link || !waSupported() || wa.busy) return;
+    wa.busy = true; wa.err = ''; waPaint();
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') throw new Error(perm === 'denied' ? 'blocked' : 'dismissed');
+      return Promise.all([waReg(), fetch(PUB_BASE + '/push/key', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('fail'); return r.json(); })]);
+    }).then(function (r) {
+      var reg = r[0], key = r[1] && r[1].key; if (!key) throw new Error('fail');
+      return reg.pushManager.getSubscription().then(function (old) {
+        var same = old && old.options && old.options.applicationServerKey && waB64(old.options.applicationServerKey) === key;
+        if (old && !same) return old.unsubscribe().then(function () { return null; }, function () { return null; });
+        return old;
+      }).then(function (old) { return old || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: waU8(key) }); });
+    }).then(function (sub) {
+      var prefs = { hit: true, guard: true, war: true };
+      return waPost('/push/sub', { sub: sub.toJSON(), aid: String(link.aid), cid: link.clan.id, tag: link.clan.tag || '', prefs: prefs, tz: waTz() }).then(function (res) {
+        if (!res.ok || !res.j.id) throw new Error(res.j.error || 'fail');
+        waSet({ id: res.j.id, prefs: prefs, aid: String(link.aid), cid: link.clan.id, clan: link.clan });
+        wa.synced = res.j.id; track('waralert-on');
+      });
+    }).then(function () { wa.busy = false; waPaint(); toast('War alerts are on for this device.', 'ok'); },
+      function (e) { wa.busy = false; var m = (e && e.message) || ''; wa.err = /^(blocked|dismissed)$/.test(m) ? m : m && m.length > 12 ? m : 'fail'; waPaint(); });
+  }
+  function waOff() {
+    var st = waGet(); if (wa.busy) return;
+    wa.busy = true; waPaint();
+    var done = function () { waSet(null); wa.busy = false; wa.err = ''; waPaint(); track('waralert-off'); toast('War alerts are off on this device.', 'ok'); };
+    (st ? waPost('/push/del', { id: st.id }).catch(function () {}) : Promise.resolve()).then(function () {
+      return navigator.serviceWorker && navigator.serviceWorker.getRegistration().then(function (reg) { return reg && reg.pushManager.getSubscription(); }).then(function (x) { return x && x.unsubscribe(); });
+    }).then(done, done);
+  }
+  function waPref(k) {
+    var st = waGet(); if (!st) return;
+    st.prefs[k] = st.prefs[k] === false; waSet(st); waPaint(); track('waralert-pref');
+    waPost('/push/prefs', { id: st.id, prefs: st.prefs, tz: waTz() }).then(function (res) { if (res.status === 404) { waSet(null); wa.err = 'gone'; waPaint(); } }, function () {});
+  }
+  function waTest() {
+    var st = waGet(); if (!st || wa.busy) return;
+    track('waralert-test');
+    waPost('/push/test', { id: st.id }).then(function (res) {
+      if (res.status === 404 || res.status === 410) { waSet(null); wa.err = 'gone'; waPaint(); return; }
+      if (res.ok && res.j.ok) toast('Test sent. It should pop up in a few seconds.', 'ok');
+      else toast('The test didn\'t go through. Turn alerts off and on again on this device.', 'warn');
+    }, function () { toast('Couldn\'t reach Studio\'s server.', 'warn'); });
+  }
+  // Keeps the Worker's player, clan and time zone in step with this device (once per session).
+  function waSync(link) {
+    var st = waGet(); if (!st || !link || wa.synced === st.id) return;
+    wa.synced = st.id;
+    if (st.aid === String(link.aid) && st.cid === link.clan.id) { waPost('/push/prefs', { id: st.id, prefs: st.prefs, tz: waTz() }).then(function (res) { if (res.status === 404) { waSet(null); waPaint(); } }, function () {}); return; }
+    st.aid = String(link.aid); st.cid = link.clan.id; st.clan = link.clan; waSet(st);
+    waPost('/push/prefs', { id: st.id, prefs: st.prefs, tz: waTz(), aid: st.aid, cid: st.cid, tag: link.clan.tag || '' }).then(function (res) { if (res.status === 404) { waSet(null); waPaint(); } }, function () {});
+  }
+  function waClearBadge() {
+    try { if (navigator.clearAppBadge && waGet()) navigator.clearAppBadge().catch(function () {}); } catch (e) {}
+    try { if (window.caches && waGet()) caches.open('ps-alerts').then(function (c) { return c.delete('badge'); }).catch(function () {}); } catch (e) {}
+  }
+  // Opened from an alert: ?war=1 (the war screen) or ?war=maps (straight to the war maps). Only the war part leaves
+  // the address bar, so the push utm tags still reach GoatCounter.
+  function warFromUrl() {
+    var qs; try { qs = new URLSearchParams(location.search); } catch (e) { return; }
+    var v = qs.get('war'); if (!v) return;
+    qs.delete('war');
+    try { var rest = qs.toString(); history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash); } catch (e) {}
+    waOpenWar(v === 'maps' ? 'maps' : '1');
+  }
+  function waOpenWar(v) {
+    var tries = 0;
+    track('waralert-click');
+    (function go() {
+      var st = waGet(), link = st && st.clan && st.clan.id ? { clan: st.clan, aid: st.aid } : pcAsLink();
+      if (!state.player || !link) { if (++tries < 40) setTimeout(go, 250); return; }
+      if (isMobileView()) setMobileView('results');
+      if (!(clan.open && clan.kind === 'as' && asc.link && asc.link.clan.id === link.clan.id)) openAsClanView(link, pcc.bl);
+      else waClearBadge();
+      var bar = document.getElementById('clanBar');
+      setTimeout(function () {
+        var t = v === 'maps' ? document.getElementById('resultList') : bar;
+        if (t && t.scrollIntoView) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, v === 'maps' ? 2500 : 300);
+    })();
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target.closest('[data-wa]') : null; if (!t) return;
+    var k = t.getAttribute('data-wa');
+    if (k === 'toggle') { wa.open = !wa.open; if (wa.open) track('waralert-open'); waPaint(); }
+    else if (k === 'on') waOn();
+    else if (k === 'off') waOff();
+    else if (k === 'test') waTest();
+    else if (k === 'pref') waPref(t.getAttribute('data-k'));
+  });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) { var d = e.data || {}; if (d.t === 'ps-war') waOpenWar(d.v === 'maps' ? 'maps' : '1'); });
   function openAsClanView(link, blClans) {
     if (!state.player) { focusProfileConnect(); return; }
     if (!link || !link.clan || !link.clan.id) { toast('Join a clan on AccSaber to see its missions.', 'warn'); return; }
@@ -12739,7 +12911,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     ensureBL();
     state.viewMode = 'clan'; state.raw = []; state.filtered = []; state.fetched = true; state.lastSig = 'clan';
     el.fSort.value = 'clanRank'; el.fOrder.value = 'asc';
-    track('asclan-open');
+    track('asclan-open'); waSync(link); waClearBadge();
     applyClientFilters(); renderClanBar();
     if (isMobileView()) setMobileView('results');
     else { var bar = document.getElementById('clanBar'); if (bar && bar.scrollIntoView) bar.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -13249,11 +13421,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var me = asc.me, mine = me ? (me.role ? me.role.charAt(0).toUpperCase() + me.role.slice(1) : '') + (me.strengthShare > 0 ? (me.role ? ' · ' : '') + (me.strengthShare * 100).toFixed(1) + '% of the clan\'s strength' : '') : '';
     h += '<div class="cb-who"><div class="cb-kick">AccSaber clan · ' + (W && ph !== 'ended' ? 'War' : 'Missions') + '</div><div class="cb-name" style="color:' + esc(color) + '">' + tag + ' ' + aswPill() + '</div>' +
       (sub.length ? '<div class="cb-sub">' + sub.join(' · ') + '</div>' : '') + (mine ? '<div class="cb-sub">You: ' + esc(mine) + '</div>' : '') + '</div>';
-    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="ascRecheck"' + (asc.busy ? ' disabled' : '') + ' title="Load the latest standings, war and mission progress and your scores from AccSaber">⟳ Re-check</button>' +
+    h += '<div class="cb-acts"><button type="button" class="ghost sm" id="ascRecheck"' + (asc.busy ? ' disabled' : '') + ' title="Load the latest standings, war and mission progress and your scores from AccSaber">⟳ Re-check</button>' + waBtn() +
       (clan.clans && clan.clans.length ? '<button type="button" class="ghost sm" id="ascToBl" title="Maps your BeatLeader clan could defend or capture">&#9873; BeatLeader clan maps · ' + esc(clan.clans[0].tag) + '</button>' : '') +
       '<a class="cb-link" href="https://accsaber.com/clans/' + encodeURIComponent(ic.slug || c.slug || '') + '" target="_blank" rel="noopener">' + tag + ' on AccSaber ↗</a>' +
       (W && ph !== 'ended' ? '<a class="cb-link" href="https://accsaber.com/clans/wars/' + encodeURIComponent(W.w.id) + '" target="_blank" rel="noopener">War page ↗</a>' : '') +
       '<button type="button" class="ghost sm" id="cbExit">← Back to search</button></div></div>';
+    h += waCard();
     h += aswTiles();
     var se = asc.season, now = Date.now();
     if (se && !(asc.stand && asc.myIdx >= 0)) {
@@ -13746,6 +13919,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (u.hash === '#studio-sync') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} setTimeout(function () { ssOpen('hash'); }, 100); }
     checkBsrLinkOnLoad();
     statsFromUrl();
+    warFromUrl();
     gcVisit();
   }
   // A share link's maps as a .bplist, so the Merge / Replace choice can take it. Null if the link is broken
@@ -14486,7 +14660,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
      Counts page views automatically; the app also sends custom feature events
      (export, search-beatleader, search-beatsaver, connect-profile, build-from-plays;
      newcomers: newbie-easier, newbie-hint-dismiss, empty-gallery, gallery-<id>, bsmg-link,
-     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-auto, empty-reset, aswroom-<feed|us|them>,
+     undo, redo, link-load, link-load-failed, link-import-<fresh|merge|replace>, stats-versus, versus-build, compare-open, compare-run, compare-build-<beat|new|snipe>, map-style-<acc|tech|midspeed|speed>, empty-clear-<filter>, empty-loosen, empty-auto, waralert-<open|on|off|pref|test|click>, empty-reset, aswroom-<feed|us|them>,
      playlistmanager-link;
      Clan maps: stats-clan, clan-open, clan-scan, clan-fail, clan-defend, clan-capture, clan-ss, clan-recheck,
      clan-switch, clan-add, clan-switch-bl;

@@ -34,6 +34,10 @@ export default {
       try { return await seenPost(request, env, ctx); }
       catch (e) { return json({ ok: false }, 500, writeCors(request)); }
     }
+    if (url.pathname.startsWith("/push/")) {
+      try { return await pushRoute(request, env, url); }
+      catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
+    }
     if (url.pathname === "/kofi") {
       try { return await kofiHook(request, env); }
       catch (e) { return new Response("Server error", { status: 500 }); }
@@ -43,6 +47,10 @@ export default {
       catch (e) { return json({ error: "Server error" }, 500, { "Cache-Control": "no-store" }); }
     }
     return relay(request, url);
+  },
+  // Cron (worker/wrangler.toml): war alerts every 5 minutes.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(warAlerts(env).catch(() => {}));
   },
 };
 
@@ -1156,6 +1164,256 @@ async function admin(request, env, url) {
   if (url.pathname === "/admin/kofi") return json(await kofiStats(env, url.searchParams.get("fresh") === "1"), 200, nocache);
   if (kofiEdit) return kofiEditTips(request, env, url, nocache);
   return json(await adminStats(env), 200, nocache);
+}
+
+// ---------------------------------------------------------------- War alerts (web push)
+// The bell on Studio's AccSaber clan screen turns on alerts for one player on one device: hits and breaks on
+// them, their guard coming back, and the war starting, having 24 hours left, ending, plus new clan missions.
+// The browser hands Studio a push address; the Worker checks AccSaber every 5 minutes (the cron in
+// worker/wrangler.toml) and sends what changed. Kept per device: the push address and its two keys, the AccSaber
+// player and clan, the three switches and the time zone (for quiet hours, 1 to 8 am). No account, no email.
+// The key pair that signs the pushes (VAPID) is made on first use and kept in KV as push:vapid.
+const PUSH_SUBJECT = "https://spanky3651.github.io/Playlist-Studio/";
+const PUSH_HOSTS = /^(fcm\.googleapis\.com|android\.googleapis\.com|updates\.push\.services\.mozilla\.com|[a-z0-9-]+\.notify\.windows\.com|web\.push\.apple\.com|[a-z0-9.-]+\.push\.apple\.com)$/;
+const PUSH_MAX = 500, PUSH_AS = "https://api.accsaber.com/v1";
+const pushB64 = (buf) => { const u = new Uint8Array(buf); let s = ""; for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+const pushUnB64 = (s) => { s = String(s).replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+const pushCat = (...a) => { const o = new Uint8Array(a.reduce((n, x) => n + x.length, 0)); let i = 0; a.forEach((x) => { o.set(x, i); i += x.length; }); return o; };
+
+async function pushVapid(env) {
+  let v = await env.PLAYLISTS.get("push:vapid", "json");
+  if (!v || !v.pub || !v.jwk) {
+    const kp = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+    v = { pub: pushB64(await crypto.subtle.exportKey("raw", kp.publicKey)), jwk: await crypto.subtle.exportKey("jwk", kp.privateKey) };
+    await env.PLAYLISTS.put("push:vapid", JSON.stringify(v));
+  }
+  return v;
+}
+async function pushJwt(v, aud) {
+  const key = await crypto.subtle.importKey("jwk", v.jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  const te = new TextEncoder(), enc = (o) => pushB64(te.encode(JSON.stringify(o)));
+  const unsigned = enc({ typ: "JWT", alg: "ES256" }) + "." + enc({ aud, exp: nowSec() + 12 * 3600, sub: PUSH_SUBJECT });
+  return unsigned + "." + pushB64(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, te.encode(unsigned)));
+}
+// RFC 8291 message encryption (aes128gcm), one record.
+async function pushEncrypt(s, text) {
+  const te = new TextEncoder(), ua = pushUnB64(s.p256dh), auth = pushUnB64(s.auth);
+  const eph = await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
+  const asPub = new Uint8Array(await crypto.subtle.exportKey("raw", eph.publicKey));
+  const uaKey = await crypto.subtle.importKey("raw", ua, { name: "ECDH", namedCurve: "P-256" }, false, []);
+  const shared = new Uint8Array(await crypto.subtle.deriveBits({ name: "ECDH", public: uaKey }, eph.privateKey, 256));
+  const hkdf = async (salt, ikm, info, n) => new Uint8Array(await crypto.subtle.deriveBits({ name: "HKDF", hash: "SHA-256", salt, info },
+    await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]), n * 8));
+  const ikm = await hkdf(auth, shared, pushCat(te.encode("WebPush: info\0"), ua, asPub), 32);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const cek = await hkdf(salt, ikm, te.encode("Content-Encoding: aes128gcm\0"), 16);
+  const nonce = await hkdf(salt, ikm, te.encode("Content-Encoding: nonce\0"), 12);
+  const key = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, ["encrypt"]);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, key, pushCat(te.encode(text), new Uint8Array([2]))));
+  const head = new Uint8Array(21); head.set(salt, 0); new DataView(head.buffer).setUint32(16, 4096); head[20] = 65;
+  return pushCat(head, asPub, ct);
+}
+// Sends one alert. Returns the push service's status: 201 delivered, 404/410 the device unsubscribed.
+async function pushSend(v, s, msg, ttl, jwts) {
+  const aud = new URL(s.ep).origin;
+  jwts = jwts || {};
+  if (!jwts[aud]) jwts[aud] = await pushJwt(v, aud);
+  const r = await fetch(s.ep, { method: "POST", body: await pushEncrypt(s, JSON.stringify(msg)), headers: {
+    Authorization: "vapid t=" + jwts[aud] + ", k=" + v.pub, "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream",
+    TTL: String(ttl || 86400), Urgency: msg.k === "hit" ? "high" : "normal" } });
+  return r.status;
+}
+async function pushRoute(request, env, url) {
+  const cors = writeCors(request);
+  if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+  if (!env.PLAYLISTS) return json({ error: "Not set up" }, 503, cors);
+  if (url.pathname === "/push/key" && request.method === "GET") return json({ key: (await pushVapid(env)).pub }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
+  if (request.method !== "POST" || !originOk(request) || !/^\/push\/(sub|prefs|del|test)$/.test(url.pathname)) return json({ error: "Not found" }, 404, cors);
+  if (Number(request.headers.get("Content-Length") || 0) > 8192) return json({ error: "Too big" }, 413, cors);
+  let b = null; try { b = await request.json(); } catch (e) {}
+  if (!b || typeof b !== "object") return json({ error: "Bad request" }, 400, cors);
+  const subs = (await env.PLAYLISTS.get("push:subs", "json")) || {};
+  const str = (x, n) => String(x == null ? "" : x).slice(0, n);
+  const prefs = (p) => ({ hit: !p || p.hit !== false, guard: !p || p.guard !== false, war: !p || p.war !== false });
+  const tz = (z) => { z = str(z, 60); try { new Intl.DateTimeFormat("en-US", { timeZone: z || "UTC" }); return z || "UTC"; } catch (e) { return "UTC"; } };
+  const aidOk = (x) => /^\d{5,25}$/.test(String(x || "")), cidOk = (x) => /^[0-9a-f-]{36}$/i.test(String(x || ""));
+  const save = () => env.PLAYLISTS.put("push:subs", JSON.stringify(subs));
+  if (url.pathname === "/push/sub") {
+    const s = b.sub || {}, k = s.keys || {};
+    let host = ""; try { const u = new URL(s.endpoint); if (u.protocol === "https:") host = u.hostname; } catch (e) {}
+    if (!PUSH_HOSTS.test(host) || String(s.endpoint).length > 800 || !/^[A-Za-z0-9_-]{80,100}$/.test(k.p256dh || "") || !/^[A-Za-z0-9_-]{16,30}$/.test(k.auth || ""))
+      return json({ error: "This browser's push address didn't look right." }, 400, cors);
+    if (!aidOk(b.aid) || !cidOk(b.cid)) return json({ error: "Bad request" }, 400, cors);
+    const id = (await sha256(s.endpoint)).slice(0, 24);
+    if (!subs[id] && Object.keys(subs).length >= PUSH_MAX) return json({ error: "War alerts are full right now." }, 503, cors);
+    subs[id] = { ep: s.endpoint, p256dh: k.p256dh, auth: k.auth, aid: String(b.aid), cid: String(b.cid), tag: str(b.tag, 12), prefs: prefs(b.prefs), tz: tz(b.tz), at: nowSec() };
+    await save();
+    return json({ ok: true, id }, 200, cors);
+  }
+  const id = str(b.id, 24), s = subs[id];
+  if (!s) return json({ error: "gone" }, 404, cors);
+  if (url.pathname === "/push/prefs") {
+    s.prefs = prefs(b.prefs); if (b.tz) s.tz = tz(b.tz);
+    if (aidOk(b.aid)) s.aid = String(b.aid);
+    if (cidOk(b.cid)) { s.cid = String(b.cid); s.tag = str(b.tag, 12); }
+    await save();
+    return json({ ok: true }, 200, cors);
+  }
+  if (url.pathname === "/push/del") { delete subs[id]; await save(); return json({ ok: true }, 200, cors); }
+  const st = await pushSend(await pushVapid(env), s, { k: "test", t: "War alerts are on", b: "This is what a war alert looks like. Studio checks your war every 5 minutes.", tag: "ps-test", v: "1" }, 600);
+  if (st === 404 || st === 410) { delete subs[id]; await save(); return json({ error: "gone" }, 410, cors); }
+  return json({ ok: st >= 200 && st < 300, status: st }, 200, cors);
+}
+
+// Every 5 minutes: what changed in each subscribed clan's war since the last run.
+async function warAlerts(env) {
+  if (!env.PLAYLISTS) return;
+  const subs = (await env.PLAYLISTS.get("push:subs", "json")) || {};
+  const ids = Object.keys(subs); if (!ids.length) return;
+  const cur = (await env.PLAYLISTS.get("push:cur", "json")) || {};
+  cur.clans = cur.clans || {}; cur.wars = cur.wars || {}; cur.subs = cur.subs || {};
+  const before = JSON.stringify(cur), now = Date.now();
+  const asJ = async (p) => { const r = await fetch(PUSH_AS + p, { headers: { Accept: "application/json" } }); if (!r.ok) throw new Error("accsaber " + r.status); return r.json(); };
+  const asPages = async (p, max) => { let out = []; for (let i = 0; i < max; i++) { const j = await asJ(p + (p.indexOf("?") >= 0 ? "&" : "?") + "page=" + i + "&size=100"); const c = (j && j.content) || []; out = out.concat(c); if (!c.length || j.last !== false) break; } return out; };
+  let list; try { list = (await asJ("/clans/wars?size=100")).content || []; } catch (e) { return; }
+  const phase = (w) => String((w && w.status) || "").toLowerCase();
+  const sides = (w, t) => (w && w[t] && w[t].sides) || [];
+  const teamOf = (w, cid) => { let t = ""; ["attack", "defend"].forEach((k) => sides(w, k).forEach((x) => { if (x && x.clan && x.clan.id === cid) t = k; })); return t; };
+  const tags = (w, t) => sides(w, t).map((x) => (x.clan && x.clan.tag) || "?").join(" + ");
+  const num = (n) => Math.round(+n || 0).toLocaleString("en-US");
+  const an = (h) => (h && h.attacker && h.attacker.name) || "Someone";
+  const times = (n) => n === 1 ? "once" : n === 2 ? "twice" : n + " times";
+  const dur = (ms) => { const m = Math.max(1, Math.round(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60); return d ? d + "d " + h + "h" : h ? h + "h " + (m % 60) + "m" : m + "m"; };
+  const myWar = (cid) => {
+    let best = null; const rank = { active: 3, preparing: 2, picking: 1 };
+    list.forEach((w) => {
+      if (!teamOf(w, cid)) return;
+      const p = phase(w); let r = rank[p] || 0;
+      if (!r && p === "ended" && w.endedAt && now - Date.parse(w.endedAt) < 86400000) r = 0.5;
+      if (r && (!best || r > best.r)) best = { w, r };
+    });
+    return best ? best.w : null;
+  };
+  const out = {}, add = (id, m) => { (out[id] = out[id] || []).push(m); };
+  const byClan = {}; ids.forEach((id) => { (byClan[subs[id].cid] = byClan[subs[id].cid] || []).push(id); });
+  const keepWars = {};
+  for (const cid of Object.keys(byClan)) {
+    const sids = byClan[cid], cs = cur.clans[cid] = cur.clans[cid] || {}, w = myWar(cid);
+    const wantWar = sids.filter((id) => subs[id].prefs.war);
+    const tag0 = subs[sids[0]].tag || "your clan";
+    // New clan missions land on Mondays at 04:00 UTC; check then (and once to learn the current set).
+    const dt = new Date(now);
+    if (wantWar.length && (!cs.mh || (dt.getUTCDay() === 1 && dt.getUTCHours() >= 4 && dt.getUTCHours() < 10 && now - (cs.mAt || 0) > 25 * 60000))) {
+      try {
+        const ms = ((await asJ("/clans/" + encodeURIComponent(cid) + "/missions?size=20")).content || []).filter((m) => m && m.name);
+        const mh = ms.map((m) => m.id).sort().join(",");
+        if (mh && cs.mh && mh !== cs.mh) {
+          const names = ms.map((m) => m.name);
+          wantWar.forEach((id) => add(id, { k: "war", t: "New " + (subs[id].tag || tag0) + " missions", b: names.slice(0, 4).join(", ") + (names.length > 4 ? " and " + (names.length - 4) + " more" : "") + ".", tag: "ps-missions", v: "1" }));
+        }
+        if (mh) cs.mh = mh; cs.mAt = now;
+      } catch (e) {}
+    }
+    if (!w) { if (cs.war && cs.phase !== "ended") cs.phase = "gone"; continue; }
+    keepWars[w.id] = 1;
+    const team = teamOf(w, cid), opp = team === "attack" ? "defend" : "attack", us = tags(w, team), them = tags(w, opp), p = phase(w);
+    const start = Date.parse(w.startsAt) || 0, end = w.endsAt ? Date.parse(w.endsAt) : start ? start + 28 * 86400000 : 0;
+    const known = cs.war === w.id;
+    if (!known) cs.h24 = false;
+    const ourStake = (w[team] && w[team].stakeRemaining) || 0, theirStake = (w[opp] && w[opp].stakeRemaining) || 0;
+    const warMsg = (m) => wantWar.forEach((id) => add(id, Object.assign({ k: "war", v: "1" }, typeof m === "function" ? m(id) : m)));
+    if (p === "active" && ((known && cs.phase && cs.phase !== "active") || (!known && start && now - start < 30 * 60000))) {
+      const rs = String(w.ruleset || "war"), n = (w.arenaSpec && w.arenaSpec.poolSize) || 10;
+      warMsg({ t: us + " vs " + them + " has started", b: rs.charAt(0).toUpperCase() + rs.slice(1) + ", " + Math.round((end - start) / 86400000) + " days, you " + (team === "attack" ? "attack" : "defend") + ". The " + n + " war maps are ready in Studio.", tag: "ps-war-start" });
+    }
+    if (p === "active" && end > now && end - now <= 86400000 && !cs.h24) {
+      cs.h24 = true;
+      const gap = ourStake - theirStake;
+      warMsg({ t: "24 hours left · " + us + " vs " + them, b: "Stake left: " + us + " " + num(ourStake) + ", " + them + " " + num(theirStake) + ". " + us + " is " + num(Math.abs(gap)) + (gap >= 0 ? " ahead." : " behind."), tag: "ps-war-24h" });
+    }
+    // Hits, breaks and guard for this war.
+    const ws = cur.wars[w.id] = cur.wars[w.id] || {};
+    const wantHits = sids.filter((id) => subs[id].prefs.hit || subs[id].prefs.guard);
+    let fresh = [];
+    if (p === "active" && wantHits.length) {
+      try {
+        const hits = ((await asJ("/clans/wars/" + encodeURIComponent(w.id) + "/hits?page=0&size=50")).content || []).filter((h) => h && h.createdAt);
+        hits.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+        const newest = hits.length ? Date.parse(hits[0].createdAt) : 0;
+        if (ws.last) fresh = hits.filter((h) => Date.parse(h.createdAt) > ws.last).reverse();
+        if (newest > (ws.last || 0)) ws.last = newest; else if (!ws.last) ws.last = now;
+      } catch (e) {}
+    }
+    const onMe = (id) => fresh.filter((h) => h.victim && String(h.victim.id) === subs[id].aid);
+    const ended = p === "ended" && known && cs.phase !== "ended";
+    // The roster is only read when it can change an alert: a new device (to learn whether it's broken), a break
+    // just now (when they're back), a broken player whose back time has come, and the end of the war.
+    const needParts = ended || sids.some((id) => { const ss = cur.subs[id]; return !ss || ss.broken === undefined || onMe(id).some((h) => h.broke) || (subs[id].prefs.guard && ss.broken && (!ss.rv || now >= ss.rv - 60000)); });
+    let parts = null;
+    if (needParts && (p === "active" || ended)) { try { parts = await asPages("/clans/wars/" + encodeURIComponent(w.id) + "/participants", 4); } catch (e) {} }
+    const partOf = (id) => (parts || []).find((x) => x.player && String(x.player.id) === subs[id].aid) || null;
+    if (ended) {
+      const o = String(w.outcome || ""), won = (o === "attacker_won" && team === "attack") || (o === "defender_won" && team === "defend"), lost = (o === "attacker_won" && team === "defend") || (o === "defender_won" && team === "attack");
+      warMsg((id) => { const me = partOf(id); return { t: won ? us + " won the war with " + them : lost ? us + " lost the war with " + them : o === "retreated" ? "The war with " + them + " ended in a retreat" : "The war with " + them + " has ended",
+        b: "Final stake " + num(ourStake) + " to " + num(theirStake) + "." + (me && +me.contribution > 0 ? " Your contribution: " + num(me.contribution) + "." : ""), tag: "ps-war-end" }; });
+    }
+    const oppIds = {}; sides(w, opp).forEach((x) => { if (x.clan) oppIds[x.clan.id] = 1; });
+    for (const id of sids) {
+      const s = subs[id], ss = cur.subs[id] = cur.subs[id] || {}, me = partOf(id), mine = onMe(id);
+      if (s.prefs.hit && mine.length) {
+        const brk = mine.filter((h) => h.broke).pop(), last = mine[mine.length - 1], word = (h) => h.broke ? "broke" : h.chip ? "chipped" : "hit";
+        if (brk) {
+          const back = me && me.reviveAt ? Date.parse(me.reviveAt) - now : 0;
+          add(id, { k: "hit", n: mine.length, t: an(brk) + " broke you · " + us + " war", b: "On " + ((brk.map && brk.map.songName) || "a war map") + "." + (back > 0 ? " You're back in " + dur(back) + "." : "") + (mine.length > 1 ? " You took " + (mine.length - 1) + " more hit" + (mine.length > 2 ? "s" : "") + " before that." : "") });
+        } else if (mine.length === 1) {
+          add(id, { k: "hit", n: 1, t: an(last) + " " + word(last) + " you · " + us + " war", b: "On " + ((last.map && last.map.songName) || "a war map") + ", " + (+last.damage || 0).toFixed(1) + " damage. Your guard is " + Math.round(+last.guardAfter || 0) + " / 100." });
+        } else {
+          const by = {}; mine.forEach((h) => { by[an(h)] = (by[an(h)] || 0) + 1; });
+          const who = Object.keys(by).sort((a, b) => by[b] - by[a]).map((n) => n + " " + times(by[n]));
+          add(id, { k: "hit", n: mine.length, t: "You were hit " + mine.length + " times · " + us + " war", b: (who.length > 1 ? who.slice(0, -1).join(", ") + " and " + who[who.length - 1] : who[0]) + ". Your guard is " + Math.round(+last.guardAfter || 0) + " / 100." });
+        }
+      }
+      if (parts && !me) ss.broken = false;
+      if (me) {
+        const broken = +me.guard <= 0;
+        if (s.prefs.guard && ss.broken && !broken) {
+          let low = null; (parts || []).forEach((x) => { if (oppIds[x.clanId] && +x.guard > 0 && (!low || +x.guard < +low.guard)) low = x; });
+          add(id, { k: "guard", t: "Your guard is back · " + us + " war", b: "Guard " + Math.round(+me.guard) + " / 100. " + (low ? them + "'s lowest guard right now: " + low.player.name + " at " + Math.round(+low.guard) + "." : "You can hit and be hit again."), tag: "ps-guard" });
+        }
+        ss.broken = broken;
+        if (broken && me.reviveAt) ss.rv = Date.parse(me.reviveAt) || 0; else delete ss.rv;
+      }
+    }
+    cs.war = w.id; cs.phase = p;
+  }
+  Object.keys(cur.wars).forEach((k) => { if (!keepWars[k]) delete cur.wars[k]; });
+  Object.keys(cur.subs).forEach((k) => { if (!subs[k]) delete cur.subs[k]; });
+  // Quiet hours: 1 to 8 am in the device's time zone. Alerts wait and come as one when it's over.
+  const gone = [], v = await pushVapid(env), jwts = {};
+  for (const id of ids) {
+    const s = subs[id], ss = cur.subs[id] = cur.subs[id] || {};
+    let msgs = out[id] || [];
+    let hr = 12; try { hr = +new Intl.DateTimeFormat("en-US", { timeZone: s.tz || "UTC", hour: "numeric", hourCycle: "h23" }).format(now) % 24; } catch (e) {}
+    if (hr >= 1 && hr < 8) { if (msgs.length) ss.q = (ss.q || []).concat(msgs).slice(-30); continue; }
+    if (ss.q && ss.q.length) {
+      const all = ss.q.concat(msgs); delete ss.q;
+      if (all.length === 1) msgs = all;
+      else {
+        const n = all.reduce((a, m) => a + (m.n || 0), 0), shown = all.slice(-4).map((m) => m.t.replace(/ · .*$/, ""));
+        msgs = [{ k: n ? "hit" : "war", n, t: "While you were away · " + (s.tag || "your clan") + " war", b: shown.join(". ") + (all.length > 4 ? ". And " + (all.length - 4) + " more." : "."), v: "1" }];
+      }
+    }
+    for (const m of msgs) {
+      let st = 0; try { st = await pushSend(v, s, m, m.k === "hit" ? 6 * 3600 : 86400, jwts); } catch (e) {}
+      if (st === 404 || st === 410) { gone.push(id); break; }
+    }
+  }
+  if (gone.length) {
+    const fresh = (await env.PLAYLISTS.get("push:subs", "json")) || {};
+    gone.forEach((id) => { delete fresh[id]; delete cur.subs[id]; });
+    await env.PLAYLISTS.put("push:subs", JSON.stringify(fresh));
+  }
+  if (JSON.stringify(cur) !== before) await env.PLAYLISTS.put("push:cur", JSON.stringify(cur));
 }
 
 // ---------------------------------------------------------------- Ko-fi (webhook in, Studio Stats out)
@@ -2451,6 +2709,12 @@ body>main{position:relative;z-index:1}
     'map-style-*': ['Search', 'Map style', 'Picked a BeatLeader map style (Acc, Tech, Midspeed or Speed)'],
     'empty-loosen': ['Search', 'Search without the blocker', 'Searched again without the filter that hid every match'],
     'empty-auto': ['Search', 'Showed auto-generated maps', 'Pressed Show them when only auto-generated BeatSaver maps matched'],
+    'waralert-open': ['Clans', 'War alerts card', 'Opened the war alerts card on the AccSaber clan screen'],
+    'waralert-on': ['Clans', 'War alerts on', 'Turned on war alerts on a device'],
+    'waralert-off': ['Clans', 'War alerts off', 'Turned off war alerts on a device'],
+    'waralert-pref': ['Clans', 'War alert switch', 'Changed which war alerts they get'],
+    'waralert-test': ['Clans', 'War alert test', 'Sent themselves a test war alert'],
+    'waralert-click': ['Clans', 'Opened a war alert', 'Opened Studio from a war alert'],
     'empty-clear-*': ['Search', 'Cleared a hiding filter', 'Cleared the one filter that hid every result'],
     'empty-reset': ['Search', 'Reset from no matches', 'Reset filters when they hid every result'],
     'search-beatsaver': ['Search', 'Searched BeatSaver', 'Ran a search of BeatSaver by tags or text'],

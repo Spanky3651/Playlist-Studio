@@ -15,3 +15,7 @@ id = "39d6ff54b4664bcfaba148b9fe9bbd36"   # playlist-studio-hosted
 # name = "WRITE_LIMITER"
 # namespace_id = "1001"
 # simple = { limit = 30, period = 60 }
+
+# War alerts: every 5 minutes the Worker checks each subscribed clan's AccSaber war and sends web push alerts.
+[triggers]
+crons = ["*/5 * * * *"]
