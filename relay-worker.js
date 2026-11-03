@@ -2412,7 +2412,7 @@ body>main{position:relative;z-index:1}
 </div>
 <h2 id="v-charth">Visitors per day <small>dots are days you pushed changes</small></h2>
 <div class="chart"><svg id="v-chart" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Visitors per day"></svg>
-<div class="legend"><span><i style="background:var(--blue)"></i>Visitors</span><span><i style="background:var(--green)"></i>Built a playlist</span><span id="v-pushleg"><i style="background:var(--amber);border-radius:50%"></i>Push to GitHub</span></div></div>
+<div class="legend"><span><i style="background:var(--blue)"></i>Visitors</span><span><i style="background:var(--green)"></i>Built a playlist</span></div></div>
 <div class="blk"><h2>Where visitors are <small>hover or tap a country</small></h2><div class="map" id="v-map"></div></div>
 <div class="two" style="margin-top:4px">
 <div class="blk"><h2>Phone or computer</h2><div class="bars" id="v-dev"></div></div>
@@ -4020,7 +4020,7 @@ body>main{position:relative;z-index:1}
   }
 
   function chart(d, built, ids) {
-    ids = ids || { svg: 'v-chart', head: 'v-charth', leg: 'v-pushleg', what: 'Visitors', dots: true };
+    ids = ids || { svg: 'v-chart', head: 'v-charth', what: 'Visitors' };
     var svg = $(ids.svg), days = d.days, W = Math.max(280, Math.round(svg.clientWidth || 700)), H = 200;
     svg.setAttribute('viewBox', '0 0 ' + W + ' 220');
     if (!days.length) { svg.innerHTML = ''; return; }
@@ -4033,8 +4033,6 @@ body>main{position:relative;z-index:1}
     var n = days.length, X = function (i) { return n === 1 ? W / 2 : 30 + i * (W - 50) / (n - 1); }, Y = function (v) { return H - 12 - v / max * (H - 30); };
     var g = '';
     for (var k = 0; k <= 4; k++) { var yy = Y(max * k / 4); g += '<line x1="30" x2="' + (W - 20) + '" y1="' + yy + '" y2="' + yy + '" stroke="#1f2a3d"/><text x="0" y="' + (yy + 4) + '" fill="#6b7890" font-size="11">' + Math.round(max * k / 4) + '</text>'; }
-    var pushes = d.range === 'today' || !ids.dots ? [] : (d.pushes || []);
-    days.forEach(function (x, i) { if (pushes.indexOf(x.day) >= 0) g += '<line x1="' + X(i) + '" x2="' + X(i) + '" y1="12" y2="' + (H - 12) + '" stroke="#ffc23d" stroke-dasharray="3 4" opacity=".6"/><circle cx="' + X(i) + '" cy="14" r="5" fill="#ffc23d"><title>Pushed ' + dshort(x.day) + '</title></circle>'; });
     function path(vals) { return vals.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' '); }
     var gid = 'ga' + ids.svg;
     g = '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f7bff" stop-opacity=".35"/><stop offset="1" stop-color="#2f7bff" stop-opacity="0"/></linearGradient></defs>' + g;
@@ -4045,7 +4043,6 @@ body>main{position:relative;z-index:1}
     var labs = d.range === 'today' ? [[0, '12 AM'], [12, '12 PM'], [n - 1, (n - 1) + ':00']] : [[0, dshort(days[0].day)], [Math.floor((n - 1) / 2), dshort(days[Math.floor((n - 1) / 2)].day)], [n - 1, dshort(days[n - 1].day)]];
     labs.forEach(function (l, j) { g += '<text x="' + X(l[0]) + '" y="' + (H + 16) + '" fill="#9aa6b8" font-size="12" text-anchor="' + (j === 0 ? 'start' : j === 2 ? 'end' : 'middle') + '">' + esc(l[1]) + '</text>'; });
     svg.innerHTML = g;
-    if (ids.leg) $(ids.leg).classList.toggle('hidden', !pushes.length);
     days.forEach(function (x) { x.built = d.range !== 'today' && built ? Math.min(x.n, built[x.day] || 0) : null; });
     chartHover(svg, days, X, Y, ids.what.toLowerCase(), d);
   }
