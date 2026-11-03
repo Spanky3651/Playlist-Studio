@@ -2166,6 +2166,7 @@ div.site.hero2:focus-visible{outline:2px solid #2f7bff;outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
 .kgrid .value{font-size:32px}.kgrid .value.k{color:#3ddc84}
+.kbar{height:8px;border-radius:4px;background:#101828;margin-top:8px;overflow:hidden}.kbar i{display:block;height:100%;background:#3ddc84;border-radius:4px}
 .kpanel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:0}
 .phead{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}.phead b{font-size:15px}.phead small{color:var(--muted);font-size:13.5px}.phead .sp{flex:1}
 .tip{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 10px;margin:0 -10px;border-radius:12px}
@@ -2581,7 +2582,7 @@ body>main{position:relative;z-index:1}
 <div class="card"><div class="label">This month</div><div class="value k" id="k-month">-</div><div class="note" id="k-monthn"></div></div>
 <div class="card"><div class="label">All time</div><div class="value" id="k-all">-</div><div class="note" id="k-alln"></div></div>
 <div class="card"><div class="label">Supporters</div><div class="value" id="k-sup">-</div><div class="note" id="k-supn"></div></div>
-<div class="card"><div class="label">Monthly members</div><div class="value" id="k-mem">-</div><div class="note" id="k-memn"></div></div>
+<div class="card" title="All your tips against the $5 a month Cloudflare plan the Worker runs on. The bar is how much of the hosting since your first tip they cover."><div class="label">Covers hosting</div><div class="value k" id="k-host">-</div><div class="note" id="k-hostn"></div></div>
 </div>
 <div class="kpanel"><div class="phead"><b>Latest</b><small>names and messages only when the supporter made them public</small><button class="ghost kadd" id="k-addbtn" type="button">+ Add a past tip</button></div>
 <div class="kform hidden" id="k-form">
@@ -3521,10 +3522,10 @@ body>main{position:relative;z-index:1}
     var people = Object.keys(by), again = people.filter(function (k) { return by[k].length > 1; }).length;
     txt('k-sup', people.length);
     txt('k-supn', people.length ? (again ? again + (again === 1 ? ' has' : ' have') + ' given twice or more' : 'nobody twice yet') : 'nobody yet');
-    var cut = Date.now() / 1000 - 35 * 86400, mem = [], tiers = {};
-    people.forEach(function (k) { var subs = by[k].filter(function (x) { return x.sub; }); var last = subs[subs.length - 1]; if (last && last.t >= cut) { mem.push(last); if (last.tier) tiers[last.tier] = (tiers[last.tier] || 0) + 1; } });
-    txt('k-mem', mem.length);
-    txt('k-memn', mem.length ? kMoney(sum(mem.filter(function (x) { return x.cur === cur; })), cur) + ' a month' + (Object.keys(tiers).length > 1 ? ' · ' + Object.keys(tiers).map(function (t) { return tiers[t] + ' ' + t; }).join(', ') : '') : 'paid in the last 35 days');
+    // Covers hosting: every tip (in the main currency) against the $5 a month Workers Paid plan.
+    var HOST = 5, raised = sum(main), cover = raised / HOST, since = first ? Math.max(1 / 30, (Date.now() / 1000 - first) / (30.44 * 86400)) : 0, cm = Math.floor(cover), cd = Math.max(1, Math.round(cover * 30));
+    txt('k-host', !raised ? '-' : cm >= 1 ? cm + (cm === 1 ? ' month' : ' months') : cd + (cd === 1 ? ' day' : ' days'));
+    $('k-hostn').innerHTML = raised ? esc(kMoney(raised, cur)) + ' of tips vs $5 a month<div class="kbar"><i style="width:' + Math.min(100, since ? cover / since * 100 : 0).toFixed(0) + '%"></i></div>' : 'tips against the $5 a month Cloudflare plan';
     $('k-list').innerHTML = tips.length ? tips.slice(-8).reverse().map(function (x) {
       var pill = x.type === 'Shop Order' ? '<span class="kpill s">Shop</span>' : x.sub ? '<span class="kpill m">Monthly' + (x.tier ? ' &middot; ' + esc(x.tier) : '') + (x.first ? ' &middot; new' : '') + '</span>' : x.type === 'Commission' ? '<span class="kpill s">Commission</span>' : '<span class="kpill">Tip</span>';
       var nm = x.pub && x.name ? x.name : 'Anonymous', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
