@@ -2351,6 +2351,18 @@ section.loading{opacity:.45;pointer-events:none;transition:opacity .15s}
 .tabs.tight{gap:2px}.tabs.tight button{padding:10px 4px}
 .tabs.more{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
+/* Desktop: a little tighter top to bottom, so the All tab's Plan strip shows without scrolling */
+@media(min-width:761px){
+body{padding-top:14px}
+.brand{margin-bottom:2px}.sub{margin-bottom:12px}.top{margin-bottom:8px}
+.tabs{margin-bottom:12px}.tabs button{padding-top:8px;padding-bottom:8px}
+.range{margin-bottom:10px}.range button{padding-top:5px;padding-bottom:5px}
+.atotal{margin:0 0 10px}
+.site.hero2{padding:12px 18px 10px;margin-bottom:10px}.site.hero2 .sv{font-size:40px}.hero2 .hrow{margin-top:2px}
+.pstrip{margin-top:8px;padding-top:6px}
+.sites{margin-bottom:12px;gap:10px}.site{padding:12px 16px 8px}.site .sv{margin-top:4px}.site .ssp{height:26px;margin-top:6px}
+.plan{margin-top:12px}
+}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
