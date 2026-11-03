@@ -18,7 +18,7 @@ function bumpBadge(n) {
 self.addEventListener('push', function (e) {
   var m = {};
   try { m = e.data ? e.data.json() : {}; } catch (x) { m = { t: 'Playlist Studio', b: e.data ? e.data.text() : '' }; }
-  var opts = { body: m.b || '', icon: 'icons/icon-192.png', badge: 'icons/badge-96.png', data: { v: m.v || '1' }, timestamp: Date.now() };
+  var opts = { body: m.b || '', icon: /^[a-z0-9]{1,12}$/.test(m.i || '') ? 'icons/alerts/' + m.i + '.png' : 'icons/icon-192.png', badge: 'icons/badge-96.png', data: { v: m.v || '1' }, timestamp: Date.now() };
   if (m.tag) { opts.tag = m.tag; opts.renotify = true; }
   if (m.k === 'hit') opts.actions = [{ action: 'maps', title: 'Hit back' }, { action: 'open', title: 'Open war' }];
   e.waitUntil(Promise.all([self.registration.showNotification(m.t || 'Playlist Studio', opts), m.n ? bumpBadge(m.n) : null]));

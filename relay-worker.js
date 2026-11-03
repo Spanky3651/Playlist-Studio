@@ -1179,6 +1179,7 @@ async function admin(request, env, url) {
 // The browser hands Studio a push address; the Worker checks AccSaber every 5 minutes (the cron in
 // worker/wrangler.toml) and sends what changed. Kept per device: the push address and its two keys, the AccSaber
 // player and clan, the three switches and the time zone (for quiet hours, 1 to 8 am). No account, no email.
+// Each alert names its picture (i): icons/alerts/<i>.png, a white symbol on black; the small icon stays Studio's.
 // The key pair that signs the pushes (VAPID) is made on first use and kept in KV as push:vapid.
 const PUSH_SUBJECT = "https://spanky3651.github.io/Playlist-Studio/";
 const PUSH_HOSTS = /^(fcm\.googleapis\.com|android\.googleapis\.com|updates\.push\.services\.mozilla\.com|[a-z0-9-]+\.notify\.windows\.com|web\.push\.apple\.com|[a-z0-9.-]+\.push\.apple\.com)$/;
@@ -1267,7 +1268,7 @@ async function pushRoute(request, env, url) {
     return json({ ok: true }, 200, cors);
   }
   if (url.pathname === "/push/del") { delete subs[id]; await save(); return json({ ok: true }, 200, cors); }
-  const st = await pushSend(await pushVapid(env), s, { k: "test", t: "War alerts are on", b: "This is what a war alert looks like. Studio checks your war every 5 minutes.", tag: "ps-test", v: "1" }, 600);
+  const st = await pushSend(await pushVapid(env), s, { k: "test", i: "test", t: "War alerts are on", b: "This is what a war alert looks like. Studio checks your war every 5 minutes.", tag: "ps-test", v: "1" }, 600);
   if (st === 404 || st === 410) { delete subs[id]; await save(); return json({ error: "gone" }, 410, cors); }
   return json({ ok: st >= 200 && st < 300, status: st }, 200, cors);
 }
@@ -1316,7 +1317,7 @@ async function warAlerts(env) {
         const mh = ms.map((m) => m.id).sort().join(",");
         if (mh && cs.mh && mh !== cs.mh) {
           const names = ms.map((m) => m.name);
-          wantWar.forEach((id) => add(id, { k: "war", t: "New " + (subs[id].tag || tag0) + " missions", b: names.slice(0, 4).join(", ") + (names.length > 4 ? " and " + (names.length - 4) + " more" : "") + ".", tag: "ps-missions", v: "1" }));
+          wantWar.forEach((id) => add(id, { k: "war", i: "missions", t: "New " + (subs[id].tag || tag0) + " missions", b: names.slice(0, 4).join(", ") + (names.length > 4 ? " and " + (names.length - 4) + " more" : "") + ".", tag: "ps-missions", v: "1" }));
         }
         if (mh) cs.mh = mh; cs.mAt = now;
       } catch (e) {}
@@ -1331,12 +1332,12 @@ async function warAlerts(env) {
     const warMsg = (m) => wantWar.forEach((id) => add(id, Object.assign({ k: "war", v: "1" }, typeof m === "function" ? m(id) : m)));
     if (p === "active" && ((known && cs.phase && cs.phase !== "active") || (!known && start && now - start < 30 * 60000))) {
       const rs = String(w.ruleset || "war"), n = (w.arenaSpec && w.arenaSpec.poolSize) || 10;
-      warMsg({ t: us + " vs " + them + " has started", b: rs.charAt(0).toUpperCase() + rs.slice(1) + ", " + Math.round((end - start) / 86400000) + " days, you " + (team === "attack" ? "attack" : "defend") + ". The " + n + " war maps are ready in Studio.", tag: "ps-war-start" });
+      warMsg({ i: "start", t: us + " vs " + them + " has started", b: rs.charAt(0).toUpperCase() + rs.slice(1) + ", " + Math.round((end - start) / 86400000) + " days, you " + (team === "attack" ? "attack" : "defend") + ". The " + n + " war maps are ready in Studio.", tag: "ps-war-start" });
     }
     if (p === "active" && end > now && end - now <= 86400000 && !cs.h24) {
       cs.h24 = true;
       const gap = ourStake - theirStake;
-      warMsg({ t: "24 hours left · " + us + " vs " + them, b: "Stake left: " + us + " " + num(ourStake) + ", " + them + " " + num(theirStake) + ". " + us + " is " + num(Math.abs(gap)) + (gap >= 0 ? " ahead." : " behind."), tag: "ps-war-24h" });
+      warMsg({ i: "h24", t: "24 hours left · " + us + " vs " + them, b: "Stake left: " + us + " " + num(ourStake) + ", " + them + " " + num(theirStake) + ". " + us + " is " + num(Math.abs(gap)) + (gap >= 0 ? " ahead." : " behind."), tag: "ps-war-24h" });
     }
     // Hits, breaks and guard for this war.
     const ws = cur.wars[w.id] = cur.wars[w.id] || {};
@@ -1361,7 +1362,7 @@ async function warAlerts(env) {
     const partOf = (id) => (parts || []).find((x) => x.player && String(x.player.id) === subs[id].aid) || null;
     if (ended) {
       const o = String(w.outcome || ""), won = (o === "attacker_won" && team === "attack") || (o === "defender_won" && team === "defend"), lost = (o === "attacker_won" && team === "defend") || (o === "defender_won" && team === "attack");
-      warMsg((id) => { const me = partOf(id); return { t: won ? us + " won the war with " + them : lost ? us + " lost the war with " + them : o === "retreated" ? "The war with " + them + " ended in a retreat" : "The war with " + them + " has ended",
+      warMsg((id) => { const me = partOf(id); return { i: won ? "won" : lost ? "lost" : o === "retreated" ? "retreat" : "start", t: won ? us + " won the war with " + them : lost ? us + " lost the war with " + them : o === "retreated" ? "The war with " + them + " ended in a retreat" : "The war with " + them + " has ended",
         b: "Final stake " + num(ourStake) + " to " + num(theirStake) + "." + (me && +me.contribution > 0 ? " Your contribution: " + num(me.contribution) + "." : ""), tag: "ps-war-end" }; });
     }
     const oppIds = {}; sides(w, opp).forEach((x) => { if (x.clan) oppIds[x.clan.id] = 1; });
@@ -1371,13 +1372,13 @@ async function warAlerts(env) {
         const brk = mine.filter((h) => h.broke).pop(), last = mine[mine.length - 1], word = (h) => h.broke ? "broke" : h.chip ? "chipped" : "hit";
         if (brk) {
           const back = me && me.reviveAt ? Date.parse(me.reviveAt) - now : 0;
-          add(id, { k: "hit", n: mine.length, t: an(brk) + " broke you · " + us + " war", b: "On " + ((brk.map && brk.map.songName) || "a war map") + "." + (back > 0 ? " You're back in " + dur(back) + "." : "") + (mine.length > 1 ? " You took " + (mine.length - 1) + " more hit" + (mine.length > 2 ? "s" : "") + " before that." : "") });
+          add(id, { k: "hit", i: "broke", n: mine.length, t: an(brk) + " broke you · " + us + " war", b: "On " + ((brk.map && brk.map.songName) || "a war map") + "." + (back > 0 ? " You're back in " + dur(back) + "." : "") + (mine.length > 1 ? " You took " + (mine.length - 1) + " more hit" + (mine.length > 2 ? "s" : "") + " before that." : "") });
         } else if (mine.length === 1) {
-          add(id, { k: "hit", n: 1, t: an(last) + " " + word(last) + " you · " + us + " war", b: "On " + ((last.map && last.map.songName) || "a war map") + ", " + (+last.damage || 0).toFixed(1) + " damage. Your guard is " + Math.round(+last.guardAfter || 0) + " / 100." });
+          add(id, { k: "hit", i: last.chip ? "chip" : "hit", n: 1, t: an(last) + " " + word(last) + " you · " + us + " war", b: "On " + ((last.map && last.map.songName) || "a war map") + ", " + (+last.damage || 0).toFixed(1) + " damage. Your guard is " + Math.round(+last.guardAfter || 0) + " / 100." });
         } else {
           const by = {}; mine.forEach((h) => { by[an(h)] = (by[an(h)] || 0) + 1; });
           const who = Object.keys(by).sort((a, b) => by[b] - by[a]).map((n) => n + " " + times(by[n]));
-          add(id, { k: "hit", n: mine.length, t: "You were hit " + mine.length + " times · " + us + " war", b: (who.length > 1 ? who.slice(0, -1).join(", ") + " and " + who[who.length - 1] : who[0]) + ". Your guard is " + Math.round(+last.guardAfter || 0) + " / 100." });
+          add(id, { k: "hit", i: "multi", n: mine.length, t: "You were hit " + mine.length + " times · " + us + " war", b: (who.length > 1 ? who.slice(0, -1).join(", ") + " and " + who[who.length - 1] : who[0]) + ". Your guard is " + Math.round(+last.guardAfter || 0) + " / 100." });
         }
       }
       if (parts && !me) ss.broken = false;
@@ -1385,7 +1386,7 @@ async function warAlerts(env) {
         const broken = +me.guard <= 0;
         if (s.prefs.guard && ss.broken && !broken) {
           let low = null; (parts || []).forEach((x) => { if (oppIds[x.clanId] && +x.guard > 0 && (!low || +x.guard < +low.guard)) low = x; });
-          add(id, { k: "guard", t: "Your guard is back · " + us + " war", b: "Guard " + Math.round(+me.guard) + " / 100. " + (low ? them + "'s lowest guard right now: " + low.player.name + " at " + Math.round(+low.guard) + "." : "You can hit and be hit again."), tag: "ps-guard" });
+          add(id, { k: "guard", i: "guard", t: "Your guard is back · " + us + " war", b: "Guard " + Math.round(+me.guard) + " / 100. " + (low ? them + "'s lowest guard right now: " + low.player.name + " at " + Math.round(+low.guard) + "." : "You can hit and be hit again."), tag: "ps-guard" });
         }
         ss.broken = broken;
         if (broken && me.reviveAt) ss.rv = Date.parse(me.reviveAt) || 0; else delete ss.rv;
@@ -1407,7 +1408,7 @@ async function warAlerts(env) {
       if (all.length === 1) msgs = all;
       else {
         const n = all.reduce((a, m) => a + (m.n || 0), 0), shown = all.slice(-4).map((m) => m.t.replace(/ · .*$/, ""));
-        msgs = [{ k: n ? "hit" : "war", n, t: "While you were away · " + (s.tag || "your clan") + " war", b: shown.join(". ") + (all.length > 4 ? ". And " + (all.length - 4) + " more." : "."), v: "1" }];
+        msgs = [{ k: n ? "hit" : "war", i: "summary", n, t: "While you were away · " + (s.tag || "your clan") + " war", b: shown.join(". ") + (all.length > 4 ? ". And " + (all.length - 4) + " more." : "."), v: "1" }];
       }
     }
     for (const m of msgs) {
