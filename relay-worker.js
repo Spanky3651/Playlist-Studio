@@ -2069,7 +2069,7 @@ button.linkish:hover{color:var(--text)}
 .tabs .ti{display:inline-flex;width:18px;height:18px;flex:none;align-items:center;justify-content:center}.tabs .ti img{width:18px;height:18px;border-radius:5px;display:block}.tabs .ti.me img{border-radius:50%}.tabs .ti svg{width:17px;height:17px}
 .atotal{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:2px 0 16px;color:var(--muted)}.atotal .atl{display:flex;flex-direction:column;gap:2px;min-width:0}.atotal .atk{font-size:12.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#8d9ab0}.atotal .atv{display:flex;align-items:baseline;gap:8px}.atotal b{font-size:42px;line-height:1.05;color:var(--text);font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.atotal .atu{font-size:17px;font-weight:600;color:#9aa6b8}.atotal .tch{padding-bottom:6px}.site.hero2 .sh .ic{width:36px;height:36px;border-radius:10px}.site.hero2 .sh .ic img{width:24px;height:24px}.site.hero2 .sh b{font-size:16.5px}
 .sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
-#a-total{color:var(--green)}
+#a-total{color:#ffffff}
 .atotal .tch{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13.5px}
 .chg{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:13.5px;border-radius:999px;padding:3px 10px;white-space:nowrap}
 .chg.up{color:#3ddc84;background:rgba(61,220,132,.12)}.chg.down{color:#ff7a8a;background:rgba(255,77,109,.13)}.chg.sm{font-size:12.5px;padding:2px 8px}
@@ -3281,8 +3281,8 @@ body>main{position:relative;z-index:1}
 
   // ---- All sites: visitors for every site you track, side by side ----
   var ALL_SITES = {
-    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#ffffff', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
-    bl: { name: 'BeatLeader profile', icon: 'me', color: '#3ddc84', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
+    studio: { name: 'Playlist Studio', icon: 'm:ps', color: '#3ddc84', tab: 'vis', unit: 'visitors', home: 'Playlist Studio home' },
+    bl: { name: 'BeatLeader profile', icon: 'me', color: '#ffc23d', tab: 'bl', unit: 'views', home: 'Your BeatLeader profile' },
     hsv: { name: 'HSV Config', icon: 'm:hsv', color: '#5296ff', tab: 'hsv', unit: 'visitors', home: 'HSV Config Generator home' },
     rs: { name: 'ReeSaber Studio', icon: 'm:rs', color: '#ff4d6d', tab: 'rs', unit: 'visitors', home: 'ReeSaber Studio home' }
   };
