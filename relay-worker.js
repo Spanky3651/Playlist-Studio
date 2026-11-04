@@ -1398,7 +1398,7 @@ async function adminPush(env, kind, m) {
     if (!ids.length) return;
     const v = await pushVapid(env), jwts = {}, gone = [], wait = [], now = new Date(), msg = Object.assign({ k: kind }, m);
     for (const id of ids) {
-      if (kind !== "key" && apQuiet(subs[id], now)) { wait.push(id); continue; }
+      if (kind !== "key" && kind !== "weekly" && apQuiet(subs[id], now)) { wait.push(id); continue; }
       let st = 0; try { st = await pushSend(v, subs[id], msg, 86400, jwts); } catch (e) {}
       if (st === 404 || st === 410) gone.push(id);
     }
@@ -1627,11 +1627,11 @@ async function adminCron(env) {
       }
     } catch (e) {}
   }
-  // Weekly summary: Monday from 9 am on the first device that turned alerts on.
+  // Weekly summary: Mondays at 7 am US Eastern (EST, or EDT in summer). It skips quiet hours.
   if (want("weekly")) {
-    let wd = "", hr = 0; try { const f = new Intl.DateTimeFormat("en-US", { timeZone: subs[ids[0]].tz || "UTC", weekday: "short", hour: "numeric", hourCycle: "h23" }).formatToParts(now); f.forEach((x) => { if (x.type === "weekday") wd = x.value; if (x.type === "hour") hr = +x.value % 24; }); } catch (e) {}
-    if (wd === "Mon" && hr >= 9 && st.wk !== dk) {
-      st.wk = dk;
+    let wd = "", hr = 0, wday = ""; try { const f = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now); f.forEach((x) => { if (x.type === "weekday") wd = x.value; if (x.type === "hour") hr = +x.value % 24; }); wday = f.filter((x) => /year|month|day/.test(x.type) && x.type !== "weekday").map((x) => x.value).join("-"); } catch (e) {}
+    if (wd === "Mon" && hr >= 7 && st.wk !== wday) {
+      st.wk = wday;
       const w0 = today0 - 7 * DAY, parts = [];
       let visits = 0;
       if (env.GC_TOKEN) {
@@ -3969,7 +3969,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     ['sync', 'New Studio Sync users', 'Someone links a headset for the first time'], ['spike', 'Traffic spikes', 'A site gets about 3 times its usual visitors in a day'],
     ['errors', 'Worker errors', 'A Worker starts failing: 20 or more errors in an hour'], ['stuck', 'Stuck Studio Sync changes', 'A headset keeps syncing but hasn’t taken a change for a day'],
     ['github', 'GitHub', 'New issues, pull requests, stars and forks on your repos'], ['milestone', 'Milestones', 'Players, headsets, monthly visits and Ko-fi totals passing round numbers'],
-    ['weekly', 'Weekly summary', 'Monday from 9 am: your week in one alert']];
+    ['weekly', 'Weekly summary', 'Mondays at 7 am Eastern: your week in one alert']];
   function alGet() { try { return JSON.parse(localStorage.getItem(AK) || 'null'); } catch (e) { return null; } }
   function alSet(v) { try { if (v) localStorage.setItem(AK, JSON.stringify(v)); else localStorage.removeItem(AK); } catch (e) {} }
   function alOk() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
@@ -4001,7 +4001,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       h += '<div class="ac-o"><div><b>' + o[1] + '</b><small>' + o[2] + '</small></div><button type="button" class="ac-sw" role="switch" aria-checked="' + on + '" aria-label="' + esc(o[1]) + '" data-al="pref" data-k="' + o[0] + '"></button></div>';
     });
     c.innerHTML = h + err + '<div class="ac-f"><button type="button" class="ghost" data-al="test"' + (al.busy ? ' disabled' : '') + '>Send a test</button><button type="button" class="ghost" data-al="off"' + (al.busy ? ' disabled' : '') + '>Turn off on this device</button>' +
-      (al.ok ? '<span class="ok">' + esc(al.ok) + '</span>' : '') + '<span class="n">Quiet from 1 to 8 am: anything then comes as one alert in the morning, except key guessing. Each device you use gets its own alerts.</span></div>';
+      (al.ok ? '<span class="ok">' + esc(al.ok) + '</span>' : '') + '<span class="n">Quiet from 1 to 8 am: anything then comes as one alert in the morning, except key guessing and the weekly summary. Each device you use gets its own alerts.</span></div>';
   }
   function alPrefs() { var st = alGet(), o = {}; AL_OPTS.forEach(function (x) { o[x[0]] = !st || !st.prefs || st.prefs[x[0]] !== false; }); return o; }
   function alOn() {
