@@ -445,6 +445,69 @@ body.src-beatsaver .sortsec .bs-sw2{order:8;border-radius:0 0 12px 12px;border-t
 .song-row{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--panel-2);transition:border-color .14s;}
 .song-row:hover{border-color:var(--border-2);}
 .song-cover{width:50px;height:50px;border-radius:7px;object-fit:cover;background:#05070c;border:1px solid var(--border);flex:none;}
+/* Song info (Nov 2026): tap a cover in Studio Sync's lists or Your Playlist. A sheet from the bottom on phones, a card on computers. */
+.lq-peek li > img,.song-row.bk > .song-cover{cursor:pointer;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+.lq-peek li > img:hover,.song-row.bk > .song-cover:hover{outline:2px solid #2f8cff;outline-offset:1px;}
+html.si-open,html.si-open body{overflow:hidden;}
+.si-wrap{position:fixed;inset:0;z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px 16px;}
+.si-wrap[hidden]{display:none;}
+.si-back{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+.si-card{position:relative;width:600px;max-width:100%;max-height:88vh;overflow:auto;overscroll-behavior:contain;background:#0a0f19;border:1px solid #24314a;border-radius:18px;padding:18px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.75);color:var(--text);animation:siIn .18s ease-out;}
+@keyframes siIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.si-card:focus{outline:none;}
+.si-grab{display:none;}
+.si-hd{display:grid;grid-template-columns:100px minmax(0,1fr) auto;gap:14px;align-items:start;}
+.si-cv{width:100px;height:100px;border-radius:12px;object-fit:cover;background:#05070c;display:block;}
+.si-tt h4{margin:0;font-size:21px;line-height:1.15;color:#fff;overflow-wrap:anywhere;}
+.si-tt h4 small{font-size:14px;font-weight:500;color:#aab4c6;}
+.si-tt p{margin:1px 0 0;color:#c3cbd9;font-size:15px;}.si-tt p.mp{font-size:13.5px;color:#8792a6;}
+.si-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.si-tag{display:inline-flex;align-items:center;gap:5px;font:600 12px var(--mono);border-radius:999px;padding:2px 9px;border:1px solid #2a3650;color:#c3cbd9;}
+.si-tag svg{width:12px;height:12px;}
+.si-tag.rk{border-color:#1f6b4f;color:#9ff5d6;background:rgba(34,224,161,.08);}
+.si-tag.fv{border-color:#6b2333;color:#ffb3c2;background:rgba(255,77,109,.08);}
+.si-tag.fv .fav-h{color:#ff4d6d;}
+.si-x{width:36px;height:36px;min-height:0;border-radius:10px;padding:0;display:grid;place-items:center;font-size:20px;line-height:1;}
+.si-pv{display:flex;align-items:center;gap:10px;margin:14px 0 2px;padding:8px 10px;border:1px solid #1c2638;border-radius:12px;background:#070b12;}
+.si-pb{width:36px;height:36px;min-height:0;border-radius:50%;border:0;background:#1e6bff;color:#fff;display:grid;place-items:center;padding:0;flex:none;box-shadow:none;}
+.si-pb:hover{background:#3b82ff;box-shadow:none;}
+.si-pb svg{width:16px;height:16px;}
+.si-bar{flex:1;height:8px;border-radius:4px;background:#1c2638;overflow:hidden;cursor:pointer;}
+.si-bar i{display:block;height:100%;width:0;background:#4d8cff;border-radius:4px;}
+.si-tm{font:12px var(--mono);color:#8792a6;white-space:nowrap;}
+.si-lab{font:700 12px var(--mono);letter-spacing:1.2px;text-transform:uppercase;color:#7f8a9c;margin:14px 0 6px;}
+.si-dfs{display:flex;gap:6px;flex-wrap:wrap;}
+.si-df{font:inherit;font-size:13.5px;font-weight:600;border:1px solid #24314a;border-radius:999px;padding:4px 11px;min-height:0;color:#c3cbd9;background:#0d1320;}
+.si-df b{font-family:var(--mono);font-weight:700;margin-left:3px;}
+.si-df.dc-easy b{color:#3ddc84;}.si-df.dc-normal b{color:#4fb3ff;}.si-df.dc-hard b{color:#ff9f2e;}.si-df.dc-expert b{color:#ff4d6d;}.si-df.dc-ep b{color:#c77dff;}
+.si-df small{color:#8792a6;font-weight:500;margin-right:3px;}
+.si-df[aria-pressed="true"]{border-color:#f1d23a;box-shadow:0 0 0 1px #f1d23a inset;color:#fff;}
+.si-cards{margin-top:12px;}
+.si-cards .rcards{margin-top:0;max-width:none;}
+.si-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+.si-fc{border:1px solid #1c2638;border-radius:10px;padding:6px 9px;background:#070b12;min-width:0;}
+.si-fc span{display:block;font:11.5px var(--mono);color:#7f8a9c;text-transform:uppercase;letter-spacing:.6px;}
+.si-fc b{font-size:15.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+.si-pls{display:flex;gap:6px;flex-wrap:wrap;}
+.si-pl{font-size:13.5px;border:1px solid #24314a;border-radius:9px;padding:4px 10px;background:#0d1320;color:#c3cbd9;}
+.si-none{font-size:13.5px;color:#8792a6;}
+.si-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.si-acts button,.si-acts a{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:600;border-radius:10px;padding:9px 13px;text-decoration:none;}
+.si-acts a{border:1px solid var(--border);background:var(--panel-3);color:var(--text);}
+.si-acts a:hover{border-color:var(--blue);color:#fff;}
+.si-acts svg{width:14px;height:14px;}
+.si-msg{margin:14px 0 0;color:#8792a6;font-size:14px;}
+@media (max-width:760px){
+  .si-wrap{align-items:flex-end;padding:0;}
+  .si-card{width:100%;max-height:90vh;border-radius:22px 22px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom));border-bottom:0;animation:siUp .2s ease-out;}
+  @keyframes siUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .si-grab{display:block;width:42px;height:5px;border-radius:3px;background:#2e3a52;margin:0 auto 12px;}
+  .si-hd{grid-template-columns:84px minmax(0,1fr) auto;}
+  .si-cv{width:84px;height:84px;}
+  .si-fc{padding:6px 7px;}.si-fc b{white-space:normal;font-size:15px;line-height:1.25;}
+  .si-acts .si-add{flex-basis:100%;}
+  .si-acts a,.si-acts .si-bsr{flex:1;padding:9px 8px;}
+}
 .song-cover.ph{display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:20px;}
 .song-info{min-width:0;}
 .song-name{font-size:17px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -3312,7 +3375,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-03T18:12Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-04T12:46Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -11351,6 +11414,188 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       .then(function (m) { var v = (m.versions && m.versions[0]) || {}; var res = { id: m.id, previewURL: v.previewURL || '', name: m.name || '' }; bsCache[h] = res; return res; })
       .catch(function (e) { return { error: e.message }; });
   }
+
+  // ---- song info (Nov 2026): tap a song's cover in Studio Sync's lists (favorites, headset playlists) or in
+  // Your Playlist. A tap only: a scroll, a fling being stopped, a long press or a drag never opens it.
+  var siCache = {}, si = null, siAudio = null, siDown = null, siScrollAt = 0;
+  var SI_ORDER = { Easy: 1, Normal: 2, Hard: 3, Expert: 4, ExpertPlus: 5 };
+  var SI_EXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+  var SI_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>', SI_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+  function siData(h) {
+    if (siCache[h]) return siCache[h];
+    var bs = fetchTimeout(BS_API + '/maps/hash/' + h, 10000).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    var bl = relayFetch(API_BASE + '/map/hash/' + encodeURIComponent(h), MAP_VALID).catch(function () { return null; });
+    var p = siCache[h] = Promise.all([bs, bl]).then(function (x) { if (!x[0] && !x[1]) delete siCache[h]; return { bs: x[0], bl: x[1] }; });
+    return p;
+  }
+  // Every difficulty: BeatSaver's numbers, BeatLeader's stars and ratings on top.
+  function siDiffs(d) {
+    var out = [], by = {}, bsm = d.bs, vs = (bsm && bsm.versions) || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0];
+    ((v && v.diffs) || []).forEach(function (x) {
+      var o = { dn: x.difficulty, mode: x.characteristic || 'Standard', njs: x.njs || 0, nps: x.nps || 0, notes: x.notes || 0, stars: +(x.blStars || x.stars || 0) };
+      by[o.dn + '|' + o.mode] = o; out.push(o);
+    });
+    ((d.bl && d.bl.difficulties) || []).forEach(function (x) {
+      var k = x.difficultyName + '|' + (x.modeName || 'Standard'), o = by[k];
+      if (!o) { o = by[k] = { dn: x.difficultyName, mode: x.modeName || 'Standard', njs: x.njs || 0, nps: x.nps || 0, notes: x.notes || 0, stars: 0 }; out.push(o); }
+      if (x.stars > 0) o.stars = x.stars;
+      o.lb = x.id || ''; o.pass = x.passRating || 0; o.acc = x.accRating || 0; o.tech = x.techRating || 0; o.mods = modsFrom(x.modifiersRating);
+      if (!o.nps && x.nps) o.nps = x.nps; if (!o.notes && x.notes) o.notes = x.notes;
+    });
+    out.sort(function (a, b) { return (a.mode === 'Standard' ? 0 : 1) - (b.mode === 'Standard' ? 0 : 1) || a.mode.localeCompare(b.mode) || (SI_ORDER[a.dn] || 9) - (SI_ORDER[b.dn] || 9); });
+    return out;
+  }
+  // The difficulty to show first: the one this list is about, else your best score's, else the hardest Standard one.
+  function siPick(list) {
+    var want = (si && si.want) || [];
+    for (var i = 0; i < want.length; i++) for (var j = 0; j < list.length; j++) if (list[j].dn === want[i].dn && list[j].mode === want[i].mode) return j;
+    var best = -1, bv = -1, sc = state.scores || {};
+    list.forEach(function (o, j) { var x = sc[si.h + '|' + o.dn + '|' + o.mode]; if (x) { var v = (x.pp || 0) * 1000 + (x.a || 0); if (v > bv) { bv = v; best = j; } } });
+    if (best >= 0) return best;
+    var hard = -1; list.forEach(function (o, j) { if (o.mode === 'Standard') hard = j; });
+    return hard >= 0 ? hard : list.length - 1;
+  }
+  function siEntry(o) {
+    var d = si.d || {}, bsm = d.bs, meta = (bsm && bsm.metadata) || {}, blm = d.bl || {};
+    var base = bsm ? bsMapToEntry(bsm) : { leaderboardId: '', hash: si.h, songName: si.name, subName: '', mapper: si.mapper, author: si.mapper, bpm: blm.bpm || 0, duration: blm.duration || 0, cover: si.cover, key: '' };
+    return Object.assign(base, { hash: si.h, songName: base.songName || si.name, difficultyName: o.dn, modeName: o.mode, stars: o.stars || 0, nps: o.nps || 0, njs: o.njs || 0, notes: o.notes || 0,
+      leaderboardId: o.lb || '', passRating: o.pass || 0, accRating: o.acc || 0, techRating: o.tech || 0, mods: o.mods || {}, author: meta.songAuthorName || base.author || '', mapper: meta.levelAuthorName || base.mapper || si.mapper || '' });
+  }
+  function siFmtTime(t) { t = Math.max(0, Math.floor(t || 0)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
+  function siRender() {
+    var card = document.getElementById('siCard'); if (!card || !si) return;
+    var d = si.d, bsm = d && d.bs, meta = (bsm && bsm.metadata) || {}, list = si.list || [], o = list[si.sel];
+    var name = meta.songName || si.name || 'Unknown song', sub = meta.songSubName || '', art = meta.songAuthorName || si.artist || '', mpr = meta.levelAuthorName || si.mapper || (d && d.bl && d.bl.mapper) || '';
+    var tags = [];
+    if (list.some(function (x) { return x.pass > 0; })) tags.push('<span class="si-tag rk">Ranked</span>');
+    if (state.lq && state.lq.devices) state.lq.devices.forEach(function (dv) { if (lqFavShared(dv.id) && lqIsFav(dv.id, si.h)) tags.push('<span class="si-tag fv">' + favHeartSvg(true) + 'Favorite on ' + esc(lqDevName(dv.id)) + '</span>'); });
+    var h = '<div class="si-grab" aria-hidden="true"></div><div class="si-hd"><img class="si-cv" src="' + esc(si.cover) + '" alt="" onerror="this.style.visibility=\'hidden\'"><div class="si-tt"><h4 id="siTitle">' + esc(name) + (sub ? ' <small>' + esc(sub) + '</small>' : '') + '</h4>' +
+      (art ? '<p>' + esc(art) + '</p>' : '') + (mpr ? '<p class="mp">mapped by ' + esc(mpr) + '</p>' : '') + (tags.length ? '<div class="si-tags">' + tags.join('') + '</div>' : '') + '</div>' +
+      '<button type="button" class="ghost si-x" data-si="close" aria-label="Close">×</button></div>';
+    if (!d) { card.innerHTML = h + '<p class="si-msg">Loading the map…</p>'; return; }
+    if (!list.length) { card.innerHTML = h + '<p class="si-msg">' + (bsm || d.bl ? 'No difficulties found for this map.' : 'Couldn’t reach BeatSaver or BeatLeader for this map. Try again in a moment.') + '</p>'; return; }
+    var vs = (bsm && bsm.versions) || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0] || {};
+    if (v.previewURL) h += '<div class="si-pv"><button type="button" class="si-pb" data-si="play" aria-label="Play the preview">' + (siAudio && !siAudio.paused ? SI_PAUSE : SI_PLAY) + '</button><div class="si-bar" data-si="seek"><i id="siBarFill"></i></div><span class="si-tm" id="siTime">' + (siAudio ? siFmtTime(siAudio.currentTime) + ' / ' + siFmtTime(siAudio.duration || 0) : 'Preview') + '</span></div>';
+    h += '<div class="si-lab">Difficulties</div><div class="si-dfs">' + list.map(function (x, i) {
+      return '<button type="button" class="si-df dc-' + (DIFF_CLS[x.dn] || 'ep') + '" data-si="diff" data-i="' + i + '" aria-pressed="' + (i === si.sel) + '">' + (x.mode !== 'Standard' ? '<small>' + esc(x.mode) + '</small>' : '') + esc(x.dn === 'ExpertPlus' ? 'Expert+' : x.dn) + (x.stars > 0 ? '<b>' + x.stars.toFixed(2) + '★</b>' : '') + '</button>';
+    }).join('') + '</div>';
+    var e = siEntry(o), cards = statCards(e);
+    if (cards) h += '<div class="si-cards">' + cards + '</div>';
+    var f = [], dur = meta.duration || (d.bl && d.bl.duration) || 0, bpm = meta.bpm || (d.bl && d.bl.bpm) || 0, st = bsm && bsm.stats;
+    if (bpm) f.push(['BPM', String(Math.round(bpm))]);
+    if (dur) f.push(['Length', fmtDur(dur)]);
+    if (o.nps) f.push(['NPS', o.nps.toFixed(1)]);
+    if (o.njs) f.push(['NJS', String(Math.round(o.njs * 10) / 10)]);
+    if (o.notes) f.push(['Notes', o.notes.toLocaleString('en-US')]);
+    if (st && st.upvotes + st.downvotes > 0) f.push(['Rating', Math.round((st.score || 0) * 100) + '%', st.upvotes.toLocaleString('en-US') + ' up, ' + st.downvotes.toLocaleString('en-US') + ' down']);
+    if (bsm && bsm.uploaded) { var up = new Date(bsm.uploaded); if (!isNaN(up)) f.push(['Uploaded', up.toLocaleString('en-US', { month: 'short' }) + ' ' + up.getFullYear()]); }
+    if (bsm && bsm.id) f.push(['Key', bsm.id]);
+    if (f.length) h += '<div class="si-lab">The map</div><div class="si-facts">' + f.map(function (x) { return '<div class="si-fc"' + (x[2] ? ' title="' + esc(x[2]) + '"' : '') + '><span>' + x[0] + '</span><b>' + esc(x[1]) + '</b></div>'; }).join('') + '</div>';
+    if (state.lq && state.lq.devices && state.lq.devices.length) {
+      var hits = lqIdxFind(si.h).slice(), many = state.lq.devices.length > 1, seenK = {};
+      hits.forEach(function (x) { seenK[x.dev + '|' + x.k] = 1; });
+      // plus playlists read from the headset this session that the background index hasn't caught up with yet
+      Object.keys(lqPeekCache).forEach(function (key) {
+        var c = lqPeekCache[key], pl = c && c.pl; if (!pl || seenK[key] || !pl.songs.some(function (x) { return String(x.hash || '').toLowerCase() === si.h; })) return;
+        var pr = key.split('|'), it = lqQuestItems(pr[0]).filter(function (x) { return x.k === pr[1]; })[0];
+        if (it) hits.push({ title: it.title || String(it.file || '').replace(/\.bplist$/i, ''), devs: [lqDevName(pr[0])], dev: pr[0], k: pr[1] });
+      });
+      h += '<div class="si-lab">In your playlists</div>' + (hits.length ? '<div class="si-pls">' + hits.map(function (x) { return '<span class="si-pl">' + esc(x.title) + (many && x.devs && x.devs.length ? ' · ' + esc(x.devs.join(', ')) : '') + '</span>'; }).join('') + '</div>' : '<div class="si-none">Not in any playlist on your headset' + (many ? 's' : '') + '.</div>');
+    }
+    var inPl = inBasket(e);
+    h += '<div class="si-acts"><button type="button" class="primary si-add" data-si="add"' + (inPl ? ' disabled' : '') + '>' + (inPl ? '✓ In Your Playlist' : '+ Add to Your Playlist') + '</button>' +
+      (bsm && bsm.id ? '<a href="https://beatsaver.com/maps/' + esc(bsm.id) + '" target="_blank" rel="noopener">BeatSaver' + SI_EXT + '</a>' : '') +
+      (o.lb ? '<a href="https://beatleader.com/leaderboard/global/' + esc(o.lb) + '" target="_blank" rel="noopener">Leaderboard' + SI_EXT + '</a>' : '') +
+      (bsm && bsm.id ? '<button type="button" class="ghost si-bsr" data-si="bsr">!bsr ' + esc(bsm.id) + '</button>' : '') + '</div>';
+    var top = card.scrollTop; card.innerHTML = h; card.scrollTop = top;
+    siTick();
+  }
+  function siTick() {
+    var fill = document.getElementById('siBarFill'), tm = document.getElementById('siTime');
+    if (!siAudio) return;
+    if (fill) fill.style.width = (siAudio.duration ? Math.min(100, siAudio.currentTime / siAudio.duration * 100) : 0) + '%';
+    if (tm) tm.textContent = siFmtTime(siAudio.currentTime) + ' / ' + siFmtTime(siAudio.duration || 0);
+  }
+  function siStop() { if (siAudio) { try { siAudio.pause(); } catch (e) {} siAudio = null; } }
+  function siOpen(o) {
+    var wrap = document.getElementById('siWrap');
+    if (!wrap) {
+      wrap = document.createElement('div'); wrap.id = 'siWrap'; wrap.className = 'si-wrap'; wrap.hidden = true;
+      wrap.innerHTML = '<div class="si-back" data-si="close"></div><div class="si-card" id="siCard" role="dialog" aria-modal="true" aria-labelledby="siTitle" tabindex="-1"></div>';
+      document.body.appendChild(wrap);
+      siSwipe(document.getElementById('siCard'));
+    }
+    siStop();
+    si = { h: o.h, name: o.name || '', artist: o.artist || '', mapper: o.mapper || '', cover: 'https://eu.cdn.beatsaver.com/' + o.h + '.jpg', want: o.want || [], d: null, list: [], sel: 0, back: document.activeElement };
+    wrap.hidden = false; document.documentElement.classList.add('si-open');
+    var card = document.getElementById('siCard'); card.scrollTop = 0; siRender(); try { card.focus({ preventScroll: true }); } catch (e) {}
+    track('song-info');
+    var mine = si;
+    siData(o.h).then(function (d) {
+      if (si !== mine) return;
+      si.d = d; si.list = siDiffs(d); si.sel = Math.max(0, siPick(si.list)); siRender();
+    });
+  }
+  function siClose() {
+    var wrap = document.getElementById('siWrap'); if (!wrap || wrap.hidden) return;
+    siStop(); wrap.hidden = true; document.documentElement.classList.remove('si-open');
+    var b = si && si.back; si = null; try { if (b && b.focus) b.focus({ preventScroll: true }); } catch (e) {}
+  }
+  // Phones: drag the sheet down from its top to close it.
+  function siSwipe(card) {
+    var y0 = null, dy = 0;
+    card.addEventListener('touchstart', function (e) { if (card.scrollTop > 0 || !e.touches[0] || e.touches[0].clientY - card.getBoundingClientRect().top > 140) { y0 = null; return; } y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
+    card.addEventListener('touchmove', function (e) { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) card.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+    card.addEventListener('touchend', function () { if (y0 == null) return; card.style.transform = ''; if (dy > 90) siClose(); y0 = null; });
+  }
+  function siCoverAt(t) { return t && t.closest ? t.closest('.lq-peek li > img, .song-row.bk > .song-cover') : null; }
+  function siFrom(c) {
+    if (c.classList.contains('song-cover')) {
+      var row = c.closest('.song-row'), bi = row ? basketIndex(row.dataset.key) : -1, en = bi >= 0 ? state.basket[bi] : null;
+      if (!en || !/^[0-9a-f]{40}$/i.test(en.hash || '')) return null;
+      return { h: en.hash.toLowerCase(), name: en.songName, artist: '', mapper: en.mapper || en.author || '', want: en.difficultyName ? [{ dn: en.difficultyName, mode: en.modeName || 'Standard' }] : [] };
+    }
+    var m = /\/([0-9a-f]{40})\.jpg/i.exec(c.getAttribute('src') || ''); if (!m) return null;
+    var h = m[1].toLowerCase(), li = c.closest('li'), nmEl = li && li.querySelector('.pk-n'), sm = nmEl && nmEl.querySelector('small');
+    var name = nmEl ? (nmEl.firstChild && nmEl.firstChild.nodeType === 3 ? nmEl.firstChild.textContent : nmEl.textContent.replace(sm ? sm.textContent : '', '')) : '';
+    var want = [];
+    if (!c.closest('.lq-favlist') && state.lq && state.lq.peek) {
+      var pc = lqPeekCache[state.lq.peek], sg = pc && pc.pl && pc.pl.songs.filter(function (x) { return String(x.hash || '').toLowerCase() === h; })[0];
+      ((sg && sg.difficulties) || []).forEach(function (x) { want.push({ dn: BplistExporter.mapDifficultyName(x.name), mode: x.characteristic || 'Standard' }); });
+    }
+    return { h: h, name: name.trim(), artist: sm ? sm.textContent : '', mapper: '', want: want };
+  }
+  document.addEventListener('scroll', function () { siScrollAt = Date.now(); }, true);
+  document.addEventListener('pointerdown', function (e) { var c = siCoverAt(e.target); siDown = c ? { x: e.clientX, y: e.clientY, t: Date.now(), c: c } : null; }, true);
+  document.addEventListener('click', function (e) {
+    var c = siCoverAt(e.target); if (!c) return;
+    var d = siDown; siDown = null;
+    if (Date.now() - siScrollAt < 250) return;   // a tap that stopped a fling
+    if (d && d.c === c && (Math.abs(e.clientX - d.x) > 10 || Math.abs(e.clientY - d.y) > 10 || Date.now() - d.t > 600)) return;   // moved, or a long press
+    var o = siFrom(c); if (!o) return;
+    e.preventDefault(); e.stopPropagation(); siOpen(o);
+  }, true);
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-si]'); if (!b || !si) return;
+    var a = b.getAttribute('data-si');
+    if (a === 'close') siClose();
+    else if (a === 'diff') { si.sel = +b.getAttribute('data-i') || 0; siRender(); }
+    else if (a === 'play') {
+      var vs = (si.d && si.d.bs && si.d.bs.versions) || [], v = vs.filter(function (x) { return x.state === 'Published'; })[0] || vs[0] || {};
+      if (!v.previewURL) return;
+      if (!siAudio) { siAudio = new Audio(v.previewURL); siAudio.addEventListener('timeupdate', siTick); siAudio.addEventListener('loadedmetadata', siTick); siAudio.addEventListener('ended', function () { siRender(); }); siAudio.addEventListener('pause', function () { if (si) siRender(); }); siAudio.addEventListener('play', function () { if (si) siRender(); }); track('song-info-play'); }
+      if (siAudio.paused) siAudio.play().catch(function () { toast('Couldn’t play the preview.', 'warn'); }); else siAudio.pause();
+    }
+    else if (a === 'seek') { if (siAudio && siAudio.duration) { var r = b.getBoundingClientRect(); siAudio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * siAudio.duration; siTick(); } }
+    else if (a === 'add') { var en = siEntry(si.list[si.sel]); if (addEntry(en)) { renderAll(); toast('Added ' + (en.songName || 'it') + ' to Your Playlist.', 'ok'); track('song-info-add'); siRender(); } }
+    else if (a === 'bsr') {
+      var id = si.d && si.d.bs && si.d.bs.id; if (!id) return;
+      var txt = '!bsr ' + id, ok = function () { toast('Copied ' + txt + '.', 'ok'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function () { prompt('Copy this:', txt); }); else prompt('Copy this:', txt);
+      track('song-info-bsr');
+    }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && si) { e.stopPropagation(); siClose(); } }, true);
 
   // ---- PP: global filter settings (drive row badges, PP sort, PP range filter)
   function modCode(key) { for (var i = 0; i < PP.MODIFIERS.length; i++) if (PP.MODIFIERS[i].key === key) return PP.MODIFIERS[i].code; return '-'; }
