@@ -2763,6 +2763,7 @@ body>main{position:relative;z-index:1}
 .abell .abd{display:none;position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:#22e0a1;box-shadow:0 0 8px #22e0a1,0 0 0 2px #000}
 .abell.on .abd{display:block}
 .embed #aBell{display:none}
+@media(min-width:761px){#aBell,#aCard{display:none !important}}
 .ac-card{border:1px solid #1f2a3d;border-radius:12px;padding:12px 15px;background:#05080d;margin:0 0 14px}
 .ac-h{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}.ac-h b{font-size:16px;color:#fff}.ac-h span{margin-left:auto;font-size:13px;color:#aab4c6}
 .ac-card p{margin:4px 0 10px;font-size:14.5px;color:#c3cbd9;line-height:1.5}.ac-card p.r{color:#ff9fb2}
@@ -3523,6 +3524,10 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'tab-rampPanel': ['Playlist', 'Warm-up tab', 'Switched to the Warm-up tab'],
     'tab-panelRefine': ['Playlist', 'Prune tab', 'Switched to the Prune tab to trim the playlist'],
     'tab-*': ['Playlist', 'Switched tab', 'Switched a tab under Your Playlist'],
+    'song-info': ['Playlist', 'Song info', 'Tapped a song\u2019s cover to open its info'],
+    'song-info-play': ['Playlist', 'Song info preview', 'Played the preview in a song\u2019s info'],
+    'song-info-add': ['Playlist', 'Song info add', 'Added a song to Your Playlist from its info'],
+    'song-info-bsr': ['Playlist', 'Song info !bsr', 'Copied the !bsr code from a song\u2019s info'],
     'github-click': ['Links', 'GitHub link', 'Clicked through to the source on GitHub'],
     'kofi-click': ['Links', 'Support me link', 'Clicked the Support me (Ko-fi) button'],
     'mbf-link': ['Links', 'ModsBeforeFriday link', 'Clicked the ModsBeforeFriday link'],
