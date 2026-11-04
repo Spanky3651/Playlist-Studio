@@ -2702,7 +2702,14 @@ button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
 .pb{font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;border:1px solid;white-space:nowrap;display:inline-block}
 .pb.new{color:#9ff0c4;border-color:#1d4a33;background:#06140d}.pb.back{color:#8fbaff;border-color:#1f3456}.pb.lkup{color:#8fbaff;border-color:#23406f}
 .prow.sub .pwho{padding-left:26px;opacity:.82}.prow.sub .pwho:before{content:"\\21B3";color:var(--muted);margin-right:-4px}
-.plk{font-size:11px;font-weight:700;color:#8fbaff;background:#13213a;border:1px solid #23406f;border-radius:999px;padding:0 6px;line-height:1.4}
+.pchipw{display:inline-flex;align-items:stretch;position:relative}
+.pchipw .pchip{border-top-right-radius:0;border-bottom-right-radius:0;border-right-color:#16243c;padding-right:8px}
+.plkb{min-height:0;margin:0;font:inherit;font-size:11.5px;font-weight:700;color:#8fbaff;background:#13213a;border:1px solid #1f3456;border-left:0;border-radius:0 999px 999px 0;padding:0 10px 0 7px;cursor:pointer;line-height:1}
+.plkb:hover,.plkb[aria-expanded="true"]{background:#1a2d4f;color:#fff;border-color:#2f7bff}
+.plkpop{position:absolute;z-index:60;min-width:230px;background:#0b1220;border:1px solid #2a3850;border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
+.plkh{font-size:12px;color:var(--muted);padding:2px 6px 6px}
+.plkrow{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;color:#e9edf5;text-decoration:none;font-size:13.5px;font-weight:600}
+.plkrow:hover{background:#13213a}.plkrow small{margin-left:auto;padding-left:12px;color:var(--muted);font-weight:400;font-size:12px}
 .pb.clan{color:var(--muted);border-color:var(--line)}.pb.mine{color:#ffd28a;border-color:#4a3a1c}.pb.me{color:var(--muted);border-color:var(--line);border-style:dashed}
 .more{margin-top:10px;padding:7px 12px;font-size:14px;font-weight:600}
 .when{color:var(--muted);font-size:14px;margin-top:18px}
@@ -3958,6 +3965,36 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       '<polygon points="2,' + H + ' ' + pts + ' ' + (W - 2) + ',' + H + '" fill="url(#hgr)"/><polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
   }
   // A row of people as chips: picture and name, a green dot when they were on in the last hour, each opens their BeatLeader profile.
+  // Profiles looked up from a player's Studio, behind the +N on that player's chip.
+  var lkKids = {};
+  function lkPop(b) {
+    var w = b.parentNode, d = lkKids[b.getAttribute('data-lk')]; if (!d) return;
+    var rows = d.list.map(function (q) {
+      var url = q.id ? 'https://beatleader.com/u/' + encodeURIComponent(q.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(q.name);
+      var pic = q.avatar && String(q.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(q.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((q.name || '?').charAt(0).toUpperCase()) + '</span>';
+      return '<a class="plkrow" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + pic + '<span>' + esc(q.name) + '</span><small>' + (q.lastT ? esc(agoAt(q.lastT)) : q.last ? esc(dshort(q.last)) : '') + '</small></a>';
+    }).join('');
+    // On the page itself, so a card that clips its content can't cut it off.
+    document.body.insertAdjacentHTML('beforeend', '<div class="plkpop" role="dialog" data-for="' + esc(b.getAttribute('data-lk')) + '" aria-label="Profiles looked up from ' + esc(d.name) + '&#39;s Studio"><div class="plkh">Looked up from ' + esc(d.name) + '&#39;s Studio</div>' + rows + '</div>');
+    var pop = document.body.lastElementChild, r = w.getBoundingClientRect(), pw = pop.offsetWidth;
+    pop.style.left = Math.max(8, Math.min(r.left, document.documentElement.clientWidth - pw - 8)) + window.scrollX + 'px';
+    pop.style.top = r.bottom + 6 + window.scrollY + 'px';
+    b.setAttribute('aria-expanded', 'true');
+  }
+  function lkClose() {
+    document.querySelectorAll('.plkpop').forEach(function (x) { x.remove(); });
+    document.querySelectorAll('.plkb[aria-expanded="true"]').forEach(function (x) { x.setAttribute('aria-expanded', 'false'); });
+  }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.plkpop')) return;
+    var b = e.target.closest && e.target.closest('.plkb'), was = b && b.getAttribute('aria-expanded') === 'true';
+    lkClose();
+    if (!b) return;
+    e.preventDefault();
+    if (!was) lkPop(b);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lkClose(); });
+  window.addEventListener('resize', lkClose);
   function pStrip(pls, one, many, what, goTab, goName) {
     var folded = pls.filter(function (p) { return p.lookedBy; });
     pls = pls.filter(function (p) { return !p.lookedBy; });
@@ -3966,7 +4003,10 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       pls.slice(0, 40).map(function (p) {
         var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
-        return '<a class="pchip' + (p.isNew ? ' chg-new' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (function () { var k = folded.filter(function (q) { return p.id && q.lookedBy.id === p.id; }); return k.length ? '<b class="plk" title="Also looked up from ' + esc(p.name) + '\u2019s Studio: ' + esc(k.map(function (q) { return q.name; }).join(', ')) + '">+' + k.length + '</b>' : ''; })() + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
+        var kid = p.id ? folded.filter(function (q) { return q.lookedBy.id === p.id; }) : [];
+        if (kid.length) lkKids[p.id] = { name: p.name, list: kid };
+        return (kid.length ? '<span class="pchipw">' : '') + '<a class="pchip' + (p.isNew ? ' chg-new' : '') + (kid.length ? ' haslk' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '')  + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>' +
+          (kid.length ? '<button type="button" class="plkb" data-lk="' + esc(p.id) + '" aria-expanded="false" aria-haspopup="true" title="See who ' + esc(p.name) + ' looked up">+' + kid.length + '</button></span>' : '');
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
   }
   function renderAll() {
@@ -4025,7 +4065,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
     vrFix = vr0;
   }
-  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
+  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a') || e.target.closest('.plkb, .plkpop')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
   document.addEventListener('click', aGo);
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
   // ---- Ko-fi tab: tips from the Ko-fi webhook, and Support me clicks from GoatCounter ----
