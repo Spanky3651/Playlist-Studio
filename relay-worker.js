@@ -2286,7 +2286,7 @@ async function gcStats(env, range, fresh, site, tz) {
   players.sort((a, b) => Math.max(b.lastT || 0, dsec(b.last)) - Math.max(a.lastT || 0, dsec(a.last)) || b.count - a.count);
   const bl = await gcClans(env, players.filter((p) => p.id).slice(0, 80).map((p) => p.id));
   players.forEach((p) => { const x = bl[p.id]; p.clans = x && !p.me ? x.tags || null : null; p.avatar = x ? gcAvatar(x.avatar) : ""; });
-  const events = hits.filter((h) => h.event && !/^profile\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
+  const events = hits.filter((h) => h.event && !/^(profile|lookup)\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
   const live = new Set(events.map((e) => e.name));
   const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k)).sort();
   const pages = hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count }));
