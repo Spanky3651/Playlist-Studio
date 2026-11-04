@@ -131,6 +131,14 @@ async function seenPost(request, env, ctx) {
   const id = String((b && b.id) || "");
   if (!/^\d{3,25}$/.test(id)) return json({ ok: false }, 400, cors);
   const name = String((b && b.name) || "").replace(/[\u0000-\u001f]/g, "").slice(0, 60);
+  // A profile looked up in someone else's Studio (by = that browser's home profile) goes on the looker's list instead.
+  const by = String((b && b.by) || "");
+  if (/^\d{3,25}$/.test(by) && by !== id) {
+    const byName = String((b && b.byName) || "").replace(/[\u0000-\u001f]/g, "").slice(0, 60);
+    const lp = addLooks(env, by, byName, [{ id, name, t: nowSec(), add: 1, v: "lookup" }]);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(lp); else await lp;
+    return json({ ok: true }, 200, cors);
+  }
   const k = "gc:pseen:" + id, now = nowSec(), rec = (await env.PLAYLISTS.get(k, "json")) || { t: [] };
   if (!Array.isArray(rec.t)) rec.t = [];
   if (!rec.t.length || now - rec.t[rec.t.length - 1] > 60) { rec.t.push(now); rec.t = rec.t.slice(-SEEN_MAX); }
@@ -138,6 +146,33 @@ async function seenPost(request, env, ctx) {
   const put = env.PLAYLISTS.put(k, JSON.stringify(rec), { expirationTtl: SEEN_TTL });
   if (ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
   return json({ ok: true }, 200, cors);
+}
+// Profiles a player looked up from their own Studio, as gc:plook:<their id> = { n, l: { <id>: { n, f, t, c, v } } }:
+// name, first and last time, how many times, and how it was seen ("lookup" from Studio, "library" from a Studio Sync
+// library that has more than one profile). The stats page folds those profiles under the player who looked them up.
+const LOOK_MAX = 30;
+async function addLooks(env, by, byName, list) {
+  const k = "gc:plook:" + by, rec = (await env.PLAYLISTS.get(k, "json")) || { l: {} };
+  if (!rec.l || typeof rec.l !== "object") rec.l = {};
+  if (byName) rec.n = byName;
+  for (const x of list) {
+    if (!/^\d{3,25}$/.test(String(x.id)) || x.id === by) continue;
+    const e = rec.l[x.id] || { n: "", f: x.t, t: 0, c: 0, v: x.v };
+    if (x.name) e.n = x.name;
+    e.t = Math.max(e.t || 0, x.t || 0); e.c = x.add ? (e.c || 0) + x.add : Math.max(e.c || 0, x.c || 1);
+    if (x.v === "lookup" || !e.v) e.v = x.v;
+    rec.l[x.id] = e;
+  }
+  const ids = Object.keys(rec.l);
+  if (ids.length > LOOK_MAX) ids.sort((a, b) => rec.l[a].t - rec.l[b].t).slice(0, ids.length - LOOK_MAX).forEach((i) => delete rec.l[i]);
+  await env.PLAYLISTS.put(k, JSON.stringify(rec), { expirationTtl: SEEN_TTL });
+}
+async function lookLists(env, ids) {
+  const out = {};
+  for (let i = 0; i < ids.length; i += 25) await Promise.all(ids.slice(i, i + 25).map(async (id) => {
+    try { const r = await env.PLAYLISTS.get("gc:plook:" + id, "json"); if (r && r.l && Object.keys(r.l).length) out[id] = r; } catch (e) {}
+  }));
+  return out;
 }
 async function seenTimes(env, ids) {
   const out = {};
@@ -862,7 +897,7 @@ async function linked(request, env, ctx, url) {
     let nm = ""; try { nm = decodeURIComponent(sp[2]).replace(/[\u0000-\u001f]/g, "").slice(0, 60); } catch (e) {}
     if (nm) {
       const t = nowSec(), ps = libPlayers(lib);
-      let p = ps.find((x) => x.id === sp[1]), dirty = !Array.isArray(lib.players);
+      let p = ps.find((x) => x.id === sp[1]), dirty = !Array.isArray(lib.players) || (ps.length > 1 && !lib.lk);
       if (!p) { p = { id: sp[1], name: nm, first: t, last: t, days: 1 }; ps.push(p); dirty = true; }
       else {
         if (p.name !== nm) { p.name = nm; dirty = true; }
@@ -873,7 +908,9 @@ async function linked(request, env, ctx, url) {
         if (!keep.includes(p)) keep[keep.length - 1] = p;   // the profile just seen always stays listed
         lib.players = libPlayers({ players: keep });
         lib.player = { id: lib.players[0].id, name: lib.players[0].name, t };
-        const pw = putLib(env, id, lib);
+        const own = lib.players[0], others = lib.players.slice(1);
+        if (others.length) lib.lk = 1;
+        const pw = Promise.all([putLib(env, id, lib), others.length ? addLooks(env, own.id, own.name, others.map((x) => ({ id: x.id, name: x.name, t: x.last || x.first || t, c: x.days || 1, v: "library" }))) : null]);
         if (ctx && ctx.waitUntil) ctx.waitUntil(pw); else await pw;
       }
     }
@@ -2282,6 +2319,17 @@ async function gcStats(env, range, fresh, site, tz) {
   });
   const ptimes = await seenTimes(env, players.filter((p) => p.id).slice(0, 120).map((p) => p.id));
   players.forEach((p) => { const t = ptimes[p.id]; if (t) { p.times = t; p.lastT = t[t.length - 1]; } });
+  // A profile someone looked up from their own Studio folds under them, unless it connected again later from a browser of its own.
+  const looks = await lookLists(env, players.filter((p) => p.id).slice(0, 120).map((p) => p.id));
+  const byId = new Map(players.filter((p) => p.id).map((p) => [p.id, p]));
+  players.forEach((p) => {
+    const L = looks[p.id]; if (!L) return;
+    p.looked = Object.keys(L.l).map((lid) => ({ id: lid, name: L.l[lid].n || "", t: L.l[lid].t || 0, c: L.l[lid].c || 1 })).sort((a, b) => b.t - a.t);
+    p.looked.forEach((x) => {
+      const q = byId.get(x.id);
+      if (q && q !== p && !q.lookedBy && !(p.lookedBy && p.lookedBy.id === q.id) && !((q.lastT || 0) > x.t + 3600)) q.lookedBy = { id: p.id, name: p.name };
+    });
+  });
   const dsec = (d) => (d ? Date.parse(d + "T12:00:00Z") / 1000 : 0);
   players.sort((a, b) => Math.max(b.lastT || 0, dsec(b.last)) - Math.max(a.lastT || 0, dsec(a.last)) || b.count - a.count);
   const bl = await gcClans(env, players.filter((p) => p.id).slice(0, 80).map((p) => p.id));
@@ -2360,7 +2408,7 @@ async function gcAllStats(env, range, fresh, tz) {
         const f = await gcStats(env, range, fresh, "", tz);
         sites.push({ key, code: cfg.code, visitors: f.visitors, prevVisitors: f.prevVisitors, days: f.days, pages: (f.pages || []).slice(0, 8),
           locations: (f.locations || []).map((c) => ({ id: c.id, name: c.name, count: c.count })),
-          players: (f.players || []).map((x) => ({ name: x.name, id: x.id, avatar: x.avatar || "", lastT: x.lastT || 0, last: x.last || "", first: x.first || "", me: !!x.me })) });
+          players: (f.players || []).map((x) => ({ name: x.name, id: x.id, avatar: x.avatar || "", lastT: x.lastT || 0, last: x.last || "", first: x.first || "", me: !!x.me, lookedBy: x.lookedBy || null })) });
       } catch (x) {
         if (x && x.message === "gc-auth") throw x;
         sites.push({ key, code: cfg.code, error: "down", visitors: 0, prevVisitors: null, days: [], pages: [], locations: [], players: [] });
@@ -2652,7 +2700,9 @@ button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
 .dl{display:grid;grid-template-columns:80px minmax(0,1fr) 28px;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid #141c2a;font-size:14px}
 .dl:first-child{border-top:0}.dl .dd{font-weight:700;color:var(--text,#e9edf5)}.dl .dt{color:var(--muted);font-size:13px}.dl .dn{text-align:right;font-weight:700;color:#cfe0ff}.dl .dim{color:#5d6f8a}
 .pb{font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;border:1px solid;white-space:nowrap;display:inline-block}
-.pb.new{color:#9ff0c4;border-color:#1d4a33;background:#06140d}.pb.back{color:#8fbaff;border-color:#1f3456}
+.pb.new{color:#9ff0c4;border-color:#1d4a33;background:#06140d}.pb.back{color:#8fbaff;border-color:#1f3456}.pb.lkup{color:#8fbaff;border-color:#23406f}
+.prow.sub .pwho{padding-left:26px;opacity:.82}.prow.sub .pwho:before{content:"\\21B3";color:var(--muted);margin-right:-4px}
+.plk{font-size:11px;font-weight:700;color:#8fbaff;background:#13213a;border:1px solid #23406f;border-radius:999px;padding:0 6px;line-height:1.4}
 .pb.clan{color:var(--muted);border-color:var(--line)}.pb.mine{color:#ffd28a;border-color:#4a3a1c}.pb.me{color:var(--muted);border-color:var(--line);border-style:dashed}
 .more{margin-top:10px;padding:7px 12px;font-size:14px;font-weight:600}
 .when{color:var(--muted);font-size:14px;margin-top:18px}
@@ -3909,12 +3959,14 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   }
   // A row of people as chips: picture and name, a green dot when they were on in the last hour, each opens their BeatLeader profile.
   function pStrip(pls, one, many, what, goTab, goName) {
+    var folded = pls.filter(function (p) { return p.lookedBy; });
+    pls = pls.filter(function (p) { return !p.lookedBy; });
     if (!pls.length) return '';
     return '<div class="pstrip"><div class="psh"><b>' + fmt(pls.length) + ' ' + (pls.length === 1 ? one : many) + '</b> ' + what + '<span class="sp"></span><button type="button" class="seeall" data-go="' + goTab + '">See all in ' + goName + ' ›</button></div><div class="pchips">' +
       pls.slice(0, 40).map(function (p) {
         var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
-        return '<a class="pchip' + (p.isNew ? ' chg-new' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
+        return '<a class="pchip' + (p.isNew ? ' chg-new' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (function () { var k = folded.filter(function (q) { return p.id && q.lookedBy.id === p.id; }); return k.length ? '<b class="plk" title="Also looked up from ' + esc(p.name) + '\u2019s Studio: ' + esc(k.map(function (q) { return q.name; }).join(', ')) + '">+' + k.length + '</b>' : ''; })() + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>';
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
   }
   function renderAll() {
@@ -3939,7 +3991,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       if (!I.err && v.length) {
         if (d.range !== 'today') stats.push(['Today', fmt(v[v.length - 1] || 0), '']);
         stats.push([d.range === 'today' ? 'Busiest hour' : 'Best day', fmt(v[bi] || 0), v[bi] ? lab(k[bi]) : '']);
-        if (hero.players) stats.push(['Players', fmt(hero.players.length), 'connected']);
+        if (hero.players) stats.push(['Players', fmt(hero.players.filter(function (x) { return !x.lookedBy; }).length), 'connected']);
         if (total) stats.push(['Share', Math.round((hero.visitors || 0) / total * 100) + '%', '']);
       }
       var when = { today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days', all: 'since you started counting' }[d.range] || '';
@@ -4812,26 +4864,33 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   var pOpen = {}, uOpen = {};
   function renderPlayers() {
     if (!gc) return;
-    var all = gc.players.filter(function (p) { return !(pf.fme && p.me); }), start = gc.start;
+    var every = gc.players.filter(function (p) { return !(pf.fme && p.me); }), start = gc.start;
+    // Profiles looked up from someone else's Studio sit under that player and don't count as players.
+    var all = every.filter(function (p) { return !p.lookedBy; });
+    var kids = function (p) { return p.id ? every.filter(function (q) { return q.lookedBy && q.lookedBy.id === p.id; }) : []; };
     var allTime = gc.range === 'all', cut = allTime ? new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10) : start;
     var isNew = function (p) { return p.first && p.first >= cut; };
     txt('p-newn', allTime ? 'first connected in the last 7 days' : 'first time ever connecting'); txt('p-backn', allTime ? 'first connected before that' : 'connected before this range too');
     txt('p-all', fmt(all.length)); txt('p-new', fmt(all.filter(isNew).length)); txt('p-back', fmt(all.filter(function (p) { return !isNew(p); }).length));
     txt('p-clan', fmt(all.filter(mine).length)); txt('p-clann', 'players in ' + ((gc.myClans || []).join(' or ') || 'your clans'));
-    var q = pf.find.toLowerCase(), list = all.filter(function (p) { return (!q || p.name.toLowerCase().indexOf(q) >= 0) && (!pf.fnew || isNew(p)) && (!pf.fclan || mine(p)); });
+    var q = pf.find.toLowerCase(), hit = function (p) { return !q || p.name.toLowerCase().indexOf(q) >= 0; };
+    var list = all.filter(function (p) { return (hit(p) || kids(p).some(hit)) && (!pf.fnew || isNew(p)) && (!pf.fclan || mine(p)); });
+    var rows = []; list.forEach(function (p) { rows.push(p); kids(p).forEach(function (k) { rows.push(k); }); });
     var h = '<div class="prow head"><span>Player</span><span class="c-first">First seen</span><span class="c-last">Last seen</span><span class="n">Connects</span></div>';
     if (!list.length) h += '<div class="prow"><span class="empty">No players match.</span></div>';
-    list.slice(0, pShown).forEach(function (p) {
+    rows.slice(0, pShown).forEach(function (p) {
       var url = p.id ? 'https://beatleader.com/u/' + encodeURIComponent(p.id) : 'https://beatleader.com/ranking/1?search=' + encodeURIComponent(p.name);
-      var b = (p.me ? '<span class="pb me">YOU</span>' : isNew(p) ? '<span class="pb new">NEW</span>' : '<span class="pb back">BACK</span>') +
+      var lk = p.looked && p.looked.length ? p.looked : null;
+      var b = (p.lookedBy ? '<span class="pb lkup">LOOKED UP</span>' : p.me ? '<span class="pb me">YOU</span>' : isNew(p) ? '<span class="pb new">NEW</span>' : '<span class="pb back">BACK</span>') +
         (p.clans || []).map(function (t) { return '<span class="pb ' + ((gc.myClans || []).indexOf(t) >= 0 ? 'mine' : 'clan') + '">' + esc(t) + '</span>'; }).join('');
       var av = '<span class="pav" aria-hidden="true">' + esc((p.name || '?').charAt(0).toUpperCase()) + (p.avatar && p.avatar.indexOf('https://') === 0 ? '<img src="' + esc(p.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
-      h += '<div class="prow' + (pOpen[p.name] ? ' sel' : '') + '"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + '</span></span><span class="c-first">' + dshort(p.first) + '</span>' + lastCell(p.lastT, p.last) + '<span class="n"><button class="ncnt' + (pOpen[p.name] ? ' on' : '') + '" data-pk="' + esc(p.name) + '" aria-expanded="' + !!pOpen[p.name] + '" title="See when they connected">' + fmt(p.count) + '<span class="cv" aria-hidden="true">' + (pOpen[p.name] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
+      var sub = p.lookedBy ? '<span class="palso">by ' + esc(p.lookedBy.name) + ', same browser</span>' : lk ? '<span class="palso" title="Profiles looked up from ' + esc(p.name) + '\u2019s Studio">looked up ' + esc(lk.slice(0, 4).map(function (x) { return x.name; }).join(', ')) + (lk.length > 4 ? ' and ' + (lk.length - 4) + ' more' : '') + ' &middot; ' + lk.length + ' profile' + (lk.length === 1 ? '' : 's') + '</span>' : '';
+      h += '<div class="prow' + (p.lookedBy ? ' sub' : '') + (pOpen[p.name] ? ' sel' : '') + '"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader">' + esc(p.name) + '</a>' + b + sub + '</span></span><span class="c-first">' + dshort(p.first) + '</span>' + lastCell(p.lastT, p.last) + '<span class="n"><button class="ncnt' + (pOpen[p.name] ? ' on' : '') + '" data-pk="' + esc(p.name) + '" aria-expanded="' + !!pOpen[p.name] + '" title="See when they connected">' + fmt(p.count) + '<span class="cv" aria-hidden="true">' + (pOpen[p.name] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
       if (pOpen[p.name]) { var cl = connectDays(p.times, p.days); h += detailHtml(fmt(p.count) + ' connect' + (p.count === 1 ? '' : 's') + ' in this range' + (p.first ? ', first seen ' + esc(dshort(p.first)) : ''), cl); }
     });
     $('p-list').innerHTML = h;
-    $('p-more').classList.toggle('hidden', list.length <= pShown);
-    hideEmptyCards('ply'); $('p-more').textContent = 'Show ' + Math.min(40, list.length - pShown) + ' more';
+    $('p-more').classList.toggle('hidden', rows.length <= pShown);
+    hideEmptyCards('ply'); $('p-more').textContent = 'Show ' + Math.min(40, rows.length - pShown) + ' more';
   }
   $('p-find').addEventListener('input', function () { pf.find = this.value.trim(); pShown = 40; renderPlayers(); });
   [['p-fnew', 'fnew'], ['p-fclan', 'fclan'], ['p-fme', 'fme']].forEach(function (x) {
