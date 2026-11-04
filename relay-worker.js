@@ -303,6 +303,15 @@ function randomCode() {
 }
 function cleanName(v) { return (typeof v === "string" ? v : "").replace(/[^\w .'()-]/g, "").trim().slice(0, 40) || "Quest"; }
 function putLib(env, id, lib) { return env.PLAYLISTS.put("lib:" + id, JSON.stringify(lib), { expirationTtl: LIB_TTL }); }
+// The BeatLeader profiles connected in Studio for a library, as [{ id, name, first, last, days }], the one used on the
+// most days first (the earliest wins a tie). lib.player is always that first one, so looking up someone else's
+// profile in Studio for a day doesn't rename the library on the stats page.
+function libPlayers(lib) {
+  const ps = Array.isArray(lib.players) ? lib.players.slice() : [];
+  const pl = lib.player;
+  if (pl && pl.id && !ps.some((x) => x.id === pl.id)) ps.push({ id: pl.id, name: pl.name || "", first: pl.t || 0, last: pl.t || 0, days: 1 });
+  return ps.sort((a, b) => (b.days || 0) - (a.days || 0) || (a.first || 0) - (b.first || 0));
+}
 async function fileKey(file) { return (await sha256("f:" + file)).slice(0, 16); }
 function validFile(f) { return typeof f === "string" && f.length > 0 && f.length <= 200 && !/[\\/\u0000]/.test(f) && f !== "." && f !== ".." && /\.(bplist|json)$/i.test(f); }
 function invKey(lib, dev) { return "inv:" + lib + ":" + dev; }
@@ -846,15 +855,27 @@ async function linked(request, env, ctx, url) {
   const key = request.headers.get("X-Lib-Key") || "";
   if (!key || !safeEqual(await sha256(key), lib.hk)) return json({ error: "Wrong library key" }, 403, cors);
   // Which public BeatLeader profile is connected in Studio for this library (X-Studio-Player: <id>|<name>),
-  // so the owner's stats page can list Studio Sync users. Sent on the library refresh, saved at most once a day.
+  // so the owner's stats page can list Studio Sync users. Sent on the library refresh. Each profile counts the days
+  // it was seen (written at most once a day per profile); the one seen on the most days names the library.
   const sp = !m[2] && request.method === "GET" ? (request.headers.get("X-Studio-Player") || "").match(/^(\d{3,25})\|(.{1,200})$/) : null;
   if (sp) {
     let nm = ""; try { nm = decodeURIComponent(sp[2]).replace(/[\u0000-\u001f]/g, "").slice(0, 60); } catch (e) {}
-    const pl = lib.player || {};
-    if (nm && (pl.id !== sp[1] || pl.name !== nm || nowSec() - (pl.t || 0) > 86400)) {
-      lib.player = { id: sp[1], name: nm, t: nowSec() };
-      const pw = putLib(env, id, lib);
-      if (ctx && ctx.waitUntil) ctx.waitUntil(pw); else await pw;
+    if (nm) {
+      const t = nowSec(), ps = libPlayers(lib);
+      let p = ps.find((x) => x.id === sp[1]), dirty = !Array.isArray(lib.players);
+      if (!p) { p = { id: sp[1], name: nm, first: t, last: t, days: 1 }; ps.push(p); dirty = true; }
+      else {
+        if (p.name !== nm) { p.name = nm; dirty = true; }
+        if (Math.floor((p.last || 0) / 86400) !== Math.floor(t / 86400)) { p.days = (p.days || 0) + 1; p.last = t; dirty = true; }
+      }
+      if (dirty) {
+        const keep = libPlayers({ players: ps }).slice(0, 6);
+        if (!keep.includes(p)) keep[keep.length - 1] = p;   // the profile just seen always stays listed
+        lib.players = libPlayers({ players: keep });
+        lib.player = { id: lib.players[0].id, name: lib.players[0].name, t };
+        const pw = putLib(env, id, lib);
+        if (ctx && ctx.waitUntil) ctx.waitUntil(pw); else await pw;
+      }
     }
   }
 
@@ -2011,7 +2032,8 @@ async function adminStats(env) {
       const devs = Array.isArray(lib.devices) ? lib.devices : [];
       st.hostedLinks += (lib.items || []).length;
       if (!devs.length) { st.librariesNoHeadset++; return; }
-      const user = { id: (lib.player && lib.player.id) || "", name: (lib.player && lib.player.name) || "", headsets: devs.length, last: 0, linked: 0, mod: "", hs: [] };
+      const lps = libPlayers(lib), own = lps[0] || {};
+      const user = { id: own.id || "", name: own.name || "", others: lps.slice(1).map((x) => x.name).filter(Boolean), headsets: devs.length, last: 0, linked: 0, mod: "", hs: [] };
       if (devs.length > 1) st.librariesMulti++;
       const seen = await withSeen(env, id, devs);
       const invs = await Promise.all(devs.map((d) => env.PLAYLISTS.get(invKey(id, d.id), "json")));
@@ -2614,6 +2636,7 @@ button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
 .pav{position:relative;flex:none;width:36px;height:36px;border-radius:9px;background:#141c2a;border:1px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:15px;color:var(--muted);overflow:hidden}
 .pav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pname{min-width:0}
+.palso{display:block;font-size:12px;color:#8b98ad;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prow a{color:#cfe0ff;text-decoration:none;font-weight:700;overflow-wrap:anywhere}
 .prow a:hover{text-decoration:underline}
 .prow .n{text-align:right;font-weight:700}
@@ -4830,7 +4853,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       var av = '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
       var linked = u.linked ? new Date(u.linked * 1000).toISOString().slice(0, 10) : '';
       h += '<div class="prow' + (uOpen[uk] ? ' sel' : '') + '"><span class="pwho"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>' +
-        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[u.id || u.name] ? ' on' : '') + '" data-uk="' + esc(u.id || u.name) + '" aria-expanded="' + !!uOpen[u.id || u.name] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[u.id || u.name] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
+        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + (u.others && u.others.length ? '<span class="palso" title="Other BeatLeader profiles connected in Studio with this library">also seen: ' + esc(u.others.join(', ')) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[u.id || u.name] ? ' on' : '') + '" data-uk="' + esc(u.id || u.name) + '" aria-expanded="' + !!uOpen[u.id || u.name] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[u.id || u.name] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
       if (uOpen[uk]) {
         var hsr = (u.hs || []).map(function (x, i) { return '<div class="dl"><span class="dd">Headset ' + (i + 1) + '</span><span class="dt">' + (x.s ? 'synced ' + agoAt(x.s) + ' (' + esc(atTime(x.s)) + ')' : 'never synced') + (x.a ? ' &middot; linked ' + esc(dshort(dayKey(x.a))) : '') + '</span><span class="dn"></span></div>'; }).join('');
         var ul = connectDays(u.times, null);
@@ -4838,7 +4861,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       }
     });
     $('u-list').innerHTML = h;
-    txt('u-note', (s.usersUnknown ? s.usersUnknown + (s.usersUnknown === 1 ? ' more player hasn\\u2019t' : ' more players haven\\u2019t') + ' opened Studio with a connected profile since this list started, so their name isn\\u2019t known yet. ' : '') + 'Names come from the BeatLeader profile connected in Studio when it checks the headset list.');
+    txt('u-note', (s.usersUnknown ? s.usersUnknown + (s.usersUnknown === 1 ? ' more player hasn\\u2019t' : ' more players haven\\u2019t') + ' opened Studio with a connected profile since this list started, so their name isn\\u2019t known yet. ' : '') + 'Names come from the BeatLeader profile connected in Studio with that library on the most days. Other profiles used with the same library show under the name.');
   }
   function renderReleases() {
     var rel = gc && gc.releases || [];
