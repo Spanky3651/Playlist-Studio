@@ -3385,7 +3385,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-04T16:47Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-04T23:29Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -11388,7 +11388,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (map.mapper) e.mapper = map.mapper;
       if (e.difficultyName) {
         var d = diffs.filter(function (x) { return x.difficultyName === e.difficultyName && x.modeName === e.modeName; })[0];
-        if (d) { e.stars = d.stars || 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = d.techRating || 0; e.accRating = d.accRating || 0; e.passRating = d.passRating || 0; e.mods = modsFrom(d.modifiersRating); }
+        if (d) { var rk = d.status === 3;   // unranked difficulties come with predicted ratings too; those pay no pp
+          e.stars = rk ? d.stars || 0 : 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = rk ? d.techRating || 0 : 0; e.accRating = rk ? d.accRating || 0 : 0; e.passRating = rk ? d.passRating || 0 : 0; e.mods = rk ? modsFrom(d.modifiersRating) : {}; }
       }
     });
   }
@@ -11477,8 +11478,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     ((d.bl && d.bl.difficulties) || []).forEach(function (x) {
       var k = x.difficultyName + '|' + (x.modeName || 'Standard'), o = by[k];
       if (!o) { o = by[k] = { dn: x.difficultyName, mode: x.modeName || 'Standard', njs: x.njs || 0, nps: x.nps || 0, notes: x.notes || 0, stars: 0 }; out.push(o); }
-      if (x.stars > 0) o.stars = x.stars;
-      o.lb = x.id || ''; o.pass = x.passRating || 0; o.acc = x.accRating || 0; o.tech = x.techRating || 0; o.mods = modsFrom(x.modifiersRating);
+      o.lb = x.id || '';
+      // BeatLeader also sends predicted stars and ratings for unranked difficulties; only status 3 is ranked and pays pp.
+      if (x.status === 3) { if (x.stars > 0) o.stars = x.stars; o.pass = x.passRating || 0; o.acc = x.accRating || 0; o.tech = x.techRating || 0; o.mods = modsFrom(x.modifiersRating); }
       if (!o.nps && x.nps) o.nps = x.nps; if (!o.notes && x.notes) o.notes = x.notes;
     });
     out.sort(function (a, b) { return (a.mode === 'Standard' ? 0 : 1) - (b.mode === 'Standard' ? 0 : 1) || a.mode.localeCompare(b.mode) || (SI_ORDER[a.dn] || 9) - (SI_ORDER[b.dn] || 9); });
@@ -11550,8 +11552,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       });
       h += '<div class="si-lab">In your playlists</div>' + (hits.length ? '<div class="si-pls">' + hits.map(function (x) { return '<button type="button" class="si-pl" data-pv-open="' + esc(x.dev + '|' + x.k) + '" title="Edit this playlist">' + esc(x.title) + (many && x.devs && x.devs.length ? ' · ' + esc(x.devs.join(', ')) : '') + '</button>'; }).join('') + '</div>' : '<div class="si-none">Not in any playlist on your headset' + (many ? 's' : '') + '.</div>');
     }
-    var inPl = inBasket(e);
-    h += '<div class="si-acts"><button type="button" class="primary si-add" data-si="add"' + (inPl ? ' disabled' : '') + '>' + (inPl ? '✓ In Your Playlist' : '+ Add to Your Playlist') + '</button>' +
+    var tgo = state.lq && state.lq.addTo, tIt = tgo ? lqQuestItems(tgo.dev).filter(function (x) { return x.k === tgo.k; })[0] : null;
+    var tName = tIt ? lqTitleOf(tgo.dev, tgo.k) + ' on ' + lqDevName(tgo.dev) : 'Your Playlist';
+    var inPl = tIt ? lqInTarget(e) : inBasket(e);
+    h += '<div class="si-acts"><button type="button" class="primary si-add" data-si="add"' + (inPl || si.adding ? ' disabled' : '') + '>' + (si.adding ? 'Adding…' : inPl ? '✓ In ' + esc(tName) : '+ Add to ' + esc(tName)) + '</button>' +
       (bsm && bsm.id ? '<a href="https://beatsaver.com/maps/' + esc(bsm.id) + '" target="_blank" rel="noopener">BeatSaver' + SI_EXT + '</a>' : '') +
       (o.lb ? '<a href="https://beatleader.com/leaderboard/global/' + esc(o.lb) + '" target="_blank" rel="noopener">Leaderboard' + SI_EXT + '</a>' : '') +
       (bsm && bsm.id ? '<button type="button" class="ghost si-bsr" data-si="bsr">!bsr ' + esc(bsm.id) + '</button>' : '') +
@@ -11659,7 +11663,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (siAudio.paused) siAudio.play().catch(function () { toast('Couldn’t play the preview.', 'warn'); }); else siAudio.pause();
     }
     else if (a === 'seek') { if (siAudio && siAudio.duration) { var r = b.getBoundingClientRect(); siAudio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * siAudio.duration; siTick(); } }
-    else if (a === 'add') { var en = siEntry(si.list[si.sel]); if (addEntry(en)) { renderAll(); toast('Added ' + (en.songName || 'it') + ' to Your Playlist.', 'ok'); track('song-info-add'); siRender(); } }
+    else if (a === 'add') {
+      var en = siEntry(si.list[si.sel]), tg = state.lq && state.lq.addTo, mine = si;
+      if (tg && lqQuestItems(tg.dev).some(function (x) { return x.k === tg.k; })) {
+        si.adding = true; siRender(); track('song-info-add');
+        Promise.resolve(lqAddTo(tg.dev, tg.k, en, 'info')).catch(function () {}).then(function () { if (si === mine) { si.adding = false; siRender(); } });
+      } else if (addEntry(en)) { renderAll(); toast('Added ' + (en.songName || 'it') + ' to Your Playlist.', 'ok'); track('song-info-add'); siRender(); }
+    }
     else if (a === 'bsr') {
       var id = si.d && si.d.bs && si.d.bs.id; if (!id) return;
       var txt = '!bsr ' + id, ok = function () { toast('Copied ' + txt + '.', 'ok'); };
@@ -14812,7 +14822,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function mapDiffs(hash) {
     var h = String(hash).toLowerCase();
     if (diffCache[h]) return Promise.resolve(diffCache[h]);
-    return relayFetch(API_BASE + '/map/hash/' + encodeURIComponent(hash), MAP_VALID).then(function (m) { diffCache[h] = { bl: m, diffs: (m.difficulties || []).map(function (d) { return { name: d.difficultyName, mode: d.modeName, stars: d.stars || 0, nps: d.nps || 0 }; }) }; return diffCache[h]; }, function () {
+    return relayFetch(API_BASE + '/map/hash/' + encodeURIComponent(hash), MAP_VALID).then(function (m) { diffCache[h] = { bl: m, diffs: (m.difficulties || []).map(function (d) { return { name: d.difficultyName, mode: d.modeName, stars: d.status === 3 ? d.stars || 0 : 0, nps: d.nps || 0 }; }) }; return diffCache[h]; }, function () {
       return fetch(BS_API + '/maps/hash/' + encodeURIComponent(hash)).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (j) {
         var v = (j.versions || [])[0] || {}; diffCache[h] = { bl: null, diffs: (v.diffs || []).map(function (d) { return { name: d.difficulty, mode: d.characteristic, stars: 0, nps: d.nps || 0 }; }) }; return diffCache[h];
       });
