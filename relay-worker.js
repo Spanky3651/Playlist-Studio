@@ -1147,13 +1147,14 @@ const ADMIN_SW = [
   "self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });",
   "self.addEventListener('push', function (e) {",
   "  var m = {}; try { m = e.data ? e.data.json() : {}; } catch (x) { m = { t: 'Studio Stats', b: e.data ? e.data.text() : '' }; }",
-  "  var o = { body: m.b || '', icon: /^[a-z0-9]{1,12}$/.test(m.i || '') ? IC + 'alerts/' + m.i + '.png' : IC + 'icon-192.png', badge: IC + 'badge-96.png', data: { tab: m.tab || '' }, timestamp: Date.now() };",
+  "  var o = { body: m.b || '', icon: /^[a-z0-9]{1,12}$/.test(m.i || '') ? IC + 'alerts/' + m.i + '.png' : IC + 'icon-192.png', badge: IC + 'badge-96.png', data: { tab: m.tab || '', url: typeof m.url === 'string' && m.url.indexOf('https://github.com/') === 0 ? m.url : '' }, timestamp: Date.now() };",
   "  if (m.tag) { o.tag = m.tag; o.renotify = true; }",
   "  if (m.k === 'key') o.requireInteraction = true;",
   "  e.waitUntil(self.registration.showNotification(m.t || 'Studio Stats', o));",
   "});",
   "self.addEventListener('notificationclick', function (e) {",
   "  e.notification.close();",
+  "  var gh = e.notification.data && e.notification.data.url; if (gh) { e.waitUntil(self.clients.openWindow(gh)); return; }",
   "  var tab = (e.notification.data && e.notification.data.tab) || '', url = new URL('/admin' + (tab ? '?tab=' + encodeURIComponent(tab) : ''), self.registration.scope).href;",
   "  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {",
   "    var c = list.filter(function (x) { var p = new URL(x.url); return p.origin === self.location.origin && p.pathname === '/admin'; })[0];",
@@ -1335,14 +1336,60 @@ async function pushRoute(request, env, url) {
 // ---------------------------------------------------------------- Studio Stats alerts (owner only)
 // The bell on Studio Stats: alerts for its owner on each device that turns them on with the admin key. Kept in KV
 // as push:admin (push address, keys, switches, time zone). Sent right away: lockouts, Ko-fi and new Studio Sync
-// headsets. Checked by the cron once an hour: plan usage, tokens that stopped working, traffic and Ko-fi going quiet.
+// headsets. Checked by the cron once an hour: plan usage, tokens that stopped working, traffic, Worker errors, Studio Sync
+// changes a headset won't take, GitHub activity and milestones; once a day Ko-fi going quiet; Mondays the weekly summary.
 // Quiet hours are 1 to 8 am on each device; what comes then waits in push:aq and arrives as one alert after.
-const AP_KINDS = ["key", "kofi", "plan", "broke", "sync", "spike"];
+const AP_KINDS = ["key", "kofi", "plan", "broke", "sync", "spike", "errors", "stuck", "github", "milestone", "weekly"];
 const AP_MAX = 10;
 function apPrefs(p) { const o = {}; AP_KINDS.forEach((k) => { o[k] = !p || p[k] !== false; }); return o; }
 function apQuiet(s, now) { let hr = 12; try { hr = +new Intl.DateTimeFormat("en-US", { timeZone: s.tz || "UTC", hour: "numeric", hourCycle: "h23" }).format(now) % 24; } catch (e) {} return hr >= 1 && hr < 8; }
 function apMoney(n, cur) { try { return new Intl.NumberFormat("en-US", { style: "currency", currency: cur || "USD", minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n); } catch (e) { return n + " " + (cur || ""); } }
 function apN(n) { n = +n || 0; if (n >= 1e6) return (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, "") + "M"; if (n >= 1e4) return Math.round(n / 1e3) + "k"; if (n >= 1e3) return (Math.round(n / 100) / 10).toString().replace(/\.0$/, "") + "k"; return String(Math.round(n)); }
+function apAgo(sec) { sec = Math.max(0, sec); const m = Math.round(sec / 60), h = Math.round(sec / 3600), d = Math.round(sec / 86400); return sec < 3600 ? Math.max(1, m) + " minute" + (m === 1 ? "" : "s") + " ago" : sec < 86400 * 1.5 ? h + " hour" + (h === 1 ? "" : "s") + " ago" : d + " days ago"; }
+function apDur(sec) { const h = Math.round(sec / 3600), d = Math.round(sec / 86400); return sec < 86400 * 1.5 ? h + " hour" + (h === 1 ? "" : "s") : d + " days"; }
+function apNum(n) { return Math.round(+n || 0).toLocaleString("en-US"); }
+// Errors per Worker in the last hour, from Cloudflare's analytics (the same token as Plan usage).
+async function apCfHour(env) {
+  const H = { Authorization: "Bearer " + env.CF_API_TOKEN, "Content-Type": "application/json" };
+  let acct = String(env.CF_ACCOUNT_ID || "").trim();
+  if (!acct) { const r = await fetch(PLAN_CF + "/accounts?per_page=5", { headers: H }); const j = await r.json().catch(() => null); acct = (j && j.result && j.result[0] && j.result[0].id) || ""; }
+  if (!/^[0-9a-f]{32}$/.test(acct)) return null;
+  const e = Date.now(), q = "query($a:String!,$s:Time!,$e:Time!){viewer{accounts(filter:{accountTag:$a}){workersInvocationsAdaptive(limit:100,filter:{datetime_geq:$s,datetime_lt:$e}){sum{requests errors} dimensions{scriptName}}}}}";
+  const r = await fetch(PLAN_CF + "/graphql", { method: "POST", headers: H, body: JSON.stringify({ query: q, variables: { a: acct, s: new Date(e - 3600000).toISOString(), e: new Date(e).toISOString() } }) });
+  const j = await r.json().catch(() => null), a = j && j.data && j.data.viewer && j.data.viewer.accounts && j.data.viewer.accounts[0];
+  if (!a) return null;
+  const by = {};
+  (a.workersInvocationsAdaptive || []).forEach((x) => { const n = (x.dimensions && x.dimensions.scriptName) || "?", b = by[n] = by[n] || { req: 0, err: 0 }; b.req += +(x.sum && x.sum.requests) || 0; b.err += +(x.sum && x.sum.errors) || 0; });
+  return by;
+}
+// Every Studio Sync library, the way Studio Stats counts them (the owner's own left out): headsets, who synced this
+// week, new ones, and headsets that synced since a change was queued for them but still haven't taken it.
+async function apSyncScan(env) {
+  const ids = [], skip = new Set(String(env.ADMIN_EXCLUDE || "").split(/[\s,]+/).map((x) => x.split(".")[0]).filter(Boolean));
+  let cursor;
+  do { const page = await env.PLAYLISTS.list({ prefix: "lib:", cursor, limit: 1000 }); for (const k of page.keys) { const id = k.name.slice(4); if (!skip.has(id)) ids.push(id); } cursor = page.list_complete ? null : page.cursor; } while (cursor);
+  const now = nowSec(), DAY = 86400, out = { headsets: 0, players: 0, active7: 0, new7: 0, stuck: [] };
+  for (let i = 0; i < ids.length; i += 25) {
+    await Promise.all(ids.slice(i, i + 25).map(async (id) => {
+      const lib = await env.PLAYLISTS.get("lib:" + id, "json"); if (!lib) return;
+      const devs = Array.isArray(lib.devices) ? lib.devices : []; if (!devs.length) return;
+      out.players++;
+      const seen = await withSeen(env, id, devs);
+      for (const d of seen) {
+        out.headsets++;
+        if (d.seen && now - d.seen < 7 * DAY) out.active7++;
+        if (d.added && now - d.added < 7 * DAY) out.new7++;
+        const o = await env.PLAYLISTS.get(outKey(id, d.id), "json");
+        const items = o && Array.isArray(o.items) && o.items.length ? await liveOut(env, id, d.id, o.items) : [];
+        const old = items.filter((w) => w.at && now - w.at > DAY && d.seen > w.at + 3600).sort((a, b) => a.at - b.at);
+        if (old.length) out.stuck.push({ key: id + ":" + d.id + ":" + old[0].id, name: (lib.player && lib.player.name) || "", n: items.length, oldest: old[0].at, seen: d.seen });
+      }
+    }));
+  }
+  return out;
+}
+const AP_REPOS = [["Playlist-Studio", "Playlist Studio"], ["Studio-Sync", "Studio Sync"], ["hsv-generator", "HSV Config Generator"], ["ReeSaber-Studio", "ReeSaber Studio"], ["Chesters-Escape", "Chester’s Escape"]];
+const AP_LADDER = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
 async function adminPush(env, kind, m) {
   if (!env.PLAYLISTS) return;
   try {
@@ -1456,8 +1503,8 @@ async function adminCron(env) {
       if (mm === "auth" || mm === "account") broke("cf", { i: "warn", tab: "plan", t: "Cloudflare stopped accepting the plan usage token", b: "The Plan card on Studio Stats can’t update until it’s fixed." });
     }
   }
+  const offS = (Number(subs[ids[0]].off) || 0) * 60, today0 = Math.floor((nowS - offS) / DAY) * DAY + offS, dk = gcDay(today0 - offS);
   if (env.GC_TOKEN && (want("spike") || want("broke"))) {
-    const offS = (Number(subs[ids[0]].off) || 0) * 60, today0 = Math.floor((nowS - offS) / DAY) * DAY + offS, dk = gcDay(today0 - offS);
     const SITES = [["studio", "Playlist Studio", { code: env.GC_SITE || "playliststudio", token: env.GC_TOKEN }, "vis"], ["bl", "BeatLeader profile", GC_OTHER.bl(env), "bl"], ["hsv", "HSV Config", GC_OTHER.hsv(env), "hsv"], ["rs", "ReeSaber Studio", GC_OTHER.rs(env), "rs"]];
     for (const [key, name, cfg, tab] of SITES) {
       const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
@@ -1489,6 +1536,121 @@ async function adminCron(env) {
         if (clicks >= 15) { st.kq = nowS; out.push(["broke", { i: "warn", tab: "kofi", t: "Ko-fi has gone quiet", b: "Nothing from Ko-fi in " + Math.floor((nowS - last) / DAY) + " days, but there were " + clicks + " Support me clicks. Send a test from Ko-fi to check." }]); }
       }
     } catch (e) {}
+  }
+  // Worker errors: 20 or more in the last hour, and at least 2% of that Worker's requests. Once in 6 hours per Worker.
+  if (env.CF_API_TOKEN && want("errors")) {
+    st.err = st.err || {};
+    try {
+      const by = await apCfHour(env);
+      for (const n of Object.keys(by || {})) {
+        const b = by[n];
+        if (b.err >= 20 && b.err >= b.req * 0.02 && !(st.err[n] && nowS - st.err[n] < 6 * 3600)) {
+          st.err[n] = nowS;
+          out.push(["errors", { i: "bug", tab: "plan", t: n + " is failing", b: apNum(b.err) + " errors in the last hour, " + Math.round(b.err / Math.max(1, b.req) * 100) + "% of its " + apNum(b.req) + " requests." }]);
+        }
+      }
+    } catch (e) {}
+  }
+  // Studio Sync: one scan for stuck changes, the headset milestone and the weekly numbers.
+  let scan = null;
+  if (want("stuck") || want("milestone") || want("weekly")) { try { scan = await apSyncScan(env); } catch (e) {} }
+  if (scan && want("stuck")) {
+    const prev = st.stuck || {}, next = {};
+    for (const x of scan.stuck) {
+      next[x.key] = prev[x.key] || nowS;
+      if (prev[x.key]) continue;
+      const who = x.name || "A player";
+      out.push(["stuck", { i: "stuck", tab: "sync", t: who + "’s headset isn’t taking changes", b: x.n + " change" + (x.n === 1 ? "" : "s") + " waiting, the oldest for " + apDur(nowS - x.oldest) + ", but the headset synced " + apAgo(nowS - x.seen) + ". The mod may be broken or out of date." }]);
+    }
+    st.stuck = next;
+  }
+  // GitHub: issues, pull requests, stars and forks on the repos, from each repo's public events. Not your own.
+  if (want("github")) {
+    st.gh = st.gh || {}; st.ghE = st.ghE || {};
+    const H = { "User-Agent": "PlaylistStudioStats", Accept: "application/vnd.github+json" };
+    if (env.GH_TOKEN) H.Authorization = "Bearer " + env.GH_TOKEN;
+    let sent = 0;
+    for (const [repo, name] of AP_REPOS) {
+      try {
+        const h = Object.assign({}, H); if (st.ghE[repo]) h["If-None-Match"] = st.ghE[repo];
+        const r = await fetch("https://api.github.com/repos/Spanky3651/" + repo + "/events?per_page=30", { headers: h });
+        if (r.status !== 200) continue;
+        const ev = await r.json(); if (!Array.isArray(ev)) continue;
+        st.ghE[repo] = String(r.headers.get("ETag") || "").slice(0, 120);
+        const last = st.gh[repo], top = ev.reduce((a, x) => (x && x.created_at > a ? x.created_at : a), last || "");
+        if (last) {
+          for (const x of ev.slice().reverse()) {
+            if (!x || !(x.created_at > last) || sent >= 6) continue;
+            const who = (x.actor && x.actor.login) || "someone", pl = x.payload || {};
+            if (who.toLowerCase() === "spanky3651") continue;
+            let m = null;
+            if (x.type === "WatchEvent") m = { i: "star", t: name + " got a star", b: "From " + who + ".", url: "https://github.com/Spanky3651/" + repo + "/stargazers" };
+            else if (x.type === "ForkEvent") m = { i: "fork", t: name + " was forked", b: "By " + who + ".", url: (pl.forkee && pl.forkee.html_url) || "https://github.com/Spanky3651/" + repo };
+            else if (x.type === "IssuesEvent" && pl.action === "opened" && pl.issue) m = { i: "issue", t: "New issue on " + name, b: "#" + pl.issue.number + " " + String(pl.issue.title || "").slice(0, 120) + ", from " + who + ".", url: pl.issue.html_url };
+            else if (x.type === "PullRequestEvent" && pl.action === "opened" && pl.pull_request) m = { i: "issue", t: "New pull request on " + name, b: "#" + pl.pull_request.number + " " + String(pl.pull_request.title || "").slice(0, 120) + ", from " + who + ".", url: pl.pull_request.html_url };
+            if (m) { m.tab = ""; out.push(["github", m]); sent++; }
+          }
+        }
+        st.gh[repo] = top || last || new Date().toISOString();
+      } catch (e) {}
+    }
+  }
+  // Once a day: players first seen (for milestones and the weekly summary), from today's visits.
+  let seenP = null;
+  if (env.GC_TOKEN && (want("milestone") || want("weekly"))) {
+    try {
+      if (st.pd !== dk) { st.pd = dk; seenP = (await gcSeen(env, await gcHits(env, today0 - DAY, nowS), nowS)).p; }
+      else { const g = await env.PLAYLISTS.get("gc:seen", "json"); seenP = g && g.p; }
+    } catch (e) {}
+  }
+  // Milestones: the first time a number passes 10, 25, 50, 100, 250 and so on. The first check only remembers where things are.
+  if (want("milestone")) {
+    st.ms = st.ms || {};
+    const lvl = (n) => AP_LADDER.filter((x) => n >= x).pop() || 0;
+    const step = (k, n, mk) => { if (n == null) return; const l = lvl(n); if (st.ms[k] == null) { st.ms[k] = l; return; } if (l > st.ms[k]) { st.ms[k] = l; out.push(["milestone", Object.assign({ i: "trophy" }, mk(l, n))]); } };
+    if (scan) step("hs", scan.headsets, (l) => ({ tab: "sync", t: "Studio Sync reached " + apNum(l) + " headsets", b: apNum(scan.headsets) + " headsets are linked now, from " + apNum(scan.players) + " players." }));
+    if (seenP) step("pl", Object.keys(seenP).length, (l, n) => ({ tab: "ply", t: apNum(l) + " players have connected to Playlist Studio", b: apNum(n) + " BeatLeader profiles have connected so far." }));
+    if (env.GC_TOKEN) {
+      try {
+        const lt = new Date((nowS - offS) * 1000), m0 = Date.UTC(lt.getUTCFullYear(), lt.getUTCMonth(), 1) / 1000 + offS, mk = gcDay(m0 - offS).slice(0, 7);
+        const mv = gcVisitors(await gcGet(env, "/stats/total", { start: gcIso(m0), end: gcIso(nowS) }));
+        if (st.ms.mvm !== mk) { st.ms.mvm = mk; st.ms.mv = AP_LADDER.filter((x) => x < 250 && mv >= x).pop() || 0; }
+        if (mv >= 250) step("mv", mv, (l, n) => ({ tab: "vis", t: "Playlist Studio passed " + apNum(l) + " visits this month", b: apNum(n) + " so far in " + lt.toLocaleString("en-US", { month: "long", timeZone: "UTC" }) + "." }));
+      } catch (e) {}
+    }
+    try {
+      const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
+      if (tips.length) {
+        const cn = {}; tips.forEach((x) => { cn[x.cur] = (cn[x.cur] || 0) + 1; });
+        const cur = Object.keys(cn).sort((a, b) => cn[b] - cn[a])[0], main = tips.filter((x) => x.cur === cur), raised = main.reduce((a, x) => a + (x.amt || 0), 0);
+        step("kf", raised, (l, n) => ({ tab: "kofi", t: "Ko-fi tips passed " + apMoney(l, cur), b: apMoney(Math.round(n * 100) / 100, cur) + " from " + main.length + " payments since you started. That covers " + Math.floor(n / 5) + " months of hosting." }));
+      }
+    } catch (e) {}
+  }
+  // Weekly summary: Monday from 9 am on the first device that turned alerts on.
+  if (want("weekly")) {
+    let wd = "", hr = 0; try { const f = new Intl.DateTimeFormat("en-US", { timeZone: subs[ids[0]].tz || "UTC", weekday: "short", hour: "numeric", hourCycle: "h23" }).formatToParts(now); f.forEach((x) => { if (x.type === "weekday") wd = x.value; if (x.type === "hour") hr = +x.value % 24; }); } catch (e) {}
+    if (wd === "Mon" && hr >= 9 && st.wk !== dk) {
+      st.wk = dk;
+      const w0 = today0 - 7 * DAY, parts = [];
+      let visits = 0;
+      if (env.GC_TOKEN) {
+        const SITES = [["Playlist Studio", { code: env.GC_SITE || "playliststudio", token: env.GC_TOKEN }], ["ReeSaber Studio", GC_OTHER.rs(env)], ["HSV Config", GC_OTHER.hsv(env)], ["BeatLeader profile", GC_OTHER.bl(env)]];
+        for (const [name, cfg] of SITES) {
+          try { const v = gcVisitors(await gcGet(Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN }), "/stats/total", { start: gcIso(w0), end: gcIso(today0) })); visits += v; parts.push([name, v]); } catch (e) {}
+        }
+      }
+      const fromDay = gcDay(w0 - offS), newP = seenP ? Object.keys(seenP).filter((k) => seenP[k] >= fromDay && seenP[k] < dk).length : null;
+      let tipsTxt = "no tips";
+      try {
+        const tips = ((await env.PLAYLISTS.get("kofi:tips", "json")) || []).filter((x) => x.t >= w0 && x.t < today0);
+        if (tips.length) { const cur = tips[0].cur, sum = tips.filter((x) => x.cur === cur).reduce((a, x) => a + (x.amt || 0), 0); tipsTxt = apMoney(Math.round(sum * 100) / 100, cur) + " in tips"; }
+      } catch (e) {}
+      const t = "Your week: " + apNum(visits) + " visits" + (newP != null ? ", " + apNum(newP) + " new player" + (newP === 1 ? "" : "s") : "") + ", " + tipsTxt;
+      const b = parts.filter((x) => x[1] > 0).sort((a, b2) => b2[1] - a[1]).map((x) => x[0] + " " + apNum(x[1])).join(" · ") + (parts.length ? ". " : "") +
+        (scan ? "Studio Sync: " + apNum(scan.active7) + " headset" + (scan.active7 === 1 ? "" : "s") + " synced, " + apNum(scan.new7) + " new." : "");
+      out.push(["weekly", { i: "week", tab: "all", t, b: b || "A quiet week." }]);
+    }
   }
   await env.PLAYLISTS.put("push:ast", JSON.stringify(st));
   for (const [kind, m] of out) await adminPush(env, kind, m);
@@ -3804,7 +3966,10 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   var AK = 'studioStats.alerts.v1', al = { open: false, busy: false, err: '', ok: '' };
   var AL_OPTS = [['key', 'Key guessing', 'When wrong keys lock Studio Stats. Sent even during quiet hours.'], ['kofi', 'Ko-fi', 'Every tip, shop order and new monthly member'],
     ['plan', 'Plan usage', 'Once when any bar passes 80% this billing period'], ['broke', 'Something broke', 'A token stops working, or Ko-fi goes quiet'],
-    ['sync', 'New Studio Sync users', 'Someone links a headset for the first time'], ['spike', 'Traffic spikes', 'A site gets about 3 times its usual visitors in a day']];
+    ['sync', 'New Studio Sync users', 'Someone links a headset for the first time'], ['spike', 'Traffic spikes', 'A site gets about 3 times its usual visitors in a day'],
+    ['errors', 'Worker errors', 'A Worker starts failing: 20 or more errors in an hour'], ['stuck', 'Stuck Studio Sync changes', 'A headset keeps syncing but hasn’t taken a change for a day'],
+    ['github', 'GitHub', 'New issues, pull requests, stars and forks on your repos'], ['milestone', 'Milestones', 'Players, headsets, monthly visits and Ko-fi totals passing round numbers'],
+    ['weekly', 'Weekly summary', 'Monday from 9 am: your week in one alert']];
   function alGet() { try { return JSON.parse(localStorage.getItem(AK) || 'null'); } catch (e) { return null; } }
   function alSet(v) { try { if (v) localStorage.setItem(AK, JSON.stringify(v)); else localStorage.removeItem(AK); } catch (e) {} }
   function alOk() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
@@ -3830,7 +3995,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       return;
     }
     var denied = Notification.permission === 'denied';
-    h += denied ? '<div class="ac-st r">Notifications are blocked in this browser, so alerts can’t show. Allow them for this site to get them again.</div>' : '<div class="ac-st"><span class="ac-dot"></span>On in this browser. Key guessing and Ko-fi come right away; the rest is checked every hour.</div>';
+    h += denied ? '<div class="ac-st r">Notifications are blocked in this browser, so alerts can’t show. Allow them for this site to get them again.</div>' : '<div class="ac-st"><span class="ac-dot"></span>On in this browser. Key guessing, Ko-fi and new headsets come right away; the rest is checked every hour.</div>';
     AL_OPTS.forEach(function (o) {
       var on = !st.prefs || st.prefs[o[0]] !== false;
       h += '<div class="ac-o"><div><b>' + o[1] + '</b><small>' + o[2] + '</small></div><button type="button" class="ac-sw" role="switch" aria-checked="' + on + '" aria-label="' + esc(o[1]) + '" data-al="pref" data-k="' + o[0] + '"></button></div>';
