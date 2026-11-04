@@ -51,6 +51,7 @@ export default {
   // Cron (worker/wrangler.toml): war alerts every 5 minutes.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(warAlerts(env).catch(() => {}));
+    ctx.waitUntil(adminCron(env).catch(() => {}));
   },
 };
 
@@ -1081,10 +1082,17 @@ async function linked(request, env, ctx, url) {
     lib.devices = (lib.devices || []).filter((d) => d.th !== rec.th);
     if (lib.devices.length >= MAX_DEVICES) return json({ error: "Unlink a headset first (" + MAX_DEVICES + " max)" }, 400, cors);
     const dev = { id: randomId(8), th: rec.th, name: rec.name || "Quest", added: nowSec(), seen: 0 };
-    lib.devices.push(dev);
+    const firstEver = !lib.devices.length && !lib.everDev;
+    lib.devices.push(dev); lib.everDev = 1;
     await putLib(env, id, lib);
     await env.PLAYLISTS.put("dev:" + rec.th, JSON.stringify({ lib: id, id: dev.id, added: dev.added }), { expirationTtl: LIB_TTL });
     await env.PLAYLISTS.delete("code:" + code);
+    const skipLib = String(env.ADMIN_EXCLUDE || "").split(/[\s,]+/).map((x) => x.split(".")[0]).includes(id);
+    if (firstEver && !skipLib) {
+      const pn = (lib.player && lib.player.name) || "";
+      const a = adminPush(env, "sync", { i: "headset", tab: "sync", t: "New Studio Sync headset" + (pn ? ": " + pn : ""), b: (pn || "Someone") + " linked " + String(dev.name).slice(0, 40) + " to Studio Sync just now." });
+      if (ctx && ctx.waitUntil) ctx.waitUntil(a); else await a;
+    }
     return json({ device: { id: dev.id, name: dev.name, added: dev.added, seen: 0 }, devices: publicDevices(lib) }, 200, cors);
   }
 
@@ -1131,26 +1139,54 @@ function safeEqual(a, b) {
 // How many headsets are linked and how many sync, plus the Studio Sync users by BeatLeader profile (only the
 // public profile Studio had connected). No playlist names or headset names leave the Worker. The page is public but empty; the numbers need ADMIN_KEY, a Worker secret
 // (npx wrangler secret put ADMIN_KEY), sent as "Authorization: Bearer <key>".
+// The Studio Stats service worker (served at /admin/sw.js): shows the alerts the Worker pushes to its owner and
+// opens Studio Stats on the matching tab when one is clicked. No fetch handler, so pages load as they always do.
+const ADMIN_SW = [
+  "var IC = 'https://spanky3651.github.io/Playlist-Studio/icons/';",
+  "self.addEventListener('install', function () { self.skipWaiting(); });",
+  "self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });",
+  "self.addEventListener('push', function (e) {",
+  "  var m = {}; try { m = e.data ? e.data.json() : {}; } catch (x) { m = { t: 'Studio Stats', b: e.data ? e.data.text() : '' }; }",
+  "  var o = { body: m.b || '', icon: /^[a-z0-9]{1,12}$/.test(m.i || '') ? IC + 'alerts/' + m.i + '.png' : IC + 'icon-192.png', badge: IC + 'badge-96.png', data: { tab: m.tab || '' }, timestamp: Date.now() };",
+  "  if (m.tag) { o.tag = m.tag; o.renotify = true; }",
+  "  if (m.k === 'key') o.requireInteraction = true;",
+  "  e.waitUntil(self.registration.showNotification(m.t || 'Studio Stats', o));",
+  "});",
+  "self.addEventListener('notificationclick', function (e) {",
+  "  e.notification.close();",
+  "  var tab = (e.notification.data && e.notification.data.tab) || '', url = new URL('/admin' + (tab ? '?tab=' + encodeURIComponent(tab) : ''), self.registration.scope).href;",
+  "  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {",
+  "    var c = list.filter(function (x) { var p = new URL(x.url); return p.origin === self.location.origin && p.pathname === '/admin'; })[0];",
+  "    if (c) { if (tab) c.postMessage({ t: 'ss-tab', tab: tab }); return c.focus(); }",
+  "    return self.clients.openWindow(url);",
+  "  }));",
+  "});"
+].join("\n");
 let adminFails = [], adminBlocked = 0, adminFlush = 0;
 const ADMIN_GUARD = "admin:guard", ADMIN_LOCKS = "admin:lockouts";
 async function adminLockNote(env, t, wrong, isNew) {
   try {
     const L = (await env.PLAYLISTS.get(ADMIN_LOCKS, "json")) || { n: 0, first: 0, last: 0, wrong: 0 };
-    if (isNew && !(L.last && t - L.last < 600)) { L.n++; if (!L.first) L.first = t; L.last = t; }
+    let fresh = false;
+    if (isNew && !(L.last && t - L.last < 600)) { L.n++; if (!L.first) L.first = t; L.last = t; fresh = true; }
     L.wrong = (L.wrong || 0) + wrong;
     if (L.n) await env.PLAYLISTS.put(ADMIN_LOCKS, JSON.stringify(L));
+    if (fresh) await adminPush(env, "key", { i: "skull", tab: "all", tag: "ss-key", t: "Someone is guessing your key",
+      b: L.n === 1 ? "20 wrong keys in 10 minutes locked Studio Stats for everyone." : "20 wrong keys in 10 minutes locked Studio Stats. That makes " + L.n + " lockouts since you last dismissed it." });
   } catch (e) {}
 }
 async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
+  if (url.pathname === "/admin/sw.js" && request.method === "GET") return new Response(ADMIN_SW, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-cache", "Service-Worker-Allowed": "/admin" } });
+  const pushPath = (request.method === "GET" && url.pathname === "/admin/push/key") || (request.method === "POST" && /^\/admin\/push\/(sub|prefs|del|test)$/.test(url.pathname));
   const lockPath = (request.method === "GET" && url.pathname === "/admin/lockouts") || (request.method === "POST" && url.pathname === "/admin/lockouts/clear");
   const kofiEdit = request.method === "POST" && (url.pathname === "/admin/kofi/add" || url.pathname === "/admin/kofi/del" || url.pathname === "/admin/kofi/avatar");
-  if (!kofiEdit && !lockPath && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi" && url.pathname !== "/admin/plan") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
+  if (!kofiEdit && !lockPath && !pushPath && ((url.pathname !== "/admin/stats" && url.pathname !== "/admin/gc" && url.pathname !== "/admin/kofi" && url.pathname !== "/admin/plan") || request.method !== "GET")) return json({ error: "Not found" }, 404, nocache);
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY isn't set on the Worker yet" }, 503, nocache);
   // Guessing protection without IP addresses: one shared count of wrong keys. After 20 in 10 minutes the
   // page refuses everyone (the owner included) until the window passes. Right keys are never counted.
@@ -1190,6 +1226,7 @@ async function admin(request, env, url) {
     }
   }
   if (kofiEdit) return kofiEditTips(request, env, url, nocache);
+  if (pushPath) return adminPushRoute(request, env, url, nocache);
   if (url.pathname === "/admin/lockouts") return json((await env.PLAYLISTS.get(ADMIN_LOCKS, "json")) || { n: 0 }, 200, nocache);
   if (url.pathname === "/admin/lockouts/clear") { await env.PLAYLISTS.delete(ADMIN_LOCKS); return json({ ok: true }, 200, nocache); }
   return json(await adminStats(env), 200, nocache);
@@ -1250,7 +1287,7 @@ async function pushSend(v, s, msg, ttl, jwts) {
   if (!jwts[aud]) jwts[aud] = await pushJwt(v, aud);
   const r = await fetch(s.ep, { method: "POST", body: await pushEncrypt(s, JSON.stringify(msg)), headers: {
     Authorization: "vapid t=" + jwts[aud] + ", k=" + v.pub, "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream",
-    TTL: String(ttl || 86400), Urgency: msg.k === "hit" ? "high" : "normal" } });
+    TTL: String(ttl || 86400), Urgency: msg.k === "hit" || msg.k === "key" ? "high" : "normal" } });
   return r.status;
 }
 async function pushRoute(request, env, url) {
@@ -1293,6 +1330,168 @@ async function pushRoute(request, env, url) {
   const st = await pushSend(await pushVapid(env), s, { k: "test", i: "test", t: "War alerts are on", b: "This is what a war alert looks like. Studio checks your war every 5 minutes.", tag: "ps-test", v: "1" }, 600);
   if (st === 404 || st === 410) { delete subs[id]; await save(); return json({ error: "gone" }, 410, cors); }
   return json({ ok: st >= 200 && st < 300, status: st }, 200, cors);
+}
+
+// ---------------------------------------------------------------- Studio Stats alerts (owner only)
+// The bell on Studio Stats: alerts for its owner on each device that turns them on with the admin key. Kept in KV
+// as push:admin (push address, keys, switches, time zone). Sent right away: lockouts, Ko-fi and new Studio Sync
+// headsets. Checked by the cron once an hour: plan usage, tokens that stopped working, traffic and Ko-fi going quiet.
+// Quiet hours are 1 to 8 am on each device; what comes then waits in push:aq and arrives as one alert after.
+const AP_KINDS = ["key", "kofi", "plan", "broke", "sync", "spike"];
+const AP_MAX = 10;
+function apPrefs(p) { const o = {}; AP_KINDS.forEach((k) => { o[k] = !p || p[k] !== false; }); return o; }
+function apQuiet(s, now) { let hr = 12; try { hr = +new Intl.DateTimeFormat("en-US", { timeZone: s.tz || "UTC", hour: "numeric", hourCycle: "h23" }).format(now) % 24; } catch (e) {} return hr >= 1 && hr < 8; }
+function apMoney(n, cur) { try { return new Intl.NumberFormat("en-US", { style: "currency", currency: cur || "USD", minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n); } catch (e) { return n + " " + (cur || ""); } }
+function apN(n) { n = +n || 0; if (n >= 1e6) return (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, "") + "M"; if (n >= 1e4) return Math.round(n / 1e3) + "k"; if (n >= 1e3) return (Math.round(n / 100) / 10).toString().replace(/\.0$/, "") + "k"; return String(Math.round(n)); }
+async function adminPush(env, kind, m) {
+  if (!env.PLAYLISTS) return;
+  try {
+    const subs = (await env.PLAYLISTS.get("push:admin", "json")) || {};
+    const ids = Object.keys(subs).filter((id) => apPrefs(subs[id].prefs)[kind]);
+    if (!ids.length) return;
+    const v = await pushVapid(env), jwts = {}, gone = [], wait = [], now = new Date(), msg = Object.assign({ k: kind }, m);
+    for (const id of ids) {
+      if (kind !== "key" && apQuiet(subs[id], now)) { wait.push(id); continue; }
+      let st = 0; try { st = await pushSend(v, subs[id], msg, 86400, jwts); } catch (e) {}
+      if (st === 404 || st === 410) gone.push(id);
+    }
+    if (wait.length) {
+      const aq = (await env.PLAYLISTS.get("push:aq", "json")) || {};
+      wait.forEach((id) => { aq[id] = (aq[id] || []).concat([msg]).slice(-30); });
+      await env.PLAYLISTS.put("push:aq", JSON.stringify(aq));
+    }
+    if (gone.length) { const f = (await env.PLAYLISTS.get("push:admin", "json")) || {}; gone.forEach((id) => delete f[id]); await env.PLAYLISTS.put("push:admin", JSON.stringify(f)); }
+  } catch (e) {}
+}
+async function adminPushRoute(request, env, url, nocache) {
+  if (url.pathname === "/admin/push/key") return json({ key: (await pushVapid(env)).pub }, 200, nocache);
+  if (Number(request.headers.get("Content-Length") || 0) > 8192) return json({ error: "Too big" }, 413, nocache);
+  let b = null; try { b = await request.json(); } catch (e) {}
+  if (!b || typeof b !== "object") return json({ error: "Bad request" }, 400, nocache);
+  const subs = (await env.PLAYLISTS.get("push:admin", "json")) || {};
+  const str = (x, n) => String(x == null ? "" : x).slice(0, n);
+  const tz = (z) => { z = str(z, 60); try { new Intl.DateTimeFormat("en-US", { timeZone: z || "UTC" }); return z || "UTC"; } catch (e) { return "UTC"; } };
+  const off = (x) => Math.max(-840, Math.min(840, Math.round(Number(x) || 0)));
+  const save = () => env.PLAYLISTS.put("push:admin", JSON.stringify(subs));
+  if (url.pathname === "/admin/push/sub") {
+    const sb = b.sub || {}, k = sb.keys || {};
+    let host = ""; try { const u = new URL(sb.endpoint); if (u.protocol === "https:") host = u.hostname; } catch (e) {}
+    if (!PUSH_HOSTS.test(host) || String(sb.endpoint).length > 800 || !/^[A-Za-z0-9_-]{80,100}$/.test(k.p256dh || "") || !/^[A-Za-z0-9_-]{16,30}$/.test(k.auth || ""))
+      return json({ error: "This browser's push address didn't look right." }, 400, nocache);
+    const id = (await sha256("admin:" + sb.endpoint)).slice(0, 24);
+    if (!subs[id] && Object.keys(subs).length >= AP_MAX) return json({ error: "Alerts are on for " + AP_MAX + " devices already. Turn one off first." }, 400, nocache);
+    subs[id] = { ep: sb.endpoint, p256dh: k.p256dh, auth: k.auth, prefs: apPrefs(b.prefs), tz: tz(b.tz), off: off(b.off), at: nowSec() };
+    await save();
+    return json({ ok: true, id }, 200, nocache);
+  }
+  const id = str(b.id, 24), sub = subs[id];
+  if (!sub) return json({ error: "gone" }, 404, nocache);
+  if (url.pathname === "/admin/push/prefs") {
+    sub.prefs = apPrefs(b.prefs); if (b.tz) sub.tz = tz(b.tz); if (b.off != null) sub.off = off(b.off);
+    await save(); return json({ ok: true }, 200, nocache);
+  }
+  if (url.pathname === "/admin/push/del") { delete subs[id]; await save(); return json({ ok: true }, 200, nocache); }
+  let st = 0; try { st = await pushSend(await pushVapid(env), sub, { k: "test", i: "test", t: "Studio Stats alerts are on", b: "This is what an alert from Studio Stats looks like.", tag: "ss-test", tab: "" }, 600); } catch (e) {}
+  if (st === 404 || st === 410) { delete subs[id]; await save(); return json({ error: "gone" }, 410, nocache); }
+  return json({ ok: st >= 200 && st < 300, status: st }, 200, nocache);
+}
+async function kofiAlert(env, rec, list) {
+  const who = rec.pub && rec.name ? rec.name : "Anonymous", m0 = new Date(), ms = Date.UTC(m0.getUTCFullYear(), m0.getUTCMonth(), 1) / 1000;
+  const inM = list.filter((x) => x.t >= ms && x.cur === rec.cur), sum = inM.reduce((a, x) => a + (x.amt || 0), 0);
+  const amt = apMoney(rec.amt, rec.cur), msg = rec.pub && rec.msg ? "“" + rec.msg.slice(0, 140) + "” " : "";
+  const month = inM.length > 1 ? "That makes " + apMoney(sum, rec.cur) + " from " + inM.length + " payments this month." : "Your first this month.";
+  let m;
+  if (rec.sub && rec.first) m = { i: "star", t: who + " became a monthly member", b: amt + " a month on Ko-fi" + (rec.tier ? ", " + rec.tier : "") + ". " + month };
+  else if (rec.type === "Shop Order") m = { i: "cup", t: amt + " shop order from " + who, b: (rec.items ? rec.items + " item" + (rec.items === 1 ? "" : "s") + ". " : "") + msg + month };
+  else if (rec.sub) m = { i: "cup", t: amt + " monthly payment from " + who, b: msg + month };
+  else m = { i: "cup", t: amt + " tip from " + who, b: (rec.pub ? msg : "They kept their name and message private. ") + month };
+  m.tab = "kofi";
+  await adminPush(env, "kofi", m);
+}
+async function adminCron(env) {
+  if (!env.PLAYLISTS) return;
+  const subs = (await env.PLAYLISTS.get("push:admin", "json")) || {};
+  const ids = Object.keys(subs); if (!ids.length) return;
+  const now = new Date(), nowS = nowSec(), DAY = 86400;
+  // what waited through quiet hours
+  const aq = await env.PLAYLISTS.get("push:aq", "json");
+  if (aq && Object.keys(aq).length) {
+    const v = await pushVapid(env), jwts = {}; let changed = false;
+    for (const id of Object.keys(aq)) {
+      const sub = subs[id]; if (!sub) { delete aq[id]; changed = true; continue; }
+      if (apQuiet(sub, now)) continue;
+      const all = aq[id] || []; delete aq[id]; changed = true; if (!all.length) continue;
+      const m = all.length === 1 ? all[0] : { k: "summary", i: "summary", t: "While you were away · Studio Stats", tab: all[all.length - 1].tab || "",
+        b: all.slice(-4).map((x) => x.t).join(". ") + (all.length > 4 ? ". And " + (all.length - 4) + " more." : ".") };
+      try { await pushSend(v, sub, m, 86400, jwts); } catch (e) {}
+    }
+    if (changed) { if (Object.keys(aq).length) await env.PLAYLISTS.put("push:aq", JSON.stringify(aq)); else await env.PLAYLISTS.delete("push:aq"); }
+  }
+  // the hourly checks
+  const st = (await env.PLAYLISTS.get("push:ast", "json")) || {}, hour = Math.floor(nowS / 3600);
+  if (st.h === hour) return;
+  st.h = hour; st.plan = st.plan || {}; st.bad = st.bad || {}; st.spike = st.spike || {}; st.base = st.base || {};
+  const want = (k) => ids.some((id) => apPrefs(subs[id].prefs)[k]);
+  const out = [];
+  const broke = (key, m) => { if (st.bad[key]) return; st.bad[key] = nowS; out.push(["broke", m]); };
+  const fixed = (key) => { delete st.bad[key]; };
+  if (env.CF_API_TOKEN && (want("plan") || want("broke"))) {
+    try {
+      const d = await planUsage(env, false); fixed("cf");
+      if (d && !d.setup) {
+        const w = d.workers || [], kv = d.kv || {}, sum = (f) => w.reduce((a, x) => a + (+x[f] || 0), 0);
+        const rows = [["req", "Requests", sum("req"), 10e6, 0.30], ["cpu", "CPU time", sum("cpu"), 30e6, 0.02], ["kvr", "KV reads", kv.read, 10e6, 0.50], ["kvw", "KV writes", kv.write, 1e6, 5], ["kvd", "KV deletes", kv.delete, 1e6, 5], ["kvl", "KV lists", kv.list, 1e6, 5]];
+        const per = String(d.start), sent = st.plan[per] = st.plan[per] || {};
+        Object.keys(st.plan).forEach((k) => { if (k !== per) delete st.plan[k]; });
+        const len = Math.max(1, d.end - d.start), el = Math.min(1, Math.max(0.02, (nowS - d.start) / len)), dayN = Math.max(1, Math.ceil((nowS - d.start) / DAY)), days = Math.round(len / DAY);
+        for (const [k, name, used, cap, price] of rows) {
+          if (!(used >= cap * 0.8) || sent[k]) continue;
+          sent[k] = nowS;
+          const proj = used / el, over = Math.max(0, proj - cap) / 1e6 * price;
+          out.push(["plan", { i: "gauge", tab: "plan", t: name + " passed " + (used >= cap ? "100" : "80") + "% of your plan", b: apN(used) + (k === "cpu" ? " ms" : "") + " of " + apN(cap) + " this period, day " + dayN + " of " + days + "." + (over >= 0.01 ? " At this pace about $" + over.toFixed(2) + " over." : " At this pace it stays inside the plan.") }]);
+        }
+      }
+    } catch (e) {
+      const mm = (e && e.message) || "";
+      if (mm === "auth" || mm === "account") broke("cf", { i: "warn", tab: "plan", t: "Cloudflare stopped accepting the plan usage token", b: "The Plan card on Studio Stats can’t update until it’s fixed." });
+    }
+  }
+  if (env.GC_TOKEN && (want("spike") || want("broke"))) {
+    const offS = (Number(subs[ids[0]].off) || 0) * 60, today0 = Math.floor((nowS - offS) / DAY) * DAY + offS, dk = gcDay(today0 - offS);
+    const SITES = [["studio", "Playlist Studio", { code: env.GC_SITE || "playliststudio", token: env.GC_TOKEN }, "vis"], ["bl", "BeatLeader profile", GC_OTHER.bl(env), "bl"], ["hsv", "HSV Config", GC_OTHER.hsv(env), "hsv"], ["rs", "ReeSaber Studio", GC_OTHER.rs(env), "rs"]];
+    for (const [key, name, cfg, tab] of SITES) {
+      const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
+      try {
+        const vis = gcVisitors(await gcGet(e, "/stats/total", { start: gcIso(today0), end: gcIso(nowS) }));
+        fixed("gc:" + key);
+        if (!want("spike")) continue;
+        if (!st.base[key] || st.base[key].d !== dk) st.base[key] = { d: dk, avg: gcVisitors(await gcGet(e, "/stats/total", { start: gcIso(today0 - 14 * DAY), end: gcIso(today0) })) / 14 };
+        const avg = st.base[key].avg;
+        if (vis >= 15 && vis >= 3 * Math.max(avg, 1) && st.spike[key] !== dk) {
+          st.spike[key] = dk;
+          let top = null; try { top = ((await gcList(e, "toprefs", today0, nowS, 5)) || []).find((r) => r.name && r.count > 0); } catch (x) {}
+          out.push(["spike", { i: "spike", tab, t: name + " is busy today", b: vis + " visitors so far, " + (avg >= 1 ? "about " + Math.round(vis / avg) + " times a normal day" : "far more than a normal day") + "." + (top ? " Most came from " + top.name + "." : "") }]);
+        }
+      } catch (x) {
+        if (x && x.message === "gc-auth") broke("gc:" + key, { i: "warn", tab, t: "GoatCounter stopped accepting the " + name + " token", b: name + "’s numbers on Studio Stats can’t update until it’s fixed." });
+      }
+    }
+  }
+  // Ko-fi going quiet: nothing from the webhook in 30 days while people still click Support me. Checked once a day.
+  if (env.KOFI_TOKEN && want("broke") && st.kd !== Math.floor(nowS / DAY)) {
+    st.kd = Math.floor(nowS / DAY);
+    try {
+      const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [], test = await env.PLAYLISTS.get("kofi:test", "json");
+      const last = Math.max((test && test.t) || 0, ...tips.filter((x) => !x.manual).map((x) => x.t || 0));
+      if (last && nowS - last > 30 * DAY && (!st.kq || nowS - st.kq > 30 * DAY)) {
+        const c = await kofiClicks(env, false), since = gcDay(last);
+        const clicks = ((c && c.sites) || []).reduce((a, x) => a + (x.days || []).filter((d) => d[0] > since).reduce((b2, d) => b2 + (d[1] || 0), 0), 0);
+        if (clicks >= 15) { st.kq = nowS; out.push(["broke", { i: "warn", tab: "kofi", t: "Ko-fi has gone quiet", b: "Nothing from Ko-fi in " + Math.floor((nowS - last) / DAY) + " days, but there were " + clicks + " Support me clicks. Send a test from Ko-fi to check." }]); }
+      }
+    } catch (e) {}
+  }
+  await env.PLAYLISTS.put("push:ast", JSON.stringify(st));
+  for (const [kind, m] of out) await adminPush(env, kind, m);
 }
 
 // Every 5 minutes: what changed in each subscribed clan's war since the last run.
@@ -1476,6 +1675,7 @@ async function kofiHook(request, env) {
   if (!list.some((x) => x.id === rec.id)) {
     list.push(rec); list.sort((a, b) => a.t - b.t);
     await env.PLAYLISTS.put("kofi:tips", JSON.stringify(list.slice(-3000)));
+    await kofiAlert(env, rec, list);
   }
   return new Response("ok");
 }
@@ -2391,6 +2591,31 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
+/* Alerts: the bell next to refresh and its card */
+.tools button.abell{position:relative;border:1px solid #3a5fb0;background:rgba(47,123,255,.12);color:#cfe0ff}
+.tools button.abell:hover{border-color:#5a83d6;background:rgba(47,123,255,.22);color:#fff}
+.tools button.abell.on{border-color:#1f6b4f;background:rgba(34,224,161,.1);color:#9ff5d6}
+.tools button.abell.on:hover{border-color:#2a8a66;background:rgba(34,224,161,.18);color:#c8fbe8}
+.tools button.abell[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(47,123,255,.25)}
+.tools button.abell.on[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(34,224,161,.2)}
+.abell .abd{display:none;position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:#22e0a1;box-shadow:0 0 8px #22e0a1,0 0 0 2px #000}
+.abell.on .abd{display:block}
+.embed #aBell{display:none}
+.ac-card{border:1px solid #1f2a3d;border-radius:12px;padding:12px 15px;background:#05080d;margin:0 0 14px}
+.ac-h{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}.ac-h b{font-size:16px;color:#fff}.ac-h span{margin-left:auto;font-size:13px;color:#aab4c6}
+.ac-card p{margin:4px 0 10px;font-size:14.5px;color:#c3cbd9;line-height:1.5}.ac-card p.r{color:#ff9fb2}
+.ac-st{font-size:13.5px;color:#9ff5d6;display:flex;align-items:center;gap:7px;margin-bottom:6px}.ac-st.r{color:#ff9fb2}
+.ac-dot{width:7px;height:7px;border-radius:50%;background:#22e0a1;box-shadow:0 0 8px #22e0a1;flex:none}
+.ac-o{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:9px 0;border-top:1px solid #141c2a}
+.ac-o b{display:block;font-size:15px;color:#fff;font-weight:600}.ac-o small{display:block;font-size:13px;color:#aab4c6;line-height:1.4;margin-top:1px}
+.ac-sw{width:44px;height:26px;border-radius:999px;background:#1a2336;border:0;padding:0;position:relative;cursor:pointer;flex:none}
+.ac-sw::after{content:"";position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;background:#7f8a9c;transition:left .15s}
+.ac-sw[aria-checked="true"]{background:#1f6b4f}.ac-sw[aria-checked="true"]::after{left:22px;background:#22e0a1}
+.ac-sw:focus-visible{outline:2px solid #5aa0ff;outline-offset:2px}
+.ac-f{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:10px;border-top:1px solid #141c2a}.ac-card p + .ac-f{border-top:0;padding-top:0}
+.ac-f .n{font-size:12.5px;color:#8792a6;flex:1;min-width:190px;line-height:1.4}
+.ac-f .ok{font-size:13.5px;color:#9ff5d6}
+.ac-f button{padding:8px 14px;font-size:14px}.ac-f button.ghost{color:#e8edf5}.ac-f button.ghost:hover{border-color:#2f7bff;color:#fff}
 .lk{display:flex;align-items:center;gap:14px;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1px solid #ff2740;background:linear-gradient(180deg,rgba(255,39,64,.16),rgba(255,39,64,.07));box-shadow:0 0 22px rgba(255,39,64,.18)}
 .lk-sk{width:42px;height:42px;border-radius:12px;background:#ff2740;color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 0 16px rgba(255,39,64,.55)}
 .lk-sk svg{width:28px;height:28px;display:block}
@@ -2430,11 +2655,12 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
-<div class="tools hidden" id="tools"><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
+<div class="tools hidden" id="tools"><button id="aBell" class="ghost icon abell" type="button" data-al="toggle" aria-expanded="false" aria-label="Get alerts"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="abd"></span></button><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
 <div class="keyrow hidden" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
 <div id="out" class="hidden">
+<div class="ac-card hidden" id="aCard"></div>
 <div class="lk hidden" id="lockAlert" role="alert"></div>
 <div class="tabs" role="tablist" id="tabs">
 <button role="tab" data-tab="all" aria-selected="false"><span class="tab-long">All sites</span><span class="tab-short">All</span></button>
@@ -2680,6 +2906,15 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <div id="bigspin" aria-hidden="true"><div class="bs-box"><div class="bs-stage"><div class="bs-halo"></div><svg class="bs-tile" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="bsg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121722"/><stop offset="1" stop-color="#05070b"/></linearGradient><linearGradient id="bsg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,255,255,.16)"/><stop offset="1" stop-color="rgba(255,255,255,.03)"/></linearGradient></defs><rect x="1" y="1" width="62" height="62" rx="15" fill="url(#bsg1)" stroke="url(#bsg2)"/><g class="bs-arcs"><path d="M15.86 35.43 A16.5 16.5 0 0 1 46.29 23.75" stroke="#ff2740" stroke-width="6.2" stroke-linecap="round" fill="none"/><path d="M49.54 29.38 L50.49 20.63 L41.49 25.83 Z" fill="#ff2740" stroke="#ff2740" stroke-width="1.2" stroke-linejoin="round"/><path d="M48.14 28.57 A16.5 16.5 0 0 1 17.71 40.25" stroke="#2f7bff" stroke-width="6.2" stroke-linecap="round" fill="none"/><path d="M14.46 34.62 L13.51 43.37 L22.51 38.17 Z" fill="#2f7bff" stroke="#2f7bff" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M27 22.5 L27 41.5 L42.5 32 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="bs-lbl">Refreshing&hellip;</div></div></div>
 <script>
 (function () {
+  // Opened from an alert: ?tab=kofi and so on. ?tab=plan opens the All tab with the Plan card open.
+  try {
+    var q0 = new URLSearchParams(location.search).get('tab');
+    if (q0) {
+      if (q0 === 'plan') { localStorage.setItem('studioStatsPlanOpen', '1'); q0 = 'all'; }
+      if (/^(all|vis|ply|feat|src|sync|bl|hsv|rs|kofi)$/.test(q0)) localStorage.setItem('studioStatsTab2', q0);
+      history.replaceState(null, '', location.pathname);
+    }
+  } catch (e) {}
   var embedded = /[?&]embed=1/.test(location.search);
   if (embedded) {
     document.documentElement.classList.add('embed');
@@ -3565,6 +3800,104 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   }
   // The Ko-fi total next to the range buttons: tips from the start of the range's first day (today counts as day one),
   // in the currency most tips use, with the latest three supporters. Hidden when the range has none.
+  // ---- Alerts on this device (the bell next to refresh) ----
+  var AK = 'studioStats.alerts.v1', al = { open: false, busy: false, err: '', ok: '' };
+  var AL_OPTS = [['key', 'Key guessing', 'When wrong keys lock Studio Stats. Sent even during quiet hours.'], ['kofi', 'Ko-fi', 'Every tip, shop order and new monthly member'],
+    ['plan', 'Plan usage', 'Once when any bar passes 80% this billing period'], ['broke', 'Something broke', 'A token stops working, or Ko-fi goes quiet'],
+    ['sync', 'New Studio Sync users', 'Someone links a headset for the first time'], ['spike', 'Traffic spikes', 'A site gets about 3 times its usual visitors in a day']];
+  function alGet() { try { return JSON.parse(localStorage.getItem(AK) || 'null'); } catch (e) { return null; } }
+  function alSet(v) { try { if (v) localStorage.setItem(AK, JSON.stringify(v)); else localStorage.removeItem(AK); } catch (e) {} }
+  function alOk() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function alTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } }
+  function alPost(p, body) {
+    return fetch('/admin/push/' + p, { method: 'POST', headers: { Authorization: 'Bearer ' + getKey(), 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); });
+  }
+  function alKey(b) { b = b.replace(/-/g, '+').replace(/_/g, '/'); while (b.length % 4) b += '='; var s = atob(b), u = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+  function alPaint() {
+    var st = alGet(), b = $('aBell'), c = $('aCard');
+    if (b) { b.classList.toggle('on', !!st); b.setAttribute('aria-expanded', al.open ? 'true' : 'false'); b.setAttribute('aria-label', st ? 'Alerts are on' : 'Get alerts'); }
+    if (!c) return;
+    c.classList.toggle('hidden', !al.open); if (!al.open) { c.innerHTML = ''; return; }
+    var h = '<div class="ac-h"><b>Alerts</b><span>on this device</span></div>';
+    if (!alOk()) { c.innerHTML = h + '<p>This browser can’t show alerts from websites. Chrome, Edge and Firefox can. On iPhone, add Studio Stats to your home screen first.</p>'; return; }
+    var errs = { blocked: 'Alerts are blocked for Studio Stats in this browser. Allow notifications for this site (the icon left of the address), then press Turn on again.',
+      dismissed: 'The browser didn’t get an answer. Press Turn on and choose Allow.', gone: 'Studio Stats no longer had this device, so alerts were off. Turn them on again.', fail: 'Couldn’t turn alerts on. Try again in a moment.' };
+    var err = al.err ? '<p class="r">' + esc(errs[al.err] || al.err) + '</p>' : '';
+    if (!st) {
+      c.innerHTML = h + '<p>Studio Stats can tell you when something important happens, even with this page closed: someone guessing your key, a Ko-fi tip, your plan getting close, or something breaking.</p>' + err +
+        '<div class="ac-f"><button type="button" class="primary" data-al="on"' + (al.busy ? ' disabled' : '') + '>' + (al.busy ? 'Turning on…' : 'Turn on') + '</button><span class="n">Your browser asks once. Only you can turn these on: it needs your admin key.</span></div>';
+      return;
+    }
+    var denied = Notification.permission === 'denied';
+    h += denied ? '<div class="ac-st r">Notifications are blocked in this browser, so alerts can’t show. Allow them for this site to get them again.</div>' : '<div class="ac-st"><span class="ac-dot"></span>On in this browser. Key guessing and Ko-fi come right away; the rest is checked every hour.</div>';
+    AL_OPTS.forEach(function (o) {
+      var on = !st.prefs || st.prefs[o[0]] !== false;
+      h += '<div class="ac-o"><div><b>' + o[1] + '</b><small>' + o[2] + '</small></div><button type="button" class="ac-sw" role="switch" aria-checked="' + on + '" aria-label="' + esc(o[1]) + '" data-al="pref" data-k="' + o[0] + '"></button></div>';
+    });
+    c.innerHTML = h + err + '<div class="ac-f"><button type="button" class="ghost" data-al="test"' + (al.busy ? ' disabled' : '') + '>Send a test</button><button type="button" class="ghost" data-al="off"' + (al.busy ? ' disabled' : '') + '>Turn off on this device</button>' +
+      (al.ok ? '<span class="ok">' + esc(al.ok) + '</span>' : '') + '<span class="n">Quiet from 1 to 8 am: anything then comes as one alert in the morning, except key guessing. Each device you use gets its own alerts.</span></div>';
+  }
+  function alPrefs() { var st = alGet(), o = {}; AL_OPTS.forEach(function (x) { o[x[0]] = !st || !st.prefs || st.prefs[x[0]] !== false; }); return o; }
+  function alOn() {
+    al.busy = true; al.err = ''; al.ok = ''; alPaint();
+    var reg = null;
+    Notification.requestPermission().then(function (p) {
+      if (p !== 'granted') throw new Error(p === 'denied' ? 'blocked' : 'dismissed');
+      return navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin' });
+    }).then(function () { return navigator.serviceWorker.ready; }).then(function (r) {
+      reg = r;
+      return fetch('/admin/push/key', { headers: { Authorization: 'Bearer ' + getKey() }, cache: 'no-store' }).then(function (x) { return x.json(); });
+    }).then(function (k) {
+      return reg.pushManager.getSubscription().then(function (s) { return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: alKey(k.key) }); });
+    }).then(function (sub) {
+      var prefs = alPrefs();
+      return alPost('sub', { sub: sub.toJSON(), prefs: prefs, tz: alTz(), off: new Date().getTimezoneOffset() }).then(function (res) {
+        if (!res.ok || !res.j.id) throw new Error(res.j.error || 'fail');
+        alSet({ id: res.j.id, prefs: prefs });
+      });
+    }).catch(function (e) { al.err = (e && e.message) || 'fail'; }).then(function () { al.busy = false; alPaint(); });
+  }
+  function alGone() { alSet(null); al.err = 'gone'; alPaint(); }
+  function alPref(k) {
+    var st = alGet(); if (!st) return;
+    st.prefs = alPrefs(); st.prefs[k] = !st.prefs[k]; alSet(st); al.ok = ''; alPaint();
+    alPost('prefs', { id: st.id, prefs: st.prefs, tz: alTz(), off: new Date().getTimezoneOffset() }).then(function (res) { if (res.status === 404) alGone(); }).catch(function () {});
+  }
+  function alTest() {
+    var st = alGet(); if (!st) return;
+    al.busy = true; al.ok = ''; alPaint();
+    alPost('test', { id: st.id }).then(function (res) {
+      if (res.status === 404 || res.status === 410) return alGone();
+      al.ok = res.j.ok ? 'Test sent.' : 'The push service didn’t take it. Try again.';
+    }).catch(function () { al.ok = 'Couldn’t reach the Worker.'; }).then(function () { al.busy = false; alPaint(); });
+  }
+  function alOff() {
+    var st = alGet(); if (!st) return;
+    al.busy = true; alPaint();
+    var un = navigator.serviceWorker.getRegistration('/admin').then(function (r) { return r ? r.pushManager.getSubscription() : null; }).then(function (s) { return s ? s.unsubscribe() : null; }).catch(function () {});
+    Promise.all([un, alPost('del', { id: st.id }).catch(function () {})]).then(function () { alSet(null); al.busy = false; al.err = ''; al.ok = ''; alPaint(); });
+  }
+  // Signed in: if this device thinks alerts are on but the browser dropped the subscription, show them as off.
+  function alCheck() {
+    alPaint();
+    if (!alGet() || !alOk()) return;
+    navigator.serviceWorker.getRegistration('/admin').then(function (r) { return r ? r.pushManager.getSubscription() : null; }).then(function (s) { if (!s) { alSet(null); alPaint(); } }).catch(function () {});
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-al]'); if (!b) return;
+    var a = b.getAttribute('data-al');
+    if (a === 'toggle') { al.open = !al.open; al.ok = ''; if (!al.open) al.err = ''; alPaint(); }
+    else if (a === 'on') alOn(); else if (a === 'off') alOff(); else if (a === 'test') alTest(); else if (a === 'pref') alPref(b.getAttribute('data-k'));
+  });
+  // A click on an alert while Studio Stats is already open: the service worker says which tab.
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
+    var d = e.data || {}; if (d.t !== 'ss-tab' || !d.tab) return;
+    var t = d.tab;
+    if (t === 'plan') { t = 'all'; planOpen = true; try { localStorage.setItem('studioStatsPlanOpen', '1'); } catch (x) {} if (plan) renderPlan(); }
+    if (document.querySelector('#tabs button[data-tab="' + t + '"]')) showTab(t);
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {}
+  });
   var LK_SKULL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-4.7 0-8.3 3.4-8.3 7.9 0 2.6 1.2 4.6 3.1 5.9v2.4c0 .8.6 1.4 1.4 1.4h7.6c.8 0 1.4-.6 1.4-1.4v-2.4c1.9-1.3 3.1-3.3 3.1-5.9 0-4.5-3.6-7.9-8.3-7.9z" fill="currentColor"/><circle cx="8.7" cy="11" r="2.1" fill="#1a0306"/><circle cx="15.3" cy="11" r="2.1" fill="#1a0306"/><path d="M12 13.4l-1.3 2.3h2.6z" fill="#1a0306"/><path d="M9.6 18.2v2.1M12 18.2v2.1M14.4 18.2v2.1" stroke="#1a0306" stroke-width="1.1" stroke-linecap="round"/></svg>';
   function lkWhen(t) {
     var d = new Date(t * 1000), now = new Date(), y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
@@ -4352,7 +4685,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     }).then(function (res) {
       if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); } say(res.j.error || 'Couldn’t load stats.', true); return; }
       var first = !getKey() || !sync;
-      setKey(key); keyIn.value = ''; signedIn(true); loadLocks();
+      setKey(key); keyIn.value = ''; signedIn(true); loadLocks(); alCheck();
       var s = sync = res.j, players = s.libraries - s.librariesNoHeadset;
       vrFix = 'sync';
       txt('activeDay', s.activeDay); txt('activeWeek', s.activeWeek); txt('activeMonth', s.activeMonth);
