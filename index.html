@@ -3401,7 +3401,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T17:27:06Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T17:47:18Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -12148,7 +12148,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         state.player = { id: p.id || id, name: p.name || 'Player', avatar: p.avatar || '',
           pp: p.pp || 0, rank: p.rank || 0, countryRank: p.countryRank || 0,
           total: (p.scoreStats && p.scoreStats.totalPlayCount) || 0, ranked: (p.scoreStats && p.scoreStats.rankedPlayCount) || 0, syncedMaxTime: 0 };
-        state.scores = {}; state._scoreHashIdx = null; renderProfile(); savePlayerCache();
+        state.scores = {}; state._scoreHashIdx = null; renderProfile(); savePlayerCache(); pcRefresh(true);
         toast('Connected as ' + state.player.name + '. Now use the "Your plays" filter above the results to hide what you\'ve played.', 'ok'); track('connect-profile'); trackLookup(state.player);
         return syncScores(false);
       })
@@ -13404,7 +13404,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var tries = 0;
     track('waralert-click');
     (function go() {
-      var st = waGet(), link = st && st.clan && st.clan.id ? { clan: st.clan, aid: st.aid } : pcAsLink();
+      var st = waGet(), link = pcAsLink() || (st && st.clan && st.clan.id ? { clan: st.clan, aid: st.aid } : null);
       if (!state.player || !link) { if (++tries < 40) setTimeout(go, 250); return; }
       if (isMobileView()) setMobileView('results');
       if (!(clan.open && clan.kind === 'as' && asc.link && asc.link.clan.id === link.clan.id)) openAsClanView(link, pcc.bl);
@@ -14105,6 +14105,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }).then(function () {
       pccBusy = false; if (!ok()) return;
       pcc.pid = pid; pcc.t = Date.now(); pcSave(); renderPcClans();
+      var ws = waGet(); if (ws && pcc.as && ws.cid && ws.cid !== pcc.as.id) { wa.synced = ''; waSync(pcAsLink()); }
     }, function () { pccBusy = false; if (ok()) renderPcClans(); });
   }
   function pcColor(x, d) { return /^#[0-9a-fA-F]{3,8}$/.test(x || '') ? x : d; }
@@ -14712,7 +14713,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // BeatLeader profile
     el.connectBtn.addEventListener('click', connectPlayer);
     el.playerInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') connectPlayer(); });
-    el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); });
+    el.syncBtn.addEventListener('click', function () { syncScores(!!(state.player && state.player.syncedMaxTime)); pcRefresh(true); });
     el.buildPlaysBtn.addEventListener('click', buildFromPlays);
     el.disconnectBtn.addEventListener('click', disconnectPlayer); bindPcMenu();
     ['pcClans', 'pcWar'].forEach(function (id) { var n = document.getElementById(id); if (n) n.addEventListener('click', pcClanClick); });
