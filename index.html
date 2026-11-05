@@ -3385,7 +3385,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-04T23:29Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T03:07:17Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4580,7 +4580,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var serverSearch = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
     if (serverSearch) p.set('search', serverSearch);
     if (f.modes.length === 1) p.set('mode', f.modes[0]);
-    if (f.style) { p.set('mapType', f.style); p.set('allTypes', '0'); }
     return API_BASE + '/leaderboards?' + p.toString();
   }
 
@@ -5080,6 +5079,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function normalize(item) {
     var song = item.song || {}, diff = item.difficulty || {};
+    var st = diff.status, rk = st == null || st === 3, qual = st === 1 || st === 2;
+    if (!rk) diff = Object.assign({}, diff, { techRating: 0, accRating: 0, passRating: 0, modifiersRating: null, stars: qual ? diff.stars : 0 });
     return {
       leaderboardId: item.id || '', hash: (song.hash || '').toString(),
       songName: song.name || 'Unknown', subName: song.subName || '',
@@ -5087,7 +5088,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       bpm: song.bpm || 0, duration: song.duration || 0, cover: song.coverImage || '',
       stars: diff.stars || 0, difficultyName: diff.difficultyName || 'ExpertPlus', modeName: diff.modeName || 'Standard',
       nps: diff.nps || 0, njs: diff.njs || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0,
-      mods: modsFrom(diff.modifiersRating), mapType: diff.type != null ? +diff.type || 0 : null
+      mods: modsFrom(diff.modifiersRating), mapType: diff.type != null ? +diff.type || 0 : null, qual: qual
     };
   }
   function fetchLoaderHTML() {
@@ -5147,6 +5148,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         else setStatus('Loaded ' + collected.length + ' maps', 'on');
         applyClientFilters();
         if (collected.length && isMobileView()) setMobileView('results');
+        var ksig = state.lastSig; setTimeout(function () { kwSweep(f, ksig); }, 0);
       }).catch(function (err) {
         console.error(err); setStatus('Fetch failed', 'err'); var msg = err.message || 'Fetch failed.';
         el.counterMeta.textContent = msg; renderResults(); toast(msg, 'err');
@@ -5157,6 +5159,36 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         el.topLoadBar.classList.remove('on'); el.topLoadFill.style.width = '0%';
         setTimeout(function () { el.fetchProgress.hidden = true; el.barFill.style.width = '0%'; }, 800);
       });
+  }
+
+  var kwSweepCache = {};
+  function kwSweep(f, sig) {
+    if (!f.search || (f.type !== 'ranked' && f.type !== 'all')) return;
+    var words = kwWords(f.search); if (!words.length) return;
+    var g = Object.assign({}, f, { search: '', mapperTerms: [], type: 'ranked' });
+    var ck = buildUrl(1, g);
+    var hit = function (e) { var h = kwHay(e); return words.every(function (w) { return w.length < 3 ? h.t.indexOf(' ' + w + ' ') !== -1 : (h.t.indexOf(w) !== -1 || h.flat.indexOf(w) !== -1); }); };
+    var all = kwSweepCache[ck] ? Promise.resolve(kwSweepCache[ck]) : fetchApi(ck).then(function (d0) {
+      var out = ((d0 && d0.data) || []).map(normalize);
+      var total = (d0 && d0.metadata && d0.metadata.total) || 0, pages = Math.min(60, Math.ceil(total / PAGE_SIZE)), next = 2;
+      function run() {
+        if (next > pages) return Promise.resolve();
+        var pg = next++;
+        return fetchApi(buildUrl(pg, g)).then(function (d) { ((d && d.data) || []).forEach(function (it) { out.push(normalize(it)); }); }, function () {})
+          .then(function () { return delay(state.pinnedRelay ? RELAY_DELAY_MS : PAGE_DELAY_MS); }).then(run);
+      }
+      return Promise.all([run(), run()]).then(function () { kwSweepCache[ck] = out; return out; });
+    });
+    all.then(function (list) {
+      if (state.lastSig !== sig || state.fetching || state.source !== 'beatleader' || state.viewMode !== 'search') return;
+      var have = {}; state.raw.forEach(function (e) { have[e.leaderboardId] = 1; });
+      var add = list.filter(function (e) { return !have[e.leaderboardId] && hit(e); });
+      if (!add.length) return;
+      state.raw = state.raw.concat(add); state.emptyProbe = null;
+      applyClientFilters();
+      setStatus('Loaded ' + state.raw.length + ' maps', 'on');
+      toast('Added ' + add.length + ' more ranked map' + (add.length === 1 ? '' : 's') + ' with \u201c' + f.search + '\u201d in the song subtitle.', 'ok');
+    }, function () {});
   }
 
   // ---- source split (BeatLeader / BeatSaver) --------------------------------
@@ -5486,7 +5518,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (state.source === 'beatleader' && s.stars > 0 && !(state.bandAuto !== false && (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan')) && (s.stars < f.starMin || s.stars > f.starMax)) return false;
       if (state.viewMode === 'accsaber' && state.asCat && state.asCat !== 'all' && s.asCat !== state.asCat) return false;
       if (state.source === 'beatleader' && f.rankView && f.rankView !== 'all' && !(state.viewMode === 'clan' && clan.kind === 'as')) {
-        var isRanked = s.stars > 0;
+        var isRanked = s.stars > 0 && !s.qual;
         if (f.rankView === 'ranked' && !isRanked) return false;
         if (f.rankView === 'unranked' && isRanked) return false;
       }
@@ -5633,7 +5665,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Signature of filters that change the SERVER query; when it drifts from the
   // last fetch, the scanned set is incomplete and a re-fetch is warranted.
   function serverSig(f) {
-    return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(','), f.style || 0].join('|');
+    return [f.type, f.order, f.starMin, f.starMax, f.maxScan, f.mapperTerms.join(','), f.search, f.modes.slice().sort().join(',')].join('|');
   }
   function updateStale() {
     if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
@@ -6194,7 +6226,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var sig = state.lastSig, g = Object.assign({}, f), steps = [];
     var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
     if (f.type !== 'unranked' && (f.starMin > 0 || f.starMax < 15)) steps.push({ k: 'stars', t: 'your star range (' + f.starMin.toFixed(1) + ' to ' + f.starMax.toFixed(1) + '★)', go: function (x) { x.starMin = 0; x.starMax = 15; } });
-    if (f.style) steps.push({ k: 'style', t: 'your map style', go: function (x) { x.style = 0; } });
     if (f.type !== 'all') steps.push({ k: 'type', t: 'Ranked status (' + (el.fType.options[el.fType.selectedIndex] || {}).text + ')', go: function (x) { x.type = 'all'; } });
     if (f.modes.length === 1) steps.push({ k: 'mode', t: 'the ' + f.modes[0] + ' mode', go: function (x) { x.modes = []; } });
     state.emptyProbe = { sig: sig, q: q, busy: !!steps.length, none: !steps.length, src: 'BeatLeader' };
@@ -6765,7 +6796,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     function lbPage(p) {
       return relayFetch(API_BASE + '/leaderboards?page=' + p + '&count=100&type=ranked&sortBy=stars&order=asc&stars_from=' + smin + '&stars_to=' + smax,
         function (j) { return j && Array.isArray(j.data); })
-        .then(function (d) { var items = (d && d.data) || []; cands = cands.concat(items); if (items.length >= 100 && p < 6) return lbPage(p + 1); });
+        .then(function (d) { var items = (d && d.data) || []; cands = cands.concat(items); if (items.length >= 100 && p < 30) return lbPage(p + 1); });
     }
     lbPage(1).then(function () {
       var seen = {}, out = [];
@@ -6857,14 +6888,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var smin = Math.max(1, +(M.maxStar - 1.6).toFixed(1)), smax = +(M.maxStar + 0.6).toFixed(1);
       setStatus('Scanning ranked maps ' + smin + '\u2013' + smax + '\u2605\u2026', 'busy');
       var cands = [];
-      function lbPage(p) { return relayFetch(API_BASE + '/leaderboards?page=' + p + '&count=100&type=ranked&sortBy=stars&order=asc&stars_from=' + smin + '&stars_to=' + smax, function (j) { return j && Array.isArray(j.data); }).then(function (d) { var items = (d && d.data) || []; cands = cands.concat(items); if (items.length >= 100 && p < 8) return lbPage(p + 1); }); }
+      function lbPage(p) { return relayFetch(API_BASE + '/leaderboards?page=' + p + '&count=100&type=ranked&sortBy=stars&order=asc&stars_from=' + smin + '&stars_to=' + smax, function (j) { return j && Array.isArray(j.data); }).then(function (d) { var items = (d && d.data) || []; cands = cands.concat(items); if (items.length >= 100 && p < 30) return lbPage(p + 1); }); }
       lbPage(1).then(function () {
         var pool = [];
         cands.forEach(function (item) {
           var e = normalize(item);
           if (!e.hash || e.modeName !== 'Standard') return;
           if (!(e.passRating > 0 || e.accRating > 0)) return;
-          if (M.played[(e.hash + '|' + e.difficultyName + '|' + e.modeName).toLowerCase()]) return;
+          if (M.played[(e.hash + '|' + e.difficultyName + '|' + e.modeName).toLowerCase()] || playInfo(e)) return;
           var pa = (plannerAcc === 'pred') ? M.pAcc(e.stars) : Math.min(0.999, parseFloat(plannerAcc) / 100);
           var proj = PP.ppFor(e, pa * 100, '');
           if (proj == null || proj <= 0) return;
@@ -12166,7 +12197,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           .then(function (d) {
             var items = (d && d.data) || [];
             cands = cands.concat(items);
-            if (items.length >= 100 && p < 8) return lbPage(p + 1);
+            if (items.length >= 100 && p < 30) return lbPage(p + 1);
           });
       }
       return lbPage(1).then(function () {
@@ -12175,7 +12206,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           var e = normalize(item);
           if (!e.hash || e.modeName !== 'Standard') return;
           if (!(e.passRating > 0 || e.accRating > 0)) return;
-          if (M.played[(e.hash + '|' + e.difficultyName + '|' + e.modeName).toLowerCase()]) return;
+          if (M.played[(e.hash + '|' + e.difficultyName + '|' + e.modeName).toLowerCase()] || playInfo(e)) return;
           var pa = M.pAcc(e.stars);
           var proj = PP.ppFor(e, pa * 100, '');
           if (proj == null) return;
@@ -14231,6 +14262,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function sameHref(a, b) { try { return new URL(a).href === new URL(b, location.href).href; } catch (e) { return false; } }
   // A preview or the stats panel would sit over what the launch shows.
   function appClearWay() {
+    siClose();
     if (el.previewModal && el.previewModal.classList.contains('show')) closePreview();
     var sd = document.getElementById('sdPanel'); if (sd && sd.classList.contains('open')) svClose();
   }
