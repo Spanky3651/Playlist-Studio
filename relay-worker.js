@@ -3499,6 +3499,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'clear-logo': ['Other', 'Logo triple tap', 'Cleared everything with the logo triple tap'],
     'egg-115': ['Other', 'Easter egg 115', 'Found the 115 easter egg (removed Oct 30 2026)'],
     'egg-bomb': ['Other', 'Easter egg bomb', 'Found the bomb easter egg'],
+    'pl-sort-open': ['Playlist', 'Opened Sort', 'Opened the Sort menu on Your Playlist'],
+    'pl-sort-*': ['Playlist', 'Sorted the playlist', 'Picked an order from the Sort menu on Your Playlist'],
     'egg-halloween': ['Other', 'Halloween logo shown', 'The Oct 31 spider logo was on screen. Counts page loads that day, not something anyone clicked'],
     'blocks-on': ['Layout', 'Falling blocks on', 'Turned on the Falling blocks background with the footer switch'],
     'blocks-off': ['Layout', 'Falling blocks off', 'Turned the Falling blocks background back off'],
@@ -3782,7 +3784,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     [/^(share-open|tab-sharePanel)$/, 'share-tab'], [/^(pub-.*|tab-syncPanel)$/, 'sync-tab'], [/^save-playlist$/, 'save'], [/^library-backup$/, 'backup'],
     [/^(load-playlist|library-restore|import|tab-libraryPanel)$/, 'library-tab'], [/^combine-.*/, 'combine'], [/^(gallery-.*|empty-gallery)$/, 'gallery'],
     [/^(stats-open|tab-statsPanel)$/, 'stats-tab'], [/^(refine|tab-panelRefine)$/, 'prune-tab'], [/^(session-ramp|tab-rampPanel)$/, 'ramp-tab'],
-    [/^(playlist-name|tab-infoPanel)$/, 'info-tab'], [/^(clear-logo|tab-coverPanel)$/, 'cover-tab'], [/^(undo|redo|refresh-stars|fill-data)$/, 'playlist-tools'],
+    [/^(playlist-name|tab-infoPanel)$/, 'info-tab'], [/^(clear-logo|tab-coverPanel)$/, 'cover-tab'], [/^(undo|redo|refresh-stars|fill-data|pl-sort-.*)$/, 'playlist-tools'],
     [/^lq-(link|first-.*|key-.*|qr-show|rekey)$/, 'lq-link'], [/^(lq-.*|tab-lqPanel|onquest-open|studiosync-.*|mbf-link)$/, 'studio-sync']
   ];
   function featSpot(name) { for (var i = 0; i < FEAT_SPOT.length; i++) if (FEAT_SPOT[i][0].test(name)) return FEAT_SPOT[i][1]; return ''; }

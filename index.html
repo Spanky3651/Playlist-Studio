@@ -1193,6 +1193,22 @@ button[hidden],.filebtn[hidden]{display:none !important;}
 .bk-more{display:none;}
 .bk-menu{position:fixed;z-index:400;padding:6px;border:1px solid #2a4a7a;border-radius:12px;background:#0c1626;box-shadow:0 16px 40px rgba(0,0,0,.6);}
 .bk-menu[hidden]{display:none;}
+.ps-car{font-size:11px;opacity:.7;}
+#shuffleBtn[aria-expanded="true"]{border-color:#4c8dff;background:#0d1a30;color:#cfe0ff;}
+.ps-menu{position:fixed;z-index:400;width:340px;max-width:calc(100vw - 24px);padding:6px;border:1px solid #2a4a7a;border-radius:12px;background:#0c1626;box-shadow:0 16px 40px rgba(0,0,0,.6);overflow-y:auto;}
+.ps-menu[hidden]{display:none;}
+.ps-h{padding:8px 10px 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.ps-mi{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:8px 10px;border:0;border-radius:8px;background:transparent;font-size:15px;font-weight:500;color:#e6edf6;text-align:left;box-shadow:none;transform:none;cursor:pointer;}
+.ps-mi:hover,.ps-mi:focus-visible{background:#142036;}
+.ps-mi.on{background:#0f1c33;}
+.ps-mi .ps-g{width:18px;flex:none;color:#8fb6ff;text-align:center;}
+.ps-t{display:flex;flex-direction:column;min-width:0;line-height:1.25;}.ps-t small{font-size:12.5px;color:var(--muted);font-weight:400;}
+.ps-chips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 10px 8px;}
+.ps-chip{min-height:34px;padding:5px 12px;border-radius:999px;border:1px solid #2a3a55;background:#0b0f16;color:#cfd6e2;font-size:14px;font-weight:600;box-shadow:none;transform:none;cursor:pointer;}
+.ps-chip:hover{border-color:#3d5a85;}
+.ps-chip.on{background:#4c8dff;border-color:#4c8dff;color:#fff;}
+.ps-sep{height:1px;margin:6px 4px;background:#1c2738;}
+.ps-note{padding:2px 10px 8px;font-size:13px;color:var(--muted);}
 .bk-mi{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:transparent;font-size:15px;color:#e6edf6;font-weight:500;text-align:left;text-decoration:none;box-shadow:none;transform:none;}
 .bk-mi:hover,.bk-mi:active{background:#13233b;border:0;box-shadow:none;transform:none;color:#fff;text-decoration:none;}
 .bk-mi:disabled{opacity:.35;background:transparent;}
@@ -3040,7 +3056,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="pl-name" id="plNameRow" hidden><label class="pl-name-lbl" for="plNameIn">Name</label><input type="text" id="plNameIn" class="pl-name-in" maxlength="80" autocomplete="off" spellcheck="false" /><span class="pl-name-tag" id="plNameTag" title="Studio picked this name from your maps. It's used when you save or send the playlist. Type to rename it." hidden>Suggested</span></div>
           <div class="list-actions">
             <button class="ghost sm" id="favAddBtn" type="button" hidden title="Add every favorite on your Quest to this playlist"><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Add favorites</button>
-            <button class="ghost sm" id="shuffleBtn" disabled>⤮ Shuffle</button>
+            <button class="ghost sm" id="shuffleBtn" disabled aria-haspopup="menu" aria-expanded="false" title="Shuffle or sort this playlist">⇅ <span id="plSortLbl">Sort</span> <span class="ps-car" aria-hidden="true">▾</span></button>
             <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
             <button class="ghost sm" id="refreshStarsBtn" disabled title="Refresh every map's stars &amp; NPS from BeatLeader - catches rating changes">★ Refresh ratings</button>
             <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
@@ -3385,7 +3401,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T17:09:37Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T17:27:06Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5995,8 +6011,118 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function shuffleBasket() {
     for (var i = state.basket.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; }
-    toast('Shuffled.', 'ok'); renderBasketArea();
+    plSort.cur = null; toast('Shuffled.', 'ok'); renderBasketArea();
   }
+  // ---- Sort menu for Your Playlist ---------------------------------------------
+  // Shuffle, spread the hard maps through the list, sort by a column, or by your own scores.
+  // Every pick is one playlist change, so the toolbar Undo takes it back.
+  var plSort = { dir: 'up', last: null, cur: null };
+  var PS_COLS = { stars: 'Stars', nps: 'NPS', njs: 'NJS', bpm: 'BPM', duration: 'Length', songName: 'Name', author: 'Artist', mapper: 'Mapper' };
+  var PS_MINE = { acc: 'Lowest accuracy', unplayed: 'Unplayed first', old: 'Oldest played' };
+  function psHard(e) { return e.stars > 0 ? e.stars : (e.nps || 0) * 0.85; }
+  function psSpread(list) {
+    var n = list.length, nh = Math.ceil(n / 3);
+    var rank = list.map(function (e, i) { return { i: i, v: psHard(e) }; }).sort(function (a, b) { return b.v - a.v || a.i - b.i; });
+    var isH = {}; rank.slice(0, nh).forEach(function (r) { isH[r.i] = 1; });
+    var H = list.filter(function (e, i) { return isH[i]; }), R = list.filter(function (e, i) { return !isH[i]; });
+    var slot = {}; H.forEach(function (e, i) { slot[Math.round((i + 0.5) * n / H.length - 0.5)] = 1; });
+    var out = [], hi = 0, ri = 0;
+    for (var i = 0; i < n; i++) out.push((slot[i] && hi < H.length) || ri >= R.length ? H[hi++] : R[ri++]);
+    return out;
+  }
+  function psSortBy(list, k, dir) {
+    var d = dir === 'down' ? -1 : 1, txt = k === 'songName' || k === 'author' || k === 'mapper';
+    return list.map(function (e, i) { return { e: e, i: i }; }).sort(function (a, b) {
+      var x = a.e, y = b.e, c;
+      if (k === 'acc' || k === 'unplayed' || k === 'old') {
+        var px = playInfo(x), py = playInfo(y);
+        if (k === 'unplayed') c = (px ? 1 : 0) - (py ? 1 : 0);
+        else if (!px || !py) c = (px ? 0 : 1) - (py ? 0 : 1);      // unplayed maps go last
+        else c = k === 'acc' ? (px.acc || 0) - (py.acc || 0) : (px.t || 0) - (py.t || 0);
+      } else if (k === 'stars' && !(x.stars > 0 && y.stars > 0)) {
+        c = (x.stars > 0 ? 0 : 1) - (y.stars > 0 ? 0 : 1);          // unranked maps go last either way
+        if (!c) c = d * ((x.nps || 0) - (y.nps || 0));
+      } else if (txt) c = d * String(x[k] || '').localeCompare(String(y[k] || ''), undefined, { sensitivity: 'base', numeric: true });
+      else c = d * ((x[k] || 0) - (y[k] || 0));
+      return c || a.i - b.i;
+    }).map(function (o) { return o.e; });
+  }
+  function psApply(k) {
+    var n = state.basket.length; if (n < 2) return;
+    var col = PS_COLS[k], mine = PS_MINE[k], msg;
+    if (k === 'shuffle') { shuffleBasket(); plSort.last = null; psRender(); track('pl-sort-shuffle'); return; }
+    if (k === 'spread') {
+      if (n < 3) { toast('Spreading needs at least 3 maps.', 'warn'); return; }
+      state.basket = psSpread(state.basket); plSort.cur = 'Spread'; msg = 'Spread the ' + Math.ceil(n / 3) + ' hardest maps through the playlist.';
+    } else if (col) {
+      if (plSort.last === k) plSort.dir = plSort.dir === 'up' ? 'down' : 'up';
+      state.basket = psSortBy(state.basket, k, plSort.dir);
+      var up = plSort.dir === 'up', ab = k === 'songName' || k === 'author' || k === 'mapper';
+      plSort.cur = col + (up ? ' \u2191' : ' \u2193');
+      msg = 'Sorted ' + n + ' maps by ' + col.toLowerCase() + ', ' + (ab ? (up ? 'A to Z' : 'Z to A') : (up ? 'low to high' : 'high to low')) + '.';
+    } else if (mine) {
+      state.basket = psSortBy(state.basket, k, 'up'); plSort.cur = mine; msg = 'Sorted ' + n + ' maps: ' + mine.toLowerCase() + '.';
+    } else return;
+    plSort.last = k; plSort.sig = basketSig(state.basket);
+    track('pl-sort-' + k);
+    renderBasketArea(); psRender(); toast(msg, 'ok');
+  }
+  function psMenuHtml() {
+    var ab = plSort.last === 'songName' || plSort.last === 'author' || plSort.last === 'mapper';
+    var chip = function (k, l, on) { return '<button type="button" class="ps-chip' + (on ? ' on' : '') + '" data-ps="' + k + '">' + l + '</button>'; };
+    var h = '<div class="ps-h">Order</div>' +
+      '<button type="button" class="ps-mi" role="menuitem" data-ps="shuffle"><span class="ps-g">\u292e</span>Shuffle</button>' +
+      '<button type="button" class="ps-mi' + (plSort.last === 'spread' ? ' on' : '') + '" role="menuitem" data-ps="spread"><span class="ps-g">\u224b</span><span class="ps-t">Spread hard maps<small>No hard maps back to back</small></span></button>' +
+      '<div class="ps-sep"></div><div class="ps-h">Sort by</div><div class="ps-chips">' +
+      Object.keys(PS_COLS).map(function (k) { return chip(k, PS_COLS[k], plSort.last === k); }).join('') + '</div>' +
+      '<div class="ps-chips">' + chip('dir-up', ab ? 'A to Z \u2191' : 'Low to high \u2191', plSort.dir === 'up') + chip('dir-down', ab ? 'Z to A \u2193' : 'High to low \u2193', plSort.dir === 'down') + '</div>';
+    if (state.player) h += '<div class="ps-sep"></div><div class="ps-h">Your scores</div><div class="ps-chips">' + Object.keys(PS_MINE).map(function (k) { return chip(k, PS_MINE[k], plSort.last === k); }).join('') + '</div>';
+    return h + '<div class="ps-note">Unranked maps (UR) go last when sorting by stars. Undo takes any sort back.</div>';
+  }
+  function psPlace() {
+    var m = document.getElementById('plSortMenu'), b = el.shuffleBtn; if (!m || m.hidden || !b) return;
+    var r = b.getBoundingClientRect(), tb = document.getElementById('mTabbar');
+    var floor = Math.min(innerHeight, tb && tb.offsetParent !== null ? tb.getBoundingClientRect().top : innerHeight) - 8;
+    var w = Math.min(340, innerWidth - 24); m.style.width = w + 'px';
+    m.style.left = Math.max(12, Math.min(r.left, innerWidth - w - 12)) + 'px';
+    m.style.maxHeight = ''; var h = m.offsetHeight, top = r.bottom + 6;
+    if (top + h > floor && r.top - 6 - h >= 8) top = r.top - 6 - h;
+    else if (top + h > floor) m.style.maxHeight = Math.max(200, floor - top) + 'px';
+    m.style.top = Math.max(8, top) + 'px';
+  }
+  function psRender() {
+    var lbl = document.getElementById('plSortLbl');
+    if (plSort.cur && plSort.sig !== basketSig(state.basket)) { plSort.cur = null; plSort.last = null; }   // the list changed since: back to plain Sort
+    if (lbl) lbl.textContent = plSort.cur || 'Sort';
+    var m = document.getElementById('plSortMenu'); if (m && !m.hidden) { m.innerHTML = psMenuHtml(); psPlace(); }
+  }
+  function psOpen(on) {
+    var m = document.getElementById('plSortMenu');
+    if (!m) { m = document.createElement('div'); m.id = 'plSortMenu'; m.className = 'ps-menu'; m.setAttribute('role', 'menu'); m.hidden = true; document.body.appendChild(m);
+      m.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-ps]'); if (!b) return;
+        var k = b.getAttribute('data-ps');
+        if (k === 'dir-up' || k === 'dir-down') {
+          plSort.dir = k.slice(4);
+          if (PS_COLS[plSort.last]) { var l = plSort.last; plSort.last = null; psApply(l); } else psRender();
+          return;
+        }
+        psApply(k);
+      });
+    }
+    if (on === undefined) on = m.hidden;
+    m.hidden = !on; el.shuffleBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) { m.innerHTML = psMenuHtml(); psPlace(); track('pl-sort-open'); }
+  }
+  document.addEventListener('click', function (e) {
+    var m = document.getElementById('plSortMenu'); if (!m || m.hidden) return;
+    if (!document.documentElement.contains(e.target)) return;   // a chip the menu just redrew
+    if (e.target.closest && (e.target.closest('#plSortMenu') || e.target.closest('#shuffleBtn'))) return;
+    psOpen(false);
+  });
+  document.addEventListener('keydown', function (e) { var m = document.getElementById('plSortMenu'); if (e.key === 'Escape' && m && !m.hidden) { psOpen(false); try { el.shuffleBtn.focus(); } catch (x) {} } });
+  window.addEventListener('resize', psPlace);
+  window.addEventListener('scroll', function () { var m = document.getElementById('plSortMenu'); if (m && !m.hidden) psPlace(); }, true);
   function moveBasket(key, dir) {
     var i = basketIndex(key); if (i < 0) return; var j = i + dir; if (j < 0 || j >= state.basket.length) return;
     var t = state.basket[i]; state.basket[i] = state.basket[j]; state.basket[j] = t; renderBasketArea();
@@ -6617,6 +6743,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.addAllBtn.disabled = !hasResults; el.addTopBtn.disabled = !hasResults; el.addRandomBtn.disabled = !hasResults; el.fillRuntimeBtn.disabled = !hasResults;
     el.clearResultsBtn.disabled = state.raw.length === 0;
     el.shuffleBtn.disabled = el.clearBasketBtn.disabled = !hasBasket;
+    if (!hasBasket) psOpen(false); psRender();
     // Fill data / Re-check only make sense once there ARE maps (and something to fill) - hide otherwise.
     var canFill = needsEnrich().length > 0;
     el.enrichBtn.hidden = !canFill; el.enrichBtn.disabled = state.enriching || !canFill;
@@ -14456,7 +14583,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { open(false); btn.focus(); } });
     })();
     el.fillRuntimeBtn.addEventListener('click', fillToRuntime);
-    el.shuffleBtn.addEventListener('click', shuffleBasket);
+    el.shuffleBtn.addEventListener('click', function () { psOpen(); });
     var favAddBtn = document.getElementById('favAddBtn'); if (favAddBtn) favAddBtn.addEventListener('click', lqFavAddAll);
     if (el.rampByChips) el.rampByChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-by]'); if (!c) return; rampBy = c.getAttribute('data-ramp-by'); setChipOn(el.rampByChips, c); renderRampPreview(); });
     if (el.rampDirChips) el.rampDirChips.addEventListener('click', function (e) { var c = e.target.closest('[data-ramp-dir]'); if (!c) return; rampDir = c.getAttribute('data-ramp-dir'); setChipOn(el.rampDirChips, c); renderRampPreview(); });
