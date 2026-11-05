@@ -3385,7 +3385,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T03:07:17Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-05T17:09:37Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5088,7 +5088,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       bpm: song.bpm || 0, duration: song.duration || 0, cover: song.coverImage || '',
       stars: diff.stars || 0, difficultyName: diff.difficultyName || 'ExpertPlus', modeName: diff.modeName || 'Standard',
       nps: diff.nps || 0, njs: diff.njs || 0, notes: diff.notes || 0, techRating: diff.techRating || 0, accRating: diff.accRating || 0, passRating: diff.passRating || 0,
-      mods: modsFrom(diff.modifiersRating), mapType: diff.type != null ? +diff.type || 0 : null, qual: qual
+      mods: modsFrom(diff.modifiersRating), mapType: diff.type != null ? +diff.type || 0 : null, qual: qual, _rk: rk
     };
   }
   function fetchLoaderHTML() {
@@ -11420,7 +11420,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (e.difficultyName) {
         var d = diffs.filter(function (x) { return x.difficultyName === e.difficultyName && x.modeName === e.modeName; })[0];
         if (d) { var rk = d.status === 3;   // unranked difficulties come with predicted ratings too; those pay no pp
-          e.stars = rk ? d.stars || 0 : 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = rk ? d.techRating || 0 : 0; e.accRating = rk ? d.accRating || 0 : 0; e.passRating = rk ? d.passRating || 0 : 0; e.mods = rk ? modsFrom(d.modifiersRating) : {}; }
+          e.stars = rk ? d.stars || 0 : 0; e.nps = d.nps || 0; e.notes = d.notes || 0; e.leaderboardId = d.id || ''; e.techRating = rk ? d.techRating || 0 : 0; e.accRating = rk ? d.accRating || 0 : 0; e.passRating = rk ? d.passRating || 0 : 0; e.mods = rk ? modsFrom(d.modifiersRating) : {}; e._rk = rk; }
       }
     });
   }
@@ -11530,14 +11530,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function siEntry(o) {
     var en = si.entry;
     if (en && en.difficultyName === o.dn && (en.modeName || 'Standard') === o.mode) {
-      if (!(en.passRating > 0) && o.pass > 0) Object.assign(en, { stars: o.stars || en.stars || 0, passRating: o.pass, accRating: o.acc, techRating: o.tech, mods: o.mods || {}, leaderboardId: en.leaderboardId || o.lb || '' });
+      if (!(en.passRating > 0) && o.pass > 0) Object.assign(en, { stars: o.stars || en.stars || 0, passRating: o.pass, accRating: o.acc, techRating: o.tech, mods: o.mods || {}, leaderboardId: en.leaderboardId || o.lb || '', _rk: true });
       if (!en.nps && o.nps) en.nps = o.nps; if (!en.njs && o.njs) en.njs = o.njs;
       return en;
     }
     var d = si.d || {}, bsm = d.bs, meta = (bsm && bsm.metadata) || {}, blm = d.bl || {};
     var base = bsm ? bsMapToEntry(bsm) : { leaderboardId: '', hash: si.h, songName: si.name, subName: '', mapper: si.mapper, author: si.mapper, bpm: blm.bpm || 0, duration: blm.duration || 0, cover: si.cover, key: '' };
     return Object.assign(base, { hash: si.h, songName: base.songName || si.name, difficultyName: o.dn, modeName: o.mode, stars: o.stars || 0, nps: o.nps || 0, njs: o.njs || 0, notes: o.notes || 0,
-      leaderboardId: o.lb || '', passRating: o.pass || 0, accRating: o.acc || 0, techRating: o.tech || 0, mods: o.mods || {}, author: meta.songAuthorName || base.author || '', mapper: meta.levelAuthorName || base.mapper || si.mapper || '' });
+      leaderboardId: o.lb || '', passRating: o.pass || 0, accRating: o.acc || 0, techRating: o.tech || 0, mods: o.mods || {}, _rk: o.pass > 0, author: meta.songAuthorName || base.author || '', mapper: meta.levelAuthorName || base.mapper || si.mapper || '' });
   }
   function siFmtTime(t) { t = Math.max(0, Math.floor(t || 0)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
   function siRender() {
@@ -11861,6 +11861,38 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // Play details (song names/covers for "Build from my plays") in a SEPARATE key so a large index
     // can't blow the quota for the core scores save.
     try { localStorage.setItem(PLAYS_KEY, JSON.stringify(state.playIndex || {})); } catch (e) {}
+  }
+  function oldRated(e) { return !!e && !e._rk && (e.passRating > 0 || e.accRating > 0 || e.techRating > 0); }
+  var rankedSetP = null;
+  function rankedKeySet() {
+    if (rankedSetP) return rankedSetP;
+    var set = {}, n = 0, ok = function (j) { return j && Array.isArray(j.data) && j.metadata; };
+    var take = function (d) { d.data.forEach(function (x) { var sg = x.song || {}, df = x.difficulty || {}; if (sg.hash && df.status === 3) { set[sg.hash.toLowerCase() + '|' + df.difficultyName + '|' + (df.modeName || 'Standard')] = 1; n++; } }); };
+    var get = function (pg) { return relayFetch(API_BASE + '/leaderboards?page=' + pg + '&count=100&type=ranked', ok).catch(function () { return delay(1500).then(function () { return relayFetch(API_BASE + '/leaderboards?page=' + pg + '&count=100&type=ranked', ok); }); }); };
+    rankedSetP = get(1).then(function (d0) {
+      take(d0);
+      var total = d0.metadata.total || 0, pages = Math.ceil(total / 100), next = 2;
+      function run() { if (next > pages) return Promise.resolve(); var pg = next++; return get(pg).then(take).then(function () { return delay(200); }).then(run); }
+      return Promise.all([run(), run()]).then(function () { if (!total || n < total * 0.98) throw new Error('incomplete'); return set; });
+    }).catch(function (e) { rankedSetP = null; throw e; });
+    return rankedSetP;
+  }
+  function fixOldRatings() {
+    var lib = lsGetPl(), inLib = [], inBk = state.basket.filter(oldRated), inPlays = [], k;
+    Object.keys(lib).forEach(function (nm) { ((lib[nm] && lib[nm].entries) || []).forEach(function (e) { if (oldRated(e)) inLib.push(e); }); });
+    for (k in state.playIndex) if (state.playIndex.hasOwnProperty(k) && oldRated(state.playIndex[k])) inPlays.push(state.playIndex[k]);
+    if (!inLib.length && !inBk.length && !inPlays.length) return;
+    rankedKeySet().then(function (set) {
+      var fixed = 0, fix = function (e) {
+        if (set[String(e.hash || '').toLowerCase() + '|' + e.difficultyName + '|' + (e.modeName || 'Standard')]) { e._rk = true; return; }
+        e.stars = 0; e.passRating = 0; e.accRating = 0; e.techRating = 0; e.mods = {}; e._rk = false; fixed++;
+      };
+      inLib.forEach(fix); inBk.forEach(fix); inPlays.forEach(fix);
+      if (inLib.length) lsSetPl(lib);
+      if (inPlays.length) { try { localStorage.setItem(PLAYS_KEY, JSON.stringify(state.playIndex || {})); } catch (e) {} }
+      if (inBk.length) saveSession();
+      if (fixed) { applyClientFilters(); renderAll(); }
+    }, function () {});
   }
   function loadPlayerCache() {
     try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; state._scoreHashIdx = null; homeSeen(state.player); } } catch (e) {}
@@ -14637,7 +14669,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', function () { ssSync(false); });
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]pl?=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); introPlace(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]pl?=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); setTimeout(fixOldRatings, 5000); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); introPlace(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
   }
 
   // ---- a refresh comes back where you were ------------------------------------
