@@ -2336,7 +2336,7 @@ async function gcStats(env, range, fresh, site, tz) {
   players.forEach((p) => { const x = bl[p.id]; p.clans = x && !p.me ? x.tags || null : null; p.avatar = x ? gcAvatar(x.avatar) : ""; });
   const events = hits.filter((h) => h.event && !/^(profile|lookup)\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
   const live = new Set(events.map((e) => e.name));
-  const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k)).sort();
+  const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k) && k !== "egg-halloween").sort();
   const pages = hits.filter((h) => !h.event).map((h) => ({ path: h.path, title: h.title, count: h.count }));
   const gh = await gcGithub(env);
   const dayList = gcPageDays(total, hits, range);
@@ -3265,6 +3265,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   var SEARCH = /^(search-beatleader|search-beatsaver|search-recommend)$/;
   var ADD = /^(row-add|top-plays|build-from-plays|quick-add|gallery-load|stats-top-plays|versus-build)$/;
   var PROB = /(^js-error|fail)/;
+  var SHOWN_ONLY = /^egg-halloween$/;
   function ev(name) { var x = null; (gc.events || []).forEach(function (e) { if (e.name === name) x = e; }); return x; }
   function sumWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name)) n += e.count; }); return n; }
   function maxWhere(re) { var n = 0; gc.events.forEach(function (e) { if (re.test(e.name) && e.count > n) n = e.count; }); return n; }
@@ -3351,7 +3352,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     $('v-fun').innerHTML = F.map(function (f, i) { var p = Math.min(100, Math.round(f[1] / top * 100)); return '<div class="bar"><span class="lab"><span class="sl"><span class="ic gl">' + glyph(['eye', 'person', 'search', 'note', 'download'][i] || 'dot', ['#9fb3d9', '#a78bfa', '#5aa0ff', '#9fb3d9', '#3ddc84'][i]) + '</span><span class="fl"><b>' + f[0] + '</b></span></span></span><span class="track"><span class="fill' + (i === F.length - 1 ? ' g' : '') + '" style="width:' + p + '%"></span></span><span class="num">' + fmt(f[1]) + '<small>' + p + '%<span class="ofv"> of visitors</span></small></span></div>'; }).join('');
     renderPlayers();
     // Features
-    var evs = d.events.slice().sort(function (a, b) { return b.count - a.count; }), probs = evs.filter(function (e) { return PROB.test(e.name); }), use = evs.filter(function (e) { return !PROB.test(e.name); });
+    var evs = d.events.slice().sort(function (a, b) { return b.count - a.count; }), probs = evs.filter(function (e) { return PROB.test(e.name); }), use = evs.filter(function (e) { return !PROB.test(e.name) && !SHOWN_ONLY.test(e.name); });
     txt('f-used', fmt(use.length)); txt('f-cold', fmt(d.cold.length)); txt('f-prob', fmt(probs.reduce(function (a, e) { return a + e.count; }, 0)));
     $('f-prob').classList.toggle('bad', probs.length > 0);
     var showAll = $('f-more').getAttribute('data-all') === '1';
@@ -3498,6 +3499,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'clear-logo': ['Other', 'Logo triple tap', 'Cleared everything with the logo triple tap'],
     'egg-115': ['Other', 'Easter egg 115', 'Found the 115 easter egg (removed Oct 30 2026)'],
     'egg-bomb': ['Other', 'Easter egg bomb', 'Found the bomb easter egg'],
+    'egg-halloween': ['Other', 'Halloween logo shown', 'The Oct 31 spider logo was on screen. Counts page loads that day, not something anyone clicked'],
     'blocks-on': ['Layout', 'Falling blocks on', 'Turned on the Falling blocks background with the footer switch'],
     'blocks-off': ['Layout', 'Falling blocks off', 'Turned the Falling blocks background back off'],
     'blocks-active': ['Layout', 'Visits with Falling blocks', 'Opened Studio with the Falling blocks background already on'],
