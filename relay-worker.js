@@ -1238,7 +1238,7 @@ async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; worker-src 'self'; frame-src https://beatleader.com https://www.beatleader.com; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
   if (url.pathname === "/admin/sw.js" && request.method === "GET") return new Response(ADMIN_SW, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-cache", "Service-Worker-Allowed": "/admin" } });
@@ -2521,7 +2521,7 @@ button.linkish:hover{color:var(--text)}
 .tabs::-webkit-scrollbar{display:none}
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:10px 6px;font-size:15px;font-weight:700;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:6px}
 .tabs .ti{display:inline-flex;width:18px;height:18px;flex:none;align-items:center;justify-content:center}.tabs .ti img{width:18px;height:18px;border-radius:5px;display:block}.tabs .ti.me img{border-radius:50%}.tabs .ti svg{width:17px;height:17px}
-.atotal{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:2px 0 16px;color:var(--muted)}.atotal .atl{display:flex;flex-direction:column;gap:2px;min-width:0}.atotal .atk{font-size:12.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#8d9ab0}.atotal .atv{display:flex;align-items:baseline;gap:8px}.atotal b{font-size:42px;line-height:1.05;color:var(--text);font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.atotal .atu{font-size:17px;font-weight:600;color:#9aa6b8}.atotal .tch{padding-bottom:6px}.site.hero2 .sh .ic{width:36px;height:36px;border-radius:10px}.site.hero2 .sh .ic img{width:24px;height:24px}.site.hero2 .sh b{font-size:16.5px}
+.atotal{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:2px 0 16px;color:var(--muted)}.atotal .atl{display:flex;flex-direction:column;gap:2px;min-width:0}.atotal .atk{font-size:12.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#8d9ab0}.atotal .atv{display:flex;align-items:baseline;gap:8px}.atotal b{font-size:42px;line-height:1.05;color:var(--text);font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.atotal .atu{font-size:17px;font-weight:600;color:#9aa6b8}.atotal .tch{padding-bottom:6px}.site.hero2 .sh .ic{width:36px;height:36px;border-radius:10px}.site.hero2 .sh .ic img{width:24px;height:24px}.site .sh .ic:not(.mono):not(.gl){background:none;border:0;padding:0}.site .sh .ic:not(.mono):not(.gl) img,.site.hero2 .sh .ic:not(.mono):not(.gl) img{width:100%;height:100%;object-fit:cover}.site.hero2 .sh b{font-size:16.5px}
 .sites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
 #a-total{color:#ffffff}
 .atotal .tch{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13.5px}
@@ -2706,6 +2706,18 @@ button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
 .pchipw .pchip{border-top-right-radius:0;border-bottom-right-radius:0;border-right-color:#16243c;padding-right:8px}
 .plkb{min-height:0;margin:0;font:inherit;font-size:11.5px;font-weight:700;color:#8fbaff;background:#13213a;border:1px solid #1f3456;border-left:0;border-radius:0 999px 999px 0;padding:0 10px 0 7px;cursor:pointer;line-height:1}
 .plkb:hover,.plkb[aria-expanded="true"]{background:#1a2d4f;color:#fff;border-color:#2f7bff}
+.blv{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:28px}
+.blv[hidden]{display:none}
+.blv-card{display:flex;flex-direction:column;width:min(1280px,100%);height:min(900px,100%);background:#0b111c;border:1px solid #2a3850;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.7)}
+.blv-h{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;border-bottom:1px solid #1c2738;font-size:15px}
+.blv-h b{color:#fff;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blv-h small{color:var(--muted,#8d97a8);font-size:13px}
+.blv-h .sp{flex:1}
+.blv-h a{color:#8fb6ff;font-size:14px;text-decoration:none;white-space:nowrap}
+.blv-h a:hover{text-decoration:underline}
+.blv-x{display:grid;place-items:center;padding:0 0 2px;width:34px;height:34px;border-radius:9px;border:1px solid #2a3850;background:#0b0f16;color:#e8edf5;font-size:20px;line-height:1;cursor:pointer}
+.blv-x:hover{border-color:#4c8dff}
+.blv-f{flex:1;width:100%;border:0;background:#000}
 .plkpop{position:absolute;z-index:60;min-width:230px;background:#0b1220;border:1px solid #2a3850;border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
 .plkh{font-size:12px;color:var(--muted);padding:2px 6px 6px}
 .plkrow{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;color:#e9edf5;text-decoration:none;font-size:13.5px;font-weight:600}
@@ -3142,7 +3154,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <p class="when" id="k-when"></p>
 </section>
 <p class="when" id="gcwhen"></p>
-<div id="fback" class="fback" hidden></div><aside id="fsheet" class="fsheet" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden></aside>
+<div id="blv" class="blv" hidden><div class="blv-card" role="dialog" aria-modal="true" aria-labelledby="blvName"><div class="blv-h"><b id="blvName">BeatLeader</b><small>BeatLeader profile &middot; Esc to close</small><span class="sp"></span><a id="blvOut" href="#" target="_blank" rel="noopener noreferrer">Open in new tab &#8599;</a><button type="button" class="blv-x" id="blvX" aria-label="Close">&times;</button></div><iframe class="blv-f" id="blvF" title="BeatLeader profile" referrerpolicy="no-referrer"></iframe></div></div><div id="fback" class="fback" hidden></div><aside id="fsheet" class="fsheet" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden></aside>
 <p class="forgetrow"><button id="forget" class="linkish">Forget key on this device</button></p>
 </div>
 </main>
@@ -3998,6 +4010,36 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     if (!was) lkPop(b);
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lkClose(); });
+  // Desktop: a player's BeatLeader profile opens over the page; Esc, the close button or a click outside closes it.
+  // Phones, and Ctrl/Cmd/Shift or middle clicks, keep opening a new tab.
+  var blvLast = null;
+  function blvOpen(href, name) {
+    var w = document.getElementById('blv'); if (!w) return false;
+    document.getElementById('blvName').textContent = name || 'BeatLeader';
+    document.getElementById('blvOut').href = href;
+    document.getElementById('blvF').src = href;
+    blvLast = document.activeElement; w.hidden = false; lkClose();
+    try { document.getElementById('blvX').focus(); } catch (x) {}
+    return true;
+  }
+  function blvClose() {
+    var w = document.getElementById('blv'); if (!w || w.hidden) return;
+    w.hidden = true; document.getElementById('blvF').removeAttribute('src');
+    try { if (blvLast && blvLast.focus) blvLast.focus(); } catch (x) {}
+  }
+  document.addEventListener('click', function (e) {
+    var w = document.getElementById('blv');
+    if (w && !w.hidden) { if (e.target === w || (e.target.closest && e.target.closest('#blvX'))) { e.preventDefault(); blvClose(); } return; }
+    var a = e.target.closest && e.target.closest('a[href^="https://beatleader.com/u/"]'); if (!a) return;
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || !window.matchMedia('(min-width:761px)').matches) return;
+    var t = a.getAttribute('title') || '', m = t.match(/^Open (.+?) on BeatLeader/), row = a.closest('.prow, .pchip, .plkrow');
+    var name = m ? m[1] : (row && row.querySelector('.pname a, span') ? (row.querySelector('.pname a, span').textContent || '').trim() : (a.textContent || '').trim());
+    if (blvOpen(a.href, name)) e.preventDefault();
+  }, true);
+  window.addEventListener('keydown', function (e) {
+    var w = document.getElementById('blv'); if (!w || w.hidden || e.key !== 'Escape') return;
+    e.preventDefault(); e.stopPropagation(); blvClose();
+  }, true);
   window.addEventListener('resize', lkClose);
   function pStrip(pls, one, many, what, goTab, goName) {
     var folded = pls.filter(function (p) { return p.lookedBy; });
