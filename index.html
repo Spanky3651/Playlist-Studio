@@ -991,6 +991,18 @@ a.ss-btn svg{width:16px;height:16px;flex:none;}
 @media (max-width:420px){#topChips .tp-w{display:none;}.pc-st{padding:7px 9px;}.pc-sv{font-size:16.5px;}#fullStatsBtn.pc-go{padding:6px 10px;}}
 .pc-stats{font-size:13px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
 .pcard-actions{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.pc-sync{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:13px;color:var(--muted);}
+.pcs-dot{width:8px;height:8px;flex:none;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(34,224,161,.7);}
+.pcs-dot.spin{width:12px;height:12px;background:none;border:2px solid #2a4a7a;border-top-color:var(--blue);box-shadow:none;animation:pcs-spin 1s linear infinite;}
+@keyframes pcs-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.pcs-dot.spin{animation:none;}}
+.toast.rich{align-items:center;}
+.toast .tr-t{display:flex;flex-direction:column;min-width:0;}
+.toast .tr-s{font-weight:500;font-size:13.5px;color:var(--muted);}
+.toast .tr-s b{color:#fff;font-weight:600;}
+.toast .tr-g{color:var(--green);font-weight:700;}
+.toast .tr-b{margin-left:auto;flex:none;padding:4px 10px;border:1px solid #2a4a7a;border-radius:8px;background:#0d1a30;color:#cfe0ff;font-size:13px;font-weight:700;box-shadow:none;transform:none;cursor:pointer;}
+.toast .tr-b:hover{border-color:var(--blue);}
 .sync-progress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;}
 .quick-lists{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 
@@ -2559,6 +2571,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button class="ghost sm" id="buildPlaysBtn" title="Load every map you've played into the results, then filter by 'Played, not FC' etc. and add the ones you want - no search or import needed."><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg>Build from my plays</button>
           </div>
           <div class="sync-progress" id="syncProgress" hidden><div class="bar"><div class="bar-fill" id="syncBar"></div></div><span id="syncText"></span></div>
+          <div class="pc-sync" id="pcSync" hidden><span class="pcs-dot" id="pcSyncDot" aria-hidden="true"></span><span id="pcSyncT"></span></div>
           <div class="topplays bl-only">
             <label class="field-label" style="margin-top:2px;">Top plays &rarr; playlist <span class="info" data-tip="Loads your connected profile's highest-PP (top) plays into the results so you can drop them straight into a playlist - great for grinding your best scores.">i</span></label>
             <div class="scan-chips" id="topChips" style="margin-top:6px;">
@@ -3401,7 +3414,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-06T12:31Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-06T18:53:52Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4553,6 +4566,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     } catch (e) {} }
   function setStatus(text, kind) { el.statusText.textContent = text; el.statusPill.className = 'status-pill' + (kind ? ' ' + kind : ''); }
   var toastTimer;
+  function toastRich(main, subHtml, btn, fn, ms) {
+    el.toast.className = 'toast ok rich show';
+    el.toast.innerHTML = '<span class="tr-t">' + esc(main) + (subHtml ? '<span class="tr-s">' + subHtml + '</span>' : '') + '</span>' + (btn ? '<button type="button" class="tr-b">' + esc(btn) + '</button>' : '');
+    var b = el.toast.querySelector('.tr-b');
+    if (b) b.addEventListener('click', function () { el.toast.className = 'toast ok'; fn(); });
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.toast.className = 'toast ok'; }, ms || 7000);
+  }
   function toast(msg, kind) {
     el.toast.className = 'toast' + (kind ? ' ' + kind : '') + ' show'; el.toast.textContent = msg;
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.toast.className = 'toast' + (kind ? ' ' + kind : ''); }, 4200);
@@ -12044,7 +12064,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('pcPp').textContent = Math.round(state.player.pp || 0).toLocaleString('en-US');
     document.getElementById('pcN').textContent = n.toLocaleString('en-US');
     setProfileState('');
-    renderPlayBar(); renderForYou(); updateLevelUI(); ssUI(); pcRefresh(false);
+    renderPlayBar(); renderForYou(); updateLevelUI(); ssUI(); pcRefresh(false); pcSyncRender();
   }
   // The play-history filter surfaced at the results (connected -> chips, else a
   // prompt to connect). Keeps the chip in sync with the profile-panel dropdown.
@@ -12196,11 +12216,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.addEventListener('click', function () { if (!m.hidden) pcMenu(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) { pcMenu(false); who.focus(); } });
   }
-  function syncScores(incremental) {
+  function syncScores(incremental, auto) {
     if (!state.player || state.syncing) return Promise.resolve();
-    state.syncing = true; el.syncBtn.disabled = true;
+    state.syncing = true; state.autoSyncing = !!auto; el.syncBtn.disabled = true;
     state.playIndex = incremental ? (state.playIndex || {}) : keepSSPlays(state.playIndex);   // full sync rebuilds the play list (ScoreSaber-only plays stay)
-    el.syncProgress.hidden = false; el.syncBar.style.width = '4%'; el.syncText.textContent = 'Starting…';
+    if (!auto) { el.syncProgress.hidden = false; el.syncBar.style.width = '4%'; el.syncText.textContent = 'Starting…'; }
+    pcSyncRender();
+    var fresh = [];
     var id = state.player.id, page = 1, minTime = incremental ? (state.player.syncedMaxTime || 0) : 0;
     var got = 0, newMax = state.player.syncedMaxTime || 0, stop = false, total = 0;
     function step() {
@@ -12218,6 +12240,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             // looks them up (lowercased hash | difficulty | mode).
             var pe = normalize(sc.leaderboard);
             var key = pe.hash.toLowerCase() + '|' + pe.difficultyName + '|' + pe.modeName;
+            if (incremental) { var was = state.scores[key]; fresh.push({ e: pe, a: sc.accuracy || 0, fc: !!sc.fullCombo, m: (sc.missedNotes || 0) + (sc.badCuts || 0), gain: Math.max(0, (sc.pp || 0) - ((was && was.pp) || 0)) }); }
             state.scores[key] = {
               a: sc.accuracy || 0, fc: !!sc.fullCombo, m: sc.missedNotes || 0, b: sc.badCuts || 0,
               s: sc.modifiedScore || 0, pp: sc.pp || 0, rk: sc.rank || 0, t: t, fa: sc.fcAccuracy || 0,
@@ -12232,10 +12255,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         });
     }
     return step().then(function () {
-      state.player.syncedMaxTime = newMax; el.syncBar.style.width = '100%';
+      state.player.syncedMaxTime = newMax; state.player.syncedAt = Date.now(); el.syncBar.style.width = '100%';
+      if (auto) autoSync.back = 0;
       state._scoreHashIdx = null; savePlayerCache(); renderProfile(); applyClientFilters(); applyAutoBandQuiet();
       var tot = Object.keys(state.scores).length;
-      toast(incremental ? (got ? 'Refreshed - ' + got + ' new/updated score' + (got === 1 ? '' : 's') + '.' : 'Already up to date.') : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
+      if (incremental && fresh.length) newScoresToast(fresh);
+      else if (!auto) toast(incremental ? 'Already up to date.' : 'Synced ' + tot + ' score' + (tot === 1 ? '' : 's') + '.', 'ok');
       if (state._buildAfterSync) { state._buildAfterSync = false; buildFromPlays(); }
       return 'ok';
     }).catch(function (e) {
@@ -12243,13 +12268,62 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       // A partial sync still wrote some scores into state.scores - drop the stale map-level
       // index and re-render so those new scores are reflected even though paging failed.
       state._scoreHashIdx = null; savePlayerCache(); applyClientFilters();
+      if (auto) { autoSync.back = Math.min(60 * 60000, autoSync.back ? autoSync.back * 2 : 15 * 60000); return; }   // quiet; try again later
       toast('Score sync failed' + (e && e.message ? ' (' + e.message + ')' : '') + '. Give it a moment and hit ⟳ Sync again.', 'err');
     }).then(function (r) {
-      state.syncing = false; el.syncBtn.disabled = false;
+      state.syncing = false; state.autoSyncing = false; el.syncBtn.disabled = false;
       setTimeout(function () { el.syncProgress.hidden = true; el.syncBar.style.width = '0%'; }, 800);
-      if (r === 'ok' && state.player && state.player.ssId) ssSync(true);
+      pcSyncRender();
+      if (r === 'ok' && !auto && state.player && state.player.ssId) ssSync(true);
     });
   }
+  // "3 new scores synced" with the best of them: most pp gained, or the best accuracy when none are ranked.
+  function newScoresToast(list) {
+    var n = list.length, main = n + ' new score' + (n === 1 ? '' : 's') + ' synced';
+    var best = null, sub = '';
+    if (n <= 20) {
+      list.forEach(function (x) { if (!best || x.gain > best.gain || (x.gain === best.gain && x.a > best.a)) best = x; });
+      var acc = (best.a * 100).toFixed(2) + '%', how = best.fc ? ' FC' : best.m ? ' · ' + best.m + (best.m === 1 ? ' miss' : ' misses') : '';
+      sub = (n > 1 ? 'Best: ' : '') + '<b>' + esc(best.e.songName) + '</b> ' + acc + how + (best.gain >= 1 ? ' · <span class="tr-g">+' + Math.round(best.gain) + 'pp</span>' : '');
+    }
+    toastRich(main, sub, 'See them', seeNewPlays, 8000);
+    track('autosync-new');
+  }
+  function seeNewPlays() {
+    if (!state.player) return;
+    track('autosync-see');
+    el.playStatus.value = 'any'; el.playRecency.value = 'any'; if (el.accMax) el.accMax.value = '';
+    syncRecencyControl(); buildFromPlays();
+    if (isMobileView()) setMobileView('results');
+  }
+  // Auto sync: a quick pull of scores newer than the last sync when Studio opens or comes back on screen
+  // after 10+ minutes, and every 15 minutes while it's open and visible. Quiet unless something new came in.
+  function autoSync(minAge) {
+    var p = state.player, now = Date.now();
+    if (!p || !p.syncedMaxTime || document.hidden || state.syncing || state.fetching || state.enriching) return;
+    if (navigator.onLine === false) return;
+    if (now - (p.syncedAt || 0) < (minAge || 10 * 60000)) return;
+    if (autoSync.back && now - autoSync.at < autoSync.back) return;
+    autoSync.at = now;
+    syncScores(true, true);
+  }
+  autoSync.at = 0; autoSync.back = 0;
+  function agoShort(ms) {
+    var m = Math.floor((Date.now() - ms) / 60000);
+    if (m < 1) return 'just now'; if (m < 60) return m + ' min ago';
+    var h = Math.floor(m / 60); if (h < 24) return h + ' h ago';
+    return Math.floor(h / 24) + ' d ago';
+  }
+  function pcSyncRender() {
+    var b = document.getElementById('pcSync'); if (!b) return;
+    var p = state.player, manual = state.syncing && !state.autoSyncing;
+    if (!p || manual || (!p.syncedAt && !state.autoSyncing)) { b.hidden = true; return; }
+    b.hidden = false;
+    document.getElementById('pcSyncDot').className = 'pcs-dot' + (state.autoSyncing ? ' spin' : '');
+    document.getElementById('pcSyncT').textContent = state.autoSyncing ? 'Checking for new scores\u2026' : 'Synced ' + agoShort(p.syncedAt) + ' \u00b7 auto';
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(function () { autoSync(10 * 60000); pcSyncRender(); }, 800); });
+  setInterval(function () { autoSync(15 * 60000); pcSyncRender(); }, 60000);
   // Turn the player's synced BeatLeader scores into a browsable, filterable results list - so a
   // playlist can be built straight from "maps I've played" (e.g. everything not full-comboed) with
   // no search or import first. Reuses the normal results UI, play-status/acc/recency/star filters,
@@ -14797,7 +14871,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try { var s = localStorage.getItem(SRC_KEY); if (s === 'beatsaver' || s === 'beatleader') state.source = s; } catch (e) {}
     bindSourceUI(); applySourceUI(); setupLevelChips(); setupForYou(); setupEggs(); setupQuestExport(); setupNewbieHint(); setupNewcomerLinks(); setupUndo(); setupLibraryBackup(); setupHosting(); setupLinkedQuest(); setupAccSaber(); setupGallery(); initLayoutV2();
     var ssb = document.getElementById('ssSyncBtn'); if (ssb) ssb.addEventListener('click', function () { ssSync(false); });
-    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]pl?=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); setTimeout(fixOldRatings, 5000); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); introPlace(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
+    initTooltips(); a11yLabels(); populatePresets(); populatePlaylists(); loadPlayerCache(); renderProfile(); el.fType.value = savedRankType(); el.fMaxScan.value = savedMaxScan(); refreshStarUI(); applyAutoBandQuiet(); restoreSession(); bindSyncUI(); loadSyncCfg(); bindRefineUI(); updateCover(); renderAll(); lqKeyFromLink(location.href); window.addEventListener('hashchange', function () { /* the installed app reuses its window, so a second share link only changes the #part */ if (/[#&]pl?=/.test(location.hash)) { appOpenLink(location.href); return; } lqKeyFromLink(location.href); }); checkShareOnLoad(); var forMap = checkBsrLinkOnLoad(); setTimeout(fixOldRatings, 5000); setTimeout(function () { autoSync(10 * 60000); }, 3000); updateScanHint(); setStatus('Ready', 'on'); if (!/[?&]stats=/.test(location.search) && !forMap) showWhatsNew(); introPlace(); firstVisitIntro(); bindStatsEvent(); setupAppLaunch(); mvRestore();
   }
 
   // ---- a refresh comes back where you were ------------------------------------

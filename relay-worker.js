@@ -3511,6 +3511,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'clear-logo': ['Other', 'Logo triple tap', 'Cleared everything with the logo triple tap'],
     'egg-115': ['Other', 'Easter egg 115', 'Found the 115 easter egg (removed Oct 30 2026)'],
     'egg-bomb': ['Other', 'Easter egg bomb', 'Found the bomb easter egg'],
+    'autosync-new': ['Profile', 'Auto sync found new scores', 'An automatic score sync found new scores and showed the toast'],
+    'autosync-see': ['Profile', 'Auto sync: See them', 'Tapped See them on the new scores toast'],
     'pl-sort-open': ['Playlist', 'Opened Sort', 'Opened the Sort menu on Your Playlist'],
     'pl-sort-*': ['Playlist', 'Sorted the playlist', 'Picked an order from the Sort menu on Your Playlist'],
     'egg-halloween': ['Other', 'Halloween logo shown', 'The Oct 31 spider logo was on screen. Counts page loads that day, not something anyone clicked'],
