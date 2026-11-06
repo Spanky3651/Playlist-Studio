@@ -2232,6 +2232,8 @@ function gcNote(seen, h) {
   const k = h.path; if (!m[k] || f < m[k]) m[k] = f;
 }
 // Profile pictures only from BeatLeader's and Steam's image hosts (the page's CSP allows just these).
+// Your own picture in Studio Stats: the animated MSploit icon hosted with Playlist Studio, in place of the BeatLeader avatar.
+const GC_ME_AVATAR = "https://spanky3651.github.io/Playlist-Studio/icons/msploit.webp";
 const GC_AVATAR_HOSTS = ["cdn.assets.beatleader.com", "cdn.assets.beatleader.xyz", "avatars.steamstatic.com", "avatars.akamai.steamstatic.com", "avatars.cloudflare.steamstatic.com"];
 function gcAvatar(u) {
   try { const x = new URL(String(u || "")); return x.protocol === "https:" && GC_AVATAR_HOSTS.includes(x.hostname) ? x.toString() : ""; } catch (e) { return ""; }
@@ -2333,7 +2335,7 @@ async function gcStats(env, range, fresh, site, tz) {
   const dsec = (d) => (d ? Date.parse(d + "T12:00:00Z") / 1000 : 0);
   players.sort((a, b) => Math.max(b.lastT || 0, dsec(b.last)) - Math.max(a.lastT || 0, dsec(a.last)) || b.count - a.count);
   const bl = await gcClans(env, players.filter((p) => p.id).slice(0, 80).map((p) => p.id));
-  players.forEach((p) => { const x = bl[p.id]; p.clans = x && !p.me ? x.tags || null : null; p.avatar = x ? gcAvatar(x.avatar) : ""; });
+  players.forEach((p) => { const x = bl[p.id]; p.clans = x && !p.me ? x.tags || null : null; p.avatar = p.me ? GC_ME_AVATAR : x ? gcAvatar(x.avatar) : ""; });
   const events = hits.filter((h) => h.event && !/^(profile|lookup)\//.test(h.path)).map((h) => ({ name: h.path.replace(/^app\//, ""), count: h.count, first: seen.e[h.path] || gcFirstDay(h.days), days: h.days }));
   const live = new Set(events.map((e) => e.name));
   const cold = Object.keys(seen.e).map((k) => k.replace(/^app\//, "")).filter((k) => !live.has(k) && k !== "egg-halloween").sort();
@@ -2435,7 +2437,7 @@ async function gcAllStats(env, range, fresh, tz) {
   }
   const me = await gcMe(env);
   const firstDay = range === "all" ? sites.reduce((a, s) => (s.days && s.days[0] && (!a || s.days[0].day < a) ? s.days[0].day : a), "") : "";
-  const out = { site: "all", generated: now, range, tz: gcTz(tz), start: firstDay || day(start), end: day(end), sites, meAvatar: me.avatar || "" };
+  const out = { site: "all", generated: now, range, tz: gcTz(tz), start: firstDay || day(start), end: day(end), sites, meAvatar: GC_ME_AVATAR };
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
