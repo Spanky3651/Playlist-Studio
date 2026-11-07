@@ -996,7 +996,7 @@ a.ss-btn svg{width:16px;height:16px;flex:none;}
 .pcs-dot.spin{width:12px;height:12px;background:none;border:2px solid #2a4a7a;border-top-color:var(--blue);box-shadow:none;animation:pcs-spin 1s linear infinite;}
 @keyframes pcs-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.pcs-dot.spin{animation:none;}}
-.toast.rich{align-items:center;}
+.toast.rich{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;}
 .toast .tr-t{display:flex;flex-direction:column;min-width:0;}
 .toast .tr-s{font-weight:500;font-size:13.5px;color:var(--muted);}
 .toast .tr-s b{color:#fff;font-weight:600;}
@@ -1981,6 +1981,14 @@ body.rp-open{overflow:hidden;}
 @media(min-width:721px){
   .toast{left:auto;right:24px;transform:translateY(140%);max-width:440px;}
   .toast.show{transform:translateY(0);}
+}
+/* Phones: full width just above the bottom tabs, so a long toast isn't squeezed into the middle of the screen */
+@media(max-width:720px){
+  .toast{left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));max-width:none;padding:12px 14px;font-size:15px;}
+  .toast.show{transform:translateY(0);}
+  .toast:not(.show){transform:translateY(calc(100% + 90px + env(safe-area-inset-bottom,0px)));}
+  .toast .tr-s{font-size:14px;line-height:1.4;}
+  .toast .tr-b{padding:8px 12px;font-size:14px;}
 }
   /* "Show me" from the stats page: a pulsing outline around the control a feature lives on */
   .spot-pulse{outline:3px solid #ffc23d !important;outline-offset:4px;border-radius:10px;animation:spotPulse 1.1s ease-in-out 4}
@@ -3451,7 +3459,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T15:43:53Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T19:11:22Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
