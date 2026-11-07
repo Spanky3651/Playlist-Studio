@@ -1901,8 +1901,9 @@ async function kofiHook(request, env) {
   }
   return new Response("ok");
 }
-// Public list for the "Supported by" row and thank-you card on the sites: supporters who made their name public on
-// Ko-fi, newest first, with the picture set on the Ko-fi tab and their newest public message. Nothing else leaves.
+// Public list for the supporter faces and thank-you card on the sites: supporters who made their name public on
+// Ko-fi and have a picture set on the Ko-fi tab (no picture, not shown yet), newest first, with their newest public
+// message. Nothing else leaves.
 // Cached at the edge for 5 minutes so a page view doesn't cost KV reads.
 async function supportersRoute(request, env, ctx) {
   const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET", "Cache-Control": "public, max-age=300" };
@@ -1917,7 +1918,7 @@ async function supportersRoute(request, env, ctx) {
     if (!x || !x.pub || !x.name) return;
     const name = String(x.name).trim().slice(0, 60), k = name.toLowerCase(); if (!k) return;
     let s = by.get(k);
-    if (!s) { const img = typeof av[k] === "string" && /^data:image\/(png|jpeg|webp);base64,/.test(av[k]) ? av[k] : ""; s = { name, img, msg: "", t: x.t || 0 }; by.set(k, s); }
+    if (!s) { const img = typeof av[k] === "string" && /^data:image\/(png|jpeg|webp);base64,/.test(av[k]) ? av[k] : ""; if (!img) return; s = { name, img, msg: "", t: x.t || 0 }; by.set(k, s); }
     if (!s.msg && x.msg) s.msg = String(x.msg).slice(0, 140);
   });
   const body = JSON.stringify({ list: [...by.values()].slice(0, 12) });
@@ -1940,6 +1941,7 @@ async function kofiEditTips(request, env, url, nocache) {
     if (img) av[name] = img; else delete av[name];
     const keys = Object.keys(av); keys.slice(0, Math.max(0, keys.length - 200)).forEach((k) => { delete av[k]; });
     await env.PLAYLISTS.put("kofi:avatars", JSON.stringify(av));
+    try { await caches.default.delete(new Request("https://supporters.cache/v1")); } catch (e) {}
     return json({ ok: true }, 200, nocache);
   }
   const list = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
@@ -4403,7 +4405,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   function kAvatar(x, av) {
     if (!x.pub || !x.name) return '<span class="tav p" title="Anonymous">' + KANON + '</span>';
     var img = av[x.name.trim().toLowerCase()];
-    return '<button type="button" class="tav" data-kav="' + esc(x.name) + '" title="Pick a picture for ' + esc(x.name) + '" aria-label="Pick a picture for ' + esc(x.name) + '">' + (img ? '<img src="' + esc(img) + '" alt="">' : esc(x.name.charAt(0).toUpperCase())) + '<span class="cam">' + KCAM + '</span></button>';
+    return '<button type="button" class="tav" data-kav="' + esc(x.name) + '" title="' + (img ? 'Change the picture for ' + esc(x.name) : 'Pick a picture for ' + esc(x.name) + '. They show on your sites once they have one') + '" aria-label="Pick a picture for ' + esc(x.name) + '">' + (img ? '<img src="' + esc(img) + '" alt="">' : esc(x.name.charAt(0).toUpperCase())) + '<span class="cam">' + KCAM + '</span></button>';
   }
   var kavFor = '', kavIn = document.createElement('input');
   kavIn.type = 'file'; kavIn.accept = 'image/png,image/jpeg,image/webp,image/gif'; kavIn.className = 'hidden';
