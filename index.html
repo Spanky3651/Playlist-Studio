@@ -3450,7 +3450,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T13:25:22Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T14:49:22Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -15409,5 +15409,97 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 ============================================================================ -->
 <script data-goatcounter="https://playliststudio.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+<script>
+/* Supporters: a "Supported by" row in the Developed by badge, and a thank-you card on Support me (hover) or the row (tap).
+   Public Ko-fi names only, from Playlist Studio's Worker. Nothing shows until someone has supported publicly. */
+(function () {
+  var API = 'https://playlist-replay.msploit.workers.dev/supporters';
+  var KOFI = 'https://ko-fi.com/msploit21';
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function face(s, cls) {
+    var img = /^data:image\/(png|jpeg|webp);base64,/.test(s.img || '') ? s.img : '';
+    return img ? '<img class="msp-av' + (cls || '') + '" src="' + img + '" alt="" title="' + esc(s.name) + '">' : '<span class="msp-av msp-l' + (cls || '') + '" title="' + esc(s.name) + '">' + esc((s.name || '?').charAt(0).toUpperCase()) + '</span>';
+  }
+  function count(what) { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: what, title: 'Supporters card', event: true }); } catch (e) {} }
+  var css = '.msp-card{display:inline-flex;flex-direction:column;align-items:stretch;border:1px solid var(--border-2,#232c3b);border-radius:12px;background:#060607;transition:border-color .16s,box-shadow .16s;vertical-align:middle;max-width:100%;}' +
+    '.msp-card:hover{border-color:var(--blue,#2f8cff);box-shadow:0 0 20px rgba(47,140,255,.18);}' +
+    '.msp-card>a.credit{border:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;margin:0!important;}' +
+    '.msp-card .msp-row{display:flex;align-items:center;gap:8px;margin:0 10px;padding:6px 2px 7px;border:0;border-top:1px solid #1c2738;background:none;color:#8d97a8;font:600 10.5px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1.4px;text-transform:uppercase;cursor:pointer;text-align:left;box-shadow:none;transform:none;border-radius:0;min-height:0;outline:none;}' +
+    '.msp-card .msp-row{border:0!important;border-top:1px solid #1c2738!important;background:none!important;}' +
+    '.msp-card .msp-row:focus-visible{outline:2px solid #4c8dff;outline-offset:2px;}' +
+    '.msp-card .msp-row:hover,.msp-card .msp-row[aria-expanded="true"]{color:#cfd6e2;}' +
+    '@media (hover: none){.msp-card:hover{border-color:var(--border-2,#232c3b);box-shadow:none;}}' +
+    '.msp-stack{display:inline-flex;align-items:center;}.msp-stack .msp-av+.msp-av{margin-left:-6px;}' +
+    '.msp-av{width:20px;height:20px;border-radius:50%;object-fit:cover;border:1.5px solid #060607;display:inline-grid;place-items:center;flex:none;background:#1b2436;color:#cfe0ff;font:800 10px system-ui,sans-serif;letter-spacing:0;}' +
+    '.msp-more{margin-left:4px;color:#8d97a8;letter-spacing:0;}' +
+    '.msp-pop{position:fixed;z-index:9000;width:300px;max-width:calc(100vw - 24px);background:#0b111c;border:1px solid #2a3850;border-radius:14px;padding:12px 14px;box-shadow:0 18px 40px rgba(0,0,0,.75);color:#e8edf5;font:14px/1.4 system-ui,"Segoe UI",sans-serif;text-align:left;}' +
+    '.msp-pop[hidden]{display:none;}' +
+    '.msp-pop h4{margin:0 0 4px;font:800 13.5px system-ui,sans-serif;color:#fff;}' +
+    '.msp-pop .msp-r{display:flex;gap:10px;align-items:flex-start;margin:9px 0;}' +
+    '.msp-pop .msp-r .msp-av{width:34px;height:34px;border:0;font-size:14px;}' +
+    '.msp-pop .msp-r b{display:block;color:#fff;font:700 13.5px system-ui,sans-serif;line-height:1.25;word-break:break-word;}' +
+    '.msp-pop .msp-r i{display:block;color:#aab3c2;font:italic 12.5px/1.35 system-ui,sans-serif;word-break:break-word;}' +
+    '.msp-pop .msp-f{font:12px/1.4 system-ui,sans-serif;color:#8d97a8;border-top:1px solid #1c2738;padding-top:8px;margin-top:2px;}' +
+    '.msp-pop .msp-f a{color:#ff6b81;font-weight:700;text-decoration:none;margin-left:4px;white-space:nowrap;}' +
+    '.msp-pop .msp-f a:hover{text-decoration:underline;}' +
+    '.msp-pop::after{content:"";position:absolute;left:var(--msp-ax,50%);width:12px;height:12px;margin-left:-6px;background:#0b111c;transform:rotate(45deg);}' +
+    '.msp-pop.up::after{bottom:-7px;border-right:1px solid #2a3850;border-bottom:1px solid #2a3850;}' +
+    '.msp-pop.down::after{top:-7px;border-left:1px solid #2a3850;border-top:1px solid #2a3850;}';
+  function run(list) {
+    if (!list.length || document.getElementById('mspPop')) return;
+    var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+    var kofi = document.querySelector('a.kofi-support'), href = (kofi && kofi.href) || KOFI;
+    var pop = document.createElement('div'); pop.id = 'mspPop'; pop.className = 'msp-pop'; pop.hidden = true; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Supporters');
+    pop.innerHTML = '<h4>❤️ Thank you, supporters</h4>' + list.slice(0, 5).map(function (s) {
+      return '<div class="msp-r">' + face(s) + '<div><b>' + esc(s.name) + '</b>' + (s.msg ? '<i>“' + esc(s.msg) + '”</i>' : '') + '</div></div>';
+    }).join('') + (list.length > 5 ? '<div class="msp-f" style="border:0;padding:0 0 6px">and ' + (list.length - 5) + ' more</div>' : '') +
+      '<div class="msp-f">Tips keep these tools free and the servers running.<a href="' + esc(href) + '" target="_blank" rel="noopener">Support me ↗</a></div>';
+    document.body.appendChild(pop);
+    var anchor = null, hideT = 0, opened = false;
+    function place() {
+      if (pop.hidden || !anchor) return;
+      var r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight, vw = document.documentElement.clientWidth;
+      var cx = r.left + r.width / 2, left = Math.max(12, Math.min(cx - w / 2, vw - w - 12)), up = r.top - h - 12 >= 8;
+      pop.style.left = left + 'px'; pop.style.top = (up ? r.top - h - 10 : r.bottom + 10) + 'px';
+      pop.className = 'msp-pop ' + (up ? 'up' : 'down'); pop.style.setProperty('--msp-ax', Math.max(18, Math.min(w - 18, cx - left)) + 'px');
+    }
+    function show(a) {
+      clearTimeout(hideT); anchor = a; pop.hidden = false; place();
+      document.querySelectorAll('.msp-row').forEach(function (b) { b.setAttribute('aria-expanded', b === a ? 'true' : 'false'); });
+      if (!opened) { opened = true; count('supporters-open'); }
+    }
+    function hide() { pop.hidden = true; anchor = null; opened = false; document.querySelectorAll('.msp-row').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); }); }
+    function hideSoon() { clearTimeout(hideT); hideT = setTimeout(hide, 220); }
+    var hover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+    var faces = '<span class="msp-stack">' + list.slice(0, 6).map(function (s) { return face(s); }).join('') + '</span>' + (list.length > 6 ? '<span class="msp-more">+' + (list.length - 6) + '</span>' : '');
+    Array.prototype.forEach.call(document.querySelectorAll('a.credit'), function (a) {
+      if (a.parentNode && a.parentNode.classList && a.parentNode.classList.contains('msp-card')) return;
+      var cs = getComputedStyle(a), w = document.createElement('div'); w.className = 'msp-card';
+      ['gridArea', 'order', 'alignSelf', 'justifySelf', 'margin', 'flex'].forEach(function (k) { if (cs[k]) w.style[k] = cs[k]; });
+      a.parentNode.insertBefore(w, a); w.appendChild(a);
+      var row = document.createElement('button'); row.type = 'button'; row.className = 'msp-row'; row.setAttribute('aria-haspopup', 'dialog'); row.setAttribute('aria-expanded', 'false');
+      row.innerHTML = 'Supported by ' + faces; w.appendChild(row);
+      row.addEventListener('click', function (e) { e.stopPropagation(); if (!hover && !pop.hidden && anchor === row) hide(); else show(row); });
+      if (hover) { row.addEventListener('mouseenter', function () { show(row); }); row.addEventListener('mouseleave', hideSoon); }
+    });
+    if (hover) Array.prototype.forEach.call(document.querySelectorAll('a.kofi-support'), function (k) {
+      k.addEventListener('mouseenter', function () { show(k); }); k.addEventListener('mouseleave', hideSoon);
+      k.addEventListener('focus', function () { show(k); }); k.addEventListener('blur', hideSoon);
+    });
+    pop.addEventListener('mouseenter', function () { clearTimeout(hideT); });
+    pop.addEventListener('mouseleave', function () { if (hover) hideSoon(); });
+    document.addEventListener('click', function (e) { if (!pop.hidden && !pop.contains(e.target) && !(anchor && anchor.contains(e.target))) hide(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) hide(); });
+    window.addEventListener('resize', place); window.addEventListener('scroll', function () { if (!pop.hidden) place(); }, true);
+  }
+  function go() {
+    var tries = 0;
+    (function get() {
+      fetch(API, { cache: 'default' }).then(function (r) { return r.json(); }).then(function (d) { run((d && Array.isArray(d.list)) ? d.list : []); }, function () { if (++tries < 2) setTimeout(get, 4000); });
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();
+</script>
 </body>
 </html>

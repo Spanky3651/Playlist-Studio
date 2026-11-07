@@ -38,6 +38,10 @@ export default {
       try { return await pushRoute(request, env, url); }
       catch (e) { return json({ error: "Server error" }, 500, writeCors(request)); }
     }
+    if (url.pathname === "/supporters") {
+      try { return await supportersRoute(request, env, ctx); }
+      catch (e) { return json({ list: [] }, 200, { "Access-Control-Allow-Origin": "*" }); }
+    }
     if (url.pathname === "/kofi") {
       try { return await kofiHook(request, env); }
       catch (e) { return new Response("Server error", { status: 500 }); }
@@ -1897,6 +1901,30 @@ async function kofiHook(request, env) {
   }
   return new Response("ok");
 }
+// Public list for the "Supported by" row and thank-you card on the sites: supporters who made their name public on
+// Ko-fi, newest first, with the picture set on the Ko-fi tab and their newest public message. Nothing else leaves.
+// Cached at the edge for 5 minutes so a page view doesn't cost KV reads.
+async function supportersRoute(request, env, ctx) {
+  const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET", "Cache-Control": "public, max-age=300" };
+  if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+  if (request.method !== "GET" || !env.PLAYLISTS) return json({ list: [] }, 200, cors);
+  const cache = caches.default, key = new Request("https://supporters.cache/v1");
+  const hit = await cache.match(key);
+  if (hit) return new Response(await hit.text(), { headers: Object.assign({ "Content-Type": "application/json" }, cors) });
+  const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [], av = (await env.PLAYLISTS.get("kofi:avatars", "json")) || {};
+  const by = new Map();
+  tips.slice().sort((a, b) => (b.t || 0) - (a.t || 0)).forEach((x) => {
+    if (!x || !x.pub || !x.name) return;
+    const name = String(x.name).trim().slice(0, 60), k = name.toLowerCase(); if (!k) return;
+    let s = by.get(k);
+    if (!s) { const img = typeof av[k] === "string" && /^data:image\/(png|jpeg|webp);base64,/.test(av[k]) ? av[k] : ""; s = { name, img, msg: "", t: x.t || 0 }; by.set(k, s); }
+    if (!s.msg && x.msg) s.msg = String(x.msg).slice(0, 140);
+  });
+  const body = JSON.stringify({ list: [...by.values()].slice(0, 12) });
+  const put = cache.put(key, new Response(body, { headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" } }));
+  if (ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
+  return new Response(body, { headers: Object.assign({ "Content-Type": "application/json" }, cors) });
+}
 // Ko-fi has no history to read, so tips from before the webhook was set up are added by hand on the Ko-fi tab.
 // Only those hand-added ones can be removed again.
 async function kofiEditTips(request, env, url, nocache) {
@@ -3425,6 +3453,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'maps-like-this': ['Search', 'Maps like this', 'Found maps similar to one map'],
     'nofail-chip': ['Search', 'No Fail runs chip', 'Filtered results to their No Fail runs'],
     'fav-chip': ['Search', 'Favorites chip', 'Showed only their favorites in Search Results'],
+    'supporters-open': ['Other', 'Supporters card', 'Opened the thank-you card from Support me or the Supported by row'],
     'mod-filter-*': ['Search', 'Modifier filter', 'Filtered their plays by the modifier their best score used'],
     'nofail-quick': ['Search', 'No Fail quick list', 'Used the No Fail quick list'],
     'density-*': ['Results', 'Row density', 'Switched between compact and roomy rows'],
