@@ -1832,6 +1832,25 @@ body.rp-open{overflow:hidden;}
 .play-chip.fav-chip .fav-h,#favAddBtn .fav-h{width:13px;height:13px;color:#ff3b63;flex:none;vertical-align:-2px;margin-right:2px;}
 .play-chip.fav-chip.active{background:rgba(255,59,99,.16);border-color:#ff3b63;color:#fff;box-shadow:0 0 9px rgba(255,59,99,.25);}
 .play-chip.fav-chip.active .pc-n{color:#ffd0da;background:rgba(255,59,99,.3);}
+/* Your plays: All / Unplayed / Played switch, the kinds of Played under it, extras on the right */
+#playChips.play-chips{display:flex;flex-direction:column;flex-wrap:nowrap;gap:8px;flex:1 1 auto;min-width:0;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:0;}
+.pb-main{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;}
+.pb-seg{display:flex;flex:1 1 340px;min-width:0;border:1px solid var(--border-2);border-radius:9px;overflow:hidden;background:#0c1220;}
+.pb-seg .play-chip{flex:1 1 0;min-width:0;justify-content:center;border:0;border-radius:0;box-shadow:none;}
+.pb-seg .play-chip+.play-chip{border-left:1px solid var(--border-2);}
+.pb-seg .play-chip.active{background:rgba(47,140,255,.2);border-color:transparent;box-shadow:none;}
+.pb-seg .play-chip.active+.play-chip{border-left-color:var(--border-2);}
+.pb-tools{display:flex;flex-wrap:wrap;gap:6px;}
+.pb-sub{display:flex;flex-wrap:wrap;gap:6px;padding-left:10px;border-left:2px solid #1f3a66;}
+.pb-sub[hidden]{display:none;}
+@media(max-width:720px){
+  .pb-main{display:contents;}
+  .pb-seg{order:1;flex:none;}
+  .pb-sub{order:2;}
+  .pb-tools{order:3;}
+  .pb-seg .play-chip{padding:5px 4px;gap:5px;}
+  .pb-sub .play-chip,.pb-tools .play-chip{flex:none;}
+}
 .sort-order .so-a{font-weight:700;}
 .rank-seg{display:none;}
 /* NEW strip for maps you haven't played */
@@ -2994,16 +3013,25 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <div class="play-bar" id="playFilterBar">
           <span class="play-bar-lbl">Your plays</span>
           <div class="play-chips" id="playChips">
-            <button type="button" class="play-chip active" data-ps="any">All</button>
-            <button type="button" class="play-chip" data-ps="unplayed" title="Only maps you haven't played yet">Unplayed</button>
-            <button type="button" class="play-chip" data-ps="played" title="Only maps you've played">Played</button>
-            <button type="button" class="play-chip" data-ps="fc" title="Only maps you've full-combo'd">FC'd</button>
-            <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
-            <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
-            <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
-            <button type="button" class="play-chip fav-chip" id="favChip" hidden aria-pressed="false" title="Only songs you've favorited on your Quest. Works with the other chips."><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Favorites</button>
-            <button type="button" class="play-chip mod-chip" id="modChip" aria-haspopup="menu" aria-expanded="false" title="Only maps whose best score used a modifier">Modifier <span class="mc-car" aria-hidden="true">▾</span></button>
-            <button type="button" class="play-chip play-more" id="playMoreBtn" aria-expanded="false" aria-controls="playMoreRow" title="Last played and accuracy filters">More <span class="pm-n" id="playMoreN"></span></button>
+            <div class="pb-main">
+              <div class="pb-seg" role="group" aria-label="Your plays">
+                <button type="button" class="play-chip active" data-ps="any">All</button>
+                <button type="button" class="play-chip" data-ps="unplayed" title="Only maps you haven't played yet">Unplayed</button>
+                <button type="button" class="play-chip pb-played" data-ps="played" title="Only maps you've played">Played</button>
+              </div>
+              <div class="pb-tools">
+                <button type="button" class="play-chip fav-chip" id="favChip" hidden aria-pressed="false" title="Only songs you've favorited on your Quest. Works with the other chips."><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Favorites</button>
+                <button type="button" class="play-chip mod-chip" id="modChip" aria-haspopup="menu" aria-expanded="false" title="Only maps whose best score used a modifier">Modifier <span class="mc-car" aria-hidden="true">▾</span></button>
+                <button type="button" class="play-chip play-more" id="playMoreBtn" aria-expanded="false" aria-controls="playMoreRow" title="Last played and accuracy filters">More <span class="pm-n" id="playMoreN"></span></button>
+              </div>
+            </div>
+            <div class="pb-sub" id="playSub" hidden role="group" aria-label="Kind of play">
+              <button type="button" class="play-chip" data-ps="played" title="Every map you've played">Any</button>
+              <button type="button" class="play-chip" data-ps="fc" title="Only maps you've full-combo'd">FC'd</button>
+              <button type="button" class="play-chip" data-ps="nofc" title="Played but not full-combo'd">Not FC</button>
+              <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
+              <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
+            </div>
           </div>
           <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
           <div class="play-more-row" id="playMoreRow" hidden>
@@ -3422,7 +3450,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T12:59:22Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T13:25:22Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -12213,9 +12241,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var connected = !!state.player;
     el.playFilterBar.classList.toggle('connected', connected);
     var ps = el.playStatus ? el.playStatus.value : 'any';
+    var kind = ps === 'played' || ps === 'fc' || ps === 'nofc' || ps === 'nearfc' || ps === 'nf';
     Array.prototype.forEach.call(el.playChips.querySelectorAll('.play-chip[data-ps]'), function (b) {
-      b.classList.toggle('active', b.dataset.ps === ps);
+      b.classList.toggle('active', b.classList.contains('pb-played') ? kind : b.dataset.ps === ps);
     });
+    var sub = document.getElementById('playSub'); if (sub) sub.hidden = !(connected && kind);
     var fch = document.getElementById('favChip'), fok = !!lqFavDev();
     if (fch) { fch.hidden = !fok; var fon = !!(state.favOnly && fok); fch.classList.toggle('active', fon); fch.setAttribute('aria-pressed', fon ? 'true' : 'false'); }
     modChipRender();
