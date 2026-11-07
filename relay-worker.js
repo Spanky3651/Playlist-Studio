@@ -1399,7 +1399,7 @@ async function pushRoute(request, env, url) {
 // The bell on Studio Stats: alerts for its owner on each device that turns them on with the admin key. Kept in KV
 // as push:admin (push address, keys, switches, time zone). Sent right away: lockouts, Ko-fi and new Studio Sync
 // headsets. Checked by the cron once an hour: plan usage, tokens that stopped working, traffic, Worker errors, Studio Sync
-// changes a headset won't take, GitHub activity and milestones; once a day Ko-fi going quiet; Mondays the weekly summary.
+// changes a headset won't take, GitHub activity and milestones; Mondays the weekly summary.
 // No quiet hours: every alert goes out right away. Anything left waiting in push:aq from before is sent on the next run.
 const AP_KINDS = ["key", "kofi", "plan", "broke", "sync", "spike", "errors", "stuck", "github", "milestone", "weekly"];
 const AP_MAX = 10;
@@ -1585,19 +1585,6 @@ async function adminCron(env) {
         if (x && x.message === "gc-auth") broke("gc:" + key, { i: "warn", tab, t: "GoatCounter stopped accepting the " + name + " token", b: name + "’s numbers on Studio Stats can’t update until it’s fixed." });
       }
     }
-  }
-  // Ko-fi going quiet: nothing from the webhook in 30 days while people still click Support me. Checked once a day.
-  if (env.KOFI_TOKEN && want("broke") && st.kd !== Math.floor(nowS / DAY)) {
-    st.kd = Math.floor(nowS / DAY);
-    try {
-      const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [], test = await env.PLAYLISTS.get("kofi:test", "json");
-      const last = Math.max((test && test.t) || 0, ...tips.filter((x) => !x.manual).map((x) => x.t || 0));
-      if (last && nowS - last > 30 * DAY && (!st.kq || nowS - st.kq > 30 * DAY)) {
-        const c = await kofiClicks(env, false), since = gcDay(last);
-        const clicks = ((c && c.sites) || []).reduce((a, x) => a + (x.days || []).filter((d) => d[0] > since).reduce((b2, d) => b2 + (d[1] || 0), 0), 0);
-        if (clicks >= 15) { st.kq = nowS; out.push(["broke", { i: "warn", tab: "kofi", t: "Ko-fi has gone quiet", b: "Nothing from Ko-fi in " + Math.floor((nowS - last) / DAY) + " days, but there were " + clicks + " Support me clicks. Send a test from Ko-fi to check." }]); }
-      }
-    } catch (e) {}
   }
   // Worker errors: 20 or more in the last hour, and at least 2% of that Worker's requests. Once in 6 hours per Worker.
   if (env.CF_API_TOKEN && want("errors")) {
@@ -2034,33 +2021,6 @@ async function kofiStats(env, fresh) {
   const test = await env.PLAYLISTS.get("kofi:test", "json");
   const avatars = (await env.PLAYLISTS.get("kofi:avatars", "json")) || {};
   return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, avatars };
-}
-// Support me clicks (the kofi-click event) per day for the last 8 weeks, on every site that counts them.
-async function kofiClicks(env, fresh) {
-  const ck = "kofi:clicks2", cached = await env.PLAYLISTS.get(ck, "json");
-  if (cached && nowSec() - cached.generated < (fresh ? 300 : 3600)) return cached;
-  if (!env.GC_TOKEN) return null;
-  const now = nowSec(), DAY = 86400, start = Math.floor(now / DAY) * DAY - 55 * DAY;
-  const SITES = [["studio", "Playlist Studio", { code: env.GC_SITE || "playliststudio", token: env.GC_TOKEN }], ["rs", "ReeSaber Studio", GC_OTHER.rs(env)], ["hsv", "HSV Config", GC_OTHER.hsv(env)]];
-  const sites = [];
-  for (const [key, name, cfg] of SITES) {
-    const e = Object.assign({}, env, { GC_SITE: cfg.code, GC_TOKEN: cfg.token || env.GC_TOKEN });
-    // The Support me button counts as the event app/kofi-click on every site; GoatCounter can return just that path.
-    let hit = null, asked = false;
-    try {
-      const j = await gcGet(e, "/stats/hits", { start: gcIso(start), end: gcIso(now), limit: 5, group: "day", include_paths: "app/kofi-click", path_by_name: "true" });
-      asked = true;
-      hit = ((j && j.hits) || []).find((h) => /(^|\/)kofi-click$/.test(h.path || ""));
-    } catch (x) { if (x && x.message === "gc-auth" && key === "studio") throw x; }
-    if (!asked) {
-      try { const all = await gcHits(e, start, now); const h = all.find((x) => /(^|\/)kofi-click$/.test(x.path || "")); if (h) hit = { stats: h.days.map((d) => ({ day: d[0], daily: d[1] })) }; }
-      catch (x) { if (x && x.message === "gc-auth" && key === "studio") throw x; sites.push({ key, name, error: true, days: [] }); continue; }
-    }
-    sites.push({ key, name, days: hit ? (hit.stats || []).map((x) => [x.day, x.daily || 0]) : [] });
-  }
-  const out = { generated: now, start: gcDay(start), end: gcDay(now), sites };
-  await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 7200 });
-  return out;
 }
 
 async function adminStats(env) {
@@ -4160,7 +4120,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   // ---- Alerts on this device (the bell next to refresh) ----
   var AK = 'studioStats.alerts.v1', al = { open: false, busy: false, err: '', ok: '' };
   var AL_OPTS = [['key', 'Key guessing', 'When wrong keys lock Studio Stats'], ['kofi', 'Ko-fi', 'Every tip, shop order and new monthly member'],
-    ['plan', 'Plan usage', 'Once when any bar passes 80% this billing period'], ['broke', 'Something broke', 'A token stops working, or Ko-fi goes quiet'],
+    ['plan', 'Plan usage', 'Once when any bar passes 80% this billing period'], ['broke', 'Something broke', 'A token stops working'],
     ['sync', 'New Studio Sync users', 'Someone links a headset for the first time'], ['spike', 'Traffic spikes', 'A site gets about 3 times its usual visitors in a day'],
     ['errors', 'Worker errors', 'A Worker starts failing: 20 or more errors in an hour'], ['stuck', 'Stuck Studio Sync changes', 'A headset keeps syncing but hasn’t taken a change for a day'],
     ['github', 'GitHub', 'New issues, pull requests, stars and forks on your repos'], ['milestone', 'Milestones', 'Players, headsets, monthly visits and Ko-fi totals passing round numbers'],
