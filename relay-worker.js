@@ -1296,7 +1296,7 @@ async function admin(request, env, url) {
 // them, their guard coming back, and the war starting, having 24 hours left, ending, plus new clan missions.
 // The browser hands Studio a push address; the Worker checks AccSaber every 5 minutes (the cron in
 // worker/wrangler.toml) and sends what changed. Kept per device: the push address and its two keys, the AccSaber
-// player and clan, the three switches and the time zone (for quiet hours, 1 to 8 am). No account, no email.
+// player and clan, the three switches and the time zone. No account, no email.
 // Each alert names its picture (i): icons/alerts/<i>.png, a white symbol on black; the small icon stays Studio's.
 // The key pair that signs the pushes (VAPID) is made on first use and kept in KV as push:vapid.
 const PUSH_SUBJECT = "https://spanky3651.github.io/Playlist-Studio/";
@@ -1837,13 +1837,11 @@ async function warAlerts(env) {
   }
   Object.keys(cur.wars).forEach((k) => { if (!keepWars[k]) delete cur.wars[k]; });
   Object.keys(cur.subs).forEach((k) => { if (!subs[k]) delete cur.subs[k]; });
-  // Quiet hours: 1 to 8 am in the device's time zone. Alerts wait and come as one when it's over.
+  // No quiet hours: alerts go out right away. Anything still held from before goes out with the next one, as one alert.
   const gone = [], v = await pushVapid(env), jwts = {};
   for (const id of ids) {
     const s = subs[id], ss = cur.subs[id] = cur.subs[id] || {};
     let msgs = out[id] || [];
-    let hr = 12; try { hr = +new Intl.DateTimeFormat("en-US", { timeZone: s.tz || "UTC", hour: "numeric", hourCycle: "h23" }).format(now) % 24; } catch (e) {}
-    if (hr >= 1 && hr < 8) { if (msgs.length) ss.q = (ss.q || []).concat(msgs).slice(-30); continue; }
     if (ss.q && ss.q.length) {
       const all = ss.q.concat(msgs); delete ss.q;
       if (all.length === 1) msgs = all;
