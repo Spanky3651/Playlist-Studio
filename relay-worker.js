@@ -2632,7 +2632,8 @@ button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
 .tw{font-size:13px;color:#7f8a9c;white-space:nowrap}
 .kpill.h{background:#11161f;color:#8792a6;border-color:#232c3b}
 .kfoot{margin-top:10px;font-size:13px;color:#7f8a9c}
-.phead .kadd{margin-left:auto;padding:5px 12px;font-size:13.5px;font-weight:700;border-radius:9px}
+.kph{align-items:center}.phead .kadd{margin-left:auto;width:32px;height:32px;padding:0;display:inline-grid;place-items:center;font:600 22px/1 system-ui,sans-serif;color:#cfe0ff;border-radius:9px;flex:none}.phead .kadd:hover{border-color:#2f7bff;color:#fff}
+@media(max-width:760px){.kph small{order:3;flex-basis:100%}}
 .kform{display:grid;grid-template-columns:minmax(0,1.4fr) 110px 150px 130px;gap:8px;margin:6px 0 12px;padding:12px;border:1px solid #1f3456;border-radius:12px;background:#0b111c}
 .kform input,.kform select{width:100%;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 10px;font-size:15px;font-family:inherit}
 .kform .kmsg{grid-column:1/-1}
@@ -3114,7 +3115,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <div class="card"><div class="label">Supporters</div><div class="value" id="k-sup">-</div><div class="note" id="k-supn"></div></div>
 <div class="card" title="All your tips against the $5 a month Cloudflare plan the Worker runs on. The bar is how much of the hosting since your first tip they cover."><div class="label">Covers hosting</div><div class="value k" id="k-host">-</div><div class="note" id="k-hostn"></div></div>
 </div>
-<div class="kpanel"><div class="phead"><b>Latest</b><small>names and messages only when the supporter made them public</small><button class="ghost kadd" id="k-addbtn" type="button">+ Add a past tip</button></div>
+<div class="kpanel"><div class="phead kph"><b>Latest</b><small>names and messages only when the supporter made them public</small><button class="ghost kadd" id="k-addbtn" type="button" title="Add a past tip" aria-label="Add a past tip">+</button></div>
 <div class="kform hidden" id="k-form">
 <input class="kname" id="kf-name" type="text" maxlength="60" placeholder="Name (e.g. Nic)" autocomplete="off">
 <input id="kf-amt" type="number" min="0.01" step="0.01" placeholder="Amount" inputmode="decimal">
