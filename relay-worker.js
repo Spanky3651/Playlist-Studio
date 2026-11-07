@@ -1396,11 +1396,11 @@ async function pushRoute(request, env, url) {
 // as push:admin (push address, keys, switches, time zone). Sent right away: lockouts, Ko-fi and new Studio Sync
 // headsets. Checked by the cron once an hour: plan usage, tokens that stopped working, traffic, Worker errors, Studio Sync
 // changes a headset won't take, GitHub activity and milestones; once a day Ko-fi going quiet; Mondays the weekly summary.
-// Quiet hours are 1 to 8 am on each device; what comes then waits in push:aq and arrives as one alert after.
+// No quiet hours: every alert goes out right away. Anything left waiting in push:aq from before is sent on the next run.
 const AP_KINDS = ["key", "kofi", "plan", "broke", "sync", "spike", "errors", "stuck", "github", "milestone", "weekly"];
 const AP_MAX = 10;
 function apPrefs(p) { const o = {}; AP_KINDS.forEach((k) => { o[k] = !p || p[k] !== false; }); return o; }
-function apQuiet(s, now) { let hr = 12; try { hr = +new Intl.DateTimeFormat("en-US", { timeZone: s.tz || "UTC", hour: "numeric", hourCycle: "h23" }).format(now) % 24; } catch (e) {} return hr >= 1 && hr < 8; }
+function apQuiet() { return false; }
 function apMoney(n, cur) { try { return new Intl.NumberFormat("en-US", { style: "currency", currency: cur || "USD", minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n); } catch (e) { return n + " " + (cur || ""); } }
 function apN(n) { n = +n || 0; if (n >= 1e6) return (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, "") + "M"; if (n >= 1e4) return Math.round(n / 1e3) + "k"; if (n >= 1e3) return (Math.round(n / 100) / 10).toString().replace(/\.0$/, "") + "k"; return String(Math.round(n)); }
 function apAgo(sec) { sec = Math.max(0, sec); const m = Math.round(sec / 60), h = Math.round(sec / 3600), d = Math.round(sec / 86400); return sec < 3600 ? Math.max(1, m) + " minute" + (m === 1 ? "" : "s") + " ago" : sec < 86400 * 1.5 ? h + " hour" + (h === 1 ? "" : "s") + " ago" : d + " days ago"; }
@@ -4138,7 +4138,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   // in the currency most tips use, with the latest three supporters. Hidden when the range has none.
   // ---- Alerts on this device (the bell next to refresh) ----
   var AK = 'studioStats.alerts.v1', al = { open: false, busy: false, err: '', ok: '' };
-  var AL_OPTS = [['key', 'Key guessing', 'When wrong keys lock Studio Stats. Sent even during quiet hours.'], ['kofi', 'Ko-fi', 'Every tip, shop order and new monthly member'],
+  var AL_OPTS = [['key', 'Key guessing', 'When wrong keys lock Studio Stats'], ['kofi', 'Ko-fi', 'Every tip, shop order and new monthly member'],
     ['plan', 'Plan usage', 'Once when any bar passes 80% this billing period'], ['broke', 'Something broke', 'A token stops working, or Ko-fi goes quiet'],
     ['sync', 'New Studio Sync users', 'Someone links a headset for the first time'], ['spike', 'Traffic spikes', 'A site gets about 3 times its usual visitors in a day'],
     ['errors', 'Worker errors', 'A Worker starts failing: 20 or more errors in an hour'], ['stuck', 'Stuck Studio Sync changes', 'A headset keeps syncing but hasn’t taken a change for a day'],
@@ -4175,7 +4175,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       h += '<div class="ac-o"><div><b>' + o[1] + '</b><small>' + o[2] + '</small></div><button type="button" class="ac-sw" role="switch" aria-checked="' + on + '" aria-label="' + esc(o[1]) + '" data-al="pref" data-k="' + o[0] + '"></button></div>';
     });
     c.innerHTML = h + err + '<div class="ac-f"><button type="button" class="ghost" data-al="test"' + (al.busy ? ' disabled' : '') + '>Send a test</button><button type="button" class="ghost" data-al="off"' + (al.busy ? ' disabled' : '') + '>Turn off on this device</button>' +
-      (al.ok ? '<span class="ok">' + esc(al.ok) + '</span>' : '') + '<span class="n">Quiet from 1 to 8 am: anything then comes as one alert in the morning, except key guessing and the weekly summary. Each device you use gets its own alerts.</span></div>';
+      (al.ok ? '<span class="ok">' + esc(al.ok) + '</span>' : '') + '<span class="n">Alerts come right away, day or night. Each device you use gets its own alerts.</span></div>';
   }
   function alPrefs() { var st = alGet(), o = {}; AL_OPTS.forEach(function (x) { o[x[0]] = !st || !st.prefs || st.prefs[x[0]] !== false; }); return o; }
   function alOn() {
