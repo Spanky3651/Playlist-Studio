@@ -3427,6 +3427,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'maps-like-this': ['Search', 'Maps like this', 'Found maps similar to one map'],
     'nofail-chip': ['Search', 'No Fail runs chip', 'Filtered results to their No Fail runs'],
     'fav-chip': ['Search', 'Favorites chip', 'Showed only their favorites in Search Results'],
+    'mod-filter-*': ['Search', 'Modifier filter', 'Filtered their plays by the modifier their best score used'],
     'nofail-quick': ['Search', 'No Fail quick list', 'Used the No Fail quick list'],
     'density-*': ['Results', 'Row density', 'Switched between compact and roomy rows'],
     'results-more': ['Results', 'Results menu', 'Opened the ... menu above the results'],

@@ -1735,6 +1735,13 @@ a.rcard{display:block;position:relative;color:inherit;text-decoration:none;}
 .rp-frame iframe{width:100%;height:100%;border:0;display:block;}
 body.rp-open{overflow:hidden;}
 .rc-nf{color:#ff8597;font-weight:800;}
+.rc-md{color:#d9b8ff;font-weight:700;}
+.play-chip.mod-chip.active{background:rgba(160,100,255,.18);border-color:#a46cff;box-shadow:0 0 9px rgba(160,100,255,.25);}
+.mc-car{font-size:10px;opacity:.7;}
+.ps-mi .md-code{width:30px;flex:none;font-family:var(--mono);font-size:12.5px;font-weight:700;color:#d9b8ff;}
+.ps-mi .md-ck{width:14px;flex:none;color:#c08cff;}
+.ps-mi .md-n{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--muted);}
+.ps-mi.on{background:#1d1230;}
 @media(min-width:721px){
   .song-list{container:songs/inline-size;}
   body.dense .rcards{flex-basis:100%;margin-top:3px;display:flex;gap:16px;max-width:none;}
@@ -2995,6 +3002,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button type="button" class="play-chip" data-ps="nearfc" title="Played, no FC, but you were close">Near-FC</button>
             <button type="button" class="play-chip" data-ps="nf" title="Maps where your best BeatLeader score is a No Fail run: you failed and No Fail carried you to the end">No Fail</button>
             <button type="button" class="play-chip fav-chip" id="favChip" hidden aria-pressed="false" title="Only songs you've favorited on your Quest. Works with the other chips."><svg class="fav-h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-.4 0-.8-.15-1.1-.42C6.2 16.5 2 12.9 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.5.95 4.6 2.4C13.1 3.95 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.3-4.2 7.9-8.9 11.98-.3.27-.7.42-1.1.42z" fill="currentColor"/></svg>Favorites</button>
+            <button type="button" class="play-chip mod-chip" id="modChip" aria-haspopup="menu" aria-expanded="false" title="Only maps whose best score used a modifier">Modifier <span class="mc-car" aria-hidden="true">▾</span></button>
             <button type="button" class="play-chip play-more" id="playMoreBtn" aria-expanded="false" aria-controls="playMoreRow" title="Last played and accuracy filters">More <span class="pm-n" id="playMoreN"></span></button>
           </div>
           <span class="play-bar-hint" id="playBarHint"><button type="button" class="linklike" id="playConnectJump">Connect your BeatLeader profile</button> to filter by what you've played, FC'd, or haven't touched yet.</span>
@@ -3414,7 +3422,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T12:47:26Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T12:59:22Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><span class="nf-btns"><a class="src-badge nf-btn nf-src" data-gc="github-click" href="https://github.com/Spanky3651/Playlist-Studio" target="_blank" rel="noopener" title="Source code on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.575.106.785-.25.785-.556 0-.274-.01-1-.015-1.965-3.196.695-3.87-1.54-3.87-1.54-.523-1.33-1.277-1.684-1.277-1.684-1.044-.714.08-.699.08-.699 1.155.081 1.763 1.186 1.763 1.186 1.026 1.758 2.693 1.25 3.35.955.104-.744.402-1.25.73-1.538-2.552-.29-5.235-1.276-5.235-5.68 0-1.255.448-2.28 1.183-3.084-.119-.29-.513-1.46.112-3.043 0 0 .965-.309 3.163 1.178a10.98 10.98 0 0 1 2.88-.387c.977.004 1.96.132 2.88.387 2.196-1.487 3.16-1.178 3.16-1.178.626 1.583.232 2.753.114 3.043.737.804 1.182 1.829 1.182 3.084 0 4.415-2.687 5.386-5.247 5.67.413.355.78 1.056.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .308.207.667.79.554A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>Source</a> <a class="kofi-support nf-btn nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></span><span class="nf-vr"></span><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4501,6 +4509,72 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function scoreHashIdx() { if (!state._scoreHashIdx) state._scoreHashIdx = buildScoreHashIndex(); return state._scoreHashIdx; }
   // A No Fail run: BeatLeader only lists NF on a score when the player failed and No Fail kept them going
   // (the score is halved), so a best score that still carries NF is a map they haven't passed since.
+  // ---- Modifier filter (Your plays) ------------------------------------------------
+  // Keeps maps whose best BeatLeader score used any of the picked modifiers; "none" = played with none.
+  var MOD_NAMES = { SF: 'Super Fast Song', FS: 'Faster Song', SS: 'Slower Song', MS: 'Middle Skip', DA: 'Disappearing Arrows', GN: 'Ghost Notes', NA: 'No Arrows', NB: 'No Bombs', NO: 'No Walls', NF: 'No Fail', PM: 'Pro Mode', SC: 'Small Notes', SA: 'Strict Angles', IF: '1 Life', BE: '4 Lives' };
+  state.modSel = [];
+  function modMatch(md, want) {
+    var l = String(md || '').split(',').filter(Boolean);
+    return want.some(function (w) { return w === 'none' ? !l.length : l.indexOf(w) !== -1; });
+  }
+  function modCounts() {
+    var c = {}, none = 0, s = state.scores || {};
+    for (var k in s) if (s.hasOwnProperty(k) && s[k].src !== 'ss') { var l = String(s[k].md || '').split(',').filter(Boolean); if (!l.length) none++; l.forEach(function (x) { c[x] = (c[x] || 0) + 1; }); }
+    return { none: none, list: Object.keys(c).map(function (x) { return [x, c[x]]; }).sort(function (a, b) { return b[1] - a[1]; }) };
+  }
+  function modChipRender() {
+    var b = document.getElementById('modChip'); if (!b) return;
+    var sel = state.modSel || [];
+    b.firstChild.nodeValue = sel.length ? sel.map(function (x) { return x === 'none' ? 'No mods' : x; }).join(' + ') + ' ' : 'Modifier ';
+    b.classList.toggle('active', !!sel.length);
+    var m = document.getElementById('modMenu'); if (m && !m.hidden) { m.innerHTML = modMenuHtml(); modPlace(); }
+  }
+  function modMenuHtml() {
+    var c = modCounts(), sel = state.modSel || [];
+    var item = function (k, code, name, n) { var on = sel.indexOf(k) !== -1; return '<button type="button" class="ps-mi' + (on ? ' on' : '') + '" role="menuitemcheckbox" aria-checked="' + on + '" data-mod="' + esc(k) + '"><span class="md-ck">' + (on ? '\u2713' : '') + '</span><span class="md-code">' + esc(code) + '</span>' + esc(name) + '<span class="md-n">' + n.toLocaleString('en-US') + '</span></button>'; };
+    var h = '<div class="ps-h">Your best score used</div>' + item('none', '\u2014', 'No modifiers', c.none) +
+      c.list.map(function (x) { return item(x[0], x[0], MOD_NAMES[x[0]] || x[0], x[1]); }).join('');
+    if (!c.list.length && !c.none) h += '<div class="ps-note">Sync your scores first.</div>';
+    return h + '<div class="ps-note">Pick more than one to see maps with any of them.' + (sel.length ? ' <button type="button" class="linklike" data-mod="clear">Clear</button>' : '') + '</div>';
+  }
+  function modPlace() {
+    var m = document.getElementById('modMenu'), b = document.getElementById('modChip'); if (!m || m.hidden || !b) return;
+    var r = b.getBoundingClientRect(), tb = document.getElementById('mTabbar');
+    var floor = Math.min(innerHeight, tb && tb.offsetParent !== null ? tb.getBoundingClientRect().top : innerHeight) - 8;
+    var w = Math.min(300, innerWidth - 24); m.style.width = w + 'px';
+    m.style.left = Math.max(12, Math.min(r.left, innerWidth - w - 12)) + 'px';
+    m.style.maxHeight = ''; var h = m.offsetHeight, top = r.bottom + 6;
+    if (top + h > floor && r.top - 6 - h >= 8) top = r.top - 6 - h;
+    else if (top + h > floor) m.style.maxHeight = Math.max(200, floor - top) + 'px';
+    m.style.top = Math.max(8, top) + 'px';
+  }
+  function modOpen(on) {
+    var m = document.getElementById('modMenu'), b = document.getElementById('modChip');
+    if (!m) {
+      if (on === false) return;
+      m = document.createElement('div'); m.id = 'modMenu'; m.className = 'ps-menu'; m.setAttribute('role', 'menu'); m.hidden = true; document.body.appendChild(m);
+      m.addEventListener('click', function (e) {
+        var x = e.target.closest('[data-mod]'); if (!x) return;
+        var k = x.getAttribute('data-mod'), sel = state.modSel;
+        if (k === 'clear') sel.length = 0;
+        else { var i = sel.indexOf(k); if (i !== -1) sel.splice(i, 1); else { if (k === 'none') sel.length = 0; else { var j = sel.indexOf('none'); if (j !== -1) sel.splice(j, 1); } sel.push(k); track('mod-filter-' + k.toLowerCase()); } }
+        applyClientFilters();
+      });
+    }
+    if (on === undefined) on = m.hidden;
+    if (on && needsModifierSync() && nfNeedsSync()) on = false;   // old cache without modifiers: one re-sync first
+    m.hidden = !on; if (b) b.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) { try { if (b) b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (x) {} m.innerHTML = modMenuHtml(); modPlace(); }
+  }
+  document.addEventListener('click', function (e) {
+    var m = document.getElementById('modMenu'); if (!m || m.hidden) return;
+    if (!document.documentElement.contains(e.target)) return;
+    if (e.target.closest && (e.target.closest('#modMenu') || e.target.closest('#modChip'))) return;
+    modOpen(false);
+  });
+  document.addEventListener('keydown', function (e) { var m = document.getElementById('modMenu'); if (e.key === 'Escape' && m && !m.hidden) modOpen(false); });
+  window.addEventListener('resize', modPlace);
+  window.addEventListener('scroll', function () { var m = document.getElementById('modMenu'); if (m && !m.hidden) modPlace(); }, true);
   function isNF(sc) { return !!(sc && sc.src !== 'ss' && /(^|,)NF(,|$)/.test(String(sc.md || ''))); }
   function nfCount() { var n = 0, s = state.scores || {}; for (var k in s) if (s.hasOwnProperty(k) && isNF(s[k])) n++; return n; }
   // Scores synced before Studio kept modifiers can't tell No Fail runs apart; one full re-sync fixes that.
@@ -5540,6 +5614,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // are "what each chip would show" with every other filter applied.
     var psWant = f.playStatus, pc = { any: 0, unplayed: 0, played: 0, fc: 0, nofc: 0, nearfc: 0, nf: 0 };
     var favDev = lqFavDev(), favOnly = !!(state.favOnly && favDev);
+    var modWant = state.player && state.modSel && state.modSel.length ? state.modSel : null;
     f.playStatus = 'any';
     var counting = true;
     function keepRow(s) {
@@ -5612,6 +5687,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (f.mapperExclude.some(function (t) { return exHay.indexOf(t) !== -1; })) return false;
       }
       if (favOnly && !lqIsFav(favDev, s.hash)) return false;
+      if (modWant && !exact) { var pmd = playInfo(s); if (!pmd || pmd.sc.src === 'ss' || !modMatch(pmd.sc.md, modWant)) return false; }
       if (state.player && !exact) {
         var pq = playInfo(s);
         if (counting) { pc.any++; if (!pq) pc.unplayed++; else { pc.played++; if (pq.fc) pc.fc++; else { pc.nofc++; if (pq.near) pc.nearfc++; } if (pq.nf) pc.nf++; } }
@@ -5625,11 +5701,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     state.emptyWhy = null;
     if (!out.length && state.raw.length && !exact && state.viewMode !== 'clan' && state.viewMode !== 'recommend') {
       counting = false;
-      var base = f, saved = [hideAuto, ageCutoff, favOnly, psWant], why = [];
+      var base = f, saved = [hideAuto, ageCutoff, favOnly, psWant, modWant], why = [];
       var tryOff = function (k, on, off) {
         if (!on) return;
         f = Object.assign({}, base); off(); var n = state.raw.filter(keepRow).length;
-        hideAuto = saved[0]; ageCutoff = saved[1]; favOnly = saved[2]; psWant = saved[3];
+        hideAuto = saved[0]; ageCutoff = saved[1]; favOnly = saved[2]; psWant = saved[3]; modWant = saved[4];
         if (n) why.push({ k: k, n: n });
       };
       var bl = state.source === 'beatleader';
@@ -5653,6 +5729,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       tryOff('age', !bl && ageCutoff != null, function () { ageCutoff = undefined; });
       tryOff('auto', hideAuto, function () { hideAuto = false; });
       tryOff('fav', favOnly, function () { favOnly = false; });
+      tryOff('mods', modWant, function () { modWant = null; });
       f = base; counting = true;
       why.sort(function (a, b) { return b.n - a.n; });
       state.emptyWhy = why;
@@ -6254,6 +6331,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var ss = sc.src === 'ss', m = sc.m || 0, sub = [];
       if (sc.fc) sub.push('<span class="rc-fc">FC</span>');
       else if (isNF(sc)) sub.push('<span class="rc-nf">NF</span>');
+      var mdl = ss ? [] : String(sc.md || '').split(',').filter(function (x) { return x && x !== 'NF'; });
+      if (mdl.length) sub.push('<span class="rc-md">' + esc(mdl.join(' ')) + '</span>');
       if (!sc.fc && m) sub.push(m + (m === 1 ? ' miss' : ' misses'));
       if (sc.t) sub.push('<span title="Last played ' + fmtDate(sc.t) + '">' + agoStr(sc.t) + '</span>');
       var rpl = !ss && sc.rp ? 'https://replay.beatleader.com/?link=' + encodeURIComponent(sc.rp) : '';
@@ -6356,7 +6435,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     rating: ['Min rating', function () { el.bsMinRating.value = ''; fireChange(el.bsMinRating); }],
     age: ['Uploaded', function () { el.bsAge.value = 'any'; fireChange(el.bsAge); }],
     auto: ['Hide auto-lighting', function () { el.bsNoAuto.checked = false; fireChange(el.bsNoAuto); }],
-    fav: ['Favorites only', function () { state.favOnly = false; applyClientFilters(); }]
+    fav: ['Favorites only', function () { state.favOnly = false; applyClientFilters(); }],
+    mods: ['Modifier', function () { state.modSel = []; applyClientFilters(); }]
   };
   function fireChange(x) { if (x) x.dispatchEvent(new Event('change', { bubbles: true })); }
   function emptyWhyMsg() {
@@ -12138,6 +12218,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     var fch = document.getElementById('favChip'), fok = !!lqFavDev();
     if (fch) { fch.hidden = !fok; var fon = !!(state.favOnly && fok); fch.classList.toggle('active', fon); fch.setAttribute('aria-pressed', fon ? 'true' : 'false'); }
+    modChipRender();
     syncInlineSort();
   }
   // Resolve whatever the user typed into a full BeatLeader player object. /player/{token} already
@@ -14303,7 +14384,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
     el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
     if (el.playStatus) el.playStatus.value = 'any'; if (el.playRecency) el.playRecency.value = 'any'; if (el.accMax) el.accMax.value = '';
-    el.ppMin.value = ''; el.ppMax.value = ''; setStyleMask(0);
+    el.ppMin.value = ''; el.ppMax.value = ''; setStyleMask(0); state.modSel = []; modOpen(false);
     state.bandAuto = true; markLvl(null);
     refreshStarUI(); applyClientFilters(); if (silent !== true) toast('Filters reset (your playlist is kept).', 'ok');
   }
@@ -14811,6 +14892,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // Results-side play-history chips (mirror the profile dropdown)
     el.playChips.addEventListener('click', function (e) {
       if (e.target.closest('#favChip')) { state.favOnly = !state.favOnly; if (state.favOnly) track('fav-chip'); applyClientFilters(); return; }
+      if (e.target.closest('#modChip')) { if (!state.player) { focusProfileConnect(); return; } modOpen(); return; }
       var b = e.target.closest('.play-chip[data-ps]'); if (!b) return;
       if (!state.player) { focusProfileConnect(); return; }
       el.playStatus.value = b.dataset.ps; if (b.dataset.ps !== 'played') el.accMax.value = '';
