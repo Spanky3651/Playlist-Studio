@@ -2033,9 +2033,7 @@ async function kofiStats(env, fresh) {
   const tips = (await env.PLAYLISTS.get("kofi:tips", "json")) || [];
   const test = await env.PLAYLISTS.get("kofi:test", "json");
   const avatars = (await env.PLAYLISTS.get("kofi:avatars", "json")) || {};
-  let clicks = null, clickErr = "";
-  try { clicks = await kofiClicks(env, fresh); } catch (e) { clickErr = e && e.message === "gc-auth" ? "GoatCounter refused the key" : "GoatCounter didn't answer"; }
-  return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, avatars, clicks, clickErr };
+  return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, avatars };
 }
 // Support me clicks (the kofi-click event) per day for the last 8 weeks, on every site that counts them.
 async function kofiClicks(env, fresh) {
@@ -2687,7 +2685,8 @@ button.tav:hover .cam,button.tav:focus-visible .cam{opacity:1}
 .tip .kdel:hover{color:#ff8a98;border-color:#5a2230}.tip .kdel.sure{width:auto;padding:0 10px;font-size:12.5px;font-weight:700;color:#ff8a98;border-color:#5a2230}
 .wkempty{grid-column:1/-1;align-self:center;text-align:center;color:var(--muted);font-size:14.5px}
 @media(max-width:760px){.kform{grid-template-columns:1fr 1fr}.kform .kname{grid-column:1/-1}}
-.ktwo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
+.kgrid.k2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wkb.tp{background:linear-gradient(180deg,#ff7a77,#d9363a)}.wkn.tp{color:#ff8f8c}
 .wk{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;align-items:end;height:180px;margin:10px 0 6px;padding-top:8px}
 .wkc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0}
 .wkb{width:100%;max-width:46px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#5aa0ff,#1f5fe0);min-height:2px}
@@ -3166,20 +3165,13 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <div class="kerr hidden" id="kf-err"></div>
 </div>
 <div id="k-list"></div><div class="kfoot">Emails and shipping addresses from Ko-fi are never stored.</div></div>
-<h2>Support me clicks &rarr; tips <small>last 8 weeks</small></h2>
-<div class="kgrid">
-<div class="card"><div class="label">Clicks, 30 days</div><div class="value" id="k-clk">-</div><div class="note" id="k-clkn">Support me buttons, all sites</div></div>
+<h2>Tips <small>last 8 weeks</small></h2>
+<div class="kgrid k2">
 <div class="card"><div class="label">Tips, 30 days</div><div class="value k" id="k-t30">-</div><div class="note" id="k-t30n"></div></div>
-<div class="card"><div class="label">Click to tip</div><div class="value" id="k-rate">-</div><div class="note" id="k-raten"></div></div>
 <div class="card"><div class="label">Average tip</div><div class="value" id="k-avg">-</div><div class="note" id="k-avgn"></div></div>
 </div>
-<div class="ktwo">
-<div class="kpanel"><div class="phead"><b>Each week</b><span class="sp"></span><small>bars are clicks, dots are tips</small></div>
-<div class="wk" id="k-wk"></div><div class="wkx" id="k-wkx"></div>
-<div class="klg"><span><i class="b"></i>Support me clicks</span><span><i class="t"></i>Tips that week</span></div></div>
-<div class="kpanel"><div class="phead"><b>Where the clicks come from</b></div><div id="k-where"></div>
-<div class="kfoot">Ko-fi doesn't say which click led to a tip, so these compare totals.</div></div>
-</div>
+<div class="kpanel"><div class="phead"><b>Each week</b><span class="sp"></span><small>tips that week</small></div>
+<div class="wk" id="k-wk"></div><div class="wkx" id="k-wkx"></div></div>
 </div>
 <p class="when" id="k-when"></p>
 </section>
@@ -4148,7 +4140,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a') || e.target.closest('.plkb, .plkpop')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
   document.addEventListener('click', aGo);
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
-  // ---- Ko-fi tab: tips from the Ko-fi webhook, and Support me clicks from GoatCounter ----
+  // ---- Ko-fi tab: tips from the Ko-fi webhook ----
   var KOFI_CUP = '<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8.6 11.2c.6-.9 2-.7 2 .4 0 .9-1.2 1.6-2 2.2-.8-.6-2-1.3-2-2.2 0-1.1 1.4-1.3 2-.4z" fill="#ff5e5b" stroke="none"/></svg>';
   var kofi = null, kofiBusy = false, kofiTok = 0;
   function loadKofi(fresh) {
@@ -4361,42 +4353,27 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       var nm = x.pub && x.name ? x.name : 'Anonymous', msg = !x.pub ? 'Kept their name and message private' : x.type === 'Shop Order' ? 'Shop order' + (x.items ? ', ' + x.items + ' item' + (x.items === 1 ? '' : 's') : '') + (x.msg ? ': ' + x.msg : '') : (x.msg || 'No message');
       return '<div class="tip">' + kAvatar(x, d.avatars || {}) + '<div><div class="tn"><b>' + esc(nm) + '</b>' + pill + '<span class="tw">' + esc(kAgo(x.t)) + '</span></div><div class="tmsg' + (!x.pub || !x.msg ? ' none' : '') + '">' + esc(msg) + '</div></div><div class="tamt"><b>' + esc(kMoney(x.amt, x.cur)) + '</b>' + '</div></div>';
     }).join('') : '<p class="empty">No tips yet. They show up here as soon as Ko-fi sends them.</p>';
-    // clicks: per day from GoatCounter, all sites added up
-    var day = function (t) { var x = new Date(t * 1000); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
-    var cl = {}, sites = (d.clicks && d.clicks.sites) || [];
-    sites.forEach(function (s) { (s.days || []).forEach(function (x) { cl[x[0]] = (cl[x[0]] || 0) + (x[1] || 0); }); });
     var nowS = Date.now() / 1000, D = 86400, t30 = nowS - 30 * D;
-    var clk30 = 0; Object.keys(cl).forEach(function (k) { if (Date.parse(k + 'T12:00:00') / 1000 >= t30) clk30 += cl[k]; });
     var tip30 = tips.filter(function (x) { return x.t >= t30; }), tipP = tips.filter(function (x) { return x.t >= t30 - 30 * D && x.t < t30; });
-    txt('k-clk', d.clicks ? fmt(clk30) : '-');
-    txt('k-clkn', d.clicks ? 'Support me buttons, all sites' : (d.clickErr || 'GoatCounter isn’t connected'));
     txt('k-t30', tip30.length);
     txt('k-t30n', tip30.length ? kMoney(sum(tip30.filter(function (x) { return x.cur === cur; })), cur) + ' total' : 'none in 30 days');
-    txt('k-rate', tip30.length && clk30 ? '1 in ' + Math.max(1, Math.round(clk30 / tip30.length)) : '-');
-    txt('k-raten', tip30.length && clk30 ? (Math.round(tip30.length / clk30 * 1000) / 10) + '% of clicks' : clk30 ? 'no tips yet to compare' : 'no clicks yet');
     var avg = function (a) { a = a.filter(function (x) { return x.cur === cur; }); return a.length ? sum(a) / a.length : 0; };
     txt('k-avg', tip30.length ? kMoney(Math.round(avg(tip30) * 100) / 100, cur) : '-');
     txt('k-avgn', tipP.length ? 'was ' + kMoney(Math.round(avg(tipP) * 100) / 100, cur) + ' the 30 days before' : 'last 30 days');
     // 8 weeks, each ending on today's weekday
     var wk = [], end0 = new Date(); end0.setHours(23, 59, 59, 0);
     for (var i = 7; i >= 0; i--) {
-      var e = end0 / 1000 - i * 7 * D, s0 = e - 7 * D, c = 0, tp = 0;
-      for (var k = 0; k < 7; k++) c += cl[day(s0 + D / 2 + k * D)] || 0;
+      var e = end0 / 1000 - i * 7 * D, s0 = e - 7 * D, tp = 0;
       tips.forEach(function (x) { if (x.t > s0 && x.t <= e) tp++; });
       var sd = new Date((s0 + 1) * 1000);
-      wk.push({ c: c, tp: tp, lab: MON[sd.getMonth()] + ' ' + sd.getDate(), before: !first || e < first });
+      wk.push({ tp: tp, lab: MON[sd.getMonth()] + ' ' + sd.getDate() });
     }
-    var mx = Math.max.apply(null, wk.map(function (w) { return w.c; }).concat([1]));
-    var anyWk = wk.some(function (w) { return w.c || w.tp; });
-    $('k-wk').innerHTML = !anyWk ? '<p class="wkempty">No Support me clicks or tips in the last 8 weeks.</p>' : wk.map(function (w) {
-      var dots = w.tp > 5 ? '<i></i><b>' + w.tp + '</b>' : w.tp ? new Array(w.tp + 1).join('<i></i>') : '<em>' + (w.before ? '' : '-') + '</em>';
-      return '<div class="wkc" title="' + w.c + ' click' + (w.c === 1 ? '' : 's') + ', ' + w.tp + ' tip' + (w.tp === 1 ? '' : 's') + '"><div class="wkt">' + dots + '</div><span class="wkn">' + w.c + '</span><div class="wkb" style="height:' + Math.round(w.c / mx * 110) + 'px"></div></div>';
+    var mx = Math.max.apply(null, wk.map(function (w) { return w.tp; }).concat([1]));
+    $('k-wk').innerHTML = !wk.some(function (w) { return w.tp; }) ? '<p class="wkempty">No tips in the last 8 weeks.</p>' : wk.map(function (w) {
+      return '<div class="wkc" title="' + w.tp + ' tip' + (w.tp === 1 ? '' : 's') + '"><span class="wkn tp">' + (w.tp || '') + '</span><div class="wkb tp" style="height:' + (w.tp ? Math.max(8, Math.round(w.tp / mx * 120)) : 2) + 'px"></div></div>';
     }).join('');
     $('k-wkx').innerHTML = wk.map(function (w) { return '<span>' + w.lab + '</span>'; }).join('');
-    var CLS = { studio: 'site-studio', rs: 'site-rs', hsv: 'site-hsv' };
-    var wr = sites.map(function (s) { return [esc(s.name) + (s.error ? ' <span class="note">(no answer)</span>' : ''), (s.days || []).reduce(function (n, x) { return n + (x[1] || 0); }, 0), CLS[s.key] || '']; }).sort(function (a, b) { return b[1] - a[1]; });
-    bars('k-where', wr.filter(function (r) { return r[1] > 0 || /no answer/.test(r[0]); }), '', d.clicks ? 'No Support me clicks in 8 weeks.' : (d.clickErr || 'GoatCounter isn’t connected.'));
-    txt('k-when', 'Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '. Tips arrive the moment Ko-fi sends them; clicks are kept for an hour.');
+    txt('k-when', 'Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '. Tips arrive the moment Ko-fi sends them.');
   }
   // Private tips get the incognito face. Public ones show the supporter's picture (or their initial) and the
   // circle can be clicked to pick a picture for that name.
