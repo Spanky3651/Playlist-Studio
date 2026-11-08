@@ -2864,6 +2864,7 @@ body{padding-top:14px}
 body>main{position:relative;z-index:1}
 .tdy{cursor:pointer}.tdy:hover{color:#fff}
 .panon{font-style:italic;color:var(--muted)}
+.pchip.pgo{cursor:pointer}.pchip.pgo:hover{border-color:#3a6fd0}
 .pav.anon{background:#08090c}.pav.anon svg{width:32px;height:32px;display:block}.pav2.anon{background:#08090c;display:grid;place-items:center}.pav2.anon svg{width:20px;height:20px;display:block}
 /* Refresh: no box, like the bell */
 .tools button#refresh{border:0;background:none;box-shadow:none;color:#e8edf5}
@@ -3107,6 +3108,9 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <p class="empty hidden" id="y-empty">Nobody used Studio Sync on the site in this range.</p>
 <div class="grid">
 <div class="card ycard" style="--accent:#38bdf8"><div class="label lbl-ic" data-g="eye" data-c="#38bdf8">Opened Studio Sync</div><div class="value" id="y-open">-</div><div class="note" id="y-openn"></div></div><div class="card ycard" style="--accent:#2f7bff"><div class="label lbl-ic" data-g="ss" data-c="#2f7bff">Got the mod</div><div class="value" id="y-mod">-</div><div class="note" id="y-modn">clicked Download or Releases</div></div><div class="card ycard" style="--accent:#a78bfa"><div class="label lbl-ic" data-g="link" data-c="#a78bfa">Linked a headset</div><div class="value" id="y-link">-</div><div class="note" id="y-linkn">from the link step in Studio</div></div><div class="card ycard" style="--accent:#3ddc84"><div class="label lbl-ic" data-g="send" data-c="#3ddc84">Sent to headsets</div><div class="value" id="y-sent">-</div><div class="note" id="y-sentn">playlists sent or changed</div></div></div>
+<h2>Studio Sync users <small>tap a name to open their BeatLeader profile</small></h2>
+<div class="plist" id="u-list"></div>
+<p class="when" id="u-note"></p>
 <div class="blk"><h2>From curious to synced <small>about, since each step counts people per event</small></h2><div class="bars funnel" id="y-fun"></div></div>
 <div class="blk"><h2>What they use <small>tap one to see where it is</small></h2><div class="bars feat" id="y-use"></div></div>
 <div class="two"><div class="blk"><h2>Problems</h2><div class="bars feat" id="y-probs"></div></div><div class="blk"><h2>How they found it</h2><div class="bars" id="y-came"></div></div></div>
@@ -3123,9 +3127,6 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 <div class="card"><div class="label">Started, not linked</div><div class="value" id="librariesNoHeadset"></div><div class="note">opened linking but no headset yet</div></div>
 <div class="card hidden" id="dlCard"><div class="label">Mod downloads</div><div class="value" id="dlTotal"></div><div class="note">all Studio Sync releases on GitHub</div></div>
 </div>
-<h2>Studio Sync users <small>tap a name to open their BeatLeader profile</small></h2>
-<div class="plist" id="u-list"></div>
-<p class="when" id="u-note"></p>
 <div id="relWrap" class="hidden"><h2>Downloads per release</h2><div class="bars" id="relBars"></div></div>
 <h2>Keeping people</h2>
 <div class="grid">
@@ -4076,7 +4077,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
         var kid = p.id ? folded.filter(function (q) { return q.lookedBy.id === p.id; }) : [];
         if (kid.length) lkKids[p.id] = { name: p.name, list: kid };
-        if (p.anon) return '<span class="pchip' + (p.isNew ? ' chg-new' : '') + '" title="Hasn’t opened Studio with a BeatLeader profile connected yet' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '"><span class="pav2 anon">' + ANON_AV + '</span>' + '<span class="panon">Player' + (p.num ? ' ' + p.num : '') + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</span>';
+        if (p.anon) return '<span class="pchip pgo' + (p.isNew ? ' chg-new' : '') + '" role="button" tabindex="0" data-go="sync"' + (p.key ? ' data-uk="' + esc(p.key) + '"' : '') + ' title="Open in Studio Sync. Hasn’t opened Studio with a BeatLeader profile connected yet' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '"><span class="pav2 anon">' + ANON_AV + '</span>' + '<span class="panon">Player' + (p.num ? ' ' + p.num : '') + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</span>';
         return (kid.length ? '<span class="pchipw">' : '') + '<a class="pchip' + (p.isNew ? ' chg-new' : '') + (kid.length ? ' haslk' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.was ? ' (previously Player ' + p.was + ')' : '') + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '')  + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>' +
           (kid.length ? '<button type="button" class="plkb" data-lk="' + esc(p.id) + '" aria-expanded="false" aria-haspopup="true" title="See who ' + esc(p.name) + ' looked up">+' + kid.length + '</button></span>' : '');
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
@@ -4111,7 +4112,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       var strip = pStrip((hero.players || []).map(function (x) { return Object.assign({}, x, { isNew: x.first === today ? 'First connected today' : '' }); }), 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
       if (sync && sync.users) {
         var from = d.range === 'all' ? 0 : Date.parse(d.start + 'T00:00:00') / 1000 || 0;
-        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, anon: u.anon, num: u.num, was: u.was, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
+        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, key: u.key, anon: u.anon, num: u.num, was: u.was, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
         strip += pStrip(su, 'Studio Sync user', 'Studio Sync users', 'synced a headset ' + when, 'sync', 'Studio Sync');
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
@@ -4138,9 +4139,13 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     vrFix = vr0;
   }
   // Tapping "today N" on a site's box opens that site with the Today range picked.
-  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a') || e.target.closest('.plkb, .plkpop')) return; if (e.target.closest('#a-sites [data-today]') && range !== 'today') { range = 'today'; quietLoad = false; glowUntil = 0; showRange(); } showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
+  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a') || e.target.closest('.plkb, .plkpop')) return; if (e.target.closest('#a-sites [data-today]') && range !== 'today') { range = 'today'; quietLoad = false; glowUntil = 0; showRange(); } showTab(b.getAttribute('data-go'));
+    // A Player N chip opens the Studio Sync tab with that player's row open.
+    var uk = b.getAttribute('data-uk');
+    if (uk) { uOpen[uk] = true; if (sync) renderUsers(sync); setTimeout(function () { var r = document.querySelector('#u-list .prow.sel'); if (r) try { r.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { r.scrollIntoView(); } }, 150); return; }
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
   document.addEventListener('click', aGo);
-  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
+  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go], #a-sites .pchip[data-go]')) { e.preventDefault(); aGo(e); } });
   // ---- Ko-fi tab: tips from the Ko-fi webhook ----
   var KOFI_CUP = '<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8.6 11.2c.6-.9 2-.7 2 .4 0 .9-1.2 1.6-2 2.2-.8-.6-2-1.3-2-2.2 0-1.1 1.4-1.3 2-.4z" fill="#ff5e5b" stroke="none"/></svg>';
   var kofi = null, kofiBusy = false, kofiTok = 0;
