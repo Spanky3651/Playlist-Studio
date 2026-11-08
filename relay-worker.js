@@ -3429,6 +3429,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     'search-recommend': ['For You', 'Top pp gains search', 'Loaded the unplayed maps that add the most pp'],
     'bsr-hop': ['Search', 'Searched a BSR code', 'Typed a BSR code into search and jumped to that map'],
     'bsr-hop-fallback': ['Search', 'BSR code fallback', 'A BSR code search fell back to BeatSaver'],
+    'mapper-only': ['Search', 'Mapper: Only', 'Added a mapper with Only, to show just their maps'],
+    'mapper-hide': ['Search', 'Mapper: Hide', 'Added a mapper with Hide, to drop their maps'],
     'bsr-hop-text': ['Search', 'BSR code as text', 'Searched what looked like a BSR code as plain text'],
     'diff-change': ['Search', 'Changed difficulties', 'Turned difficulty filters on or changed them'],
     'pp-filter': ['Search', 'PP range filter', 'Used the PP Range panel'],

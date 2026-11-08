@@ -2518,7 +2518,23 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 .fm-short{display:none;}
 @media(max-width:640px){.foot-more{font-size:11.5px;letter-spacing:0;line-height:1.5;}.foot-more .fm-label{display:block;}.foot-more .fm-links{white-space:nowrap;}.foot-more a{padding:8px 2px !important;}.foot-more .sep{margin:0 5px;}.fm-long{display:none;}.fm-short{display:inline;}}
 @media(max-width:370px){.foot-more{font-size:10.5px;}.foot-more .sep{margin:0 4px;}}
-</style></head>
+</style><style>
+/* Search: the Mapper box with its Only / Hide switch and chips */
+.mp-row{display:flex;gap:8px;align-items:stretch}.mp-row input{flex:1;min-width:0}
+.mp-seg{display:inline-flex;flex:none;border:1px solid var(--border-2);border-radius:10px;overflow:hidden;background:#05070b}
+.mp-seg button{border:0;border-radius:0;background:none;box-shadow:none;transform:none;color:var(--muted);font:700 13.5px system-ui,'Segoe UI',Arial,sans-serif;padding:0 13px;min-height:40px;cursor:pointer;letter-spacing:.2px}
+.mp-seg button:hover{color:#fff;transform:none;box-shadow:none}
+.mp-seg button[data-mp="only"][aria-pressed="true"]{background:#13213a;color:#fff}
+.mp-seg button[data-mp="hide"][aria-pressed="true"]{background:#2a0f17;color:#ffb3c0}
+.mp-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.mp-chips[hidden]{display:none}
+.mp-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 4px 2px 11px;font-size:13.5px;font-weight:600;max-width:100%}
+.mp-chip b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-chip.inc{background:rgba(76,141,255,.14);border:1px solid #2f5aa8;color:#cfe0ff}
+.mp-chip.exc{background:rgba(255,77,106,.12);border:1px solid #7a2a3a;color:#ffb3c0}.mp-chip.exc b{text-decoration:line-through;text-decoration-thickness:1.5px}
+.mp-chip button{border:0;background:none;box-shadow:none;transform:none;color:inherit;opacity:.7;font-size:16px;line-height:1;padding:2px 6px;min-height:0;cursor:pointer;border-radius:50%}
+.mp-chip button:hover{opacity:1;transform:none;box-shadow:none}
+</style>
+</head>
 <body class="src-beatleader">
 <script>/* Quest over USB needs WebUSB on a computer. Hide it on phones, in the Quest's own browser and where WebUSB is missing. */
 (function(){var n=navigator,u=n.userAgent||"",ok=!!n.usb&&!/OculusBrowser|Quest/i.test(u)&&!(n.userAgentData&&n.userAgentData.mobile)&&!/Android.+Mobile|iPhone|iPad|iPod/i.test(u);window.QUEST_USB=ok;if(!ok)document.documentElement.classList.add("no-quest-usb");})();</script>
@@ -2632,14 +2648,15 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     <!-- Search -->
     <section class="panel" data-collapsed>
       <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search</h2></div>
-      <div class="panel-sub"><span class="bl-only">Filter by mapper or keyword. A single mapper term also narrows the API query so scans go faster.</span><span class="bs-only">Search the BeatSaver catalog by song title, artist, or mapper. Non-English titles work - type the actual song name. You can also paste a <b>BSR code</b>, a <b>beatsaver.com/maps</b> link, or a 40-character hash to jump straight to one map.</span></div>
+      <div class="panel-sub"><span class="bl-only">Song or keyword, plus mappers to show only or hide.</span><span class="bs-only">Song, artist, or paste a <b>BSR code</b> / <b>beatsaver.com</b> link. Any language.</span></div>
       <div class="panel-body">
-        <div class="field"><label class="field-label">Mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Matches the mapper name. On BeatSaver, auto-generated lighting credits like 'Auto Lighter by …' are ignored so they don't flood the results. Example: Bloodcloak, Joetastic">i</span></label>
-          <input type="text" id="fMapper" placeholder="e.g. Bloodcloak, Joetastic" /></div>
-        <div class="field"><label class="field-label">Exclude mapper(s) <span class="info" data-tip="Comma-separated, case-insensitive. Hides any map whose mapper or artist matches - handy for dropping a mapper you don't want, or catching 'Auto Lighter by X' style credits.">i</span></label>
-          <input type="text" id="fMapperExclude" placeholder="e.g. jonas, someMapper" /></div>
-        <div class="field"><label class="field-label">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
-          <input type="text" id="fSearch" placeholder="e.g. camellia - or a BSR code / link" /></div>
+        <div class="field"><label class="field-label" for="fSearch">Song / keyword <span class="info bs-only" data-tip="Searches BeatSaver by title/artist/mapper (any language). Or paste a BSR code, a beatsaver.com/maps link, or a 40-char hash to fetch that exact map.">i</span></label>
+          <input type="text" id="fSearch" placeholder="e.g. Elevator, camellia, or a BSR code" /></div>
+        <!-- Mapper: one box with an Only / Hide switch. Names land as chips; the two hidden fields keep the comma lists the filters, saved searches and Reset already use. -->
+        <div class="field"><label class="field-label" for="fMapperAdd">Mapper <span class="info" data-tip="Type a mapper and press Enter. Only shows just their maps; Hide drops them (and 'Auto Lighter by …' style credits). Case doesn't matter. Tap × on a chip to remove it.">i</span></label>
+          <div class="mp-row"><input type="text" id="fMapperAdd" placeholder="Add a mapper" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"><div class="mp-seg" role="group" aria-label="Show only or hide this mapper"><button type="button" data-mp="only" aria-pressed="true">Only</button><button type="button" data-mp="hide" aria-pressed="false">Hide</button></div></div>
+          <div class="mp-chips" id="mpChips" hidden></div>
+          <input type="hidden" id="fMapper"><input type="hidden" id="fMapperExclude"></div>
       </div>
     </section>
 
@@ -3454,7 +3471,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T16:54:12Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T17:02:59Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -6473,7 +6490,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var EMPTY_CLEAR = {
     search: ['Song / keyword', function () { el.fSearch.value = ''; fireChange(el.fSearch); }],
     mapper: ['Mapper', function () { el.fMapper.value = ''; fireChange(el.fMapper); }],
-    mapperEx: ['Exclude mapper', function () { el.fMapperExclude.value = ''; fireChange(el.fMapperExclude); }],
+    mapperEx: ['Hidden mapper', function () { el.fMapperExclude.value = ''; fireChange(el.fMapperExclude); }],
     style: ['Map style', function () { setStyleMask(0); applyClientFilters(); }],
     stars: ['Star rating', function () { setBand(0, 15, false, '0-15'); applyClientFilters(); }],
     rank: ['Show: ranked / unranked', function () { el.rankInline.value = 'all'; fireChange(el.rankInline); }],
@@ -6494,6 +6511,54 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     mods: ['Modifier', function () { state.modSel = []; applyClientFilters(); }]
   };
   function fireChange(x) { if (x) x.dispatchEvent(new Event('change', { bubbles: true })); }
+  // Search > Mapper: type a name, pick Only or Hide, press Enter (or a comma). The names are kept as the same comma
+  // lists as before in the hidden fMapper / fMapperExclude fields, so filtering, saved searches and Reset don't change.
+  function mpList(inp) { return inp.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean); }
+  function mpSet(inp, list) { inp.value = list.join(', '); fireChange(inp); }
+  function renderMapperChips() {
+    var box = document.getElementById('mpChips'); if (!box) return;
+    var inc = mpList(el.fMapper), exc = mpList(el.fMapperExclude);
+    box.innerHTML = inc.map(function (n) { return '<span class="mp-chip inc">Only <b>' + esc(n) + '</b><button type="button" data-mpx="inc" data-n="' + esc(n) + '" aria-label="Remove ' + esc(n) + '">×</button></span>'; }).join('') +
+      exc.map(function (n) { return '<span class="mp-chip exc">Hide <b>' + esc(n) + '</b><button type="button" data-mpx="exc" data-n="' + esc(n) + '" aria-label="Stop hiding ' + esc(n) + '">×</button></span>'; }).join('');
+    box.hidden = !inc.length && !exc.length;
+    renderMapperChips.sig = el.fMapper.value + '|' + el.fMapperExclude.value;
+  }
+  function setupMapperBox() {
+    var add = document.getElementById('fMapperAdd'), seg = document.querySelector('.mp-seg'), box = document.getElementById('mpChips');
+    if (!add || !seg || !box) return;
+    var mode = 'only';
+    function addNames(raw) {
+      var names = String(raw || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); if (!names.length) return false;
+      var to = mode === 'hide' ? el.fMapperExclude : el.fMapper, other = mode === 'hide' ? el.fMapper : el.fMapperExclude;
+      var l = mpList(to), o = mpList(other), low = function (x) { return x.toLowerCase(); };
+      names.forEach(function (n) { if (l.map(low).indexOf(low(n)) === -1) l.push(n); o = o.filter(function (x) { return low(x) !== low(n); }); });
+      if (o.length !== mpList(other).length) mpSet(other, o);
+      mpSet(to, l); renderMapperChips(); track(mode === 'hide' ? 'mapper-hide' : 'mapper-only');
+      return true;
+    }
+    function setMode(m) { mode = m; seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-mp') === m ? 'true' : 'false'); }); }
+    seg.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-mp]'); if (!b) return; setMode(b.getAttribute('data-mp'));
+      if (add.value.trim()) { addNames(add.value); add.value = ''; }
+    });
+    if (el.resetBtn) el.resetBtn.addEventListener('click', function () { add.value = ''; setMode('only'); });
+    add.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); if (add.value.trim()) { addNames(add.value); add.value = ''; } else runFetch(); }
+      else if (e.key === 'Backspace' && !add.value) { var l = mpList(mode === 'hide' ? el.fMapperExclude : el.fMapper); if (l.length) { l.pop(); mpSet(mode === 'hide' ? el.fMapperExclude : el.fMapper, l); renderMapperChips(); } }
+    });
+    add.addEventListener('input', function () { if (add.value.indexOf(',') !== -1) { var parts = add.value.split(','), rest = parts.pop(); addNames(parts.join(',')); add.value = rest.replace(/^\s+/, ''); } });
+    // A name typed but not entered still counts once you leave the box (or tap Search).
+    add.addEventListener('blur', function () { if (add.value.trim()) { addNames(add.value); add.value = ''; } });
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-mpx]'); if (!b) return;
+      var inp = b.getAttribute('data-mpx') === 'exc' ? el.fMapperExclude : el.fMapper, n = b.getAttribute('data-n').toLowerCase();
+      mpSet(inp, mpList(inp).filter(function (x) { return x.toLowerCase() !== n; })); renderMapperChips();
+    });
+    // Saved searches, Reset and the reset chips set the lists directly; keep the chips in step.
+    [el.fMapper, el.fMapperExclude].forEach(function (x) { x.addEventListener('change', renderMapperChips); });
+    setInterval(function () { if ((el.fMapper.value + '|' + el.fMapperExclude.value) !== renderMapperChips.sig) renderMapperChips(); }, 400);
+    renderMapperChips();
+  }
   function emptyWhyMsg() {
     var why = state.emptyWhy, n = state.raw.length;
     if (!why.length) return '<p><b>No matches.</b></p><p>Studio found ' + n.toLocaleString() + ' map' + (n === 1 ? '' : 's') + ', but it takes more than one of your filters to hide them all.</p><p class="empty-fix"><button type="button" class="ghost sm" data-empty-reset>Reset filters</button></p>';
@@ -14712,6 +14777,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (state.raw.length) toast('Ranked status changed - re-fetch to pull the new set.' + keep, 'warn');
       else if (keep) toast(keep.slice(1), 'ok');
     });
+    setupMapperBox();
     // Enter in any filter field triggers a fetch (a mapper search shouldn't need a mouse).
     ['fMapper','fMapperExclude','fSearch','fMaxScan','starMinNum','starMaxNum','fNpsMin','fNpsMax','fNjsMin','fNjsMax','fDurMin','fDurMax','fBpmMin','fBpmMax'].forEach(function (k) {
       el[k].addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runFetch(); } });
