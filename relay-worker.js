@@ -1151,7 +1151,8 @@ async function linked(request, env, ctx, url) {
     await env.PLAYLISTS.delete("code:" + code);
     const skipLib = String(env.ADMIN_EXCLUDE || "").split(/[\s,]+/).map((x) => x.split(".")[0]).includes(id);
     if (firstEver && !skipLib) {
-      const pn = (lib.player && lib.player.name) || "";
+      let pn = (lib.player && lib.player.name) || "";
+      if (!pn) { try { const A = await anonNums(env), k = await anonKey(id); if (!A.m[k]) { A.m[k] = A.next++; await env.PLAYLISTS.put("admin:anon", JSON.stringify(A)); } pn = "Unnamed player " + A.m[k]; } catch (e) {} }
       const a = adminPush(env, "sync", { i: "headset", tab: "sync", t: "New Studio Sync headset" + (pn ? ": " + pn : ""), b: (pn || "Someone") + " linked " + String(dev.name).slice(0, 40) + " to Studio Sync just now." });
       if (ctx && ctx.waitUntil) ctx.waitUntil(a); else await a;
     }
@@ -2034,6 +2035,10 @@ async function kofiStats(env, fresh) {
   return { generated: nowSec(), setup: !env.KOFI_TOKEN, test: test || null, tips, avatars };
 }
 
+// Unnamed players get a number (Unnamed player 1, 2, ...) kept in admin:anon by a hash of their library, so the number
+// stays theirs, and after they connect a profile Studio Stats can say who they were before. Never the library id.
+async function anonKey(id) { return "n" + (await sha256("u:" + id)).slice(0, 10); }
+async function anonNums(env) { const a = await env.PLAYLISTS.get("admin:anon", "json"); return a && a.m ? a : { next: 1, m: {} }; }
 async function adminStats(env) {
   const now = nowSec(), DAY = 86400, WEEKS = 8;
   const ids = [];
@@ -2110,10 +2115,17 @@ async function adminStats(env) {
         }
       });
       // No BeatLeader profile connected in Studio yet: listed as an unnamed player until one is; then the name takes over.
-      if (!user.name) { user.anon = 1; user.key = "n" + (await sha256("u:" + id)).slice(0, 10); }
+      user.key = await anonKey(id);
+      if (!user.name) user.anon = 1;
       st.users.push(user);
     }));
   }
+  try {
+    const A = await anonNums(env); let grew = false;
+    st.users.filter((u) => u.anon && !A.m[u.key]).sort((a, b) => (a.linked || 0) - (b.linked || 0)).forEach((u) => { A.m[u.key] = A.next++; grew = true; });
+    st.users.forEach((u) => { const n = A.m[u.key]; if (n) { if (u.anon) u.num = n; else u.was = n; } });
+    if (grew) await env.PLAYLISTS.put("admin:anon", JSON.stringify(A));
+  } catch (e) {}
   st.users.sort((a, b) => b.last - a.last);
   st.users.forEach((u) => u.hs.sort((a, b) => b.s - a.s));
   try { const ut = await seenTimes(env, st.users.filter((u) => u.id).slice(0, 80).map((u) => u.id)); st.users.forEach((u) => { if (ut[u.id]) u.times = ut[u.id]; }); } catch (e) {}
@@ -4062,8 +4074,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
         var kid = p.id ? folded.filter(function (q) { return q.lookedBy.id === p.id; }) : [];
         if (kid.length) lkKids[p.id] = { name: p.name, list: kid };
-        if (p.anon) return '<span class="pchip' + (p.isNew ? ' chg-new' : '') + '" title="Hasn’t opened Studio with a BeatLeader profile connected yet' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '"><span class="pav2 anon">' + ANON_AV + '</span>' + '<span class="panon">Unnamed player</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</span>';
-        return (kid.length ? '<span class="pchipw">' : '') + '<a class="pchip' + (p.isNew ? ' chg-new' : '') + (kid.length ? ' haslk' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '')  + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>' +
+        if (p.anon) return '<span class="pchip' + (p.isNew ? ' chg-new' : '') + '" title="Hasn’t opened Studio with a BeatLeader profile connected yet' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '"><span class="pav2 anon">' + ANON_AV + '</span>' + '<span class="panon">Unnamed player' + (p.num ? ' ' + p.num : '') + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</span>';
+        return (kid.length ? '<span class="pchipw">' : '') + '<a class="pchip' + (p.isNew ? ' chg-new' : '') + (kid.length ? ' haslk' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.was ? ' (previously Unnamed player ' + p.was + ')' : '') + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '')  + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>' +
           (kid.length ? '<button type="button" class="plkb" data-lk="' + esc(p.id) + '" aria-expanded="false" aria-haspopup="true" title="See who ' + esc(p.name) + ' looked up">+' + kid.length + '</button></span>' : '');
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
   }
@@ -4097,7 +4109,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       var strip = pStrip((hero.players || []).map(function (x) { return Object.assign({}, x, { isNew: x.first === today ? 'First connected today' : '' }); }), 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
       if (sync && sync.users) {
         var from = d.range === 'all' ? 0 : Date.parse(d.start + 'T00:00:00') / 1000 || 0;
-        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, anon: u.anon, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
+        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, anon: u.anon, num: u.num, was: u.was, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
         strip += pStrip(su, 'Studio Sync user', 'Studio Sync users', 'synced a headset ' + when, 'sync', 'Studio Sync');
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
@@ -4995,8 +5007,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       var url = u.id ? 'https://beatleader.com/u/' + encodeURIComponent(u.id) : '#';
       var av = u.anon ? '<span class="pav anon" aria-hidden="true">' + ANON_AV + '</span>' : '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
       var linked = u.linked ? new Date(u.linked * 1000).toISOString().slice(0, 10) : '';
-      h += '<div class="prow' + (uOpen[uk] ? ' sel' : '') + '"><span class="pwho">' + (u.anon ? av + '<span class="pname"><span class="panon" title="Hasn’t opened Studio with a BeatLeader profile connected yet. Their name shows here once they do.">Unnamed player</span><span class="pb">no profile yet</span>' : '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>') +
-        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + (u.others && u.others.length ? '<span class="palso" title="Other BeatLeader profiles connected in Studio with this library">also seen: ' + esc(u.others.join(', ')) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[uk] ? ' on' : '') + '" data-uk="' + esc(uk) + '" aria-expanded="' + !!uOpen[uk] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[uk] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
+      h += '<div class="prow' + (uOpen[uk] ? ' sel' : '') + '"><span class="pwho">' + (u.anon ? av + '<span class="pname"><span class="panon" title="Hasn’t opened Studio with a BeatLeader profile connected yet. Their name shows here once they do.">Unnamed player' + (u.num ? ' ' + u.num : '') + '</span><span class="pb">no profile yet</span>' : '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>') +
+        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + (u.was ? '<span class="palso" title="Listed as an unnamed player before they connected a profile">previously Unnamed player ' + u.was + '</span>' : '') + (u.others && u.others.length ? '<span class="palso" title="Other BeatLeader profiles connected in Studio with this library">also seen: ' + esc(u.others.join(', ')) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[uk] ? ' on' : '') + '" data-uk="' + esc(uk) + '" aria-expanded="' + !!uOpen[uk] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[uk] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
       if (uOpen[uk]) {
         var hsr = (u.hs || []).map(function (x, i) { return '<div class="dl"><span class="dd">Headset ' + (i + 1) + '</span><span class="dt">' + (x.s ? 'synced ' + agoAt(x.s) + ' (' + esc(atTime(x.s)) + ')' : 'never synced') + (x.a ? ' &middot; linked ' + esc(dshort(dayKey(x.a))) : '') + '</span><span class="dn"></span></div>'; }).join('');
         var ul = connectDays(u.times, null);
