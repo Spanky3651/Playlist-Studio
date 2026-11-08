@@ -1539,12 +1539,7 @@ body.sd-lock{overflow:hidden}
 .sd-x{width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0}
 .sd-body{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
 .sd-body>*{flex-shrink:0}
-/* Studio Sync stats drawer (five quick clicks on the Studio Sync tab in Save and send): the Worker's private /admin page */
-.sd.ssa .sd-body{padding:0;gap:0}
-.sd.ssa iframe{flex:1;width:100%;border:0;background:#000}
-.sd.ssa a.sd-link{text-decoration:none}
-.sd.ssa .ssa-logo{width:30px;height:30px;border-radius:8px;flex:none;box-shadow:0 0 12px rgba(47,123,255,.25)}
-/* On phones Player stats and Studio Stats rise from the bottom as a sheet; drag the top bar down to close it. */
+/* On phones Player stats rises from the bottom as a sheet; drag the top bar down to close it. */
 @media(max-width:720px){.sd{top:auto;left:0;right:0;width:100vw;height:92vh;height:92dvh;border-left:0;border-top:1px solid var(--border-2);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -30px 60px -20px rgba(0,0,0,.9);transform:translateY(102%)}.sd.open{transform:none}.sd.drag{transition:none}.sd .sd-head{position:relative;padding-top:18px;touch-action:none}.sd .sd-head::before{content:"";position:absolute;top:7px;left:50%;width:44px;height:5px;margin-left:-22px;border-radius:3px;background:#33415c}.sd .sd-x{display:none}}
 .sv-hero{position:relative;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--panel)}
 .sv-hero .cvr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22}
@@ -3459,7 +3454,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-07T19:11:22Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T13:14:16Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -3487,17 +3482,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
   <div class="sd-body" id="sdBody"></div>
 </aside>
 
-<!-- ============ STUDIO SYNC STATS (private; opened by five quick clicks on the Studio Sync tab) ============ -->
-<div class="sd-back" id="ssaBack"></div>
-<aside class="sd ssa" id="ssaPanel" aria-label="Studio Stats" aria-hidden="true">
-  <div class="sd-head">
-    <img class="ssa-logo" src="data:image/png;base64,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" alt="" width="30" height="30">
-    <h2>Studio Stats</h2>
-    <a class="sd-link" id="ssaNewTab" href="https://playlist-replay.msploit.workers.dev/admin" target="_blank" rel="noopener">Open in new tab</a>
-    <button type="button" class="ghost sd-x" id="ssaClose" aria-label="Close Studio Stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin:0"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
-  </div>
-  <div class="sd-body" id="ssaBody"></div>
-</aside>
 
 <!-- ============ DRAG-AND-DROP A .BPLIST ============ -->
 <div id="dropZone" aria-hidden="true">
@@ -5133,7 +5117,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
     svEl('sdClose').addEventListener('click', svClose);
     svEl('sdBack').addEventListener('click', svClose);
-    // Phones: pull the sheet down by its top bar to close it, like Studio Stats.
+    // Phones: pull the sheet down by its top bar to close it.
     var sp = svEl('sdPanel'), sh = sp && sp.querySelector('.sd-head'), sy0 = null, sdy = 0;
     if (sh) {
       sh.addEventListener('touchstart', function (e) { if (!window.matchMedia('(max-width:720px)').matches || (e.target.closest && e.target.closest('a,button'))) return; sy0 = e.touches[0].clientY; sdy = 0; sp.classList.add('drag'); }, { passive: true });
@@ -7844,54 +7828,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // The box stays hidden until the Worker says hosting is set up, so nothing changes
   // for players before it is deployed.
   var PUB_BASE = 'https://playlist-replay.msploit.workers.dev';
-  // ---- Studio stats: shift-click the Studio logo on a computer, or press and hold the "Playlist Studio" title on a phone,
-  // to slide in the Worker's private stats page (it asks for the admin key itself). Not tracked, not shown anywhere else.
-  (function () {
-    var panel = document.getElementById('ssaPanel'), back = document.getElementById('ssaBack');
-    if (!panel || !back) return;
-    function open() {
-      var body = document.getElementById('ssaBody');
-      if (!body.querySelector('iframe')) { var f = document.createElement('iframe'); f.title = 'Studio Stats'; f.src = PUB_BASE + '/admin?embed=1'; body.appendChild(f); }
-      panel.classList.add('open'); back.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); document.body.classList.add('sd-lock');
-    }
-    function close() {
-      panel.classList.remove('open'); back.classList.remove('open'); panel.setAttribute('aria-hidden', 'true');
-      if (!document.getElementById('sdPanel') || !document.getElementById('sdPanel').classList.contains('open')) document.body.classList.remove('sd-lock');
-    }
-    var logo = document.querySelector('.topbar .brand .logo');
-    if (logo) logo.addEventListener('click', function (e) { if (e.shiftKey) { e.preventDefault(); open(); } });
-    // On a phone: about half a second of holding still on the title opens it; moving the finger (a scroll) cancels.
-    var title = document.querySelector('.topbar .brand-txt h1');
-    if (title) {
-      var hold = null, held = false, sx = 0, sy = 0;
-      function stop() { clearTimeout(hold); hold = null; }
-      title.addEventListener('touchstart', function (e) {
-        var t = e.touches[0]; sx = t.clientX; sy = t.clientY; held = false; stop();
-        hold = setTimeout(function () { hold = null; held = true; open(); try { if (navigator.vibrate) navigator.vibrate(15); } catch (x) {} }, 550);
-      }, { passive: true });
-      title.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) stop(); }, { passive: true });
-      title.addEventListener('touchend', function (e) { stop(); if (held) { held = false; if (e.cancelable) e.preventDefault(); } });
-      title.addEventListener('touchcancel', stop, { passive: true });
-      title.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-    }
-    document.getElementById('ssaClose').addEventListener('click', close);
-    back.addEventListener('click', close);
-    // Phones: pull the sheet down by its top bar to close it.
-    var head = panel.querySelector('.sd-head'), dy0 = null, dy = 0;
-    if (head) {
-      head.addEventListener('touchstart', function (e) { if (!window.matchMedia('(max-width:720px)').matches || (e.target.closest && e.target.closest('a,button'))) return; dy0 = e.touches[0].clientY; dy = 0; panel.classList.add('drag'); }, { passive: true });
-      head.addEventListener('touchmove', function (e) { if (dy0 === null) return; dy = Math.max(0, e.touches[0].clientY - dy0); panel.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
-      var endDrag = function () { if (dy0 === null) return; dy0 = null; panel.classList.remove('drag'); panel.style.transform = ''; if (dy > 90) close(); };
-      head.addEventListener('touchend', endDrag); head.addEventListener('touchcancel', endDrag);
-    }
-    window.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); }, true);
-    // Esc pressed inside the stats page arrives as a message from the Worker's page.
-    window.addEventListener('message', function (e) {
-      if (e.origin !== PUB_BASE) return;
-      if (e.data === 'studio-sync-stats-close' && panel.classList.contains('open')) close();
-      if (typeof e.data === 'string' && e.data.indexOf('studio-spot:') === 0 && window.__studioSpots) { close(); window.__studioSpots.show(e.data.slice(12)); }
-    });
-  })();
   function pubFetch(method, path, body, key) {
     var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 20000);
     var h = { 'Content-Type': 'application/json' }; if (key) h['X-Edit-Key'] = key;
