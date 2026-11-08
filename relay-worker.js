@@ -1225,6 +1225,14 @@ const ADMIN_SW = [
   "  }));",
   "});"
 ].join("\n");
+// Studio Stats as an installed app (Chrome: Install app). Installed on Android, its alerts show its own icon and name
+// instead of Chrome's. Icons are hosted with Playlist Studio.
+const ADMIN_MANIFEST = JSON.stringify({
+  id: "/admin", name: "Studio Stats", short_name: "Studio Stats", description: "Private stats for Playlist Studio and the other tools.",
+  start_url: "/admin", scope: "/admin", display: "standalone", background_color: "#000000", theme_color: "#000000",
+  icons: [192, 512].map((n) => ({ src: "https://spanky3651.github.io/Playlist-Studio/icons/stats-" + n + ".png", sizes: n + "x" + n, type: "image/png", purpose: "any" }))
+    .concat([192, 512].map((n) => ({ src: "https://spanky3651.github.io/Playlist-Studio/icons/stats-maskable-" + n + ".png", sizes: n + "x" + n, type: "image/png", purpose: "maskable" })))
+});
 let adminFails = [], adminBlocked = 0, adminFlush = 0;
 const ADMIN_GUARD = "admin:guard", ADMIN_LOCKS = "admin:lockouts";
 async function adminLockNote(env, t, wrong, isNew) {
@@ -1242,9 +1250,10 @@ async function admin(request, env, url) {
   const nocache = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" };
   if (url.pathname === "/admin" && request.method === "GET") {
     return new Response(ADMIN_PAGE, { headers: Object.assign({ "Content-Type": "text/html; charset=utf-8",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; worker-src 'self'; frame-src https://beatleader.com https://www.beatleader.com; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self' https://spanky3651.github.io https://cdn.assets.beatleader.com https://cdn.assets.beatleader.xyz https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://avatars.cloudflare.steamstatic.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; frame-src https://beatleader.com https://www.beatleader.com; base-uri 'none'; form-action 'none'; frame-ancestors https://spanky3651.github.io" }, nocache) });
   }
   if (url.pathname === "/admin/icon" && request.method === "GET") return gcIcon(url);
+  if (url.pathname === "/admin/manifest.webmanifest" && request.method === "GET") return new Response(ADMIN_MANIFEST, { headers: { "Content-Type": "application/manifest+json; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
   if (url.pathname === "/admin/sw.js" && request.method === "GET") return new Response(ADMIN_SW, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-cache", "Service-Worker-Allowed": "/admin" } });
   const pushPath = (request.method === "GET" && url.pathname === "/admin/push/key") || (request.method === "POST" && /^\/admin\/push\/(sub|prefs|del|test)$/.test(url.pathname));
   const lockPath = (request.method === "GET" && url.pathname === "/admin/lockouts") || (request.method === "POST" && url.pathname === "/admin/lockouts/clear");
@@ -2432,6 +2441,7 @@ const ADMIN_PAGE = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Studio Stats</title>
 <link rel="icon" type="image/png" href="${ADMIN_LOGO}">
+<link rel="manifest" href="/admin/manifest.webmanifest"><meta name="theme-color" content="#000000">
 <style>
 :root{--bg:#000;--card:#0a0e16;--card2:#0d1320;--line:#1c2638;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--cyan:#38bdf8;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
 *{box-sizing:border-box}
