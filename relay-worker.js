@@ -2852,6 +2852,7 @@ body{padding-top:14px}
 body>main{position:relative;z-index:1}
 .tdy{cursor:pointer}.tdy:hover{color:#fff}
 .panon{font-style:italic;color:var(--muted)}
+.pav.anon{background:#08090c}.pav.anon svg{width:32px;height:32px;display:block}.pav2.anon{background:#08090c;display:grid;place-items:center}.pav2.anon svg{width:20px;height:20px;display:block}
 /* Refresh: no box, like the bell */
 .tools button#refresh{border:0;background:none;box-shadow:none;color:#e8edf5}
 .tools button#refresh:hover{border:0;background:none;color:#fff}
@@ -4049,6 +4050,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     e.preventDefault(); e.stopPropagation(); blvClose();
   }, true);
   window.addEventListener('resize', lkClose);
+  // Unnamed players (no BeatLeader profile connected in Studio yet): the Studio Stats rings around a question mark.
+  var ANON_AV = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5.5 18.5A14.5 14.5 0 0 1 32.3 12.6" stroke="#ff2740" stroke-width="3.6" stroke-linecap="round" fill="none"/><path d="M34.5 21.5A14.5 14.5 0 0 1 7.7 27.4" stroke="#2f7bff" stroke-width="3.6" stroke-linecap="round" fill="none"/><text x="20" y="25.6" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">?</text></svg>';
   function pStrip(pls, one, many, what, goTab, goName) {
     var folded = pls.filter(function (p) { return p.lookedBy; });
     pls = pls.filter(function (p) { return !p.lookedBy; });
@@ -4059,7 +4062,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
         var pic = p.avatar && String(p.avatar).indexOf('https://') === 0 ? '<img class="pav2" src="' + esc(p.avatar) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span class="pav2 lt">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
         var kid = p.id ? folded.filter(function (q) { return q.lookedBy.id === p.id; }) : [];
         if (kid.length) lkKids[p.id] = { name: p.name, list: kid };
-        if (p.anon) return '<span class="pchip' + (p.isNew ? ' chg-new' : '') + '" title="Hasn’t opened Studio with a BeatLeader profile connected yet' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span class="panon">Unnamed player</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</span>';
+        if (p.anon) return '<span class="pchip' + (p.isNew ? ' chg-new' : '') + '" title="Hasn’t opened Studio with a BeatLeader profile connected yet' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '"><span class="pav2 anon">' + ANON_AV + '</span>' + '<span class="panon">Unnamed player</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '') + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</span>';
         return (kid.length ? '<span class="pchipw">' : '') + '<a class="pchip' + (p.isNew ? ' chg-new' : '') + (kid.length ? ' haslk' : '') + '" data-k="p:' + goTab + ':' + esc(p.id || p.name) + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(p.name) + ' on BeatLeader' + (p.lastT ? ', last on ' + esc(atTime(p.lastT)) : '') + '">' + pic + '<span>' + esc(p.name) + '</span>' + (p.isNew ? '<b class="newtag" title="' + esc(p.isNew) + '">NEW</b>' : '')  + (p.lastT && Date.now() / 1000 - p.lastT < 3600 ? '<i class="ldot"></i>' : '') + '</a>' +
           (kid.length ? '<button type="button" class="plkb" data-lk="' + esc(p.id) + '" aria-expanded="false" aria-haspopup="true" title="See who ' + esc(p.name) + ' looked up">+' + kid.length + '</button></span>' : '');
       }).join('') + (pls.length > 40 ? '<button type="button" class="pchip more" data-go="' + goTab + '">+' + fmt(pls.length - 40) + ' more</button>' : '') + '</div></div>';
@@ -4990,7 +4993,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     us.forEach(function (u, ui) {
       var uk = u.id || u.key || u.name;
       var url = u.id ? 'https://beatleader.com/u/' + encodeURIComponent(u.id) : '#';
-      var av = '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
+      var av = u.anon ? '<span class="pav anon" aria-hidden="true">' + ANON_AV + '</span>' : '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
       var linked = u.linked ? new Date(u.linked * 1000).toISOString().slice(0, 10) : '';
       h += '<div class="prow' + (uOpen[uk] ? ' sel' : '') + '"><span class="pwho">' + (u.anon ? av + '<span class="pname"><span class="panon" title="Hasn’t opened Studio with a BeatLeader profile connected yet. Their name shows here once they do.">Unnamed player</span><span class="pb">no profile yet</span>' : '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>') +
         (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + (u.others && u.others.length ? '<span class="palso" title="Other BeatLeader profiles connected in Studio with this library">also seen: ' + esc(u.others.join(', ')) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[uk] ? ' on' : '') + '" data-uk="' + esc(uk) + '" aria-expanded="' + !!uOpen[uk] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[uk] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
