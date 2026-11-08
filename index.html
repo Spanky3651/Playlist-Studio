@@ -2533,6 +2533,15 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
 .mp-chip.exc{background:rgba(255,77,106,.12);border:1px solid #7a2a3a;color:#ffb3c0}.mp-chip.exc b{text-decoration:line-through;text-decoration-thickness:1.5px}
 .mp-chip button{border:0;background:none;box-shadow:none;transform:none;color:inherit;opacity:.7;font-size:16px;line-height:1;padding:2px 6px;min-height:0;cursor:pointer;border-radius:50%}
 .mp-chip button:hover{opacity:1;transform:none;box-shadow:none}
+/* Mapper suggestions: a list right under the box (in the flow, since the panel clips anything that floats) */
+.mp-ac{position:relative;z-index:2;margin-top:6px;background:#0b111c;border:1px solid #2a3850;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.7);padding:5px;max-height:320px;overflow:auto}
+.mp-ac[hidden]{display:none}
+.mp-ac-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;cursor:pointer;font-size:15px;color:#e8edf5}
+.mp-ac-row.on,.mp-ac-row:hover{background:#13213a}
+.mp-ac-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mp-ac-row .nm b{color:#fff;font-weight:800}
+.mp-ac-row small{flex:none;font:12px var(--mono);color:var(--muted)}
+.mp-ac-row small.rc{color:#9fc0ff}
+.mp-ac-h{font:600 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7f8a9c;padding:6px 11px 3px}
 </style>
 </head>
 <body class="src-beatleader">
@@ -2654,7 +2663,8 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <input type="text" id="fSearch" placeholder="e.g. Elevator, camellia, or a BSR code" /></div>
         <!-- Mapper: one box with an Only / Hide switch. Names land as chips; the two hidden fields keep the comma lists the filters, saved searches and Reset already use. -->
         <div class="field"><label class="field-label" for="fMapperAdd">Mapper <span class="info" data-tip="Type a mapper and press Enter. Only shows just their maps; Hide drops them (and 'Auto Lighter by …' style credits). Case doesn't matter. Tap × on a chip to remove it.">i</span></label>
-          <div class="mp-row"><input type="text" id="fMapperAdd" placeholder="Add a mapper" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"><div class="mp-seg" role="group" aria-label="Show only or hide this mapper"><button type="button" data-mp="only" aria-pressed="true">Only</button><button type="button" data-mp="hide" aria-pressed="false">Hide</button></div></div>
+          <div class="mp-row"><input type="text" id="fMapperAdd" placeholder="Add a mapper" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" role="combobox" aria-autocomplete="list" aria-controls="mpAc" aria-expanded="false"><div class="mp-seg" role="group" aria-label="Show only or hide this mapper"><button type="button" data-mp="only" aria-pressed="true">Only</button><button type="button" data-mp="hide" aria-pressed="false">Hide</button></div></div>
+          <div class="mp-ac" id="mpAc" role="listbox" aria-label="Mapper suggestions" hidden></div>
           <div class="mp-chips" id="mpChips" hidden></div>
           <input type="hidden" id="fMapper"><input type="hidden" id="fMapperExclude"></div>
       </div>
@@ -3471,7 +3481,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T17:02:59Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T17:12:59Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -6529,6 +6539,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var mode = 'only';
     function addNames(raw) {
       var names = String(raw || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); if (!names.length) return false;
+      mpRemember(names); acClose();
       var to = mode === 'hide' ? el.fMapperExclude : el.fMapper, other = mode === 'hide' ? el.fMapper : el.fMapperExclude;
       var l = mpList(to), o = mpList(other), low = function (x) { return x.toLowerCase(); };
       names.forEach(function (n) { if (l.map(low).indexOf(low(n)) === -1) l.push(n); o = o.filter(function (x) { return low(x) !== low(n); }); });
@@ -6542,13 +6553,75 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (add.value.trim()) { addNames(add.value); add.value = ''; }
     });
     if (el.resetBtn) el.resetBtn.addEventListener('click', function () { add.value = ''; setMode('only'); });
+    // Suggestions while typing: mappers from the loaded results, Your Playlist and your plays, the ones you've used
+    // before, and (from 3 letters) a quick BeatSaver lookup. Arrow keys move, Enter or a tap picks one.
+    var ac = document.getElementById('mpAc'), acRows = [], acI = -1, acT = 0, acRemote = {}, acReq = 0;
+    var RKEY = 'playlistStudio.mappersRecent.v1';
+    function mpRecent() { try { var r = JSON.parse(localStorage.getItem(RKEY) || '[]'); return Array.isArray(r) ? r : []; } catch (e) { return []; } }
+    function mpRemember(names) { try { var low = names.map(function (n) { return n.toLowerCase(); }); localStorage.setItem(RKEY, JSON.stringify(names.concat(mpRecent().filter(function (n) { return low.indexOf(String(n).toLowerCase()) === -1; })).slice(0, 20))); } catch (e) {} }
+    function splitNames(x) { return String(x || '').split(/\s*,\s*|\s+(?:&|and|x|\+)\s+/i).map(function (n) { return n.trim(); }).filter(function (n) { return n && n.length <= 40 && !/^auto ?light(er|ing)\b/i.test(n) && !/^unknown$/i.test(n); }); }
+    function localCounts() {
+      var c = {}, put = function (e) { splitNames(e && e.mapper).forEach(function (n) { var k = n.toLowerCase(); (c[k] = c[k] || { n: n, c: 0 }).c++; }); };
+      (state.raw || []).forEach(put); (state.basket || []).forEach(put);
+      var pi = state.playIndex || {}; Object.keys(pi).forEach(function (k) { put(pi[k]); });
+      return c;
+    }
+    function acClose() { ac.hidden = true; ac.innerHTML = ''; acRows = []; acI = -1; add.setAttribute('aria-expanded', 'false'); add.removeAttribute('aria-activedescendant'); }
+    function acPaint() {
+      Array.prototype.forEach.call(ac.querySelectorAll('.mp-ac-row'), function (r, i) { r.classList.toggle('on', i === acI); r.setAttribute('aria-selected', i === acI ? 'true' : 'false'); });
+      if (acI >= 0) { add.setAttribute('aria-activedescendant', 'mpAc' + acI); var r = document.getElementById('mpAc' + acI); if (r && r.scrollIntoView) r.scrollIntoView({ block: 'nearest' }); } else add.removeAttribute('aria-activedescendant');
+    }
+    function acShow() {
+      var q = add.value.split(',').pop().trim(), ql = q.toLowerCase();
+      var taken = {}; mpList(el.fMapper).concat(mpList(el.fMapperExclude)).forEach(function (n) { taken[n.toLowerCase()] = 1; });
+      var rec = mpRecent(), recI = {}; rec.forEach(function (n, i) { recI[String(n).toLowerCase()] = i + 1; });
+      var pool = localCounts(), rem = acRemote[ql.slice(0, 3)] || {};
+      Object.keys(rem).forEach(function (k) { if (!pool[k]) pool[k] = { n: rem[k].n, c: 0, bs: rem[k].c }; });
+      rec.forEach(function (n) { var k = String(n).toLowerCase(); if (!pool[k]) pool[k] = { n: n, c: 0 }; });
+      var out = Object.keys(pool).filter(function (k) { return !taken[k]; }).map(function (k) {
+        var p = pool[k], sc = !ql ? (recI[k] ? 1 : 0) : k.indexOf(ql) === 0 ? 3 : new RegExp('(^|[\\s_.\\-])' + ql.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(k) ? 2 : k.indexOf(ql) !== -1 ? 1 : 0;
+        return { k: k, n: p.n, c: p.c, bs: p.bs || 0, r: recI[k] || 0, sc: sc };
+      }).filter(function (x) { return x.sc > 0; }).sort(function (a, b) {
+        return b.sc - a.sc || (a.r ? 0 : 1) - (b.r ? 0 : 1) || (a.r && b.r ? a.r - b.r : 0) || b.c - a.c || b.bs - a.bs || a.n.localeCompare(b.n);
+      }).slice(0, 8);
+      acRows = out; acI = -1;
+      if (!out.length) { acClose(); return; }
+      var hl = function (n) { if (!ql) return esc(n); var i = n.toLowerCase().indexOf(ql); return i < 0 ? esc(n) : esc(n.slice(0, i)) + '<b>' + esc(n.slice(i, i + ql.length)) + '</b>' + esc(n.slice(i + ql.length)); };
+      ac.innerHTML = (!ql ? '<div class="mp-ac-h">Recent</div>' : '') + out.map(function (x, i) {
+        var note = x.c ? x.c + (x.c === 1 ? ' map' : ' maps') : x.r ? 'recent' : x.bs ? 'BeatSaver' : '';
+        return '<div class="mp-ac-row" role="option" id="mpAc' + i + '" data-i="' + i + '" aria-selected="false"><span class="nm">' + hl(x.n) + '</span>' + (note ? '<small' + (note === 'recent' ? ' class="rc"' : '') + '>' + note + '</small>' : '') + '</div>';
+      }).join('');
+      ac.hidden = false; add.setAttribute('aria-expanded', 'true');
+    }
+    function acRemoteLookup() {
+      var ql = add.value.split(',').pop().trim().toLowerCase(), k3 = ql.slice(0, 3);
+      if (ql.length < 3 || acRemote[k3]) return;
+      var tok = ++acReq; acRemote[k3] = {};
+      fetch(BS_API + '/search/text/0?sortOrder=Relevance&q=' + encodeURIComponent(k3)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+        var m = acRemote[k3] = {};
+        ((d && d.docs) || []).forEach(function (doc) {
+          var names = splitNames(doc.metadata && doc.metadata.levelAuthorName).concat(doc.uploader && doc.uploader.name ? [doc.uploader.name] : []);
+          names.forEach(function (n) { var k = n.toLowerCase(); if (k.indexOf(k3) === -1) return; (m[k] = m[k] || { n: n, c: 0 }).c++; });
+        });
+        if (tok === acReq && document.activeElement === add) acShow();
+      }, function () { delete acRemote[k3]; });
+    }
+    function acPick(i) { var x = acRows[i]; if (!x) return; var parts = add.value.split(','); parts.pop(); add.value = ''; if (parts.join(',').trim()) addNames(parts.join(',')); addNames(x.n); add.focus(); }
+    add.addEventListener('input', function () { clearTimeout(acT); acShow(); acT = setTimeout(acRemoteLookup, 300); });
+    add.addEventListener('focus', function () { if (!add.value.trim()) acShow(); });
+    // pointerdown keeps the box focused, so picking a row doesn't first add the half-typed name on blur
+    ac.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+    ac.addEventListener('click', function (e) { var r = e.target.closest('.mp-ac-row'); if (r) acPick(+r.getAttribute('data-i')); });
     add.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); if (add.value.trim()) { addNames(add.value); add.value = ''; } else runFetch(); }
+      if (!ac.hidden && acRows.length && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); acI = e.key === 'ArrowDown' ? (acI + 1) % acRows.length : (acI <= 0 ? acRows.length - 1 : acI - 1); acPaint(); return; }
+      if (e.key === 'Escape' && !ac.hidden) { e.preventDefault(); acClose(); return; }
+      if (e.key === 'Enter' && !ac.hidden && acI >= 0) { e.preventDefault(); acPick(acI); return; }
+      if (e.key === 'Enter') { e.preventDefault(); if (add.value.trim()) { addNames(add.value); add.value = ''; } else { acClose(); runFetch(); } }
       else if (e.key === 'Backspace' && !add.value) { var l = mpList(mode === 'hide' ? el.fMapperExclude : el.fMapper); if (l.length) { l.pop(); mpSet(mode === 'hide' ? el.fMapperExclude : el.fMapper, l); renderMapperChips(); } }
     });
     add.addEventListener('input', function () { if (add.value.indexOf(',') !== -1) { var parts = add.value.split(','), rest = parts.pop(); addNames(parts.join(',')); add.value = rest.replace(/^\s+/, ''); } });
     // A name typed but not entered still counts once you leave the box (or tap Search).
-    add.addEventListener('blur', function () { if (add.value.trim()) { addNames(add.value); add.value = ''; } });
+    add.addEventListener('blur', function () { acClose(); if (add.value.trim()) { addNames(add.value); add.value = ''; } });
     box.addEventListener('click', function (e) {
       var b = e.target.closest('button[data-mpx]'); if (!b) return;
       var inp = b.getAttribute('data-mpx') === 'exc' ? el.fMapperExclude : el.fMapper, n = b.getAttribute('data-n').toLowerCase();
