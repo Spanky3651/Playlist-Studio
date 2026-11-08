@@ -1209,7 +1209,7 @@ const ADMIN_SW = [
   "self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });",
   "self.addEventListener('push', function (e) {",
   "  var m = {}; try { m = e.data ? e.data.json() : {}; } catch (x) { m = { t: 'Studio Stats', b: e.data ? e.data.text() : '' }; }",
-  "  var o = { body: m.b || '', icon: /^[a-z0-9]{1,12}$/.test(m.i || '') ? IC + 'alerts/' + m.i + '.png' : IC + 'stats-192.png', badge: IC + 'stats-badge-96.png', data: { tab: m.tab || '', url: typeof m.url === 'string' && m.url.indexOf('https://github.com/') === 0 ? m.url : '' }, timestamp: Date.now() };",
+  "  var o = { body: m.b || '', icon: /^[a-z0-9]{1,12}$/.test(m.i || '') ? IC + 'alerts/' + m.i + '.png' : IC + 'stats-192.png?v=b2', badge: IC + 'stats-badge-96.png?v=b2', data: { tab: m.tab || '', url: typeof m.url === 'string' && m.url.indexOf('https://github.com/') === 0 ? m.url : '' }, timestamp: Date.now() };",
   "  if (m.tag) { o.tag = m.tag; o.renotify = true; }",
   "  if (m.k === 'key') o.requireInteraction = true;",
   "  e.waitUntil(self.registration.showNotification(m.t || 'Studio Stats', o));",
@@ -1226,12 +1226,14 @@ const ADMIN_SW = [
   "});"
 ].join("\n");
 // Studio Stats as an installed app (Chrome: Install app). Installed on Android, its alerts show its own icon and name
-// instead of Chrome's. Icons are hosted with Playlist Studio.
+// instead of Chrome's. Icons are hosted with Playlist Studio. ICON_V changes the icon addresses whenever the icons
+// change, so Chrome and Android fetch the new ones instead of reusing a saved copy.
+const ICON_V = "b2";
 const ADMIN_MANIFEST = JSON.stringify({
   id: "/admin", name: "Studio Stats", short_name: "Studio Stats", description: "Private stats for Playlist Studio and the other tools.",
   start_url: "/admin", scope: "/admin", display: "standalone", background_color: "#000000", theme_color: "#000000",
-  icons: [192, 512].map((n) => ({ src: "https://spanky3651.github.io/Playlist-Studio/icons/stats-" + n + ".png", sizes: n + "x" + n, type: "image/png", purpose: "any" }))
-    .concat([192, 512].map((n) => ({ src: "https://spanky3651.github.io/Playlist-Studio/icons/stats-maskable-" + n + ".png", sizes: n + "x" + n, type: "image/png", purpose: "maskable" })))
+  icons: [192, 512].map((n) => ({ src: "https://spanky3651.github.io/Playlist-Studio/icons/stats-" + n + ".png?v=" + ICON_V, sizes: n + "x" + n, type: "image/png", purpose: "any" }))
+    .concat([192, 512].map((n) => ({ src: "https://spanky3651.github.io/Playlist-Studio/icons/stats-maskable-" + n + ".png?v=" + ICON_V, sizes: n + "x" + n, type: "image/png", purpose: "maskable" })))
 });
 let adminFails = [], adminBlocked = 0, adminFlush = 0;
 const ADMIN_GUARD = "admin:guard", ADMIN_LOCKS = "admin:lockouts";
@@ -2441,7 +2443,7 @@ async function gcAllStats(env, range, fresh, tz) {
 const ADMIN_PAGE = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Studio Stats</title>
-<link rel="icon" type="image/svg+xml" href="${ADMIN_LOGO}"><link rel="apple-touch-icon" href="https://spanky3651.github.io/Playlist-Studio/icons/stats-192.png">
+<link rel="icon" type="image/svg+xml" href="${ADMIN_LOGO}"><link rel="apple-touch-icon" href="https://spanky3651.github.io/Playlist-Studio/icons/stats-192.png?v=b2">
 <link rel="manifest" href="/admin/manifest.webmanifest"><meta name="theme-color" content="#000000">
 <style>
 :root{--bg:#000;--card:#0a0e16;--card2:#0d1320;--line:#1c2638;--text:#f2f5fa;--muted:#9aa6b8;--blue:#2f7bff;--cyan:#38bdf8;--red:#ff2740;--green:#3ddc84;--amber:#ffc23d;}
