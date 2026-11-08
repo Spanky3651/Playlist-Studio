@@ -2835,6 +2835,8 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
+.tdy{cursor:pointer;text-decoration:underline dotted rgba(255,255,255,.35);text-underline-offset:4px;text-decoration-thickness:1px}.tdy:hover{color:#fff;text-decoration-color:#fff}
+.hstats .tdy{text-decoration:none}.hstats .tdy b{text-decoration:underline dotted rgba(255,255,255,.35);text-underline-offset:4px;text-decoration-thickness:1px}
 /* Alerts: the bell (no box) to the right of refresh, and its card */
 .tools button.abell{position:relative;border:0;background:none;box-shadow:none;color:#cfe0ff}
 .tools button.abell:hover{border:0;background:none;color:#fff}
@@ -4077,12 +4079,12 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
         '<span class="hrow"><span class="hl"><span class="sv" data-k="a:' + hero.key + '">' + I.num + '</span><span class="sn">' + (I.err || chgTag(I.ch, true) + '<span>' + I.S.unit + (I.ch != null && before ? ' vs the ' + before + ' before' : d.range === 'today' ? ' so far today' : '') + '</span>') + '</span>' +
-        (stats.length ? '<span class="hstats">' + stats.map(function (t) { return '<span><small>' + t[0] + '</small><b data-k="a:st:' + t[0] + '">' + t[1] + '</b>' + (t[2] ? '<em>' + esc(t[2]) + '</em>' : '') + '</span>'; }).join('') + '</span>' : '') + '</span>' +
+        (stats.length ? '<span class="hstats">' + stats.map(function (t) { return '<span' + (t[0] === 'Today' ? ' class="tdy" data-today="1" title="Open with Today selected"' : '') + '><small>' + t[0] + '</small><b data-k="a:st:' + t[0] + '">' + t[1] + '</b>' + (t[2] ? '<em>' + esc(t[2]) + '</em>' : '') + '</span>'; }).join('') + '</span>' : '') + '</span>' +
         '<span class="hch">' + (I.err ? '' : heroChart(I.x, I.S.color)) + (k.length > 1 && !I.err ? '<span class="hax"><span>' + esc(lab(k[0])) + '</span><span>' + esc(lab(k[k.length - 1])) + '</span></span>' : '') + '</span></span>' + strip + '</div>';
     }
     list.forEach(function (s) {
       if (s === hero) return;
-      var I = info(s), v = I.x.vals, today = d.range === 'today' ? ' so far today' : v.length ? ' · today ' + fmt(v[v.length - 1] || 0) : '';
+      var I = info(s), v = I.x.vals, today = d.range === 'today' ? ' so far today' : v.length ? ' · <span class="tdy" data-today="1" title="Open with Today selected">today ' + fmt(v[v.length - 1] || 0) + '</span>' : '';
       rest += '<button type="button" class="site" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(s.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
         '<span class="arow"><span class="sv" data-k="a:' + s.key + '">' + I.num + '</span>' + chgTag(I.ch, true) + '</span><span class="sn">' + (I.err || I.S.unit + today) + '</span><span class="ssp">' + (I.err ? '' : allSpark(v, I.S.color)) + '</span></button>';
     });
@@ -4098,7 +4100,8 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     txt('a-when', 'GoatCounter ' + dshort(d.start) + (d.start !== d.end ? ' to ' + dshort(d.end) : '') + '. Updated ' + new Date(d.generated * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ', kept for 5 minutes.');
     vrFix = vr0;
   }
-  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a') || e.target.closest('.plkb, .plkpop')) return; showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
+  // Tapping "today N" on a site's box opens that site with the Today range picked.
+  function aGo(e) { var b = e.target.closest && e.target.closest('#a-sites [data-go]'); if (!b || e.target.closest('#a-sites a') || e.target.closest('.plkb, .plkpop')) return; if (e.target.closest('#a-sites [data-today]') && range !== 'today') { range = 'today'; quietLoad = false; glowUntil = 0; showRange(); } showTab(b.getAttribute('data-go')); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }
   document.addEventListener('click', aGo);
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('#a-sites div.site[data-go]')) { e.preventDefault(); aGo(e); } });
   // ---- Ko-fi tab: tips from the Ko-fi webhook ----
