@@ -3481,7 +3481,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T17:12:59Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T17:21:54Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -6560,8 +6560,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     function mpRecent() { try { var r = JSON.parse(localStorage.getItem(RKEY) || '[]'); return Array.isArray(r) ? r : []; } catch (e) { return []; } }
     function mpRemember(names) { try { var low = names.map(function (n) { return n.toLowerCase(); }); localStorage.setItem(RKEY, JSON.stringify(names.concat(mpRecent().filter(function (n) { return low.indexOf(String(n).toLowerCase()) === -1; })).slice(0, 20))); } catch (e) {} }
     function splitNames(x) { return String(x || '').split(/\s*,\s*|\s+(?:&|and|x|\+)\s+/i).map(function (n) { return n.trim(); }).filter(function (n) { return n && n.length <= 40 && !/^auto ?light(er|ing)\b/i.test(n) && !/^unknown$/i.test(n); }); }
+    // How often a mapper turns up in what's loaded (each song once, not once per difficulty or play). Only used to put
+    // the likelier names first; it isn't shown, since it's not their real map count.
     function localCounts() {
-      var c = {}, put = function (e) { splitNames(e && e.mapper).forEach(function (n) { var k = n.toLowerCase(); (c[k] = c[k] || { n: n, c: 0 }).c++; }); };
+      var c = {}, seen = {}, put = function (e) { splitNames(e && e.mapper).forEach(function (n) { var k = n.toLowerCase(), h = k + '|' + ((e && (e.hash || e.songName)) || ''); if (seen[h]) return; seen[h] = 1; (c[k] = c[k] || { n: n, c: 0 }).c++; }); };
       (state.raw || []).forEach(put); (state.basket || []).forEach(put);
       var pi = state.playIndex || {}; Object.keys(pi).forEach(function (k) { put(pi[k]); });
       return c;
@@ -6588,7 +6590,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (!out.length) { acClose(); return; }
       var hl = function (n) { if (!ql) return esc(n); var i = n.toLowerCase().indexOf(ql); return i < 0 ? esc(n) : esc(n.slice(0, i)) + '<b>' + esc(n.slice(i, i + ql.length)) + '</b>' + esc(n.slice(i + ql.length)); };
       ac.innerHTML = (!ql ? '<div class="mp-ac-h">Recent</div>' : '') + out.map(function (x, i) {
-        var note = x.c ? x.c + (x.c === 1 ? ' map' : ' maps') : x.r ? 'recent' : x.bs ? 'BeatSaver' : '';
+        var note = x.r ? 'recent' : '';
         return '<div class="mp-ac-row" role="option" id="mpAc' + i + '" data-i="' + i + '" aria-selected="false"><span class="nm">' + hl(x.n) + '</span>' + (note ? '<small' + (note === 'recent' ? ' class="rc"' : '') + '>' + note + '</small>' : '') + '</div>';
       }).join('');
       ac.hidden = false; add.setAttribute('aria-expanded', 'true');
