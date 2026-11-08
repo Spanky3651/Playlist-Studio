@@ -3454,7 +3454,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T13:14:16Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T16:54:12Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5414,6 +5414,37 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     ts.exc.forEach(function (t) { parts.push('!' + t); });
     return parts.join(',');
   }
+  // Is this BeatSaver search sorted by Relevance with a song query? (Same rule buildBeatSaverUrl uses.)
+  function bsRelevanceOn(f) {
+    if (!f.search) return false;
+    var sort = el.bsSort.value || 'Rating';
+    return sort === 'Relevance' || sort === 'Latest' || (sort === 'Rating' && !state.bsSortTouched);
+  }
+  function relNorm(x) { try { x = String(x || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, ''); } catch (e) { x = String(x || ''); } return x.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); }
+  // How well a map matches the words typed, best first: the title is the search, the title starts with it, the
+  // title (or title + subtitle) has every word, the title plus the artist has every word ("elevator eliminate"),
+  // the artist alone, some of the words in the title, everything else, and last a match only on the mapper's name.
+  function bsRelTier(e, qn, words) {
+    var t = relNorm(e.songName), full = (t + ' ' + relNorm(e.subName)).trim(), a = relNorm(e.artist), m = relNorm(e.mapper);
+    var has = function (str, w) { return (' ' + str + ' ').indexOf(' ' + w + ' ') !== -1; };
+    var all = function (str) { return words.every(function (w) { return has(str, w); }); };
+    if (t === qn || full === qn) return 9;
+    if ((' ' + t + ' ').indexOf(' ' + qn + ' ') === 0) return 8;
+    if (all(t)) return 7;
+    if (all(full)) return 6;
+    if (all(t + ' ' + a) || all(full + ' ' + a)) return 5;
+    if (all(a)) return 4;
+    if (words.some(function (w) { return has(full, w); })) return 3;
+    if (all(m) && !all(full + ' ' + a)) return 1;
+    return 2;
+  }
+  function bsRelevanceRank(list, q) {
+    var qn = relNorm(q), words = qn ? qn.split(' ') : [];
+    if (!words.length) return;
+    list.forEach(function (e, i) { e._relI = i; e._relT = bsRelTier(e, qn, words); });
+    // Inside the title tiers the most liked map goes first (the well-known one); elsewhere BeatSaver's own order stays.
+    list.sort(function (a, b) { return b._relT - a._relT || (a._relT >= 6 ? (b.bsUp || 0) - (a.bsUp || 0) : 0) || a._relI - b._relI; });
+  }
   function buildBeatSaverUrl(page, f, o) {
     var p = new URLSearchParams(); o = o || {};
     var q = f.search || (f.mapperTerms.length === 1 ? f.mapperTerms[0] : '');
@@ -5461,7 +5492,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var upT = upStr ? Date.parse(upStr) : NaN; upT = isNaN(upT) ? 0 : Math.floor(upT / 1000);   // unix seconds
     return { leaderboardId: '', hash: hash,
       songName: meta.songName || map.name || 'Unknown', subName: meta.songSubName || '',
-      mapper: meta.levelAuthorName || '', author: meta.songAuthorName || meta.levelAuthorName || '',
+      mapper: meta.levelAuthorName || '', author: meta.songAuthorName || meta.levelAuthorName || '', artist: meta.songAuthorName || '', bsUp: stats.upvotes || 0,
       bpm: meta.bpm || 0, duration: meta.duration || 0, cover: v.coverURL || '',
       stars: diffs.reduce(function (m, d) { return Math.max(m, d.stars || 0); }, 0),
       difficultyName: '', modeName: (charSet['Standard'] ? 'Standard' : (hardest.characteristic || 'Standard')),
@@ -5762,7 +5793,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (state.viewMode === 'recommend') {
       out.sort(function (a, b) { var av = (a._rec && a._rec.gain) || 0, bv = (b._rec && b._rec.gain) || 0; return bv - av; });
     } else if (state.source === 'beatsaver') {
-      // BeatSaver returns results already ordered by the chosen sortOrder - keep that order.
+      // BeatSaver returns results already ordered by the chosen sortOrder - keep that order. The one change:
+      // its Relevance also matches mapper names, so a search for "Elevator" put a mapper called elevator's
+      // maps above the song Elevator. With a song search on Relevance, songs whose title matches come first.
+      if (bsRelevanceOn(f)) bsRelevanceRank(out, f.search);
     } else if (key === 'pp') {
       // Sort by raw PP at the target accuracy (no modifier); unranked maps sink.
       out.sort(function (a, b) {
