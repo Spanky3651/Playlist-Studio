@@ -3481,7 +3481,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T17:21:54Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T18:21:37Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -13862,7 +13862,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return Promise.all([
       seasonLive ? aswSoft(asGet('/clans/seasons/' + encodeURIComponent(se.id) + '/standings?size=100')) : Promise.resolve(null),
       aswSoft(asGet('/clans/wars?size=100')),
-      aswSoft(asGet('/users/' + encodeURIComponent(aid) + '/skill'))
+      aswSoft(asGet('/users/' + encodeURIComponent(aid) + '/skill')),
+      aswSoft(asGet('/users/' + encodeURIComponent(aid) + '/statistics/all'))
     ]).then(function (r) {
       if (!live()) return null;
       asc.stand = r[0] && r[0].content ? r[0].content : null; asc.nClans = r[0] ? (+r[0].totalElements || (asc.stand || []).length) : 0;
@@ -13872,6 +13873,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       asc.wars = (r[1] && r[1].content) || [];
       asc.skill = null;
       if (r[2] && r[2].skills) { asc.skill = {}; r[2].skills.forEach(function (s) { asc.skill[String(s.categoryCode || '').replace(/_acc$/, '')] = +s.skillLevel || 0; }); }
+      asc.ranks = null;
+      if (r[3] && r[3].categories) { asc.ranks = {}; r[3].categories.forEach(function (c) { var k = AS_CAT[c.categoryId]; if (k && +c.ranking > 0) asc.ranks[k] = +c.ranking; }); }
       var mine = aswMyWar(asc.wars, cid);
       if (!mine) asc.war = null;
       else if (!asc.war || asc.war.w.id !== mine.id) asc.war = { w: mine, team: aswTeamOf(mine, cid), pool: [], parts: [], mine: [], feed: [], timeline: [], rules: {}, scores: {}, ready: false };
@@ -14053,12 +14056,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function aswReady() {
     var S = asc.skill; if (!S || !(S.overall > 0)) return '';
     var cats = ['true', 'standard', 'tech'].filter(function (k) { return S[k] > 0; }), best = cats.slice().sort(function (a, b) { return S[b] - S[a]; })[0];
+    var R = asc.ranks || {}, rk = ['true', 'standard', 'tech'].filter(function (k) { return R[k] > 0; }).sort(function (a, b) { return R[a] - R[b]; })[0];
+    var bestSub = rk ? AS_LABEL[rk] + ' is your best rank (#' + aswNum(R[rk]) + ')' : 'of the three categories';
     var hits = 0, breaks = 0; (asc.members || []).forEach(function (m) { var x = m.membership || {}; hits += +x.seasonHits || 0; breaks += +x.seasonBreaks || 0; });
     var tag = esc(asc.link.clan.tag || 'your clan');
     return '<div class="asw-card"><div class="asw-ch"><b>War ready</b><span>for when ' + tag + ' declares or gets called in</span></div><div class="asw-tiles" style="margin:0">' +
       aswTile('Your skill', S.overall.toFixed(1), cats.map(function (k) { return AS_LABEL[k] + ' ' + S[k].toFixed(1); }).join(' · ')) +
       aswTile('You can target', (S.overall * 0.8).toFixed(1) + '+', 'anyone above you, or down to 80%') +
-      (best ? aswTile('Your best category', AS_LABEL[best], 'highest skill of the three') : '') +
+      (best ? aswTile('Highest skill level', AS_LABEL[best], bestSub) : '') +
       aswTile('Season hits', aswNum(hits), 'whole clan · ' + aswNum(breaks) + (breaks === 1 ? ' break' : ' breaks')) + '</div></div>';
   }
   function aswBanner() {
