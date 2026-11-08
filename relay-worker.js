@@ -2835,8 +2835,7 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
-.tdy{cursor:pointer;text-decoration:underline dotted rgba(255,255,255,.35);text-underline-offset:4px;text-decoration-thickness:1px}.tdy:hover{color:#fff;text-decoration-color:#fff}
-.hstats .tdy{text-decoration:none}.hstats .tdy b{text-decoration:underline dotted rgba(255,255,255,.35);text-underline-offset:4px;text-decoration-thickness:1px}
+.tdy{cursor:pointer}.tdy:hover{color:#fff}
 /* Alerts: the bell (no box) to the right of refresh, and its card */
 .tools button.abell{position:relative;border:0;background:none;box-shadow:none;color:#cfe0ff}
 .tools button.abell:hover{border:0;background:none;color:#fff}
