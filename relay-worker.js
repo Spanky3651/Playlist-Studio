@@ -2835,13 +2835,13 @@ body{padding-top:14px}
 /* Falling blocks background, off by default; double-click the Studio Stats logo to turn it on or off. Same blocks as Playlist Studio's */
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
-/* Alerts: the bell next to refresh and its card */
-.tools button.abell{position:relative;border:1px solid #3a5fb0;background:rgba(47,123,255,.12);color:#cfe0ff}
-.tools button.abell:hover{border-color:#5a83d6;background:rgba(47,123,255,.22);color:#fff}
-.tools button.abell.on{border-color:#1f6b4f;background:rgba(34,224,161,.1);color:#9ff5d6}
-.tools button.abell.on:hover{border-color:#2a8a66;background:rgba(34,224,161,.18);color:#c8fbe8}
-.tools button.abell[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(47,123,255,.25)}
-.tools button.abell.on[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(34,224,161,.2)}
+/* Alerts: the bell (no box) to the right of refresh, and its card */
+.tools button.abell{position:relative;border:0;background:none;box-shadow:none;color:#cfe0ff}
+.tools button.abell:hover{border:0;background:none;color:#fff}
+.tools button.abell.on{color:#9ff5d6}
+.tools button.abell.on:hover{color:#c8fbe8}
+.tools button.abell[aria-expanded="true"]{color:#fff}
+.tools button.abell:focus-visible{outline:2px solid #4c8dff;outline-offset:2px}
 .abell .abd{display:none;position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:#22e0a1;box-shadow:0 0 8px #22e0a1,0 0 0 2px #000}
 .abell.on .abd{display:block}
 .embed #aBell{display:none}
@@ -2900,7 +2900,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
 </style></head><body><main>
 <div class="top"><div><div class="brand"><img src="${ADMIN_LOGO}" alt="" width="44" height="44"><h1>Studio Stats</h1></div>
 <p class="sub">Visitors, players and features from GoatCounter for Studio and your other tools, and headsets from Studio Sync.</p></div>
-<div class="tools hidden" id="tools"><button id="aBell" class="ghost icon abell" type="button" data-al="toggle" aria-expanded="false" aria-label="Get alerts"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="abd"></span></button><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button></div></div>
+<div class="tools hidden" id="tools"><button id="refresh" class="ghost icon" title="Refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg></button><button id="aBell" class="ghost icon abell" type="button" data-al="toggle" aria-expanded="false" aria-label="Get alerts"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="abd"></span></button></div></div>
 <div class="keyrow hidden" id="keyrow"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password">
 <button id="go">Show stats</button></div>
 <p class="msg" id="msg"></p>
