@@ -2882,10 +2882,10 @@ body>main{position:relative;z-index:1}
 .tools button#refresh:hover{border:0;background:none;color:#fff}
 .tools button#refresh:focus-visible{outline:2px solid #4c8dff;outline-offset:2px}
 /* Alerts: the bell (no box) to the right of refresh, and its card */
-.tools button.abell{position:relative;border:0;background:none;box-shadow:none;color:#cfe0ff}
+.tools button.abell{position:relative;border:0;background:none;box-shadow:none;color:#e8edf5}
 .tools button.abell:hover{border:0;background:none;color:#fff}
-.tools button.abell.on{color:#9ff5d6}
-.tools button.abell.on:hover{color:#c8fbe8}
+body.bell-off #aBell,body.bell-off #aCard{display:none !important}
+.brand h1{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .tools button.abell[aria-expanded="true"]{color:#fff}
 .tools button.abell:focus-visible{outline:2px solid #4c8dff;outline-offset:2px}
 .abell .abd{display:none;position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:#22e0a1;box-shadow:0 0 8px #22e0a1,0 0 0 2px #000}
@@ -4268,6 +4268,19 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     if (a === 'toggle') { al.open = !al.open; al.ok = ''; if (!al.open) al.err = ''; alPaint(); }
     else if (a === 'on') alOn(); else if (a === 'off') alOff(); else if (a === 'test') alTest(); else if (a === 'pref') alPref(b.getAttribute('data-k'));
   });
+  (function () {
+    var BK = 'studioStats.bellOff.v1', h1 = document.querySelector('.brand h1'), last = 0;
+    try { if (localStorage.getItem(BK) === '1') document.body.classList.add('bell-off'); } catch (e) {}
+    if (!h1) return;
+    h1.addEventListener('pointerup', function (e) {
+      var t = Date.now();
+      if (t - last > 350) { last = t; return; }
+      last = 0; e.preventDefault();
+      var off = document.body.classList.toggle('bell-off');
+      if (off && al.open) { al.open = false; al.err = ''; alPaint(); }
+      try { if (off) localStorage.setItem(BK, '1'); else localStorage.removeItem(BK); } catch (x) {}
+    });
+  })();
   // A click on an alert while Studio Stats is already open: the service worker says which tab.
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     var d = e.data || {}; if (d.t !== 'ss-tab' || !d.tab) return;
