@@ -2849,6 +2849,10 @@ body{padding-top:14px}
 #blocksBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.75}
 body>main{position:relative;z-index:1}
 .tdy{cursor:pointer}.tdy:hover{color:#fff}
+/* Refresh: no box, like the bell */
+.tools button#refresh{border:0;background:none;box-shadow:none;color:#e8edf5}
+.tools button#refresh:hover{border:0;background:none;color:#fff}
+.tools button#refresh:focus-visible{outline:2px solid #4c8dff;outline-offset:2px}
 /* Alerts: the bell (no box) to the right of refresh, and its card */
 .tools button.abell{position:relative;border:0;background:none;box-shadow:none;color:#cfe0ff}
 .tools button.abell:hover{border:0;background:none;color:#fff}
