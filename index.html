@@ -2323,22 +2323,21 @@ a.kofi-support:hover{transform:translateY(-2px);border-color:#ff2740;box-shadow:
     grid-template-areas:"brand brand" "card card" "tools tools" "sw upd" "cnt cnt";}
   .nf::before{left:16px;right:16px;}
   .nf-row,.nf-strip,.nf-sl,.nf-sr{display:contents;}
-  .nf-brand{grid-area:brand;justify-content:center;}.nf-logo{display:none;}
+  .nf-brand{grid-area:brand;justify-content:center;gap:12px;text-align:left;}.nf-logo{width:40px;height:40px;border-radius:10px;}
   .nf-mmap{display:inline;}
   .nf .nf-credit{grid-area:card;justify-self:center;margin-top:2px;}
   .nf-btns{grid-area:btns;justify-content:center;}.nf .nf-btn{height:42px;padding:0 15px;font-size:14px;}
   .nf-mid{grid-area:tools;padding-top:16px;border-top:1px solid var(--border);gap:6px;}
-  .nf .nf-chip{height:auto;gap:0;padding:6px 0;border:0;background:none;border-radius:0;color:var(--blue-text);font:13px var(--mono);}
-  .nf .nf-chip:hover{transform:none;color:#fff;text-decoration:underline;}
-  .nf-chip img{display:none;}
-  .nf-chips{gap:0;flex-wrap:nowrap;}
-  .nf-chip + .nf-chip::before{content:"\00b7";color:var(--muted-2);margin:0 7px;text-decoration:none;display:inline-block;}
+  .nf .nf-chip{height:auto;flex-direction:column;justify-content:center;gap:8px;padding:12px 4px 10px;border:1px solid var(--border-2);border-radius:14px;background:#070a0f;color:#cfe0ff;font:700 12.5px system-ui,'Segoe UI',Arial,sans-serif;white-space:nowrap;text-align:center;line-height:1.2;min-width:0;}
+  .nf .nf-chip:hover{transform:none;color:#fff;border-color:var(--blue);text-decoration:none;}
+  .nf-chip img{width:36px;height:36px;border-radius:9px;}
+  .nf-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;}
   .fxsw{grid-area:sw;justify-self:end;}
   .nf-upd{grid-area:upd;justify-self:start;align-self:center;padding-left:12px;border-left:1px solid var(--border-2);}
   .nf-map,.nf-dot,.nf-vr{display:none;}
   .foot-count{grid-area:cnt;justify-content:center;}
 }
-@media(max-width:370px){.nf .nf-chip{font-size:12px;}.nf-chip + .nf-chip::before{margin:0 4px;}}
+@media(max-width:370px){.nf .nf-chip{font-size:11.5px;padding-left:2px;padding-right:2px;}}
 /* Compare with a player (account menu) */
 .sd-cmp{width:min(620px,100vw);}
 .sd-cmp .sd-head h2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -3482,7 +3481,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-08T21:04:46Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-11T12:39Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
