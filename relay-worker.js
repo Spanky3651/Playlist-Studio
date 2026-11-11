@@ -371,6 +371,8 @@ function ordKey(lib, dev) { return "ord:" + lib + ":" + dev; }
 function seenKey(lib, dev) { return "seen:" + lib + ":" + dev; }
 // Headset storage the mod reports (0.8.0 and later): song counts and sizes, free space, versions.
 function statKey(lib, dev) { return "stat:" + lib + ":" + dev; }
+// Compares mod versions by number, so 0.9.10 is newer than 0.9.3.
+function verCmp(a, b) { const x = String(a).split("."), y = String(b).split("."); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (+x[i] || 0) - (+y[i] || 0); if (d) return d; } return 0; }
 // A song clean up asked for in Studio and waiting for the headset, and what the last one did.
 function clnKey(lib, dev) { return "cln:" + lib + ":" + dev; }
 function clnrKey(lib, dev) { return "clnr:" + lib + ":" + dev; }
@@ -2063,7 +2065,7 @@ async function adminStats(env) {
     retentionBase: 0, retained: 0,
     // Synced at least once, but not in the last 14 days.
     goneQuiet: 0,
-    // Mod version, read from what each headset says it can do (no version number is sent yet).
+    // Mod version, guessed from what each headset says it can do (each user's own row uses the full version from their storage report).
     modOld: 0, mod05: 0, mod07: 0, mod08: 0, modUnknown: 0, users: [], usersUnknown: 0,
     // Changes Studio queued that the headset hasn't picked up yet.
     pendingChanges: 0, pendingHeadsets: 0, pendingOldest: 0 };
@@ -2079,6 +2081,7 @@ async function adminStats(env) {
       if (devs.length > 1) st.librariesMulti++;
       const seen = await withSeen(env, id, devs);
       const invs = await Promise.all(devs.map((d) => env.PLAYLISTS.get(invKey(id, d.id), "json")));
+      const stats = await Promise.all(devs.map((d) => env.PLAYLISTS.get(statKey(id, d.id), "json")));
       const outs = await Promise.all(devs.map(async (d) => {
         const out = await env.PLAYLISTS.get(outKey(id, d.id), "json");
         return out && Array.isArray(out.items) && out.items.length ? liveOut(env, id, d.id, out.items) : [];
@@ -2111,7 +2114,10 @@ async function adminStats(env) {
         else if (f && f.includes("delete-songs")) { st.mod07++; mv = "0.7"; }
         else if (f && (f.includes("restore") || f.includes("delete"))) { st.mod05++; mv = "0.5"; }
         else { st.modOld++; mv = "older"; }
-        if (mv && mv !== "older" && (!user.mod || mv > user.mod)) user.mod = mv; else if (mv && !user.mod) user.mod = mv;
+        // The full version (0.9.2), when the headset's storage report says it; otherwise the guess from its features.
+        const rv = stats[j] && typeof stats[j].mod === "string" && /^\d+(\.\d+){1,3}$/.test(stats[j].mod) ? stats[j].mod : "";
+        if (rv && (mv === "older" || !mv || verCmp(rv, mv) >= 0)) mv = rv;
+        if (mv && mv !== "older" && (!user.mod || user.mod === "older" || verCmp(mv, user.mod) > 0)) user.mod = mv; else if (mv && !user.mod) user.mod = mv;
         const waiting = outs[j];
         user.waiting += waiting.length;
         if (waiting.length) {
@@ -5032,6 +5038,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   // An opened Studio Sync user: days active, when they linked, their mod and what's on the headset, then their headset
   // syncs over the last 30 days (taller bar = synced in more hours that day). Sync history is kept from Nov 8 2026 on.
   function utcDay(t) { return new Date(t * 1000).toISOString().slice(0, 10); }
+  function verCmp(a, b) { var x = String(a).split('.'), y = String(b).split('.'); for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (+x[i] || 0) - (+y[i] || 0); if (d) return d; } return 0; }
   function userHistory(u, newestMod) {
     var sd = {}; (u.hs || []).forEach(function (x) { if (x.sd) Object.keys(x.sd).forEach(function (k) { sd[k] = (sd[k] || 0) + x.sd[k]; }); });
     var first = Object.keys(sd).sort()[0] || '', linkedK = u.linked ? utcDay(u.linked) : '', now = Date.now() / 1000, days = [];
@@ -5040,7 +5047,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     var active = counted.filter(function (k) { return sd[k]; }).length, mx = Math.max.apply(null, days.map(function (k) { return sd[k] || 0; }).concat([1]));
     var since = !first ? 'fills in from now on' : counted.length && counted[0] > days[0] ? 'since ' + dshort(counted[0]) : 'last 30 days';
     var ago = u.linked ? Math.floor((now - u.linked) / 86400) : 0;
-    var modTxt = !u.mod ? '-' : u.mod === 'older' ? 'old' : u.mod, modNote = !u.mod ? 'not reported yet' : u.mod === newestMod ? 'up to date' : 'older version';
+    var modTxt = !u.mod ? '-' : u.mod === 'older' ? 'old' : u.mod, modNote = !u.mod ? 'not reported yet' : verCmp(u.mod, newestMod) >= 0 ? 'up to date' : 'older version';
     var f = [['Active', first ? active + ' of ' + counted.length + (counted.length === 1 ? ' day' : ' days') : '-', since],
       ['Linked', u.linked ? dshort(linkedK) : '-', u.linked ? (ago === 0 ? 'today' : ago === 1 ? 'yesterday' : ago + ' days ago') + (u.headsets > 1 ? ' · ' + u.headsets + ' headsets' : '') : ''],
       ['Mod', modTxt, modNote],
@@ -5054,7 +5061,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       '<div class="ulane"><small>Headset syncs</small><div class="ubars">' + bars + '</div><div class="uax"><span>30 days ago</span><span>today</span></div>' + (!first ? '<div class="unote">Sync history starts filling in from now on.</div>' : '') + '</div>' + hsr + '</div>';
   }
   function renderUsers(s) {
-    var us = s.users || [], newestMod = us.reduce(function (m, u) { return u.mod && u.mod !== 'older' && u.mod > m ? u.mod : m; }, ''), h = '<div class="prow head"><span>Player</span><span class="c-first">Linked</span><span class="c-last">Last sync</span><span class="n">Headsets</span></div>';
+    var us = s.users || [], newestMod = us.reduce(function (m, u) { return u.mod && u.mod !== 'older' && (!m || verCmp(u.mod, m) > 0) ? u.mod : m; }, ''), h = '<div class="prow head"><span>Player</span><span class="c-first">Linked</span><span class="c-last">Last sync</span><span class="n">Headsets</span></div>';
     if (!us.length) h += '<div class="prow"><span class="empty">No Studio Sync users yet.</span></div>';
     us.forEach(function (u, ui) {
       var uk = u.id || u.key || u.name;
@@ -5062,7 +5069,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       var av = u.anon ? '<span class="pav anon" aria-hidden="true">' + anonAv(u.num) + '</span>' : '<span class="pav" aria-hidden="true">' + esc((u.name || '?').charAt(0).toUpperCase()) + (u.avatar && u.avatar.indexOf('https://') === 0 ? '<img src="' + esc(u.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
       var linked = u.linked ? new Date(u.linked * 1000).toISOString().slice(0, 10) : '';
       h += '<div class="prow' + (uOpen[uk] ? ' sel' : '') + '"><span class="pwho">' + (u.anon ? av + '<span class="pname"><span class="panon" title="Hasn’t opened Studio with a BeatLeader profile connected yet. Their name shows here once they do.">Player' + (u.num ? ' ' + u.num : '') + '</span><span class="pb">no profile yet</span>' : '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">' + av + '</a><span class="pname"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(u.name) + ' on BeatLeader">' + esc(u.name) + '</a>') +
-        (u.mod ? '<span class="pb ' + (u.mod === '0.9' ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + (u.was ? '<span class="palso" title="Their number before they connected a profile">previously Player ' + u.was + '</span>' : '') + (u.others && u.others.length ? '<span class="palso" title="Other BeatLeader profiles connected in Studio with this library">also seen: ' + esc(u.others.join(', ')) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[uk] ? ' on' : '') + '" data-uk="' + esc(uk) + '" aria-expanded="' + !!uOpen[uk] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[uk] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
+        (u.mod ? '<span class="pb ' + (u.mod !== 'older' && verCmp(u.mod, newestMod) >= 0 ? 'new' : 'clan') + '">' + (u.mod === 'older' ? 'old mod' : esc(u.mod)) + '</span>' : '') + (u.was ? '<span class="palso" title="Their number before they connected a profile">previously Player ' + u.was + '</span>' : '') + (u.others && u.others.length ? '<span class="palso" title="Other BeatLeader profiles connected in Studio with this library">also seen: ' + esc(u.others.join(', ')) + '</span>' : '') + '</span></span><span class="c-first">' + (linked ? dshort(linked) : '-') + '</span><span class="c-last"' + (u.last ? ' title="' + esc(atTime(u.last)) + '"' : '') + '>' + (u.last && Date.now() / 1000 - u.last < 3600 ? '<span class="ldot"></span>' : '') + sago(u.last) + '</span><span class="n"><button class="ncnt' + (uOpen[uk] ? ' on' : '') + '" data-uk="' + esc(uk) + '" aria-expanded="' + !!uOpen[uk] + '" title="See each headset and when they connected">' + fmt(u.headsets) + '<span class="cv" aria-hidden="true">' + (uOpen[uk] ? '&#9662;' : '&#9656;') + '</span></button></span></div>';
       if (uOpen[uk]) h += userHistory(u, newestMod);
     });
     $('u-list').innerHTML = h;
