@@ -3482,7 +3482,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-11T12:57Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-11T21:10Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4680,12 +4680,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (!home) {
         if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'lookup/' + name, title: 'Looked up: ' + name + (p.id ? ' (' + p.id + ')' : ''), event: true });
         // ...and the Worker files it under this browser's home profile, so the stats page shows who looked it up.
-        if (window.goatcounter && window.goatcounter.count && /^\d{3,25}$/.test(String(p.id || '')) && /^\d{3,25}$/.test(hp.id)) fetch(PUB_BASE + '/seen', { method: 'POST', mode: 'cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: String(p.id), name: name, by: hp.id, byName: hp.name }) }).catch(function () {});
+        if (/^\d{3,25}$/.test(String(p.id || '')) && /^\d{3,25}$/.test(hp.id)) fetch(PUB_BASE + '/seen', { method: 'POST', mode: 'cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: String(p.id), name: name, by: hp.id, byName: hp.name }) }).catch(function () {});
         return;
       }
       if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'profile/' + name, title: 'Profile lookup: ' + name + (p.id ? ' (' + p.id + ')' : ''), event: true });
-      // The same public profile also goes to the Worker with the time, so the stats page can show when each player connected.
-      if (window.goatcounter && window.goatcounter.count && /^\d{3,25}$/.test(String(p.id || ''))) fetch(PUB_BASE + '/seen', { method: 'POST', mode: 'cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: String(p.id), name: name }) }).catch(function () {});
+      // The same public profile also goes to the Worker with the time, so the stats page can show when each player connected,
+      // even when a blocker stopped GoatCounter (gc: 0 tells the Worker to list them anyway).
+      if (/^\d{3,25}$/.test(String(p.id || ''))) fetch(PUB_BASE + '/seen', { method: 'POST', mode: 'cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: String(p.id), name: name, gc: window.goatcounter && window.goatcounter.count ? 1 : 0 }) }).catch(function () {});
     } catch (e) {} }
   function setStatus(text, kind) { el.statusText.textContent = text; el.statusPill.className = 'status-pill' + (kind ? ' ' + kind : ''); }
   var toastTimer;

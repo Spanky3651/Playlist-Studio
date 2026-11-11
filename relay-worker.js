@@ -121,9 +121,11 @@ async function syncLink(request, env, url) {
 }
 
 // ---------------------------------------------------------------- when a profile was connected (/seen)
-// Studio posts the public BeatLeader id and name it just connected (the same profile it already counts in
-// GoatCounter), and the time is kept: the last 60 connects per player, so the owner's stats page can show when
-// each one connected, to the minute. Only from Studio's own page, and a connect within a minute of the last counts once.
+// Studio posts the public BeatLeader id and name it just connected, and the time is kept: the last 60 connects per
+// player, so the owner's stats page can show when each one connected, to the minute. Only from Studio's own page, and
+// a connect within a minute of the last counts once. Studio sends gc: 0 when GoatCounter didn't load in that browser
+// (a blocker), and those players also go on gc:pnogc, so the stats page can still list them.
+const NOGC_MAX = 500;
 const SEEN_MAX = 60, SEEN_TTL = 60 * 60 * 24 * 400;
 async function seenPost(request, env, ctx) {
   const cors = writeCors(request);
@@ -149,6 +151,15 @@ async function seenPost(request, env, ctx) {
   if (name) rec.n = name;
   const put = env.PLAYLISTS.put(k, JSON.stringify(rec), { expirationTtl: SEEN_TTL });
   if (ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
+  if (b && b.gc === 0) {
+    const ng = (async () => {
+      const idx = (await env.PLAYLISTS.get("gc:pnogc", "json")) || {}, e = idx[id] || { f: now };
+      e.t = now; if (name) e.n = name; idx[id] = e;
+      const ids = Object.keys(idx); if (ids.length > NOGC_MAX) ids.sort((a, c) => idx[a].t - idx[c].t).slice(0, ids.length - NOGC_MAX).forEach((x) => delete idx[x]);
+      await env.PLAYLISTS.put("gc:pnogc", JSON.stringify(idx), { expirationTtl: SEEN_TTL });
+    })();
+    if (ctx && ctx.waitUntil) ctx.waitUntil(ng); else await ng;
+  }
   return json({ ok: true }, 200, cors);
 }
 // Profiles a player looked up from their own Studio, as gc:plook:<their id> = { n, l: { <id>: { n, f, t, c, v } } }:
@@ -2342,8 +2353,30 @@ async function gcStats(env, range, fresh, site, tz) {
     return { name, id: m ? m[1] : "", count: h.count, last: gcLastDay(h.days), first: seen.p[h.path] || gcFirstDay(h.days), me: me.includes(name.toLowerCase()),
       days: (h.days || []).filter((d) => d[1] > 0) };
   });
+  // Players GoatCounter never saw (a blocker in their browser): the ones Studio reported straight to this Worker, and
+  // the profile each Studio Sync library last used in Studio. Matched by id, or by name for GoatCounter rows without one.
+  try {
+    const have = new Set(players.map((p) => p.id).filter(Boolean)), haveN = new Set(players.map((p) => p.name.toLowerCase()));
+    const add = (id, name, f, t, via) => {
+      if (!id || !name || have.has(id) || haveN.has(name.toLowerCase()) || !(t >= start)) return;
+      have.add(id); haveN.add(name.toLowerCase());
+      players.push({ name, id, count: 1, last: day(t), first: day(f || t), me: me.includes(name.toLowerCase()), days: [[day(t), 1]], via });
+    };
+    const ng = (await env.PLAYLISTS.get("gc:pnogc", "json")) || {};
+    Object.keys(ng).forEach((id) => add(id, ng[id].n || "", ng[id].f, ng[id].t, "worker"));
+    let cursor, libs = [];
+    do { const pg = await env.PLAYLISTS.list({ prefix: "lib:", cursor, limit: 1000 }); pg.keys.forEach((k) => libs.push(k.name)); cursor = pg.list_complete ? null : pg.cursor; } while (cursor && libs.length < 1000);
+    for (let i = 0; i < libs.length && i < 300; i += 25) await Promise.all(libs.slice(i, i + 25).map(async (k) => {
+      const lib = await env.PLAYLISTS.get(k, "json"); const own = lib && libPlayers(lib)[0];
+      if (own) add(String(own.id || ""), String(own.name || ""), own.first, own.last || own.first, "sync");
+    }));
+  } catch (e) {}
   const ptimes = await seenTimes(env, players.filter((p) => p.id).slice(0, 120).map((p) => p.id));
-  players.forEach((p) => { const t = ptimes[p.id]; if (t) { p.times = t; p.lastT = t[t.length - 1]; } });
+  players.forEach((p) => {
+    const t = ptimes[p.id]; if (!t) return;
+    p.times = t; p.lastT = t[t.length - 1];
+    if (p.via) { const by = {}; t.filter((x) => x >= start).forEach((x) => { by[day(x)] = (by[day(x)] || 0) + 1; }); const ks = Object.keys(by).sort(); if (ks.length) { p.days = ks.map((d) => [d, by[d]]); p.count = ks.reduce((a, d) => a + by[d], 0); p.last = ks[ks.length - 1]; } }
+  });
   // A profile someone looked up from their own Studio folds under them, unless it connected again later from a browser of its own.
   const looks = await lookLists(env, players.filter((p) => p.id).slice(0, 120).map((p) => p.id));
   const byId = new Map(players.filter((p) => p.id).map((p) => [p.id, p]));
