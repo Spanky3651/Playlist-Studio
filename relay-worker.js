@@ -189,6 +189,20 @@ async function lookLists(env, ids) {
   }));
   return out;
 }
+// The profile each Studio Sync library last used in Studio, for the Players list: [{ id, n, f, t }]. Reading every
+// library costs a read each, so the list is kept in KV and rebuilt at most every 30 minutes.
+async function syncPlayers(env) {
+  const c = await env.PLAYLISTS.get("gc:syncp", "json");
+  if (c && Array.isArray(c.p) && nowSec() - (c.at || 0) < 1800) return c.p;
+  let cursor; const keys = [], p = [];
+  do { const pg = await env.PLAYLISTS.list({ prefix: "lib:", cursor, limit: 1000 }); pg.keys.forEach((k) => keys.push(k.name)); cursor = pg.list_complete ? null : pg.cursor; } while (cursor && keys.length < 5000);
+  for (let i = 0; i < keys.length; i += 25) await Promise.all(keys.slice(i, i + 25).map(async (k) => {
+    const lib = await env.PLAYLISTS.get(k, "json"), own = lib && libPlayers(lib)[0];
+    if (own && own.id && own.name) p.push({ id: String(own.id), n: String(own.name), f: own.first || 0, t: own.last || own.first || 0 });
+  }));
+  await env.PLAYLISTS.put("gc:syncp", JSON.stringify({ at: nowSec(), p }), { expirationTtl: 3600 });
+  return p;
+}
 async function seenTimes(env, ids) {
   const out = {};
   for (let i = 0; i < ids.length; i += 25) await Promise.all(ids.slice(i, i + 25).map(async (id) => {
@@ -392,10 +406,21 @@ function gmKey(lib, dev) { return "gm:" + lib + ":" + dev; }
 function gmrKey(lib, dev) { return "gmr:" + lib + ":" + dev; }
 // Per-playlist auto-download switches changed in Studio and waiting for the headset: { t, set: { key: on } }.
 function adlKey(lib, dev) { return "adl:" + lib + ":" + dev; }
-// When Studio last queued anything for a headset (ms). The mod checks it every minute in the menu (/link/ping,
-// one read) and only runs a full sync when it moved, so changes show up without going back to the main menu.
+// When Studio last queued anything for a headset (ms). The mod checks it every minute in the menu (/link/ping) and
+// only runs a full sync when it moved, so changes show up without going back to the main menu. It lives on the
+// headset's own record (dev:<token hash>, which the check reads anyway), so the check is one read. p on that record
+// notes which kinds of waiting change were queued (PEND_KINDS), so a sync reads only those; a sync once an hour reads
+// them all and clears the ones that are done. Records from before this keep chg:<lib>:<dev> and a full read.
 function chgKey(lib, dev) { return "chg:" + lib + ":" + dev; }
-function touch(env, lib, dev) { return putTtl(env, chgKey(lib, dev), String(Date.now())); }
+const PEND_KINDS = ["ord", "cln", "adl", "gm", "favp"];
+async function touch(env, lib, dev, kind, libObj) {
+  const L = libObj || await env.PLAYLISTS.get("lib:" + lib, "json"), d = L && (L.devices || []).find((x) => x.id === dev), now = Date.now();
+  const rec = d && d.th ? await env.PLAYLISTS.get("dev:" + d.th, "json") : null;
+  if (!rec) return putTtl(env, chgKey(lib, dev), String(now));
+  rec.chg = Math.max(now, (rec.chg || 0) + 1);
+  if (kind) { rec.p = rec.p && typeof rec.p === "object" ? rec.p : {}; rec.p[kind] = now; }
+  await env.PLAYLISTS.put("dev:" + d.th, JSON.stringify(rec), { expirationTtl: LIB_TTL });
+}
 const FEATURES = ["restore", "delete", "delete-songs", "storage", "cleanup", "order", "missing", "autodl", "favorites"];
 // In-game favorites a headset shares (Studio Sync 0.9.2 and later): { shared, hs: song hashes, miss: the ones not
 // downloaded, sig, n, at }. Only written when something changed.
@@ -549,10 +574,10 @@ async function linked(request, env, ctx, url) {
     }
 
     const dev = await env.PLAYLISTS.get("dev:" + th, "json");
-    // The mod's once-a-minute check while in the menu: two reads, no writes.
+    // The mod's once-a-minute check while in the menu: one read (two for a record from before chg moved onto it), no writes.
     if (path === "/link/ping" && request.method === "GET") {
       if (!dev) return json({ error: "unlinked" }, 401, cors);
-      const chg = +(await env.PLAYLISTS.get(chgKey(dev.lib, dev.id))) || 0;
+      const chg = dev.chg != null ? dev.chg : +(await env.PLAYLISTS.get(chgKey(dev.lib, dev.id))) || 0;
       return json({ chg }, 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
     const lib = dev ? await env.PLAYLISTS.get("lib:" + dev.lib, "json") : null;
@@ -570,12 +595,15 @@ async function linked(request, env, ctx, url) {
         if (r && r.body) playlists.push({ id: it.id, title: it.title, updated: r.updated || 0, url: url.origin + "/p/" + it.id + ".bplist" });
       });
       // Remember when this headset last checked in (at most one write an hour) and keep the library alive.
-      if (nowSec() - (me.seen || 0) > 3600) {
+      // That hourly sync also reads every kind of waiting change; the others read only the kinds Studio queued.
+      const hourly = nowSec() - (me.seen || 0) > 3600, t0 = Date.now(), full = hourly || !(dev.p && typeof dev.p === "object");
+      const has = (k) => full || !!dev.p[k];
+      if (hourly) {
         me.seen = nowSec();
         // Sync history for Studio Stats: per UTC day, how many hours this headset synced in. Last 35 days only.
         const sdk = new Date(me.seen * 1000).toISOString().slice(0, 10), sd = me.sd && typeof me.sd === "object" ? me.sd : {};
         sd[sdk] = (sd[sdk] || 0) + 1; Object.keys(sd).sort().slice(0, Math.max(0, Object.keys(sd).length - 35)).forEach((k) => { delete sd[k]; }); me.sd = sd;
-        const w = Promise.all([putLib(env, dev.lib, lib), env.PLAYLISTS.put("dev:" + th, JSON.stringify(dev), { expirationTtl: LIB_TTL })]);
+        const w = putLib(env, dev.lib, lib);
         if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;
       }
       const sk = seenKey(dev.lib, me.id), lastSeen = +(await env.PLAYLISTS.get(sk)) || 0;
@@ -589,35 +617,48 @@ async function linked(request, env, ctx, url) {
       const extra = {};
       const inv = (await env.PLAYLISTS.get(invKey(dev.lib, me.id), "json")) || { items: [] }, feats = inv.features || [];
       // "My order" from Studio, as file names, until the headset says it put it in game.
-      if (feats.includes("order")) {
+      if (feats.includes("order") && has("ord")) {
         const ord = (await env.PLAYLISTS.get(ordKey(dev.lib, me.id), "json")) || {};
         if (Array.isArray(ord.ks) && ord.t > (inv.ordApplied || 0) && !(ord.same && ord.same === inv.ordApplied)) {
           const byK = new Map(inv.items.map((it) => [it.k, it.file]));
           extra.order = { t: ord.t, files: ord.ks.map((k) => byK.get(k)).filter(Boolean) };
         }
       }
-      if (feats.includes("cleanup")) {
+      if (feats.includes("cleanup") && has("cln")) {
         const cln = await env.PLAYLISTS.get(clnKey(dev.lib, me.id), "json");
         if (cln && cln.id) extra.cleanup = { id: cln.id };
       }
       const fileOf = new Map(inv.items.map((it) => [it.k, it.file]));
       // Auto-download switches set in Studio, as file names, until the headset says it took them.
-      if (feats.includes("autodl")) {
+      if (feats.includes("autodl") && has("adl")) {
         const adl = await env.PLAYLISTS.get(adlKey(dev.lib, me.id), "json");
         if (adl && adl.t > (inv.adlApplied || 0) && adl.set && !("same" in adl && adl.same === (inv.adlApplied || 0)))
           extra.autodl = { t: adl.t, set: Object.keys(adl.set).filter((k) => fileOf.has(k)).map((k) => ({ file: fileOf.get(k), on: !!adl.set[k] })) };
       }
-      if (feats.includes("missing")) {
+      if (feats.includes("missing") && has("gm")) {
         const gm = await env.PLAYLISTS.get(gmKey(dev.lib, me.id), "json");
         if (gm && gm.id) extra.getMissing = Object.assign(gm.all ? { id: gm.id, all: true } : { id: gm.id, files: (gm.ks || []).map((k) => fileOf.get(k)).filter(Boolean) }, gm.favs ? { favorites: true } : {});
       }
       // Favorite and unfavorite changes from Studio, until the headset says it took them.
-      if (feats.includes("favorites")) {
+      if (feats.includes("favorites") && has("favp")) {
         const favp = await env.PLAYLISTS.get(favpKey(dev.lib, me.id), "json");
         if (favp && favp.set && favp.t > (inv.favApplied || 0)) extra.favorites = { t: favp.t, set: Object.keys(favp.set).map((h) => [h, !!favp.set[h]]) };
       }
       // Where the change counter stood at this sync; the mod's minute check compares against it.
-      extra.chg = +(await env.PLAYLISTS.get(chgKey(dev.lib, me.id))) || 0;
+      extra.chg = dev.chg != null ? dev.chg : +(await env.PLAYLISTS.get(chgKey(dev.lib, me.id))) || 0;
+      // Once an hour: refresh the headset's record (keeps it alive) with the kinds still waiting. A kind Studio
+      // queued while this sync ran stays, and so does a newer change marker.
+      if (hourly) {
+        const pend = { ord: !!extra.order, cln: !!extra.cleanup, adl: !!extra.autodl, gm: !!extra.getMissing, favp: !!extra.favorites };
+        const dw = (async () => {
+          const cur = (await env.PLAYLISTS.get("dev:" + th, "json")) || dev, old = cur.p && typeof cur.p === "object" ? cur.p : {}, p = {};
+          for (const k of PEND_KINDS) if (pend[k]) p[k] = Math.max(old[k] || 0, t0); else if ((old[k] || 0) > t0) p[k] = old[k];
+          cur.p = p;
+          cur.chg = Math.max(cur.chg || 0, dev.chg || 0, extra.chg || 0);   // also moves an older record's marker onto it
+          await env.PLAYLISTS.put("dev:" + th, JSON.stringify(cur), { expirationTtl: LIB_TTL });
+        })();
+        if (ctx && ctx.waitUntil) ctx.waitUntil(dw); else await dw;
+      }
       return json(Object.assign({ library: dev.lib, device: me.name, playlists, writes }, extra), 200, Object.assign({ "Cache-Control": "no-store" }, cors));
     }
 
@@ -784,7 +825,7 @@ async function linked(request, env, ctx, url) {
     const aks = Array.isArray(prevOrd.ks) && prevOrd.t && prevOrd.t <= applied ? prevOrd.ks : (Array.isArray(prevOrd.aks) ? prevOrd.aks : null);
     const same = !!(aks && applied && aks.length === ks.length && aks.every((k, i) => k === ks[i]));
     await putTtl(env, ordKey(om[1], om[2]), Object.assign({ ks, t }, aks ? { aks } : {}, same ? { same: applied } : {}));
-    await touch(env, om[1], om[2]);
+    await touch(env, om[1], om[2], "ord", olib);
     return json(Object.assign({ order: ks, t }, same ? { same: true } : {}), 200, cors);
   }
   // POST /lib/<id>/devices/<dev>/cleanup asks the headset to clean up songs no playlist uses; DELETE takes it back.
@@ -797,7 +838,7 @@ async function linked(request, env, ctx, url) {
     if (!(clib.devices || []).some((x) => x.id === cl[2])) return json({ error: "Not found" }, 404, cors);
     if (request.method === "DELETE") {
       await env.PLAYLISTS.delete(clnKey(cl[1], cl[2]));
-      await touch(env, cl[1], cl[2]);
+      await touch(env, cl[1], cl[2], "cln", clib);
       return json({ cleanup: null }, 200, cors);
     }
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, cors);
@@ -806,7 +847,7 @@ async function linked(request, env, ctx, url) {
     if (!(cinv.features || []).includes("cleanup")) return json({ error: "Update Studio Sync on the headset to clean up songs from here" }, 409, cors);
     const old = await env.PLAYLISTS.get(clnKey(cl[1], cl[2]), "json");
     const cln = old && old.id ? old : { id: randomId(10), at: nowSec() };
-    if (cln !== old) { await putTtl(env, clnKey(cl[1], cl[2]), cln); await touch(env, cl[1], cl[2]); }
+    if (cln !== old) { await putTtl(env, clnKey(cl[1], cl[2]), cln); await touch(env, cl[1], cl[2], "cln", clib); }
     return json({ cleanup: cln }, 200, cors);
   }
   // POST /lib/<id>/devices/<dev>/getmissing { ks: [playlist keys] } or { all: true } asks the headset to download the
@@ -820,7 +861,7 @@ async function linked(request, env, ctx, url) {
     if (!(glib.devices || []).some((x) => x.id === gmm[2])) return json({ error: "Not found" }, 404, cors);
     if (request.method === "DELETE") {
       await env.PLAYLISTS.delete(gmKey(gmm[1], gmm[2]));
-      await touch(env, gmm[1], gmm[2]);
+      await touch(env, gmm[1], gmm[2], "gm", glib);
       return json({ getMissing: null }, 200, cors);
     }
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, cors);
@@ -839,7 +880,7 @@ async function linked(request, env, ctx, url) {
     const all = !!body.all || !!(old && old.all);
     const gm = { id: old && old.id ? old.id : randomId(10), at: old && old.at ? old.at : nowSec(), ...(all ? { all: true } : { ks: [...new Set(((old && old.ks) || []).concat(ks))].slice(0, MAX_INVENTORY) }), ...(favs || (old && old.favs) ? { favs: true } : {}) };
     await putTtl(env, gmKey(gmm[1], gmm[2]), gm);
-    await touch(env, gmm[1], gmm[2]);
+    await touch(env, gmm[1], gmm[2], "gm", glib);
     return json({ getMissing: gm }, 200, cors);
   }
   // PUT /lib/<id>/devices/<dev>/autodl { set: { key: true|false } } turns auto-download on or off for playlists.
@@ -868,7 +909,7 @@ async function linked(request, env, ctx, url) {
     const autoOf = new Map((ainv.items || []).filter((x) => typeof x.auto === "boolean").map((x) => [x.k, x.auto]));
     if (Object.keys(adl.set).every((k) => autoOf.get(k) === adl.set[k])) adl.same = ainv.adlApplied || 0;
     await putTtl(env, adlKey(adm[1], adm[2]), adl);
-    await touch(env, adm[1], adm[2]);
+    await touch(env, adm[1], adm[2], "adl", alib);
     return json({ autodl: adlView(adl, ainv) }, 200, cors);
   }
   // PUT /lib/<id>/devices/<dev>/favorites { set: { hash: true|false } } favorites or unfavorites songs on the headset;
@@ -900,7 +941,7 @@ async function linked(request, env, ctx, url) {
       if (!Object.keys(set).length) return json({ error: "Expected { set: { hash: true|false } }" }, 400, cors);
     }
     const favp = await queueFavorites(env, fvm[1], fvm[2], finv, set);
-    await touch(env, fvm[1], fvm[2]);
+    await touch(env, fvm[1], fvm[2], "favp", flib);
     return json({ favPending: favp, favApplied: finv.favApplied || 0 }, 200, cors);
   }
   const m = path.match(/^\/lib\/([A-Za-z0-9]{6,16})(\/items|\/claim|\/rekey|\/devices\/([A-Za-z0-9]{6,16})(\/playlists(?:\/(new|delete|[0-9a-f]{16})(\/send|\/restore|\/delete|\/cancel)?)?)?)?$/);
@@ -970,7 +1011,7 @@ async function linked(request, env, ctx, url) {
         if (songs) { w.maps = songs.length; w.uniq = new Set(songs.map((x) => String((x && x.hash) || "").toLowerCase()).filter(Boolean)).size; }
       }
       out.items.push(w);
-      if (!opts.later) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id); }
+      if (!opts.later) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id, "", lib); }
       return w;
     };
     const noSongs = () => !(inv.features || []).includes("delete-songs");
@@ -1035,7 +1076,7 @@ async function linked(request, env, ctx, url) {
         await queue(hit.k, hit.file, hit.title, false, null, { remove: true, songs: !!body.songs, later: true });
         done.push(kk);
       }
-      if (done.length) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id); }
+      if (done.length) { await putTtl(env, outKey(id, dv.id), out); await touch(env, id, dv.id, "", lib); }
       return json({ deleted: done, missing, pending: pendingList() }, 200, cors);
     }
     let k = m[5] && m[5] !== "new" ? m[5] : "";
@@ -1052,7 +1093,7 @@ async function linked(request, env, ctx, url) {
       for (const w of prev) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + w.id);
       out.items = out.items.filter((x) => x.k !== k);
       await putTtl(env, outKey(id, dv.id), out);
-      await touch(env, id, dv.id);
+      await touch(env, id, dv.id, "", lib);
       return json({ pending: pendingList() }, 200, cors);
     }
     if (m[6] === "/restore" && request.method === "POST" && del) {
@@ -1108,7 +1149,7 @@ async function linked(request, env, ctx, url) {
             for (const x of prevW) await env.PLAYLISTS.delete("outb:" + id + ":" + dv.id + ":" + x.id);
             out.items = out.items.filter((x) => x.file !== target.file);
             await putTtl(env, outKey(id, dv.id), out);
-            await touch(env, id, dv.id);
+            await touch(env, id, dv.id, "", lib);
           }
           return json({ k: target.k, file: target.file, v: it.v || await plVersion(cur), same: true, pending: pendingList() }, 200, cors);
         }
@@ -1137,7 +1178,7 @@ async function linked(request, env, ctx, url) {
     }
     lib.items = items;
     await putLib(env, id, lib);
-    await Promise.all((lib.devices || []).map((d) => touch(env, id, d.id)));
+    await Promise.all((lib.devices || []).map((d) => touch(env, id, d.id, "", lib)));
     return json({ items, devices: publicDevices(lib) }, 200, cors);
   }
 
@@ -1320,7 +1361,12 @@ async function admin(request, env, url) {
   if (pushPath) return adminPushRoute(request, env, url, nocache);
   if (url.pathname === "/admin/lockouts") return json((await env.PLAYLISTS.get(ADMIN_LOCKS, "json")) || { n: 0 }, 200, nocache);
   if (url.pathname === "/admin/lockouts/clear") { await env.PLAYLISTS.delete(ADMIN_LOCKS); return json({ ok: true }, 200, nocache); }
-  return json(await adminStats(env), 200, nocache);
+  // The Sync tab reads a few keys per Studio Sync user, so it's kept 10 minutes; fresh=1 (the refresh button) rebuilds it.
+  const sc = url.searchParams.get("fresh") === "1" ? null : await env.PLAYLISTS.get("admin:stats:cache", "json");
+  if (sc && nowSec() - (sc.generated || 0) < 600) return json(sc, 200, nocache);
+  const stats = await adminStats(env);
+  await env.PLAYLISTS.put("admin:stats:cache", JSON.stringify(stats), { expirationTtl: 3600 });
+  return json(stats, 200, nocache);
 }
 
 // ---------------------------------------------------------------- War alerts (web push)
@@ -1629,8 +1675,10 @@ async function adminCron(env) {
     } catch (e) {}
   }
   // Studio Sync: one scan for stuck changes, the headset milestone and the weekly numbers.
+  // It reads a few keys per library, so it runs every 3 hours, and when the weekly summary goes out.
   let scan = null;
-  if (want("stuck") || want("milestone") || want("weekly")) { try { scan = await apSyncScan(env); } catch (e) {} }
+  const getScan = async () => { if (!scan) { try { scan = await apSyncScan(env); } catch (e) {} } return scan; };
+  if ((want("stuck") || want("milestone")) && hour % 3 === 0) await getScan();
   if (scan && want("stuck")) {
     const prev = st.stuck || {}, next = {};
     for (const x of scan.stuck) {
@@ -1709,6 +1757,7 @@ async function adminCron(env) {
     let wd = "", hr = 0, wday = ""; try { const f = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now); f.forEach((x) => { if (x.type === "weekday") wd = x.value; if (x.type === "hour") hr = +x.value % 24; }); wday = f.filter((x) => /year|month|day/.test(x.type) && x.type !== "weekday").map((x) => x.value).join("-"); } catch (e) {}
     if (wd === "Mon" && hr >= 7 && st.wk !== wday) {
       st.wk = wday;
+      await getScan();
       const w0 = today0 - 7 * DAY, parts = [];
       let visits = 0;
       if (env.GC_TOKEN) {
@@ -2364,12 +2413,7 @@ async function gcStats(env, range, fresh, site, tz) {
     };
     const ng = (await env.PLAYLISTS.get("gc:pnogc", "json")) || {};
     Object.keys(ng).forEach((id) => add(id, ng[id].n || "", ng[id].f, ng[id].t, "worker"));
-    let cursor, libs = [];
-    do { const pg = await env.PLAYLISTS.list({ prefix: "lib:", cursor, limit: 1000 }); pg.keys.forEach((k) => libs.push(k.name)); cursor = pg.list_complete ? null : pg.cursor; } while (cursor && libs.length < 1000);
-    for (let i = 0; i < libs.length && i < 300; i += 25) await Promise.all(libs.slice(i, i + 25).map(async (k) => {
-      const lib = await env.PLAYLISTS.get(k, "json"); const own = lib && libPlayers(lib)[0];
-      if (own) add(String(own.id || ""), String(own.name || ""), own.first, own.last || own.first, "sync");
-    }));
+    (await syncPlayers(env)).forEach((x) => add(x.id, x.n, x.f, x.t, "sync"));
   } catch (e) {}
   const ptimes = await seenTimes(env, players.filter((p) => p.id).slice(0, 120).map((p) => p.id));
   players.forEach((p) => {
@@ -5121,7 +5165,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     var key = keyIn.value.trim() || getKey();
     if (!key) { say('Enter your admin key.', true); return; }
     if (auto !== true) say('Loading...');
-    return fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
+    return fetch('/admin/stats' + (auto === false ? '?fresh=1' : ''), { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
     }).then(function (res) {
       if (!res.ok) { if (res.status === 401) { setKey(''); signedIn(false); } say(res.j.error || 'Couldn’t load stats.', true); return; }

@@ -3482,7 +3482,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-11T21:10Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-11T21:28Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -9614,13 +9614,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     track('lq-conflict-mine');
   }
-  // While something is on its way, or a playlist is open, look again every 45 seconds (tab in view only).
-  var lqPollAt = 0;
+  // While something is on its way, or a playlist is open, look again (tab in view only): every 45 seconds while
+  // you're using the page, every 2 minutes after 3 quiet minutes, every 5 after 15, and not at all after an hour
+  // without a tap or key. Coming back to the tab, or any tap or key, starts it over.
+  var lqPollAt = 0, lqUsedAt = Date.now();
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, function () { lqUsedAt = Date.now(); }, true); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) lqUsedAt = Date.now(); });
   setInterval(function () {
     if (document.hidden || !libGet() || !lqActive() || !state.lq.devices.length || state.lq.busy || state.pubBusy) return;
     var waiting = state.lq.devices.some(function (d) { return lqWaitN(d.id) > 0; });
     if (!waiting && !state.lq.editing) return;
-    if (Date.now() - lqPollAt < 45000) return;
+    var quiet = Date.now() - lqUsedAt, gap = quiet < 180000 ? 45000 : quiet < 900000 ? 120000 : quiet < 3600000 ? 300000 : 0;
+    if (!gap || Date.now() - lqPollAt < gap) return;
     lqRefresh();
   }, 5000);
 
