@@ -1601,11 +1601,32 @@ body.sd-lock{overflow:hidden}
 .sv-kv b{display:block;font:700 17px var(--sans);color:#fff;margin-top:2px}
 .sv-split{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:0 16px;background:var(--panel-3)}
 .sv-foot{font:12px var(--mono);color:var(--muted);text-align:center;padding:4px 0 8px}
+.sv-ab{padding:14px 16px 16px}
+.sv-at{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.sv-tile{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;white-space:normal;text-align:left;border:1px solid var(--border-2);border-radius:12px;padding:10px 12px;background:var(--panel-2);cursor:pointer;min-width:0;font:inherit;color:inherit}
+.sv-tile:hover{border-color:var(--bc)}
+.sv-tile .sv-tl{font:600 11.5px var(--mono);letter-spacing:1px;text-transform:uppercase;color:var(--bc);white-space:nowrap}
+.sv-tile .sv-tv{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 8px;margin:4px 0 2px}
+.sv-tile .sv-tv b{font:700 20px var(--sans);color:#fff}
+.sv-tile .sv-tv span{font:700 12.5px var(--mono)}
+.sv-tile .sv-tn{font:12px var(--mono);color:var(--muted);margin-top:6px}
+.sv-tile svg{display:block;width:100%;height:42px;margin-top:auto;padding-top:4px}
+.sv-achips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sv-achips button{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--border-2);background:transparent;color:#9aa6b8;font:600 13px var(--sans);cursor:pointer}
+.sv-achips button i{width:8px;height:8px;border-radius:50%;background:var(--bc)}
+.sv-achips button.on{border-color:var(--bc);color:#fff;background:rgba(255,255,255,.06)}
+.sv-asum{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;margin:2px 0 10px}
+.sv-asum b{font:700 24px var(--sans);color:#fff}
+.sv-asum span{font:700 14px var(--mono);white-space:nowrap}
+.sv-asum em{font:normal 13px var(--sans);color:var(--muted)}
+.sv-achart svg{display:block;width:100%;height:auto}
+.sv-anote{font:12.5px var(--sans);color:var(--muted);margin-top:8px;line-height:1.5}
+.sv-aempty{padding:28px 0;text-align:center;font:13px var(--mono);color:var(--muted)}
 .sk{position:relative;overflow:hidden;background:#121824;border-radius:6px}
 .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:sv-shim 1.2s infinite}
 @keyframes sv-shim{to{transform:translateX(100%)}}
 .sv-err{border:1px solid #4a1b26;border-radius:var(--r);background:#14080b;padding:18px 20px;color:#ffb3bf}
-@media(max-width:760px){.sd-head{gap:4px;padding:10px 12px}.sd-head h2{font-size:12px;letter-spacing:1.5px}.sd-link{font-size:12px;padding:6px}.sd-body{padding:12px}.sv-ranks{grid-template-columns:1fr}.sv-rk{border-right:0;border-bottom:1px solid var(--border)}.sv-two{grid-template-columns:1fr}.sv-row{grid-template-columns:44px minmax(0,1fr);gap:12px}.sv-row .sv-acc{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sv-row .sv-acc b{display:inline}.sv-row .ghost{grid-column:1/-1}}
+@media(max-width:760px){.sd-head{gap:4px;padding:10px 12px}.sd-head h2{font-size:12px;letter-spacing:1.5px}.sd-link{font-size:12px;padding:6px}.sd-body{padding:12px}.sv-ranks{grid-template-columns:1fr}.sv-ab{padding:12px}.sv-at{grid-template-columns:1fr 1fr}.sv-at .sv-tile:first-child{grid-column:1/-1}.sv-rk{border-right:0;border-bottom:1px solid var(--border)}.sv-two{grid-template-columns:1fr}.sv-row{grid-template-columns:44px minmax(0,1fr);gap:12px}.sv-row .sv-acc{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sv-row .sv-acc b{display:inline}.sv-row .ghost{grid-column:1/-1}}
 @media(max-width:760px){.sv-row{grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:center}.sv-cv{width:44px;height:44px}.sv-row .sv-acc{grid-column:auto;text-align:right;display:block}.sv-row .sv-acc b{display:block}.sv-row .sv-btns{grid-column:1/-1;display:none;margin-top:8px}.sv-row .sv-btns .ghost{grid-column:auto;flex:1;justify-content:center}.sv-sc{cursor:pointer}.sv-sc.open{background:#0c1422}.sv-sc.open .sv-btns{display:flex}}
 body.sd-lock .toast.show{z-index:950}
 
@@ -3482,7 +3503,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-11T21:28Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-12T23:45Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4814,7 +4835,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var AS_CAT = { 'b0000000-0000-0000-0000-000000000001': 'true', 'b0000000-0000-0000-0000-000000000002': 'standard', 'b0000000-0000-0000-0000-000000000003': 'tech' };
   var SV_DIFF = { Easy: ['Easy', '#3ddc84'], Normal: ['Normal', '#59b0f4'], Hard: ['Hard', '#ff9d3a'], Expert: ['Expert', '#ff4d6a'], ExpertPlus: ['Expert+', '#c79bff'] };
   var SV_MODS = { SS: 'Slower Song', FS: 'Faster Song', SF: 'Super Fast', NF: 'No Fail', GN: 'Ghost Notes', DA: 'Disappearing Arrows', NA: 'No Arrows', NB: 'No Bombs', NO: 'No Walls', PM: 'Pro Mode', SC: 'Small Cubes' };
-  var sv = { id: null, data: null, token: 0, range: 'day', rankedOnly: false };
+  var sv = { id: null, data: null, token: 0, range: 'day', rankedOnly: false, accBand: null };
   function svEl(id) { return document.getElementById(id); }
   function svNull() { return null; }
   function anyRelay(apiUrl, isValid, ms) {
@@ -5040,6 +5061,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       asCard = '<div class="sv-rk" style="--ac:#3a1a20;--act:#ff7a8c"><div class="sv-lab"><span>ACCSABER</span><span>OVERALL</span></div><div class="sv-none"><b>Not on AccSaber</b>No ranked AccSaber scores for this player yet.<a href="https://accsaber.com" target="_blank" rel="noopener">accsaber.com &#8599;</a></div></div>';
     }
     h += '<section class="sv-ranks">' + blCard + ssCard + asCard + '</section>';
+    if (state.player && String(state.player.id) === String(p.id)) h += svAccHtml();
 
     // recent scores
     h += '<section class="panel sv-sec"><div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span><h2>Recent Scores</h2>' +
@@ -5063,6 +5085,74 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       '</section></div>';
     h += '<div class="sv-foot">Live from the BeatLeader, ScoreSaber and AccSaber public APIs</div>';
     svEl('sdBody').innerHTML = h;
+  }
+
+  // Accuracy over time per star range: the connected player's current bests (no modifiers, Standard, ranked), by the month each was set.
+  var SV_AB = [['all', 'All', 0, 99, '#e9edf5'], ['b1', 'Under 4\u2605', 0, 4, 'var(--green)'], ['b2', '4 to 6\u2605', 4, 6, 'var(--blue-text)'], ['b3', '6 to 8\u2605', 6, 8, 'var(--amber)'], ['b4', '8\u2605 and up', 8, 99, 'var(--danger)']];
+  var SV_MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function svAccData() {
+    var now = new Date(), months = [], idx = {}, agg = {};
+    for (var i = 11; i >= 0; i--) { var d = new Date(now.getFullYear(), now.getMonth() - i, 1); var m = d.getFullYear() + '-' + (d.getMonth() + 1); idx[m] = months.length; months.push({ y: d.getFullYear(), m: d.getMonth() }); }
+    SV_AB.forEach(function (b) { agg[b[0]] = months.map(function () { return { n: 0, s: 0 }; }); });
+    var sc = state.scores || {}, pi = state.playIndex || {}, total = 0;
+    Object.keys(sc).forEach(function (k) {
+      var x = sc[k], e = pi[k]; if (!x || !e || !x.t || x.md || !(x.a > 0) || e.modeName !== 'Standard' || !(e.stars > 0)) return;
+      var d = new Date(x.t * 1000), j = idx[d.getFullYear() + '-' + (d.getMonth() + 1)]; if (j == null) return;
+      total++;
+      SV_AB.forEach(function (b) { if (b[0] !== 'all' && !(e.stars >= b[2] && e.stars < b[3])) return; var c = agg[b[0]][j]; c.n++; c.s += x.a * 100; });
+    });
+    return { months: months, agg: agg, total: total };
+  }
+  function svAccAvg(cells) { var n = 0, s = 0; cells.forEach(function (c) { n += c.n; s += c.s; }); return n ? { v: s / n, n: n } : null; }
+  function svAccLine(A, k, W, H, mini) {
+    var pts = A.agg[k].map(function (c) { return c.n >= 2 ? { v: c.s / c.n, n: c.n } : null; });
+    var vals = pts.filter(Boolean).map(function (p) { return p.v; });
+    if (vals.length < 2) return '';
+    var col = SV_AB.filter(function (b) { return b[0] === k; })[0][4];
+    var lo = Math.floor(Math.min.apply(null, vals) - 0.5), hi = Math.ceil(Math.max.apply(null, vals) + 0.5);
+    var L = mini ? 3 : 40, R = mini ? 3 : 10, T = mini ? 4 : 10, B = mini ? 4 : 26, n = A.months.length;
+    var x = function (i) { return L + (W - L - R) * i / (n - 1); }, y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
+    var o = '<svg viewBox="0 0 ' + W + ' ' + H + '"' + (mini ? ' preserveAspectRatio="none"' : '') + ' aria-hidden="true">';
+    if (!mini) {
+      var step = hi - lo > 6 ? 2 : 1;
+      for (var g = lo; g <= hi; g += step) o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(g).toFixed(1) + '" y2="' + y(g).toFixed(1) + '" style="stroke:#1c2433"/><text x="' + (L - 8) + '" y="' + (y(g) + 4).toFixed(1) + '" text-anchor="end" style="fill:#8792a6;font:11px var(--mono)">' + g + '%</text>';
+      var every = W < 500 ? 3 : 2;
+      A.months.forEach(function (mo, i) { if ((n - 1 - i) % every === 0) o += '<text x="' + x(i).toFixed(1) + '" y="' + (H - 7) + '" text-anchor="middle" style="fill:#8792a6;font:11px var(--mono)">' + SV_MN[mo.m] + (mo.m === 0 ? ' ' + String(mo.y).slice(2) : '') + '</text>'; });
+    }
+    var d = '', on = false, fill = [];
+    pts.forEach(function (p, i) { if (!p) { on = false; return; } d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.v).toFixed(1); on = true; fill.push([x(i), y(p.v)]); });
+    if (!mini) o += '<path d="M' + fill[0][0].toFixed(1) + ' ' + (H - B) + fill.map(function (q) { return 'L' + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('') + 'L' + fill[fill.length - 1][0].toFixed(1) + ' ' + (H - B) + 'Z" style="fill:' + col + ';opacity:.12"/>';
+    o += '<path d="' + d + '" style="fill:none;stroke:' + col + ';stroke-width:' + (mini ? 2 : 2.5) + ';stroke-linejoin:round;stroke-linecap:round"' + (mini ? ' vector-effect="non-scaling-stroke"' : '') + '/>';
+    if (!mini) pts.forEach(function (p, i) { if (p) o += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.v).toFixed(1) + '" r="' + Math.max(3, Math.min(6, Math.sqrt(p.n) / 1.6)).toFixed(1) + '" style="fill:#0a0e16;stroke:' + col + ';stroke-width:2"><title>' + SV_MN[A.months[i].m] + ' ' + A.months[i].y + ': ' + p.v.toFixed(2) + '% across ' + p.n + ' score' + (p.n === 1 ? '' : 's') + '</title></circle>'; });
+    return o + '</svg>';
+  }
+  function svAccMove(A, k) {
+    var r = svAccAvg(A.agg[k].slice(-3)), pr = svAccAvg(A.agg[k].slice(-6, -3));
+    return { r: r, dd: r && pr ? r.v - pr.v : null };
+  }
+  function svAccDelta(dd) { return dd == null ? '' : '<span style="color:' + (dd >= 0 ? 'var(--green)' : '#ff7a8c') + '">' + (dd >= 0 ? '&#9650; ' : '&#9660; ') + Math.abs(dd).toFixed(2) + '</span>'; }
+  function svAccHtml() {
+    var A = svAccData();
+    var head = '<div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span><h2>Accuracy Over Time</h2>' +
+      (sv.accBand ? '<div class="sv-filters"><button type="button" id="svAccBack">All ranges</button></div>' : '') + '</div>';
+    var body;
+    if (A.total < 3) body = '<div class="sv-aempty">Sync your scores to see how your accuracy moves over time.</div>';
+    else if (!sv.accBand) {
+      body = '<div class="sv-at">' + SV_AB.map(function (b) {
+        var mv = svAccMove(A, b[0]), ok = mv.r && mv.r.n >= 2;
+        return '<button type="button" class="sv-tile" data-ab="' + b[0] + '" style="--bc:' + b[4] + '"><div class="sv-tl">' + b[1] + '</div>' +
+          (ok ? '<div class="sv-tv"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '</div>' + svAccLine(A, b[0], 160, 42, true) : '<div class="sv-tn">Not enough scores yet</div>') + '</button>';
+      }).join('') + '</div><div class="sv-anote">Last 3 months, and the change from the 3 before. Tap a range for its chart.</div>';
+    } else {
+      var k = sv.accBand, mv = svAccMove(A, k), bd = svEl('sdBody'), cs = bd ? getComputedStyle(bd) : null;
+      var W = bd ? Math.max(280, Math.round(bd.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - (innerWidth <= 760 ? 26 : 34))) : 760;
+      var line = svAccLine(A, k, W, W < 500 ? 200 : 230, false);
+      body = '<div class="sv-achips">' + SV_AB.map(function (b) { return '<button type="button" data-ab="' + b[0] + '" class="' + (b[0] === k ? 'on' : '') + '" style="--bc:' + b[4] + '"><i></i>' + b[1] + '</button>'; }).join('') + '</div>' +
+        (mv.r && mv.r.n >= 2 ? '<div class="sv-asum"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '<em>last 3 months vs the 3 before</em></div>' : '') +
+        (line ? '<div class="sv-achart">' + line + '</div>' : '<div class="sv-aempty">Not enough scores in this range yet to draw a line.</div>') +
+        '<div class="sv-anote">Your current best on each ranked map, by the month you set it. Standard, no modifiers. Bigger dots are months with more scores, and months with fewer than 2 are skipped.</div>';
+    }
+    return '<section class="panel sv-sec" id="svAcc">' + head + '<div class="sv-ab">' + body + '</div></section>';
   }
 
   function svScores(now) {
@@ -5162,6 +5252,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else prompt('Copy this link:', url);
     });
     svEl('sdBody').addEventListener('click', function (e) {
+      var ab = e.target.closest('#svAcc button[data-ab], #svAccBack');
+      if (ab) {
+        var nb = ab.id === 'svAccBack' ? null : ab.getAttribute('data-ab');
+        if (nb !== sv.accBand) { sv.accBand = nb; var sa = svEl('svAcc'); if (sa) sa.outerHTML = svAccHtml(); if (nb) track('stats-acc-' + nb); }
+        return;
+      }
       var ad = e.target.closest('button[data-add]');
       if (ad) {
         var row = (sv.rows || [])[+ad.getAttribute('data-add')];
