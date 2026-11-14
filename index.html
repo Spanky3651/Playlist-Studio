@@ -1622,11 +1622,16 @@ body.sd-lock{overflow:hidden}
 .sv-achart svg{display:block;width:100%;height:auto}
 .sv-anote{font:12.5px var(--sans);color:var(--muted);margin-top:8px;line-height:1.5}
 .sv-aempty{padding:28px 0;text-align:center;font:13px var(--mono);color:var(--muted)}
+.sv-at.sv-at3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sv-tile .sv-tp{margin-top:8px;font:12px var(--mono);color:#c3cad8}
+.sv-tile .sv-tp b{color:#fff;font-weight:600}
+.sv-tile .sv-tb{height:4px;border-radius:2px;background:var(--panel-3);margin-top:4px;overflow:hidden}
+.sv-tile .sv-tb i{display:block;height:100%;background:var(--bc)}
 .sk{position:relative;overflow:hidden;background:#121824;border-radius:6px}
 .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:sv-shim 1.2s infinite}
 @keyframes sv-shim{to{transform:translateX(100%)}}
 .sv-err{border:1px solid #4a1b26;border-radius:var(--r);background:#14080b;padding:18px 20px;color:#ffb3bf}
-@media(max-width:760px){.sd-head{gap:4px;padding:10px 12px}.sd-head h2{font-size:12px;letter-spacing:1.5px}.sd-link{font-size:12px;padding:6px}.sd-body{padding:12px}.sv-ranks{grid-template-columns:1fr}.sv-ab{padding:12px}.sv-at{grid-template-columns:1fr 1fr}.sv-at .sv-tile:first-child{grid-column:1/-1}.sv-rk{border-right:0;border-bottom:1px solid var(--border)}.sv-two{grid-template-columns:1fr}.sv-row{grid-template-columns:44px minmax(0,1fr);gap:12px}.sv-row .sv-acc{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sv-row .sv-acc b{display:inline}.sv-row .ghost{grid-column:1/-1}}
+@media(max-width:760px){.sd-head{gap:4px;padding:10px 12px}.sd-head h2{font-size:12px;letter-spacing:1.5px}.sd-link{font-size:12px;padding:6px}.sd-body{padding:12px}.sv-ranks{grid-template-columns:1fr}.sv-ab{padding:12px}.sv-at{grid-template-columns:1fr 1fr}.sv-at .sv-tile:first-child{grid-column:1/-1}.sv-asw{flex-basis:100%}.sv-at.sv-at3{grid-template-columns:repeat(3,minmax(0,1fr))}.sv-at.sv-at3 .sv-tile:first-child{grid-column:auto}.sv-at3 .sv-tile{padding:9px}.sv-at3 .sv-tile .sv-tl{font-size:10px;letter-spacing:.5px}.sv-at3 .sv-tile .sv-tv b{font-size:16px}.sv-rk{border-right:0;border-bottom:1px solid var(--border)}.sv-two{grid-template-columns:1fr}.sv-row{grid-template-columns:44px minmax(0,1fr);gap:12px}.sv-row .sv-acc{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sv-row .sv-acc b{display:inline}.sv-row .ghost{grid-column:1/-1}}
 @media(max-width:760px){.sv-row{grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:center}.sv-cv{width:44px;height:44px}.sv-row .sv-acc{grid-column:auto;text-align:right;display:block}.sv-row .sv-acc b{display:block}.sv-row .sv-btns{grid-column:1/-1;display:none;margin-top:8px}.sv-row .sv-btns .ghost{grid-column:auto;flex:1;justify-content:center}.sv-sc{cursor:pointer}.sv-sc.open{background:#0c1422}.sv-sc.open .sv-btns{display:flex}}
 body.sd-lock .toast.show{z-index:950}
 
@@ -3503,7 +3508,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-12T23:53Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T11:17Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4835,7 +4840,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var AS_CAT = { 'b0000000-0000-0000-0000-000000000001': 'true', 'b0000000-0000-0000-0000-000000000002': 'standard', 'b0000000-0000-0000-0000-000000000003': 'tech' };
   var SV_DIFF = { Easy: ['Easy', '#3ddc84'], Normal: ['Normal', '#59b0f4'], Hard: ['Hard', '#ff9d3a'], Expert: ['Expert', '#ff4d6a'], ExpertPlus: ['Expert+', '#c79bff'] };
   var SV_MODS = { SS: 'Slower Song', FS: 'Faster Song', SF: 'Super Fast', NF: 'No Fail', GN: 'Ghost Notes', DA: 'Disappearing Arrows', NA: 'No Arrows', NB: 'No Bombs', NO: 'No Walls', PM: 'Pro Mode', SC: 'Small Cubes' };
-  var sv = { id: null, data: null, token: 0, range: 'day', rankedOnly: false, accBand: null };
+  var sv = { id: null, data: null, token: 0, range: 'day', rankedOnly: false, accBand: null, accSrc: 'bl' };
   function svEl(id) { return document.getElementById(id); }
   function svNull() { return null; }
   function anyRelay(apiUrl, isValid, ms) {
@@ -5105,14 +5110,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       total++;
       SV_AB.forEach(function (b) { if (b[0] !== 'all' && !(e.stars >= b[2] && e.stars < b[3])) return; var c = agg[b[0]][j]; c.n++; c.s += x.a * 100; });
     });
-    return { months: months, agg: agg, total: total };
+    return { months: months, agg: agg, total: total, bands: SV_AB, min: 2 };
   }
   function svAccAvg(cells) { var n = 0, s = 0; cells.forEach(function (c) { n += c.n; s += c.s; }); return n ? { v: s / n, n: n } : null; }
   function svAccLine(A, k, W, H, mini) {
-    var pts = A.agg[k].map(function (c) { return c.n >= 2 ? { v: c.s / c.n, n: c.n } : null; });
+    var minN = A.min || 2, pts = A.agg[k].map(function (c) { return c.n >= minN ? { v: c.s / c.n, n: c.n } : null; });
     var vals = pts.filter(Boolean).map(function (p) { return p.v; });
     if (vals.length < 2) return '';
-    var col = SV_AB.filter(function (b) { return b[0] === k; })[0][4];
+    var col = A.bands.filter(function (b) { return b[0] === k; })[0][4];
     var lo = Math.floor(Math.min.apply(null, vals) - 0.5), hi = Math.ceil(Math.max.apply(null, vals) + 0.5);
     var L = mini ? 3 : 40, R = mini ? 3 : 10, T = mini ? 4 : 10, B = mini ? 4 : 26, n = A.months.length;
     var x = function (i) { return L + (W - L - R) * i / (n - 1); }, y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
@@ -5136,26 +5141,68 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return { r: r, dd: r && pr ? r.v - pr.v : null };
   }
   function svAccDelta(dd) { return dd == null ? '' : '<span style="color:' + (dd >= 0 ? 'var(--green)' : '#ff7a8c') + '">' + (dd >= 0 ? '&#9650; ' : '&#9660; ') + Math.abs(dd).toFixed(2) + '</span>'; }
+  // AccSaber side: the player's AccSaber scores (their current score on each AccSaber ranked map) by category and month.
+  var SV_AS = [['true', 'True Acc', 0, 0, '#b06bff'], ['standard', 'Standard Acc', 0, 0, 'var(--blue-text)'], ['tech', 'Tech Acc', 0, 0, 'var(--danger)']];
+  function svAsLoad(D) {
+    if (!D || D.asAll || D.asAllLoading) return;
+    var aid = D.as && D.as.id; if (!aid) { D.asAll = []; return; }
+    D.asAllLoading = true; D.asAllErr = false;
+    var list = [], page = 0;
+    function step() {
+      return asGet('/users/' + encodeURIComponent(aid) + '/scores?page=' + page + '&size=100&sort=timeSet,desc').then(function (j) {
+        var items = (j && j.content) || []; list = list.concat(items); page++;
+        if (j && j.last === false && items.length && page < 30) return delay(120).then(step);
+      });
+    }
+    Promise.all([step(), asPool().catch(function () { return null; })]).then(function () { D.asAll = list; }, function () { D.asAllErr = true; })
+      .then(function () { D.asAllLoading = false; if (sv.data === D) svAccRefresh(); });
+  }
+  function svAccRefresh() { var sa = svEl('svAcc'); if (sa) sa.outerHTML = svAccHtml(); }
+  function svAsData(list) {
+    var now = new Date(), months = [], idx = {}, agg = {}, played = {}, first = null, total = 0;
+    list.forEach(function (x) { var t = Date.parse(x.timeSet || ''); if (t && (first == null || t < first)) first = t; });
+    var f = first ? new Date(first) : now, span = Math.min(240, (now.getFullYear() - f.getFullYear()) * 12 + now.getMonth() - f.getMonth());
+    for (var i = Math.max(span, 5); i >= 0; i--) { var d = new Date(now.getFullYear(), now.getMonth() - i, 1); idx[d.getFullYear() + '-' + (d.getMonth() + 1)] = months.length; months.push({ y: d.getFullYear(), m: d.getMonth() }); }
+    SV_AS.forEach(function (b) { agg[b[0]] = months.map(function () { return { n: 0, s: 0 }; }); played[b[0]] = 0; });
+    list.forEach(function (x) {
+      var k = AS_CAT[x.categoryId], t = Date.parse(x.timeSet || ''); if (!k || !agg[k] || !t || !(x.accuracy > 0)) return;
+      played[k]++; total++;
+      var d = new Date(t), j = idx[d.getFullYear() + '-' + (d.getMonth() + 1)]; if (j == null) return;
+      agg[k][j].n++; agg[k][j].s += x.accuracy * 100;
+    });
+    var tot = state.asCounts || {};
+    if (!state.asCounts && state.asCache) state.asCache.forEach(function (e) { if (e.asCat) tot[e.asCat] = (tot[e.asCat] || 0) + 1; });
+    return { months: months, agg: agg, total: total, bands: SV_AS, min: 1, played: played, tot: tot };
+  }
   function svAccHtml() {
-    var A = svAccData();
+    var D = sv.data, isAs = sv.accSrc === 'as' && D && D.as, A = null, msg = '';
+    if (isAs) {
+      if (D.asAll) A = svAsData(D.asAll);
+      else { svAsLoad(D); msg = D.asAllErr ? 'Couldn&rsquo;t load your AccSaber scores. Try again in a moment.' : 'Loading your AccSaber scores&hellip;'; }
+    } else A = svAccData();
+    var bands = isAs ? SV_AS : SV_AB, word = isAs ? 'category' : 'range';
+    var sw = D && D.as && !sv.accBand ? '<div class="sv-filters sv-asw"><button type="button" data-src="bl" class="' + (isAs ? '' : 'on') + '">Star ranges</button><button type="button" data-src="as" class="' + (isAs ? 'on' : '') + '">AccSaber</button></div>' : '';
     var head = '<div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span><h2>Accuracy Over Time</h2>' +
-      (sv.accBand ? '<div class="sv-filters"><button type="button" id="svAccBack">All ranges</button></div>' : '') + '</div>';
+      (sv.accBand ? '<div class="sv-filters"><button type="button" id="svAccBack">' + (isAs ? 'All categories' : 'All ranges') + '</button></div>' : sw) + '</div>';
+    var played = function (k) { var p = (A.played && A.played[k]) || 0, t = A.tot && A.tot[k]; return t ? { p: p, t: t } : null; };
     var body;
-    if (A.total < 3) body = '<div class="sv-aempty">Sync your scores to see how your accuracy moves over time.</div>';
+    if (!A) body = '<div class="sv-aempty">' + msg + '</div>';
+    else if (A.total < (isAs ? 1 : 3)) body = '<div class="sv-aempty">' + (isAs ? 'No AccSaber scores yet.' : 'Sync your scores to see how your accuracy moves over time.') + '</div>';
     else if (!sv.accBand) {
-      body = '<div class="sv-at">' + SV_AB.map(function (b) {
-        var mv = svAccMove(A, b[0]), ok = mv.r && mv.r.n >= 2;
+      body = '<div class="sv-at' + (isAs ? ' sv-at3' : '') + '">' + bands.map(function (b) {
+        var mv = svAccMove(A, b[0]), ok = mv.r && mv.r.n >= (isAs ? 1 : 2), pl = isAs ? played(b[0]) : null;
         return '<button type="button" class="sv-tile" data-ab="' + b[0] + '" style="--bc:' + b[4] + '"><div class="sv-tl">' + b[1] + '</div>' +
-          (ok ? '<div class="sv-tv"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '</div>' + svAccLine(A, b[0], 160, 42, true) : '<div class="sv-tn">Not enough scores yet</div>') + '</button>';
-      }).join('') + '</div><div class="sv-anote">Last 3 months, and the change from the 3 before. Tap a range for its full history.</div>';
+          (ok ? '<div class="sv-tv"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '</div>' + svAccLine(A, b[0], 160, 42, true) : '<div class="sv-tn">' + (isAs ? 'No scores in the last 3 months' : 'Not enough scores yet') + '</div>') +
+          (pl ? '<div class="sv-tp"><b>' + pl.p.toLocaleString() + '</b> of ' + pl.t.toLocaleString() + ' played</div><div class="sv-tb"><i style="width:' + Math.min(100, Math.round(pl.p / pl.t * 100)) + '%"></i></div>' : '') + '</button>';
+      }).join('') + '</div><div class="sv-anote">' + (isAs ? 'Your AccSaber scores, last 3 months and the change from the 3 before. Tap a category for its full history.' : 'Last 3 months, and the change from the 3 before. Tap a range for its full history.') + '</div>';
     } else {
-      var k = sv.accBand, mv = svAccMove(A, k), bd = svEl('sdBody'), cs = bd ? getComputedStyle(bd) : null;
+      var k = sv.accBand, mv = svAccMove(A, k), bd = svEl('sdBody'), cs = bd ? getComputedStyle(bd) : null, pl = isAs ? played(k) : null;
       var W = bd ? Math.max(280, Math.round(bd.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - (innerWidth <= 760 ? 26 : 34))) : 760;
-      var line = svAccLine(A, k, W, W < 500 ? 200 : 230, false);
-      body = '<div class="sv-achips">' + SV_AB.map(function (b) { return '<button type="button" data-ab="' + b[0] + '" class="' + (b[0] === k ? 'on' : '') + '" style="--bc:' + b[4] + '"><i></i>' + b[1] + '</button>'; }).join('') + '</div>' +
-        (mv.r && mv.r.n >= 2 ? '<div class="sv-asum"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '<em>last 3 months vs the 3 before</em></div>' : '') +
-        (line ? '<div class="sv-achart">' + line + '</div>' : '<div class="sv-aempty">Not enough scores in this range yet to draw a line.</div>') +
-        '<div class="sv-anote">' + SV_MN[A.months[0].m] + ' ' + A.months[0].y + ' to now. Your current best on each ranked map, by the month you set it. Standard, no modifiers. Bigger dots are months with more scores, and months with fewer than 2 are skipped.</div>';
+      var line = svAccLine(A, k, W, W < 500 ? 200 : 230, false), bn = bands.filter(function (b) { return b[0] === k; })[0];
+      body = '<div class="sv-achips">' + bands.map(function (b) { return '<button type="button" data-ab="' + b[0] + '" class="' + (b[0] === k ? 'on' : '') + '" style="--bc:' + b[4] + '"><i></i>' + b[1] + '</button>'; }).join('') + '</div>' +
+        (mv.r && mv.r.n >= (isAs ? 1 : 2) ? '<div class="sv-asum"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '<em>last 3 months vs the 3 before' + (pl ? ' &middot; ' + pl.p.toLocaleString() + ' of ' + pl.t.toLocaleString() + ' ' + bn[1].replace(/ Acc$/, '') + ' maps played' : '') + '</em></div>' : '') +
+        (line ? '<div class="sv-achart">' + line + '</div>' : '<div class="sv-aempty">Not enough scores in this ' + word + ' yet to draw a line.</div>') +
+        '<div class="sv-anote">' + SV_MN[A.months[0].m] + ' ' + A.months[0].y + ' to now. ' + (isAs ? 'Your current AccSaber score on each map, by the month you set it. Bigger dots are months with more scores.' : 'Your current best on each ranked map, by the month you set it. Standard, no modifiers. Bigger dots are months with more scores, and months with fewer than 2 are skipped.') + '</div>';
     }
     return '<section class="panel sv-sec" id="svAcc">' + head + '<div class="sv-ab">' + body + '</div></section>';
   }
@@ -5257,10 +5304,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else prompt('Copy this link:', url);
     });
     svEl('sdBody').addEventListener('click', function (e) {
+      var src = e.target.closest('#svAcc button[data-src]');
+      if (src) {
+        var ns = src.getAttribute('data-src');
+        if (ns !== sv.accSrc) { sv.accSrc = ns; sv.accBand = null; svAccRefresh(); if (ns === 'as') track('stats-acc-accsaber'); }
+        return;
+      }
       var ab = e.target.closest('#svAcc button[data-ab], #svAccBack');
       if (ab) {
         var nb = ab.id === 'svAccBack' ? null : ab.getAttribute('data-ab');
-        if (nb !== sv.accBand) { sv.accBand = nb; var sa = svEl('svAcc'); if (sa) sa.outerHTML = svAccHtml(); if (nb) track('stats-acc-' + nb); }
+        if (nb !== sv.accBand) { sv.accBand = nb; svAccRefresh(); if (nb) track('stats-acc-' + (sv.accSrc === 'as' ? 'as-' : '') + nb); }
         return;
       }
       var ad = e.target.closest('button[data-add]');
@@ -10993,12 +11046,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       (Array.isArray(list) ? list : (list && list.content) || []).forEach(function (c) { if (c && c.id) cats[c.id] = String(c.code || '').replace(/_acc$/, ''); });
     }, function () {}).then(function () {
       Object.keys(AS_CAT).forEach(function (k) { if (!cats[k]) cats[k] = AS_CAT[k]; });
-      var out = [], page = 0;
+      var out = [], page = 0, counts = {};
       function step() {
         return asGet('/maps/difficulties?page=' + page + '&size=100').then(function (j) {
           var items = (j && j.content) || [];
           items.forEach(function (m) {
             if (String(m.status || '').toUpperCase() !== 'RANKED') return;
+            var ck = cats[m.categoryId]; if (ck) counts[ck] = (counts[ck] || 0) + 1;
             var x = asMapEntry(m, cats[m.categoryId] || ''); if (x) out.push(x);
           });
           page++;
@@ -11006,7 +11060,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           return delay(120).then(step);
         });
       }
-      return step().then(function () { if (!out.length) throw new Error('empty'); state.asCache = out; });
+      return step().then(function () { if (!out.length) throw new Error('empty'); state.asCache = out; state.asCounts = counts; });
     }).then(function () { asPoolP = null; return state.asCache; }, function (err) { asPoolP = null; throw err; });
     return asPoolP;
   }
