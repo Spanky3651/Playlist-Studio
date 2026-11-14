@@ -3508,7 +3508,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T11:32Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T11:38Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5132,7 +5132,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var d = '', on = false, fill = [];
     pts.forEach(function (p, i) { if (!p) { on = false; return; } d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.v).toFixed(1); on = true; fill.push([x(i), y(p.v)]); });
     if (!mini) o += '<path d="M' + fill[0][0].toFixed(1) + ' ' + (H - B) + fill.map(function (q) { return 'L' + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('') + 'L' + fill[fill.length - 1][0].toFixed(1) + ' ' + (H - B) + 'Z" style="fill:' + col + ';opacity:.12"/>';
-    o += '<path d="' + d + '" style="fill:none;stroke:' + col + ';stroke-width:' + (mini ? 2 : 2.5) + ';stroke-linejoin:round;stroke-linecap:round"' + (mini ? ' vector-effect="non-scaling-stroke"' : '') + '/>';
+    var sw = mini ? 2 : 2.5, ve = mini ? ' vector-effect="non-scaling-stroke"' : '';
+    if (A.join) {
+      // AccSaber: join across empty months with a dashed line so the chart stays one line.
+      var at = []; pts.forEach(function (p, i) { if (p) at.push(i); });
+      for (var q = 1; q < at.length; q++) {
+        var a0 = at[q - 1], a1 = at[q], gap = a1 - a0 > 1; if (gap) A.gap = true;
+        o += '<path d="M' + x(a0).toFixed(1) + ' ' + y(pts[a0].v).toFixed(1) + 'L' + x(a1).toFixed(1) + ' ' + y(pts[a1].v).toFixed(1) + '" style="fill:none;stroke:' + col + ';stroke-width:' + (gap ? sw - 0.5 : sw) + ';stroke-linecap:round' + (gap ? ';stroke-dasharray:' + (mini ? '3 3' : '5 6') + ';opacity:.75' : '') + '"' + ve + '/>';
+      }
+    } else o += '<path d="' + d + '" style="fill:none;stroke:' + col + ';stroke-width:' + sw + ';stroke-linejoin:round;stroke-linecap:round"' + ve + '/>';
     if (!mini) pts.forEach(function (p, i) { if (p) o += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.v).toFixed(1) + '" r="' + (n > 30 ? Math.max(2, Math.min(4, Math.sqrt(p.n) / 2.4)) : Math.max(3, Math.min(6, Math.sqrt(p.n) / 1.6))).toFixed(1) + '" style="fill:#0a0e16;stroke:' + col + ';stroke-width:2"><title>' + SV_MN[A.months[i].m] + ' ' + A.months[i].y + ': ' + p.v.toFixed(2) + '% across ' + p.n + ' score' + (p.n === 1 ? '' : 's') + '</title></circle>'; });
     return o + '</svg>';
   }
@@ -5172,7 +5180,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
     var tot = state.asCounts || {};
     if (!state.asCounts && state.asCache) state.asCache.forEach(function (e) { if (e.asCat) tot[e.asCat] = (tot[e.asCat] || 0) + 1; });
-    return { months: months, agg: agg, total: total, bands: SV_AS, min: 1, played: played, tot: tot };
+    return { months: months, agg: agg, total: total, bands: SV_AS, min: 1, join: true, played: played, tot: tot };
   }
   function svAccHtml() {
     var D = sv.data, isAs = sv.accSrc === 'as' && D && D.as, A = null, msg = '';
@@ -5202,7 +5210,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       body = '<div class="sv-achips">' + bands.map(function (b) { return '<button type="button" data-ab="' + b[0] + '" class="' + (b[0] === k ? 'on' : '') + '" style="--bc:' + b[4] + '"><i></i>' + b[1] + '</button>'; }).join('') + '</div>' +
         (mv.r && mv.r.n >= (isAs ? 1 : 2) ? '<div class="sv-asum"><b>' + mv.r.v.toFixed(2) + '%</b>' + svAccDelta(mv.dd) + '<em>last 3 months vs the 3 before' + (pl ? ' &middot; ' + pl.p.toLocaleString() + ' of ' + pl.t.toLocaleString() + ' ' + bn[1].replace(/ Acc$/, '') + ' maps played' : '') + '</em></div>' : '') +
         (line ? '<div class="sv-achart">' + line + '</div>' : '<div class="sv-aempty">Not enough scores in this ' + word + ' yet to draw a line.</div>') +
-        '<div class="sv-anote">' + SV_MN[A.months[0].m] + ' ' + A.months[0].y + ' to now. ' + (isAs ? 'Your current AccSaber score on each map, by the month you set it. Bigger dots are months with more scores.' : 'Your current best on each ranked map, by the month you set it. Standard, no modifiers. Bigger dots are months with more scores, and months with fewer than 2 are skipped.') + '</div>';
+        '<div class="sv-anote">' + SV_MN[A.months[0].m] + ' ' + A.months[0].y + ' to now. ' + (isAs ? 'Your current AccSaber score on each map, by the month you set it. Bigger dots are months with more scores.' + (A.gap ? ' Dashed lines cross months with no scores.' : '') : 'Your current best on each ranked map, by the month you set it. Standard, no modifiers. Bigger dots are months with more scores, and months with fewer than 2 are skipped.') + '</div>';
     }
     return '<section class="panel sv-sec" id="svAcc">' + head + '<div class="sv-ab">' + body + '</div></section>';
   }
