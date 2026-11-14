@@ -1601,6 +1601,10 @@ body.sd-lock{overflow:hidden}
 .sv-kv b{display:block;font:700 17px var(--sans);color:#fff;margin-top:2px}
 .sv-split{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:0 16px;background:var(--panel-3)}
 .sv-foot{font:12px var(--mono);color:var(--muted);text-align:center;padding:4px 0 8px}
+.sv-pts{margin-top:3px;font:600 14px var(--mono);color:var(--act)}
+.sv-rk .sv-split{margin:10px 0 0}
+.sv-apl{margin-top:6px;font:12px var(--mono);color:var(--muted)}
+.sv-accrow{border-bottom:1px solid var(--border)}
 .sv-ab{padding:14px 16px 16px}
 .sv-at{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .sv-tile{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;white-space:normal;text-align:left;border:1px solid var(--border-2);border-radius:12px;padding:10px 12px;background:var(--panel-2);cursor:pointer;min-width:0;font:inherit;color:inherit}
@@ -3508,7 +3512,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T11:38Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T11:49Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5012,17 +5016,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var dayOld = null; hist.forEach(function (x) { if (x.timestamp <= now - 86400) dayOld = x.rank; });
     var blSpark = hist.slice(-30).map(function (x) { return x.rank; }).filter(function (x) { return x > 0; });
     if (p.rank) blSpark.push(p.rank);
-    var gapRows = function (g, unit) {
-      if (!g) return '';
+    var gapRows = function (g, unit, extra) {
       var o = '';
-      if (g.next) o += '<div><span>Pass ' + esc(g.next.name || svRank(g.next.rank)) + '</span><b>+' + svPts(g.next.need) + ' ' + unit + '</b></div>';
-      if (g.mile) o += '<div><span>Reach ' + svRank(g.mile.rank) + '</span><b>+' + svPts(g.mile.need) + ' ' + unit + '</b></div>';
+      if (g && g.next) o += '<div><span>Pass ' + esc(g.next.name || svRank(g.next.rank)) + '</span><b>+' + svPts(g.next.need) + ' ' + unit + '</b></div>';
+      if (g && g.mile) o += '<div><span>Reach ' + svRank(g.mile.rank) + '</span><b>+' + svPts(g.mile.need) + ' ' + unit + '</b></div>';
+      o += extra || '';
       return o ? '<div class="sv-gaps">' + o + '</div>' : '';
     };
     var blCard = '<div class="sv-rk" style="--ac:var(--blue);--act:#8fbaff"><div class="sv-lab"><a href="https://beatleader.com/u/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">BEATLEADER &#8599;</a><span>GLOBAL</span></div>';
     if (p.rank) {
-      blCard += '<div class="sv-big"><b>' + svRank(p.rank) + '</b>' + (dayOld ? svMove(dayOld - p.rank) : '') + '</div>' +
-        (svSpark(blSpark, '#1e6bff') || '<div class="sv-note">Not enough history yet</div>') + gapRows(D.blg, 'pp');
+      var blExtra = (p.pp ? '<div><span>acc ' + svWhole(p.accPp || 0) + ' &middot; pass ' + svWhole(p.passPp || 0) + ' &middot; tech ' + svWhole(p.techPp || 0) + '</span></div>' : '') +
+        (stats.topPp ? '<div><span>Top play</span><b>' + svPts(stats.topPp) + ' pp</b></div>' : '');
+      blCard += '<div class="sv-big"><b>' + svRank(p.rank) + '</b>' + (dayOld ? svMove(dayOld - p.rank) : '') + '</div>' + (p.pp ? '<div class="sv-pts">' + svWhole(p.pp) + ' pp</div>' : '') +
+        (svSpark(blSpark, '#1e6bff') || '<div class="sv-note">Not enough history yet</div>') + gapRows(D.blg, 'pp', blExtra);
     } else blCard += '<div class="sv-none"><b>Unranked on BeatLeader</b>No ranked scores yet.</div>';
     blCard += '</div>';
 
@@ -5037,7 +5043,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var ssOld = ssh.length ? ssh[ssh.length - 1] : null;
       var ssSpark = ssh.slice(-29); ssSpark.push(ss.rank);
       ssCard = '<div class="sv-rk" style="--ac:var(--amber);--act:#ffd56b"><div class="sv-lab"><a href="https://scoresaber.com/u/' + encodeURIComponent(ss.id) + '" target="_blank" rel="noopener">SCORESABER &#8599;</a><span>GLOBAL</span></div>' +
-        '<div class="sv-big"><b>' + (ss.rank ? svRank(ss.rank) : 'Unranked') + '</b>' + (ssOld && ss.rank ? svMove(ssOld - ss.rank) : '') + '</div>' +
+        '<div class="sv-big"><b>' + (ss.rank ? svRank(ss.rank) : 'Unranked') + '</b>' + (ssOld && ss.rank ? svMove(ssOld - ss.rank) : '') + '</div>' + (ss.pp ? '<div class="sv-pts">' + svWhole(ss.pp) + ' pp</div>' : '') +
         (svSpark(ssSpark, '#ffc23d') || '<div class="sv-note">Not enough history yet</div>') + gapRows(D.ssg, 'pp') + '</div>';
     } else {
       ssCard = '<div class="sv-rk" style="--ac:#3a3420;--act:#ffd56b"><div class="sv-lab"><span>SCORESABER</span><span>GLOBAL</span></div><div class="sv-none"><b>No ScoreSaber profile</b>This player hasn\'t submitted scores to ScoreSaber, or uses a different account there.<a href="https://scoresaber.com" target="_blank" rel="noopener">scoresaber.com &#8599;</a></div></div>';
@@ -5058,36 +5064,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (week != null) lines.push('This week ' + svMove(week));
       var cr = function (k, label) { return '<span>' + label + ' <b style="color:' + (cat[k] ? '#fff' : 'var(--muted)') + '">' + (cat[k] ? svRank(cat[k].ranking) : '&ndash;') + '</b></span>'; };
       asCard = '<div class="sv-rk" style="--ac:var(--red);--act:#ff7a8c"><div class="sv-lab"><a href="https://accsaber.com/players/' + encodeURIComponent(mid) + '" target="_blank" rel="noopener">ACCSABER &#8599;</a><span>OVERALL</span></div>' +
-        '<div class="sv-big"><b>' + svRank(ov.ranking) + '</b>' + (sess != null ? svMove(sess) : '') + '</div>' +
+        '<div class="sv-big"><b>' + svRank(ov.ranking) + '</b>' + (sess != null ? svMove(sess) : '') + '</div>' + '<div class="sv-pts">' + svWhole(ov.ap) + ' AP</div>' +
         '<div class="sv-note"><span>' + (lines.join('<br>') || 'No recent movement data') + '</span></div>' +
         '<div class="sv-gaps">' + (nx ? '<div><span>Pass ' + esc(nx.userName || svRank(nx.ranking)) + '</span><b>+' + svPts(Math.max(0.01, nx.ap - ov.ap + 0.01)) + ' AP</b></div>' : '') +
-        '<div>' + cr('true', 'True') + cr('standard', 'Std') + cr('tech', 'Tech') + '</div></div></div>';
+        '<div>' + cr('true', 'True') + cr('standard', 'Std') + cr('tech', 'Tech') + '</div></div>' + svApSplit(ov, D) + '</div>';
     } else {
       asCard = '<div class="sv-rk" style="--ac:#3a1a20;--act:#ff7a8c"><div class="sv-lab"><span>ACCSABER</span><span>OVERALL</span></div><div class="sv-none"><b>Not on AccSaber</b>No ranked AccSaber scores for this player yet.<a href="https://accsaber.com" target="_blank" rel="noopener">accsaber.com &#8599;</a></div></div>';
     }
     h += '<section class="sv-ranks">' + blCard + ssCard + asCard + '</section>';
+    // accuracy averages: on your own profile they head Accuracy Over Time, otherwise a small Accuracy panel
+    var dash = '<b style="color:var(--muted)">&ndash;</b>';
+    sv.accKv = '<div class="sv-kv"><div>BL weighted' + (stats.averageWeightedRankedAccuracy ? '<b>' + (stats.averageWeightedRankedAccuracy * 100).toFixed(2) + '%</b>' : dash) + '</div>' +
+      '<div>SS avg ranked' + (ss && ss.scoreStats && ss.scoreStats.averageRankedAccuracy ? '<b>' + ss.scoreStats.averageRankedAccuracy.toFixed(2) + '%</b>' : dash) + '</div>' +
+      '<div>AS avg' + (ov ? '<b>' + (ov.averageAcc * 100).toFixed(2) + '%</b>' : dash) + '</div></div>';
     if (state.player && String(state.player.id) === String(p.id)) h += svAccHtml();
+    else h += '<section class="panel sv-sec"><div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span><h2>Accuracy</h2></div>' + sv.accKv + '</section>';
 
     // recent scores
     h += '<section class="panel sv-sec"><div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span><h2>Recent Scores</h2>' +
       '<div class="sv-filters" id="svFilters"><button type="button" data-r="day" class="' + (sv.range === 'day' ? 'on' : '') + '">24 hours</button><button type="button" data-r="week" class="' + (sv.range === 'week' ? 'on' : '') + '">7 days</button><button type="button" data-r="ranked" class="' + (sv.rankedOnly ? 'on' : '') + '">Ranked only</button></div></div>' +
       svScores(now) + '</section>';
 
-    // accuracy + points
-    var catAp = [];
-    if (ov) D.as.st.categories.forEach(function (c) { var k = AS_CAT[c.categoryId]; if (k) catAp.push({ k: k, ap: c.ap }); });
-    var apTot = catAp.reduce(function (a, c) { return a + c.ap; }, 0);
-    var apCol = { 'true': '#b06bff', standard: 'var(--blue)', tech: 'var(--red)' }, apName = { 'true': 'True', standard: 'Standard', tech: 'Tech' };
-    var dash = '<b style="color:var(--muted)">&ndash;</b>';
-    h += '<div class="sv-two"><section class="panel"><div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span><h2>Accuracy</h2></div>' +
-      '<div class="sv-kv"><div>BL weighted' + (stats.averageWeightedRankedAccuracy ? '<b>' + (stats.averageWeightedRankedAccuracy * 100).toFixed(2) + '%</b>' : dash) + '</div>' +
-      '<div>SS avg ranked' + (ss && ss.scoreStats && ss.scoreStats.averageRankedAccuracy ? '<b>' + ss.scoreStats.averageRankedAccuracy.toFixed(2) + '%</b>' : dash) + '</div>' +
-      '<div>AS avg' + (ov ? '<b>' + (ov.averageAcc * 100).toFixed(2) + '%</b>' : dash) + '</div></div>' +
-      (apTot > 0 ? '<div class="sv-split">' + catAp.map(function (c) { return '<div title="' + apName[c.k] + ': ' + svPts(c.ap) + ' AP" style="width:' + (c.ap / apTot * 100).toFixed(1) + '%;background:' + apCol[c.k] + '"></div>'; }).join('') + '</div><div class="sv-meta" style="padding:8px 16px 16px">AccSaber AP: ' + catAp.map(function (c) { return apName[c.k] + ' ' + Math.round(c.ap / apTot * 100) + '%'; }).join(' &middot; ') + '</div>' : '<div style="height:8px"></div>') +
-      '</section><section class="panel"><div class="panel-head"><span class="ph-ic star"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h2>Points</h2></div>' +
-      '<div class="sv-kv"><div>BL pp' + (p.pp ? '<b>' + svWhole(p.pp) + '</b>' : dash) + '</div><div>SS pp' + (ss && ss.pp ? '<b>' + svWhole(ss.pp) + '</b>' : dash) + '</div><div>AS AP' + (ov ? '<b>' + svWhole(ov.ap) + '</b>' : dash) + '</div></div>' +
-      (p.pp ? '<div class="sv-meta" style="padding:0 16px 16px">BL split: acc ' + svWhole(p.accPp || 0) + ' &middot; pass ' + svWhole(p.passPp || 0) + ' &middot; tech ' + svWhole(p.techPp || 0) + (stats.topPp ? ' &middot; top play ' + svPts(stats.topPp) + ' pp' : '') + '</div>' : '') +
-      '</section></div>';
     h += '<div class="sv-foot">Live from the BeatLeader, ScoreSaber and AccSaber public APIs</div>';
     svEl('sdBody').innerHTML = h;
   }
@@ -5212,7 +5209,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         (line ? '<div class="sv-achart">' + line + '</div>' : '<div class="sv-aempty">Not enough scores in this ' + word + ' yet to draw a line.</div>') +
         '<div class="sv-anote">' + SV_MN[A.months[0].m] + ' ' + A.months[0].y + ' to now. ' + (isAs ? 'Your current AccSaber score on each map, by the month you set it. Bigger dots are months with more scores.' + (A.gap ? ' Dashed lines cross months with no scores.' : '') : 'Your current best on each ranked map, by the month you set it. Standard, no modifiers. Bigger dots are months with more scores, and months with fewer than 2 are skipped.') + '</div>';
     }
-    return '<section class="panel sv-sec" id="svAcc">' + head + '<div class="sv-ab">' + body + '</div></section>';
+    return '<section class="panel sv-sec" id="svAcc">' + head + (sv.accKv ? '<div class="sv-accrow">' + sv.accKv + '</div>' : '') + '<div class="sv-ab">' + body + '</div></section>';
+  }
+
+  function svApSplit(ov, D) {
+    var catAp = [];
+    if (ov) D.as.st.categories.forEach(function (c) { var k = AS_CAT[c.categoryId]; if (k) catAp.push({ k: k, ap: c.ap }); });
+    var apTot = catAp.reduce(function (a, c) { return a + c.ap; }, 0);
+    if (!(apTot > 0)) return '';
+    var apCol = { 'true': '#b06bff', standard: 'var(--blue)', tech: 'var(--red)' }, apName = { 'true': 'True', standard: 'Standard', tech: 'Tech' };
+    return '<div class="sv-split">' + catAp.map(function (c) { return '<div title="' + apName[c.k] + ': ' + svPts(c.ap) + ' AP" style="width:' + (c.ap / apTot * 100).toFixed(1) + '%;background:' + apCol[c.k] + '"></div>'; }).join('') + '</div>' +
+      '<div class="sv-apl">' + catAp.map(function (c) { return (c.k === 'standard' ? 'Std' : apName[c.k]) + ' ' + Math.round(c.ap / apTot * 100) + '%'; }).join(' &middot; ') + ' of AP</div>';
   }
 
   function svScores(now) {
