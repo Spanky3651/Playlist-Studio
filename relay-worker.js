@@ -5215,10 +5215,15 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
     if (!auto) Promise.resolve(sp).then(function () { bigSync = false; bigCheck(); }, function () { bigSync = false; bigCheck(); });
     if (tab === 'bl') loadBl(true); else if (isTool(tab)) loadTool(tab, true); else if (tab === 'all') loadAll(true); else if (tab === 'kofi') loadKofi(true); else loadGc(true);
     if (tab !== 'kofi' && kofi) loadKofi(false); }
-  function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS) refreshAll(true); }
+  // Auto refresh only while someone is using the page: a tab left open on a screen stops after 15 idle minutes
+  // (each refresh costs Worker calls and KV reads), and catches up the moment it's touched again.
+  var usedAt = Date.now(), IDLE_MS = 15 * 60 * 1000;
+  function autoRefresh() { if (!document.hidden && getKey() && sync && Date.now() - lastLoad >= AUTO_MS && Date.now() - usedAt < IDLE_MS) refreshAll(true); }
+  function touched() { var idle = Date.now() - usedAt >= IDLE_MS; usedAt = Date.now(); if (idle) autoRefresh(); }
+  ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, touched, { passive: true }); });
   $('refresh').addEventListener('click', function () { refreshAll(false); });
   setInterval(autoRefresh, 30000);
-  document.addEventListener('visibilitychange', autoRefresh);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) touched(); });
   $('forget').addEventListener('click', function () { setKey(''); gc = null; sync = null; bl = null; toolData = {}; kofi = null; signedIn(false); say('Key forgotten on this device.'); keyIn.focus(); });
   var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (gc && tab === 'vis') chart(gc, dailyWhere(BUILD)); if (bl && tab === 'bl') chart(bl, null, BLIDS); if (isTool(tab) && toolData[tab]) chart(toolData[tab], null, toolIds(tab)); }, 150); });
   tabIcons(); showRange(); showTab(tab); logoSpin();
