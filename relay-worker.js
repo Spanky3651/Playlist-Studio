@@ -2537,7 +2537,7 @@ async function gcAllStats(env, range, fresh, tz) {
   }
   const me = await gcMe(env);
   const firstDay = range === "all" ? sites.reduce((a, s) => (s.days && s.days[0] && (!a || s.days[0].day < a) ? s.days[0].day : a), "") : "";
-  const out = { site: "all", generated: now, range, tz: gcTz(tz), start: firstDay || day(start), end: day(end), sites, meAvatar: GC_ME_AVATAR };
+  const out = { site: "all", generated: now, range, tz: gcTz(tz), start: firstDay || day(start), end: day(end), sites, meAvatar: GC_ME_AVATAR, meId: me.id };
   await env.PLAYLISTS.put(ck, JSON.stringify(out), { expirationTtl: 3600 });
   return out;
 }
@@ -4189,6 +4189,9 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       return { S: S, ch: ch, err: err, x: siteSeries(s, d), num: s.error ? '-' : fmt(s.visitors) };
     }
     var hero = list.filter(function (s) { return s.key === 'studio'; })[0] || list[0], h = '', rest = '';
+    // You stay out of the Players and Studio Sync rows here, same as the Hide me chip on the Players tab (on by default).
+    var hideMe = ls('studioStatsHideMe') !== '0';
+    var notMe = function (x) { return !hideMe || !(x.me || (d.meId && x.id === d.meId) || String(x.name || '').toLowerCase() === 'msploit'); };
     if (hero) {
       var I = info(hero), v = I.x.vals, k = I.x.keys, bi = 0;
       v.forEach(function (y, i) { if (y > v[bi]) bi = i; });
@@ -4197,15 +4200,15 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
       if (!I.err && v.length) {
         if (d.range !== 'today') stats.push(['Today', fmt(v[v.length - 1] || 0), '']);
         stats.push([d.range === 'today' ? 'Busiest hour' : 'Best day', fmt(v[bi] || 0), v[bi] ? lab(k[bi]) : '']);
-        if (hero.players) stats.push(['Players', fmt(hero.players.filter(function (x) { return !x.lookedBy; }).length), 'connected']);
+        if (hero.players) stats.push(['Players', fmt(hero.players.filter(function (x) { return !x.lookedBy && notMe(x); }).length), 'connected']);
         if (total) stats.push(['Share', Math.round((hero.visitors || 0) / total * 100) + '%', '']);
       }
       var when = { today: 'today', '7d': 'in the last 7 days', '30d': 'in the last 30 days', '90d': 'in the last 90 days', all: 'since you started counting' }[d.range] || '';
       var today = dayKey(Date.now() / 1000);   // new today: first ever connect (players) or headset linked (Studio Sync) is today
-      var strip = pStrip((hero.players || []).map(function (x) { return Object.assign({}, x, { isNew: x.first === today ? 'First connected today' : '' }); }), 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
+      var strip = pStrip((hero.players || []).filter(notMe).map(function (x) { return Object.assign({}, x, { isNew: x.first === today ? 'First connected today' : '' }); }), 'player', 'players', 'connected a profile ' + when, 'ply', 'Players');
       if (sync && sync.users) {
         var from = d.range === 'all' ? 0 : Date.parse(d.start + 'T00:00:00') / 1000 || 0;
-        var su = sync.users.filter(function (u) { return u.last && u.last >= from; }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, key: u.key, anon: u.anon, num: u.num, was: u.was, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
+        var su = sync.users.filter(function (u) { return u.last && u.last >= from && notMe(u); }).sort(function (x, y) { return y.last - x.last; }).map(function (u) { return { name: u.name, id: u.id, key: u.key, anon: u.anon, num: u.num, was: u.was, avatar: u.avatar, lastT: u.last, isNew: u.linked && dayKey(u.linked) === today ? 'Linked a headset today' : '' }; });
         strip += pStrip(su, 'Studio Sync user', 'Studio Sync users', 'synced a headset ' + when, 'sync', 'Studio Sync');
       }
       h += '<div role="button" tabindex="0" class="site hero2" data-go="' + I.S.tab + '" style="--c:' + I.S.color + '"><span class="sh">' + siteIcon(hero.key) + '<b>' + esc(I.S.name) + '</b><span class="go" aria-hidden="true">›</span></span>' +
@@ -5103,7 +5106,7 @@ html.bigspin .bs-arcs{animation:bsspin 1.1s cubic-bezier(.55,.1,.45,.9) infinite
   }
   $('p-find').addEventListener('input', function () { pf.find = this.value.trim(); pShown = 40; renderPlayers(); });
   [['p-fnew', 'fnew'], ['p-fclan', 'fclan'], ['p-fme', 'fme']].forEach(function (x) {
-    $(x[0]).addEventListener('click', function () { pf[x[1]] = !pf[x[1]]; this.setAttribute('aria-pressed', pf[x[1]] ? 'true' : 'false'); if (x[1] === 'fme') ls('studioStatsHideMe', pf.fme ? '1' : '0'); pShown = 40; renderPlayers(); });
+    $(x[0]).addEventListener('click', function () { pf[x[1]] = !pf[x[1]]; this.setAttribute('aria-pressed', pf[x[1]] ? 'true' : 'false'); if (x[1] === 'fme') { ls('studioStatsHideMe', pf.fme ? '1' : '0'); renderAll(); } pShown = 40; renderPlayers(); });
   });
   $('p-more').addEventListener('click', function () { pShown += 40; renderPlayers(); });
   $('p-list').addEventListener('click', function (e) { var b = e.target.closest('[data-pk]'); if (!b) return; var k = b.getAttribute('data-pk'); pOpen[k] = !pOpen[k]; renderPlayers(); });
