@@ -1546,7 +1546,8 @@ body.sd-lock{overflow:hidden}
 .sv-hero .cvr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22}
 .sv-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--panel) 20%,rgba(11,14,20,.5) 65%,var(--panel));pointer-events:none}
 .sv-hero-in{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:18px 20px}
-.sv-ava{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--blue);box-shadow:0 0 0 4px #000,0 0 0 6px var(--red);background:#111;flex:none}
+.sv-ava{width:80px;height:80px;border-radius:50%;object-fit:cover;border:1px solid var(--border-2);background:#111;flex:none}
+.sv-ava.clan{border:3px solid var(--cc);box-shadow:0 0 14px color-mix(in srgb,var(--cc) 35%,transparent)}
 .sv-who{flex:1 1 240px;min-width:0}
 .sv-kick{font:600 11px var(--mono);letter-spacing:2.5px;color:var(--muted)}
 .sv-name{font:800 30px var(--sans);letter-spacing:.5px;line-height:1.1;color:#fff;overflow-wrap:anywhere}
@@ -3512,7 +3513,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T11:49Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-14T13:06Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -5005,8 +5006,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     (p.clans || []).slice(0, 3).forEach(function (c) { pills.push('<span class="sv-pill"><i style="background:' + esc(c.color || '#888') + '"></i>' + esc(c.tag) + '</span>'); });
     if (D.asu && D.asu.clan && !(p.clans || []).some(function (c) { return c.tag === D.asu.clan.tag; })) pills.push('<span class="sv-pill">' + (D.asu.clan.iconUrl ? '<img src="' + esc(D.asu.clan.iconUrl) + '" alt="">' : '') + esc(D.asu.clan.tag) + '</span>');
     if (D.asl && D.asl.level != null) pills.push('<span class="sv-pill">AccSaber Lv ' + D.asl.level + '</span>');
+    // Avatar ring: the player's first clan color, or a plain thin border without a clan.
+    var avaClan = ((p.clans || [])[0] || {}).color; if (!/^#[0-9a-f]{3,8}$/i.test(avaClan || '')) avaClan = '';
     h += '<section class="sv-hero">' + (cover ? '<img class="cvr" src="' + esc(cover) + '" alt="" onerror="this.remove()">' : '') +
-      '<div class="sv-hero-in"><img class="sv-ava" src="' + esc(p.avatar || '') + '" alt="' + esc(p.name) + ' avatar" onerror="this.style.visibility=\'hidden\'">' +
+      '<div class="sv-hero-in"><img class="sv-ava' + (avaClan ? ' clan" style="--cc:' + avaClan : '') + '" src="' + esc(p.avatar || '') + '" alt="' + esc(p.name) + ' avatar" onerror="this.style.visibility=\'hidden\'">' +
       '<div class="sv-who"><div class="sv-kick">BEAT SABER STATS</div><div class="sv-name">' + esc(p.name) + '</div><div class="sv-pills">' + pills.join('') + '</div>' +
       '<div class="sv-acts"><button type="button" class="ghost sm" id="svTopBtn">&#9733; Build from ' + (state.player && String(state.player.id) === String(p.id) ? 'my' : esc(p.name) + '&#39;s') + ' top 50 plays</button>' + (state.player && String(state.player.id) !== String(p.id) ? '<button type="button" class="ghost sm" id="svVsBtn">&#9876; Maps ' + esc(p.name) + ' beats you on</button>' : '') +
       '</div></div></div></section>';
