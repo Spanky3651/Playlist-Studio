@@ -191,6 +191,7 @@ body.ss-on .topbar-actions #downloadBtn{display:none !important;}
 .list-actions[hidden]{display:none;}
 .empty .empty-alt{margin-top:12px;}
 .pl-import{display:inline-flex;align-items:center;gap:6px;}.pl-import[hidden]{display:none;}
+@media(max-width:760px){.pl-import.compact{padding-left:10px;padding-right:10px;}.pl-import.compact .pli-txt{display:none;}}
 .pl-import .pli-ic{width:14px;height:14px;flex:none;}
 .link-btn{background:none;border:0;padding:0;color:#7fb4ff;text-decoration:underline;font:inherit;cursor:pointer;}
 .pm-link{font-weight:700;text-decoration:underline;}
@@ -3174,7 +3175,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
             <button class="ghost sm" id="refreshStarsBtn" disabled title="Refresh every map's stars &amp; NPS from BeatLeader - catches rating changes">★ Refresh ratings</button>
             <button class="ghost sm danger" id="clearBasketBtn" disabled hidden title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
-            <button class="ghost sm pl-import" id="plImportBtn" type="button" hidden title="Import a .bplist into this playlist"><svg class="pli-ic" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
+            <button class="ghost sm pl-import" id="plImportBtn" type="button" hidden title="Import a .bplist into this playlist"><svg class="pli-ic" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="pli-txt">Import</span></button>
             <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
             <button class="ghost sm" id="undoBtn" type="button" hidden>↶ Undo</button>
             <button class="ghost sm" id="redoBtn" type="button" hidden>↷ Redo</button>
@@ -3516,7 +3517,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-16T15:46Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-16T15:53Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -7221,9 +7222,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.enrichBtn.hidden = !canFill; el.enrichBtn.disabled = state.enriching || !canFill;
     el.refreshStarsBtn.hidden = !hasBasket; el.refreshStarsBtn.disabled = state.enriching || !hasBasket;
     if (el.undoClearBtn) el.undoClearBtn.hidden = !state.clearUndo;
-    // Empty playlist: Import takes Clear playlist's spot (Clear has nothing to do then), and steps aside while Undo clear shows.
+    // Empty playlist: Import takes Clear playlist's spot (Clear has nothing to do then). While Undo clear shows it
+    // stays, icon-only on phones so the row still fits.
     el.clearBasketBtn.hidden = !hasBasket;
-    var plImpB = document.getElementById('plImportBtn'); if (plImpB) plImpB.hidden = hasBasket || !!state.clearUndo;
+    var plImpB = document.getElementById('plImportBtn'); if (plImpB) { plImpB.hidden = hasBasket; plImpB.classList.toggle('compact', !!state.clearUndo); }
     [el.downloadBtn, el.downloadBtn2].forEach(function (b) { b.disabled = !hasBasket; });
   }
   function buildAutoDesc() {
