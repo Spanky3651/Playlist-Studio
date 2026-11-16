@@ -190,6 +190,8 @@ body.ss-on .topbar-actions #downloadBtn{display:none !important;}
 .newbie-x{background:none;border:0;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:2px 6px;}
 .list-actions[hidden]{display:none;}
 .empty .empty-alt{margin-top:12px;}
+.pl-import{display:inline-flex;align-items:center;gap:6px;}
+.pl-import .pli-ic{width:14px;height:14px;flex:none;}
 .link-btn{background:none;border:0;padding:0;color:#7fb4ff;text-decoration:underline;font:inherit;cursor:pointer;}
 .pm-link{font-weight:700;text-decoration:underline;}
 .export-note{margin:0 0 14px;padding:11px 13px;border:1px solid #2a4a74;border-radius:10px;background:#081323;font-size:14px;line-height:1.55;color:#d7e6fb;}
@@ -3172,6 +3174,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <button class="ghost sm" id="enrichBtn" disabled title="Fill in missing data (stars, NPS, duration, cover) for imported maps from BeatLeader">↻ Fill data</button>
             <button class="ghost sm" id="refreshStarsBtn" disabled title="Refresh every map's stars &amp; NPS from BeatLeader - catches rating changes">★ Refresh ratings</button>
             <button class="ghost sm danger" id="clearBasketBtn" disabled title="Empty this playlist and reset its name, cover and sync to a fresh start">Clear playlist</button>
+            <button class="ghost sm pl-import" id="plImportBtn" type="button" title="Import a .bplist into this playlist"><svg class="pli-ic" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
             <button class="ghost sm" id="undoClearBtn" hidden title="Restore the playlist you just cleared">↩ Undo clear</button>
             <button class="ghost sm" id="undoBtn" type="button" hidden>↶ Undo</button>
             <button class="ghost sm" id="redoBtn" type="button" hidden>↷ Redo</button>
@@ -3186,7 +3189,6 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
                 <div class="empty-ic">♪</div>
                 <p><b>Your playlist is empty.</b></p>
                 <p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p>
-                <p class="empty-alt"><label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label></p>
               </div>
             </div>
           </div>
@@ -3514,7 +3516,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-16T15:33Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-16T15:40Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -7039,7 +7041,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var list = el.basketList, n = state.basket.length;
     var fab = document.getElementById('favAddBtn'); if (fab) fab.hidden = !lqFavDev();
     el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) + rtPart() : '';
-    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> - click a row or hit <b>+ Add all</b>.</p><p class="empty-alt"><label class="filebtn" for="importBplist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import .bplist</label></p></div>'; plAfterRender(); return; }
+    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> - click a row or hit <b>+ Add all</b>.</p></div>'; plAfterRender(); return; }
     var last = n - 1, items = [], fd = lqFavDev(), fdn = fd ? esc(lqDevName(fd)) : '';
     state.basket.forEach(function (e) {
       var k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
@@ -15137,6 +15139,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (act === 'unadd') { if (basketIndex(row.dataset.key) >= 0) { removeBasket(row.dataset.key); track('row-unadd'); } }
       else if (act === 'preview') { var pe = findFiltered(row.dataset.key); if (pe) openPreview(pe); }
     });
+    var plImp = document.getElementById('plImportBtn'); if (plImp) plImp.addEventListener('click', function () { el.importBplist.click(); });
     el.basketList.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-act]'); if (!btn) return;
       var row = e.target.closest('.song-row'); if (!row) return;
