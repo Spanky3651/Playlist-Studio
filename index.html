@@ -1682,9 +1682,9 @@ body.sd-lock .toast.show{z-index:950}
 .work-area,.pl-side{display:flex;flex-direction:column;gap:16px;min-width:0;}
 @media(max-width:720px){.work-area,.pl-side{gap:12px;}}
 /* Wide screens: results and your playlist side by side, so every add visibly lands (below this the columns get too narrow
-   and rows wrap), with Save and send under Your Playlist. With Studio Sync on and no search results, Save and send gets a
-   column of its own instead: the headset's playlists sit at the top beside Your Playlist, with no empty column next to
-   them. A search hands that room back to the results. */
+   and rows wrap), with Save and send under Your Playlist. With Studio Sync on (1880px and up), Save and send gets the
+   whole right column so a long headset list doesn't leave a lone box on the left: Search Results sits over Your
+   Playlist, and the results scroll inside their own box so Your Playlist stays in view. Nothing moves when a search runs. */
 @media(min-width:1800px){
   .layout{max-width:2200px;}
   .work-area{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"res side" "res send";gap:16px;align-items:start;}
@@ -1693,7 +1693,8 @@ body.sd-lock .toast.show{z-index:950}
   .work-area > #sendPanel{grid-area:send;}
 }
 @media(min-width:1880px){
-  body.ss-on:not(.has-results) .work-area{grid-template-columns:minmax(0,.8fr) minmax(0,1.1fr) minmax(0,1.1fr);grid-template-rows:auto;grid-template-areas:"res side send";}
+  body.ss-on .work-area{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"res send" "side send";}
+  body.ss-on .work-area > .list-panel .list-body{max-height:max(420px,58vh);overflow-y:auto;overscroll-behavior:contain;}
 }
 #sendPanel{container:send/inline-size;}
 #plTools{container:tools/inline-size;}
@@ -3551,7 +3552,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T13:10Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T16:56Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
