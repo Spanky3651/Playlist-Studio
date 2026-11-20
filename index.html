@@ -546,6 +546,15 @@ button.si-pl:hover{border-color:var(--blue);color:#fff;}
 .es-tx{min-width:0;}
 .es-card b{display:block;color:var(--text);font-size:14.5px;margin-bottom:1px;}
 .es-chev{margin-left:auto;color:var(--muted-2);font-size:18px;}
+/* empty playlist: no Sort or compact-rows toggle (its space is kept so the header doesn't jump) */
+.playlist-panel.pl-empty #shuffleBtn{display:none !important;}
+.playlist-panel.pl-empty .dens-btn{visibility:hidden;}
+/* empty playlist: Download and Share say one line instead of their full panels */
+.ss-empty-msg{display:none;margin:0;font-size:14px;color:var(--muted);}
+.ss-empty-msg b{color:var(--text);}
+#sendPanel.ss-empty .ss-empty-msg{display:block;}
+#sendPanel.ss-empty #exportPanel > .panel-body > :not(.ss-empty-msg){display:none !important;}
+#sendPanel.ss-empty #sharePanel .sh-card{display:none !important;}
 .empty .pl-empty-ic{position:relative;width:76px;height:76px;margin:0 auto 14px;font-size:0;}
 .pl-empty-ic .pe-r{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-width:3.5;stroke-linecap:round;opacity:.75;}
 .pl-empty-ic .pe-c{position:absolute;inset:19px;border-radius:50%;background:var(--panel-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;color:var(--text);}
@@ -1888,6 +1897,7 @@ body.rp-open{overflow:hidden;}
 .play-chip.fav-chip.active .pc-n{color:#ffd0da;background:rgba(255,59,99,.3);}
 /* Your plays: All / Unplayed / Played switch, the kinds of Played under it, extras on the right */
 #playChips.play-chips{display:flex;flex-direction:column;flex-wrap:nowrap;gap:8px;flex:1 1 auto;min-width:0;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:0;}
+.play-bar:not(.connected) #playChips.play-chips{display:none;}   /* nothing to filter until a profile is connected */
 .pb-main{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;}
 .pb-seg{display:flex;flex:1 1 340px;min-width:0;border:1px solid var(--border-2);border-radius:9px;overflow:hidden;background:#0f1114;}
 .pb-seg .play-chip{flex:1 1 0;min-width:0;justify-content:center;border:0;border-radius:0;box-shadow:none;}
@@ -3215,7 +3225,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <div class="empty">
                 <div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span></div>
                 <p><b>Your playlist is empty.</b></p>
-                <p>Add maps from <b>Search Results</b>.</p>
+                <p>Add maps from <b>Search Results</b> or <b>Quick Add</b>.</p>
               </div>
             </div>
           </div>
@@ -3382,6 +3392,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <section class="panel tg-pane" id="exportPanel">
             <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><h2>Export</h2></div>
             <div class="panel-body">
+              <p class="ss-empty-msg">Add maps to <b>Your Playlist</b> to download it.</p>
               <div class="export-validation" id="exportValidation">
                 <div class="valitem ok"><span class="ico">◇</span><span>Add maps to <b>Your Playlist</b>, then export.</span></div>
               </div>
@@ -3465,6 +3476,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <section class="panel tg-pane" id="sharePanel">
             <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><h2>Share</h2></div>
             <div class="panel-body sh-pane">
+              <p class="ss-empty-msg">Add maps to <b>Your Playlist</b> to share it.</p>
               <div class="sh-card">
                 <div class="sh-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg><b>Share link</b><span class="sh-tag">one-time copy</span></div>
                 <p class="sh-p">Packs the maps into the link itself. No hosting, no account. Whoever opens it gets the playlist as it is right now, so it's great for tournament pools and sending a set to a friend.</p>
@@ -3543,7 +3555,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:47Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:58Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -7069,8 +7081,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var list = el.basketList, n = state.basket.length;
     var fab = document.getElementById('favAddBtn'); if (fab) fab.hidden = !lqFavDev();
     var plt = document.getElementById('plTools'); if (plt) plt.hidden = !n;   // Stats, Info, Cover, Prune, Warm-up show once there are maps
+    var ppn = document.querySelector('.playlist-panel'); if (ppn) ppn.classList.toggle('pl-empty', !n);
+    ssEmptyTab();
     el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) + rtPart() : '';
-    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span></div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b>.</p></div>'; plAfterRender(); return; }
+    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span></div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> or <b>Quick Add</b>.</p></div>'; plAfterRender(); return; }
     var last = n - 1, items = [], fd = lqFavDev(), fdn = fd ? esc(lqDevName(fd)) : '';
     state.basket.forEach(function (e) {
       var k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
@@ -15460,6 +15474,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (lost) tgShow(g, g.classList.contains('tg-closable') ? '' : tgFirst(g), false);
     });
   }
+  // An empty playlist has nothing to download or share, so Save and send opens on Library. Once maps
+  // arrive it goes back to the tab you had, unless you picked one yourself meanwhile.
+  function ssEmptyTab() {
+    var g = document.getElementById('sendPanel'); if (!g || !g.querySelector('.tg-tab.on, .tg-pane.tg-on')) { if (g) g.classList.toggle('ss-empty', !state.basket.length); return; }
+    var empty = !state.basket.length, cur = tgCurrent(g), was = g._ssEmpty;
+    g.classList.toggle('ss-empty', empty); g._ssEmpty = empty;
+    if (empty && was !== true && (cur === 'exportPanel' || cur === 'sharePanel')) { g._ssAuto = cur; tgShow(g, 'libraryPanel', false); }
+    else if (!empty && was === true && g._ssAuto) { if (cur === 'libraryPanel') tgShow(g, g._ssAuto, false); g._ssAuto = null; }
+  }
   function initTabGroups() {
     tgSync();
     Array.prototype.forEach.call(document.querySelectorAll('.tabgroup'), function (g) {
@@ -15475,6 +15498,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (g.classList.contains('tg-closable')) tgShow(g, tab ? saved : '', false);
       else tgShow(g, tab ? saved : (libGet() && document.getElementById('lqPanel') && !document.getElementById('lqPanel').hidden ? 'lqPanel' : tgFirst(g)), false);
     });
+    ssEmptyTab();
   }
 
   // ---- compact rows ------------------------------------------------------------------------
