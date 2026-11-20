@@ -538,6 +538,10 @@ button.si-pl:hover{border-color:var(--blue);color:#fff;}
 .empty .empty-ic{font-size:34px;color:var(--muted-2);margin-bottom:10px;}
 .empty p{margin:3px 0;font-size:14px;}
 .empty b{color:var(--text);}
+.empty .pl-empty-ic{position:relative;width:76px;height:76px;margin:0 auto 14px;font-size:0;}
+.pl-empty-ic .pe-r{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-width:3.5;stroke-linecap:round;opacity:.75;}
+.pl-empty-ic .pe-c{position:absolute;inset:19px;border-radius:50%;background:var(--panel-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;color:var(--text);}
+.pl-empty-ic .pe-c svg{width:20px;height:20px;}
 
 /* ---------- Export ---------- */
 .export-validation{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
@@ -1669,6 +1673,7 @@ body.sd-lock .toast.show{z-index:950}
 }
 #sendPanel{container:send/inline-size;}
 #plTools{container:tools/inline-size;}
+#plTools[hidden]{display:none;}
 /* Phones: the five tool tabs on one row (the Tools label makes way) */
 @container tools (max-width:440px){#plTools .tg-lbl{display:none;}#plTools .tg-tabs{gap:6px;}#plTools .tg-tab{padding:7px 10px;}}
 @container tools (max-width:350px){#plTools .tg-tabs{gap:4px;}#plTools .tg-tab{padding:7px 7px;font-size:13.5px;}}
@@ -3187,9 +3192,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <div class="panel-body list-body">
             <div class="song-list basket" id="basketList">
               <div class="empty">
-                <div class="empty-ic">♪</div>
+                <div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span></div>
                 <p><b>Your playlist is empty.</b></p>
-                <p>Add maps from <b>Search Results</b> above - or hit <b>+ Add all</b>.</p>
+                <p>Add maps from <b>Search Results</b>.</p>
               </div>
             </div>
           </div>
@@ -3517,7 +3522,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-18T11:53Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:26Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -7041,8 +7046,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     noteBasketChange(); plNameSync();
     var list = el.basketList, n = state.basket.length;
     var fab = document.getElementById('favAddBtn'); if (fab) fab.hidden = !lqFavDev();
+    var plt = document.getElementById('plTools'); if (plt) plt.hidden = !n;   // Stats, Info, Cover, Prune, Warm-up show once there are maps
     el.playlistCount.textContent = n ? mapsLabel(n, uniqueHashes(state.basket)) + rtPart() : '';
-    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic">♪</div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b> - click a row or hit <b>+ Add all</b>.</p></div>'; plAfterRender(); return; }
+    if (!n) { list.innerHTML = '<div class="empty"><div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span></div><p><b>Your playlist is empty.</b></p><p>Add maps from <b>Search Results</b>.</p></div>'; plAfterRender(); return; }
     var last = n - 1, items = [], fd = lqFavDev(), fdn = fd ? esc(lqDevName(fd)) : '';
     state.basket.forEach(function (e) {
       var k = keyOf(e), fon = fd && lqIsFav(fd, e.hash);
@@ -11358,6 +11364,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Expand a collapsible panel (and remember it), then bring it into view.
   function openPanel(panel) {
     if (!panel) return;
+    var plt = document.getElementById('plTools'); if (plt && plt.hidden && plt.contains(panel)) plt.hidden = false;   // a link to a tool still opens it on an empty playlist
     if (tgOpen(panel)) { var tg = tgGroup(panel); try { (tg || panel).scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} return; }
     if (panel.classList.contains('collapsed')) {
       panel.classList.remove('collapsed');
