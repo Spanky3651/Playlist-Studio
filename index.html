@@ -538,6 +538,14 @@ button.si-pl:hover{border-color:var(--blue);color:#fff;}
 .empty .empty-ic{font-size:34px;color:var(--muted-2);margin-bottom:10px;}
 .empty p{margin:3px 0;font-size:14px;}
 .empty b{color:var(--text);}
+.es-cards{display:grid;gap:8px;max-width:320px;margin:16px auto 4px;text-align:left;}
+.es-card{display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border:1px solid var(--border-2);border-radius:var(--r-sm);background:var(--panel-3);color:var(--muted);font:13.5px/1.35 var(--sans);text-align:left;cursor:pointer;transition:border-color .13s;}
+.es-card:hover,.es-card:focus-visible{border-color:var(--blue);}
+.es-ci{width:32px;height:32px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#0d1a33;color:var(--blue-text);border:1px solid #1e3a6e;}
+.es-ci svg{width:16px;height:16px;}
+.es-tx{min-width:0;}
+.es-card b{display:block;color:var(--text);font-size:14.5px;margin-bottom:1px;}
+.es-chev{margin-left:auto;color:var(--muted-2);font-size:18px;}
 .empty .pl-empty-ic{position:relative;width:76px;height:76px;margin:0 auto 14px;font-size:0;}
 .pl-empty-ic .pe-r{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-width:3.5;stroke-linecap:round;opacity:.75;}
 .pl-empty-ic .pe-c{position:absolute;inset:19px;border-radius:50%;background:var(--panel-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;color:var(--text);}
@@ -678,11 +686,22 @@ html:not(.no-quest-usb) [data-no-usb]{display:none!important;}
 .lq-nw{white-space:nowrap;}
 .lq-cov{width:40px;height:40px;border-radius:8px;flex:none;object-fit:cover;background:#101114;border:1px solid #292d34;}
 /* My order: a grip at the start of each row; the row being dragged lifts, the others slide out of its way */
-/* + adds to: a headset playlist instead of Your Playlist */
-.add-to{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--muted);}
+/* + adds to: a pill in the Search Results header, Your Playlist or a headset playlist */
+.add-to{display:flex;align-items:center;flex:0 1 auto;min-width:0;height:32px;margin-left:auto;padding-left:10px;border:1px solid #1e3a6e;border-radius:9px;background:#0d1a33;font:13px var(--mono);color:#cfe0ff;}
 .add-to[hidden]{display:none;}
-.add-to select{width:auto;flex:0 1 320px;min-width:0;padding:6px 30px 6px 10px;font-size:14px;}
-.add-to.on select{border-color:#2f8cff;color:#cfe0ff;background-color:#111215;}
+.add-to label{flex:none;cursor:pointer;}
+.add-to select{width:auto;min-width:0;max-width:190px;height:30px;min-height:0;padding:0 26px 0 6px;border:0;background-color:transparent;background-position:right 8px center;font:13px var(--mono) !important;color:#cfe0ff;text-overflow:ellipsis;}
+.add-to select:focus{outline:none;box-shadow:none;}
+.add-to:focus-within{border-color:#2f8cff;}
+.add-to.on{border-color:#2f8cff;background:rgba(47,140,255,.2);}
+.panel-head .rc-pill.on + .add-to{margin-left:8px;}
+/* phones: with a result count and Add in the header, the picker takes its own line under them */
+@media(max-width:720px){
+  .add-to select{max-width:150px;}
+  .panel-head:has(.rc-pill.on){flex-wrap:wrap;row-gap:10px;}
+  .panel-head:has(.rc-pill.on) .add-to{order:9;flex:1 1 100%;margin-left:0;}
+  .panel-head:has(.rc-pill.on) .add-to select{flex:1 1 auto;max-width:none;}
+}
 /* a peek at a headset playlist's maps, under its row */
 .lq-peek{margin:0 10px 10px 14px;border:1px solid #1e2126;border-radius:10px;background:#090a0b;padding:8px 10px;}
 .lq-peek-h{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:4px;flex-wrap:wrap;}
@@ -1885,6 +1904,12 @@ body.rp-open{overflow:hidden;}
   .pb-tools{order:3;}
   .pb-seg .play-chip{padding:5px 4px;gap:5px;}
   .pb-sub .play-chip,.pb-tools .play-chip{flex:none;}
+  .play-bar .play-bar-lbl{display:none;}
+  .play-bar.connected #playChips{width:100%;}
+  .pb-seg{width:100%;}
+  .pb-seg .play-chip{height:36px;padding:0 4px;}
+  .pb-tools{gap:8px;}
+  .pb-tools .play-chip{height:34px;padding:0 12px;}
 }
 .sort-order .so-a{font-weight:700;}
 .rank-seg{display:none;}
@@ -3057,7 +3082,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     <div class="work-area">
       <!-- Results -->
       <section class="panel list-panel">
-        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count rc-pill" id="resultCount" aria-live="polite"></span><button type="button" class="ghost sm ra-head-btn" id="resMoreHead" aria-haspopup="true" aria-expanded="false" aria-controls="resMore" title="Add maps from these results, and more list options" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
+        <div class="panel-head"><span class="ph-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h2>Search Results</h2><span class="count rc-pill" id="resultCount" aria-live="polite"></span><div class="add-to" id="addToBar" hidden title="Where + sends a map"><label for="addToSel" aria-label="Plus adds to">+</label><select id="addToSel"></select></div><button type="button" class="ghost sm ra-head-btn" id="resMoreHead" aria-haspopup="true" aria-expanded="false" aria-controls="resMore" title="Add maps from these results, and more list options" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button><button type="button" class="ghost sm dens-btn" data-density title="Compact rows: more maps on screen" aria-label="Toggle compact rows" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button></div>
         <div class="res-meta" id="resMeta" hidden></div>
         <div class="clan-bar" id="clanBar" hidden></div>
         <div class="list-actions" id="resultActions" hidden>
@@ -3158,13 +3183,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         </div>
         <div class="newbie-hint" id="newbieHint" hidden><span class="nh-txt"><b>New to custom maps?</b> These start at 4★, easiest first. Most new players are happier starting lower.</span><button type="button" class="ghost sm" id="newbieEasier">Start easier: 0-4★</button><button type="button" class="newbie-x" id="newbieX" aria-label="Hide this tip" title="Hide this tip">×</button></div>
         <div class="panel-body list-body">
-          <div class="add-to" id="addToBar" hidden><label for="addToSel">+ adds to</label><select id="addToSel"></select></div>
           <div class="song-list" id="resultList">
             <div class="empty">
-              <div class="empty-ic">◇</div>
-              <p><b>No results yet.</b></p>
-              <p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b> below.</p>
-              <p class="empty-alt">New here? <button type="button" class="link-btn" data-open-gallery>Start from a ready-made playlist</button></p>
+              <div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span></div><p><b>No results yet.</b></p><div class="es-cards"><button type="button" class="es-card" data-es="search"><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span><span class="es-tx"><b>Search</b>Set your filters, then hit Search</span><span class="es-chev" aria-hidden="true">›</span></button><button type="button" class="es-card" data-es="quick"><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span class="es-tx"><b>Quick Add</b>Paste BSR codes or links</span><span class="es-chev" aria-hidden="true">›</span></button><button type="button" class="es-card" data-open-gallery><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="es-tx"><b>Ready-made playlists</b>Start from one and tweak it</span><span class="es-chev" aria-hidden="true">›</span></button></div>
             </div>
           </div>
         </div>
@@ -3522,7 +3543,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:26Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:42Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -6923,7 +6944,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         msg = '<p><b>Every match is already in your playlist.</b></p><p>Turn off <b>Hide added</b> to see them, or loosen your filters to find more.</p>';
       } else if (!state.raw.length) {
         if (!state.fetched) {
-          msg = '<p><b>No results yet.</b></p><p>Set your filters and hit <b>Search</b> - or paste BSR codes into <b>Quick Add</b>.</p><p class="empty-alt">New here? <button type="button" class="link-btn" data-open-gallery>Start from a ready-made playlist</button></p>';
+          msg = '<p><b>No results yet.</b></p><div class="es-cards"><button type="button" class="es-card" data-es="search"><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span><span class="es-tx"><b>Search</b>Set your filters, then hit Search</span><span class="es-chev" aria-hidden="true">›</span></button><button type="button" class="es-card" data-es="quick"><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span class="es-tx"><b>Quick Add</b>Paste BSR codes or links</span><span class="es-chev" aria-hidden="true">›</span></button><button type="button" class="es-card" data-open-gallery><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="es-tx"><b>Ready-made playlists</b>Start from one and tweak it</span><span class="es-chev" aria-hidden="true">›</span></button></div>';
         } else if (state.viewMode === 'search' && state.emptyProbe && state.emptyProbe.sig === state.lastSig) {
           msg = emptyProbeMsg();
         } else if (state.source === 'beatsaver') {
@@ -6953,7 +6974,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           : 'Loosen your filters or raise <b>Maps to scan</b> to pull more.';
         msg = '<p><b>No matches.</b></p><p>' + tail + '</p>';
       }
-      list.innerHTML = '<div class="empty"><div class="empty-ic">◇</div>' + msg + '</div>';
+      list.innerHTML = '<div class="empty"><div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span></div>' + msg + '</div>';
       var _sw = document.getElementById('emptySwitchAll');
       if (_sw) _sw.addEventListener('click', function () { el.fType.value = 'all'; rememberRankType(); runFetch(); });
       var _bs = document.getElementById('emptySearchBs');
@@ -11334,6 +11355,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function setupNewcomerLinks() {
     document.addEventListener('click', function (e) {
       var g = e.target.closest('[data-open-gallery]'); if (g) { e.preventDefault(); track('empty-gallery'); openGallery(); return; }
+      var es = e.target.closest('[data-es]');
+      if (es) {
+        e.preventDefault(); track('empty-' + es.getAttribute('data-es'));
+        if (es.getAttribute('data-es') === 'quick') { spotShow('quick-add'); setTimeout(function () { var q = document.getElementById('quickAddInput'); if (q) try { q.focus(); } catch (x) {} }, 500); return; }
+        var f = document.getElementById('fSearch'); if (!f) return;
+        if (isMobileView()) setMobileView('filters');
+        openPanel(f.closest('.panel'));
+        setTimeout(function () { try { f.focus(); } catch (x) {} }, 300);
+        return;
+      }
       var a = e.target.closest('a[data-track]'); if (a) track(a.getAttribute('data-track'));
     });
     var pp = document.querySelector('#ppPanel > .panel-head');
