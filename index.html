@@ -538,14 +538,10 @@ button.si-pl:hover{border-color:var(--blue);color:#fff;}
 .empty .empty-ic{font-size:34px;color:var(--muted-2);margin-bottom:10px;}
 .empty p{margin:3px 0;font-size:14px;}
 .empty b{color:var(--text);}
-.es-cards{display:grid;gap:8px;max-width:320px;margin:16px auto 4px;text-align:left;}
-.es-card{display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border:1px solid var(--border-2);border-radius:var(--r-sm);background:var(--panel-3);color:var(--muted);font:13.5px/1.35 var(--sans);text-align:left;cursor:pointer;transition:border-color .13s;}
-.es-card:hover,.es-card:focus-visible{border-color:var(--blue);}
-.es-ci{width:32px;height:32px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#0d1a33;color:var(--blue-text);border:1px solid #1e3a6e;}
-.es-ci svg{width:16px;height:16px;}
-.es-tx{min-width:0;}
-.es-card b{display:block;color:var(--text);font-size:14.5px;margin-bottom:1px;}
-.es-chev{margin-left:auto;color:var(--muted-2);font-size:18px;}
+/* Search Results empty state: phones get a hint and a button to the Filters tab; desktop shows the filters already */
+.es-open{display:inline-flex;align-items:center;gap:8px;margin-top:13px;padding:0 18px;height:42px;font-size:15px;}
+.es-open svg{width:17px;height:17px;}
+@media(min-width:721px){ .empty .es-m{display:none;} }
 /* empty playlist: no Sort or compact-rows toggle (its space is kept so the header doesn't jump) */
 .playlist-panel.pl-empty #shuffleBtn{display:none !important;}
 .playlist-panel.pl-empty .dens-btn{visibility:hidden;}
@@ -1896,6 +1892,7 @@ body.rp-open{overflow:hidden;}
 .play-chip.fav-chip.active{background:rgba(255,59,99,.16);border-color:#ff3b63;color:#fff;box-shadow:0 0 9px rgba(255,59,99,.25);}
 .play-chip.fav-chip.active .pc-n{color:#ffd0da;background:rgba(255,59,99,.3);}
 /* Your plays: All / Unplayed / Played switch, the kinds of Played under it, extras on the right */
+.play-bar .play-bar-lbl{display:none;}   /* the switch and chips speak for themselves */
 #playChips.play-chips{display:flex;flex-direction:column;flex-wrap:nowrap;gap:8px;flex:1 1 auto;min-width:0;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:0;}
 .play-bar:not(.connected) #playChips.play-chips{display:none;}   /* nothing to filter until a profile is connected */
 .pb-main{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;}
@@ -1914,7 +1911,6 @@ body.rp-open{overflow:hidden;}
   .pb-tools{order:3;}
   .pb-seg .play-chip{padding:5px 4px;gap:5px;}
   .pb-sub .play-chip,.pb-tools .play-chip{flex:none;}
-  .play-bar .play-bar-lbl{display:none;}
   .play-bar.connected #playChips{width:100%;}
   .pb-seg{width:100%;}
   .pb-seg .play-chip{height:36px;padding:0 4px;}
@@ -3195,7 +3191,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
         <div class="panel-body list-body">
           <div class="song-list" id="resultList">
             <div class="empty">
-              <div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span></div><p><b>No results yet.</b></p><div class="es-cards"><button type="button" class="es-card" data-es="search"><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span><span class="es-tx"><b>Search</b>Set your filters, then hit Search</span><span class="es-chev" aria-hidden="true">›</span></button></div>
+              <div class="empty-ic pl-empty-ic" aria-hidden="true"><svg class="pe-r" viewBox="0 0 64 64"><path d="M8.06 30.33A24 24 0 0 1 51.90 18.58" stroke="#ff2740"/><path d="M55.94 33.67A24 24 0 0 1 12.10 45.42" stroke="#2f7bff"/></svg><span class="pe-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span></div><p><b>No results yet.</b></p><p class="es-m">Set your filters, then hit <b>Search</b>.</p><p class="es-m"><button type="button" class="primary es-open" data-es="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Open filters</button></p>
             </div>
           </div>
         </div>
@@ -3555,7 +3551,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T13:01Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T13:10Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -6957,7 +6953,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         msg = '<p><b>Every match is already in your playlist.</b></p><p>Turn off <b>Hide added</b> to see them, or loosen your filters to find more.</p>';
       } else if (!state.raw.length) {
         if (!state.fetched) {
-          msg = '<p><b>No results yet.</b></p><div class="es-cards"><button type="button" class="es-card" data-es="search"><span class="es-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span><span class="es-tx"><b>Search</b>Set your filters, then hit Search</span><span class="es-chev" aria-hidden="true">›</span></button></div>';
+          msg = '<p><b>No results yet.</b></p><p class="es-m">Set your filters, then hit <b>Search</b>.</p><p class="es-m"><button type="button" class="primary es-open" data-es="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Open filters</button></p>';
         } else if (state.viewMode === 'search' && state.emptyProbe && state.emptyProbe.sig === state.lastSig) {
           msg = emptyProbeMsg();
         } else if (state.source === 'beatsaver') {
