@@ -3543,7 +3543,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:42Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-20T12:43Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -6935,6 +6935,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (chid && state.viewMode === 'clan') { var nh = state.raw.length - state.filtered.length; chid.hidden = nh <= 0; chid.textContent = nh > 0 ? nh + (nh === 1 ? ' map is' : ' maps are') + ' hidden by your filters (for example the Mode chips in Ranked Status & Sort).' : ''; }
     renderNewbieHint();
     renderResultCount(rows, avail);
+    state.resRows = rows.length; if (state.lq) lqAddToRender();   // the adds-to picker only shows once there are results
     document.body.classList.toggle('has-results', !!(rows.length || state.raw.length));
     if (!rows.length) {
       var msg;
@@ -10027,7 +10028,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var tg = state.lq.addTo, want = tg ? tg.dev + '|' + tg.k : '';
     if (want && !sel.querySelector('option[value="' + want + '"]')) { state.lq.addTo = null; lqTarget.keys = null; want = ''; renderResults(); }
     sel.value = want;
-    bar.hidden = false; bar.classList.toggle('on', !!want);
+    bar.hidden = !state.resRows; bar.classList.toggle('on', !!want);
   }
   function lqAddToPick(v) {
     if (!v) { state.lq.addTo = null; lqTarget.keys = null; lqAddToRender(); renderResults(); track('lq-add-to-mine'); return; }
