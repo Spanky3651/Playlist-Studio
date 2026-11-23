@@ -1,6 +1,6 @@
 # 🎵 Playlist Studio
 
-**A Beat Saber playlist tool and builder that searches [BeatLeader](https://beatleader.xyz) and [BeatSaver](https://beatsaver.com).**
+**A Beat Saber playlist tool and builder that searches [BeatLeader](https://beatleader.com) and [BeatSaver](https://beatsaver.com).**
 Filter the ranked catalog by star rating, mapper, NPS and more - or flip to the BeatSaver catalog and build by **tags** (tech, speed, genres) including unranked maps. Curate the maps you actually want, preview them in-app, see your own scores on every map, and export a ready-to-play `.bplist` - all from a single self-contained HTML file.
 
 **On Quest?** The free [Studio Sync](https://github.com/Spanky3651/Studio-Sync) mod sends playlists from Studio straight to your headset, no cable or file copying, and lets you edit the ones already on it. [Set it up](https://spanky3651.github.io/Playlist-Studio/?utm_source=github&utm_campaign=readme-playlist-studio#studio-sync) or see *[Studio Sync](#studio-sync-quest-mod)* below.
@@ -306,7 +306,7 @@ No hosting of your own? Use **Host this playlist** instead of steps 1 and 2.
 
 Vanilla HTML, CSS and JavaScript - no framework and no build tooling. The single `index.html` inlines the stylesheet, the canvas cover generator, the `.bplist` exporter, and the application logic.
 
-- Map data - [BeatLeader](https://api.beatleader.xyz) (ranked catalog, scores, PP) and [BeatSaver](https://beatsaver.com) (full catalog, tags)
+- Map data - [BeatLeader](https://api.beatleader.com) (ranked catalog, scores, PP) and [BeatSaver](https://beatsaver.com) (full catalog, tags)
 - Map previews - [BeatSaver](https://beatsaver.com) + [ArcViewer](https://github.com/allpoland/ArcViewer)
 - Export format - [PlaylistManager](https://github.com/rithik-b/PlaylistManager)
 - Extra stats and history - [ScoreSaber](https://scoresaber.com) and [AccSaber](https://accsaber.com)

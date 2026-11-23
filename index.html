@@ -2672,7 +2672,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
             <input type="text" id="playerInput" placeholder="BeatLeader username, ID, or profile URL" />
             <button class="ghost sm" id="connectBtn">Connect</button>
           </div>
-          <p class="muted hint-line">Type your BeatLeader <b>username</b> (e.g. <code>MSploit</code>), your ID, or paste your profile link (<code>beatleader.xyz/u/…</code>).</p>
+          <p class="muted hint-line">Type your BeatLeader <b>username</b> (e.g. <code>MSploit</code>), your ID, or paste your profile link (<code>beatleader.com/u/…</code>).</p>
           <p class="muted hint-line" id="pcNoBl">No BeatLeader profile yet? Skip this. Your scores appear here after you play with the BeatLeader mod.</p>
           <div class="pc-switch" id="pcSwitchRow" hidden><span class="muted hint-line" id="pcSwitchNote" style="margin:0;flex:1 1 220px"></span><button type="button" class="ghost sm" id="pcSwitchCancel">Cancel</button></div>
         </div>
@@ -3552,7 +3552,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-23T12:26Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-23T12:34Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4334,7 +4334,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
       });
 
       var songObjects = order.map(function (k) { return byHash[k]; });
-      var customData = { generator: 'Playlist Studio', source: 'api.beatleader.xyz', songCount: songObjects.length };
+      var customData = { generator: 'Playlist Studio', source: 'api.beatleader.com', songCount: songObjects.length };
       if (meta.syncURL) customData.syncURL = meta.syncURL;
       return {
         playlistTitle: meta.title || 'Playlist Studio Mix',
@@ -4526,7 +4526,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   'use strict';
 
   var bootHref = location.href;   // the address this window opened with (see setupAppLaunch)
-  var API_BASE = 'https://api.beatleader.xyz';
+  var API_BASE = 'https://api.beatleader.com';
   var PAGE_SIZE = 100, PAGE_DELAY_MS = 130, RELAY_DELAY_MS = 220;
   var RELAY_TIMEOUT = 15000, DIRECT_TIMEOUT = 3500;
   var PRESET_KEY = 'playlistStudio.presets.v1';
@@ -6682,7 +6682,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return (p && !p.classList.contains('collapsed')) || num(el.ppMin, null) != null || num(el.ppMax, null) != null || el.fSort.value === 'pp';
   }
   function blLink(e) {
-    return e.leaderboardId ? '<a class="row-link" href="https://beatleader.xyz/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener" title="Open on BeatLeader">↗</a>' : '';
+    return e.leaderboardId ? '<a class="row-link" href="https://beatleader.com/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener" title="Open on BeatLeader">↗</a>' : '';
   }
   function fmtN(n) { return Number(n || 0).toLocaleString('en-US'); }
   // Results header (Oct 25 2026): "1,219 maps", or "845 of 1,219" when a Your plays chip, Hide added or a skip
@@ -7150,7 +7150,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var it = function (act, ico, label, off, cls) { return '<button type="button" class="bk-mi' + (cls ? ' ' + cls : '') + '" role="menuitem" data-bk="' + act + '"' + (off ? ' disabled' : '') + '><span class="bk-mic">' + ico + '</span>' + label + '</button>'; };
     var h = it('up', BK_ICO.up, 'Move up', i === 0) + it('down', BK_ICO.down, 'Move down', i === last) + it('top', BK_ICO.top, 'Move to top', i === 0) + it('bottom', BK_ICO.bottom, 'Move to bottom', i === last);
     if (e.hash) h += '<div class="bk-hr"></div>' + it('diff', BK_ICO.diff, 'Change difficulty…', false);
-    if (e.leaderboardId) h += '<div class="bk-hr"></div><a class="bk-mi" role="menuitem" data-bk="bl" href="https://beatleader.xyz/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener"><span class="bk-mic">' + BK_ICO.out + '</span>Open on BeatLeader</a>';
+    if (e.leaderboardId) h += '<div class="bk-hr"></div><a class="bk-mi" role="menuitem" data-bk="bl" href="https://beatleader.com/leaderboard/global/' + esc(e.leaderboardId) + '" target="_blank" rel="noopener"><span class="bk-mic">' + BK_ICO.out + '</span>Open on BeatLeader</a>';
     h += '<div class="bk-hr"></div>' + it('remove', BK_ICO.rm, 'Remove from playlist', false, 'danger');
     m.innerHTML = h; m.hidden = false; bkMenuKey = key; m.removeAttribute('data-sub');
     Array.prototype.forEach.call(el.basketList.querySelectorAll('.bk-more.on'), function (x) { x.classList.remove('on'); x.setAttribute('aria-expanded', 'false'); });
@@ -12422,7 +12422,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         el.previewScore.innerHTML = 'Your best: <b>' + (ps.a * 100).toFixed(2) + '%</b>' +
           (ps.fc ? ' · <span class="fc">FC</span>' : ' · ' + ps.m + ' miss' + (ps.fa ? ' (FC would be ' + (ps.fa * 100).toFixed(2) + '%)' : '')) +
           (ps.rk ? ' · rank #' + ps.rk : '') + (ps.t ? ' · ' + fmtDate(ps.t) : '') +
-          (ps.rp ? ' · <a href="https://replay.beatleader.xyz/?link=' + encodeURIComponent(ps.rp) + '" target="_blank" rel="noopener">watch replay ↗</a>' : '');
+          (ps.rp ? ' · <a href="https://replay.beatleader.com/?link=' + encodeURIComponent(ps.rp) + '" target="_blank" rel="noopener">watch replay ↗</a>' : '');
       } else {
         el.previewScore.className = 'preview-score unplayed';
         el.previewScore.textContent = "You haven't played this map yet.";
@@ -12510,8 +12510,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (fixed) { applyClientFilters(); renderAll(); }
     }, function () {});
   }
+  // BeatLeader moved off beatleader.xyz (Nov 2026): picture links saved before that point at the new host.
+  function blPic(u) { return String(u || '').replace(/^https:\/\/(cdn\.assets|api)\.beatleader\.xyz\//, 'https://$1.beatleader.com/'); }
   function loadPlayerCache() {
-    try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { state.player = s.player; state.scores = s.scores || {}; state._scoreHashIdx = null; homeSeen(state.player); } } catch (e) {}
+    try { var s = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null'); if (s && s.player) { if (s.player.avatar) s.player.avatar = blPic(s.player.avatar); state.player = s.player; state.scores = s.scores || {}; state._scoreHashIdx = null; homeSeen(state.player); } } catch (e) {}
     try { state.playIndex = JSON.parse(localStorage.getItem(PLAYS_KEY) || '{}') || {}; } catch (e) { state.playIndex = {}; }
   }
   function renderProfile() {
@@ -12971,7 +12973,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // ---- Compare with a player (account menu): head to head on the ranked maps you've both played, and playlists from it ----
   var CMP_KEY = 'playlistStudio.compare.v1', cmp = { tok: 0, res: null, mates: null, matesFor: '' };
   function cmpEl(id) { return document.getElementById(id); }
-  function cmpRecent() { try { var a = JSON.parse(localStorage.getItem(CMP_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function cmpRecent() { try { var a = JSON.parse(localStorage.getItem(CMP_KEY) || '[]'); return Array.isArray(a) ? a.map(function (x) { if (x && x.avatar) x.avatar = blPic(x.avatar); return x; }) : []; } catch (e) { return []; } }
   function cmpRemember(p) {
     var a = cmpRecent().filter(function (x) { return x && String(x.id) !== String(p.id); });
     a.unshift({ id: String(p.id), name: p.name || '', avatar: p.avatar || '', t: Date.now() });
