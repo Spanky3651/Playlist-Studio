@@ -1902,6 +1902,7 @@ body.rp-open{overflow:hidden;}
 .pb-seg .play-chip+.play-chip{border-left:1px solid var(--border-2);}
 .pb-seg .play-chip.active{background:rgba(47,140,255,.2);border-color:transparent;box-shadow:none;}
 .pb-seg .play-chip.active+.play-chip{border-left-color:var(--border-2);}
+.dc-lbl{margin:18px 0 10px;}.dc-seg{width:100%;flex:none;}
 .pb-tools{display:flex;flex-wrap:wrap;gap:6px;}
 .pb-sub{display:flex;flex-wrap:wrap;gap:6px;padding-left:10px;border-left:2px solid #2f333c;}
 .pb-sub[hidden]{display:none;}
@@ -2863,6 +2864,14 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
           <label class="chip"><input type="checkbox" value="Lightshow" /><span>Lightshow</span></label>
           <label class="chip"><input type="checkbox" value="Lawless" /><span>Lawless</span></label>
         </div>
+        <div class="bs-only dc-wrap"><div class="feat-lbl dc-lbl">At least this many diffs <span class="info" data-tip="Keep only maps with at least this many difficulties in a checked game mode. With Standard checked, 3 means the map has 3 or more Standard difficulties.">i</span></div>
+          <div class="pb-seg dc-seg" id="dcSeg" role="group" aria-label="At least this many difficulties">
+            <button type="button" class="play-chip active" data-dc="1" aria-pressed="true">Any</button>
+            <button type="button" class="play-chip" data-dc="2" aria-pressed="false">2</button>
+            <button type="button" class="play-chip" data-dc="3" aria-pressed="false">3</button>
+            <button type="button" class="play-chip" data-dc="4" aria-pressed="false">4</button>
+            <button type="button" class="play-chip" data-dc="5" aria-pressed="false">5</button>
+          </div></div>
         <div class="md-diff"><span class="feat-lbl">Difficulty</span><label class="switch"><input type="checkbox" id="diffEnable" /><span class="track"></span><span class="switch-lbl">Filter on</span></label></div>
         <div class="chips diff-chips off" id="diffChips">
           <label class="chip"><input type="checkbox" value="Easy" checked /><span>Easy</span></label>
@@ -2906,7 +2915,9 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
               <option value="1m">Past month</option>
               <option value="3m">Past 3 months</option>
               <option value="6m">Past 6 months</option>
-              <option value="1y">Past year</option>
+              <option value="1y">Past 1 year</option>
+              <option value="2y">Past 2 years</option>
+              <option value="3y">Past 3 years</option>
             </select></div>
           <div class="field bl-only"><label class="field-label">Sort by <span class="info" data-tip="Sorts the results. Stars = BeatLeader difficulty. Tech/Acc/Pass are the three sub-ratings that make up a map's stars. NPS/Duration/BPM sort by song metrics. Sorting is applied after filtering.">i</span></label>
             <select id="fSort">
@@ -3554,7 +3565,7 @@ body.egg-halloween .fy-btn::before{content:'';position:absolute;top:0;right:0;wi
     </a><a class="kofi-support nf-kofi" data-gc="kofi-click" href="https://ko-fi.com/msploit21?utm_source=playlist-studio&amp;utm_medium=support-button" target="_blank" rel="noopener" title="Support MSploit on Ko-fi"><span class="kofi-heart">❤️</span>Support me</a></div>
   </div>
   <div class="nf-strip">
-    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-23T13:01Z">Updated recently</span></div>
+    <div class="nf-sl"><span class="nf-map">Map data &copy; BeatLeader</span><span class="nf-dot">&middot;</span><span class="nf-upd" id="footUpdated" data-updated="2026-11-26T23:12Z">Updated recently</span></div>
     <div class="nf-sr"><div class="foot-count" id="footCount" hidden></div><button type="button" class="fxsw" id="blocksSw" role="switch" aria-checked="false"><span class="fxsw-track"><span class="fxsw-knob"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" class="k-body"/><path d="M3.3 3.3h13.4v1.9L10 8.3 3.3 5.2z" class="k-arrow"/></svg></span></span><span>Falling blocks</span></button></div>
   </div>
 </footer>
@@ -4790,8 +4801,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       durMin: num(el.fDurMin, null), durMax: num(el.fDurMax, null),
       bpmMin: num(el.fBpmMin, null), bpmMax: num(el.fBpmMax, null),
       ppMin: num(el.ppMin, null), ppMax: num(el.ppMax, null),
-      bsMinRating: num(el.bsMinRating, null), bsAge: el.bsAge.value, style: styleMask()
+      bsMinRating: num(el.bsMinRating, null), bsAge: el.bsAge.value, dcMin: dcMin(), style: styleMask()
     };
+  }
+  // "At least this many diffs" switch (BeatSaver). 1 = Any.
+  function dcMin() { var b = document.querySelector('#dcSeg .play-chip.active'); return b ? +b.dataset.dc || 1 : 1; }
+  function setDcMin(n) {
+    Array.prototype.forEach.call(document.querySelectorAll('#dcSeg .play-chip'), function (b) {
+      var on = +b.dataset.dc === n; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   }
   // Map style chips (BeatLeader's Acc / Tech / Midspeed / Speed): a bit mask, 0 = any style.
   var STYLE_NAMES = { 1: 'Acc', 2: 'Tech', 4: 'Midspeed', 8: 'Speed' };
@@ -5702,6 +5720,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (o.withAuto) p.set('automapper', 'true');
     var ts = tagState(), tag = o.noTags ? '' : buildTagParam(ts); if (tag) p.set('tags', tag);
     if (el.bsCurated.checked && !o.noCurated) p.set('curated', 'true');
+    var from = bsAgeFrom(f.bsAge); if (from) p.set('from', from);
     if (f.npsMin != null) p.set('minNps', f.npsMin);
     if (f.npsMax != null) p.set('maxNps', f.npsMax);
     if (f.bpmMin != null) p.set('minBpm', f.bpmMin);
@@ -5712,6 +5731,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return BS_API + '/search/text/' + page + '?' + p.toString();
   }
   var DIFF_RANK = { ExpertPlus: 5, Expert: 4, Hard: 3, Normal: 2, Easy: 1 };
+  // Uploaded window in days. BeatSaver gets it as the search's `from` date (start of that UTC day), and the
+  // client filter keeps applying it so narrowing the window after a search still works without a re-fetch.
+  var BS_AGE_DAYS = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366, '2y': 731, '3y': 1096 };
+  function bsAgeFrom(age) {
+    var d = BS_AGE_DAYS[age]; if (!d) return '';
+    var n = new Date(); return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()) - d * 864e5).toISOString();
+  }
   // A BeatSaver map → ONE entry per MAP (all difficulties travel into the export), matching the
   // BeatSaver website's one-row-per-map view. The hardest diff supplies the headline NPS/mode, and
   // stars = the map's best rating. difficultyName='' means "all difficulties" on export.
@@ -5725,8 +5751,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var hardest = diffs[0] || {};
     // Track every characteristic + difficulty the map actually contains so the Game Mode and
     // Difficulty filters can match on the whole map (one-per-map entries have no single diff).
-    var charSet = {}, diffSet = {};
-    diffs.forEach(function (d) { charSet[d.characteristic || 'Standard'] = 1; diffSet[BplistExporter.mapDifficultyName(d.difficulty)] = 1; });
+    var charSet = {}, diffSet = {}, dcSeen = {}, dcByMode = {};
+    diffs.forEach(function (d) {
+      var ch = d.characteristic || 'Standard', dn = BplistExporter.mapDifficultyName(d.difficulty);
+      charSet[ch] = 1; diffSet[dn] = 1;
+      if (!dcSeen[ch + '|' + dn]) { dcSeen[ch + '|' + dn] = 1; dcByMode[ch] = (dcByMode[ch] || 0) + 1; }
+    });
     var modes = Object.keys(charSet);
     var stats = map.stats || {};
     var score = typeof stats.score === 'number' ? stats.score : null;           // 0..1 weighted up/down rating
@@ -5738,7 +5768,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       bpm: meta.bpm || 0, duration: meta.duration || 0, cover: v.coverURL || '',
       stars: diffs.reduce(function (m, d) { return Math.max(m, d.stars || 0); }, 0),
       difficultyName: '', modeName: (charSet['Standard'] ? 'Standard' : (hardest.characteristic || 'Standard')),
-      modes: modes, diffSet: Object.keys(diffSet), diffCount: diffs.length, bsScore: score, uploaded: upT,
+      modes: modes, diffSet: Object.keys(diffSet), diffCount: diffs.length, dcByMode: dcByMode, bsScore: score, uploaded: upT,
       nps: hardest.nps || 0, njs: hardest.njs || 0, notes: hardest.notes || 0, techRating: 0, accRating: 0, passRating: 0, key: map.id, ai: !!map.automapper, _bs: true };
   }
   // The keyword box can hold a direct map reference: a BSR code, a beatsaver.com/maps link, or a
@@ -5814,7 +5844,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       ? lookup(ref)                                                   // explicit link/hash/!code → resolve that one map
       : step().then(function () { if (!collected.length && ref) return lookup(ref); }); // bare code → text search, fall back to code lookup
     run.then(function () {
-      state.raw = collected; state.fetched = true; state.lastSig = 'bs'; state.bsrLookup = bsrMode; el.barFill.style.width = '100%';
+      state.raw = collected; state.fetched = true; state.lastSig = 'bs'; state.bsAgeFetched = f.bsAge; state.bsrLookup = bsrMode; el.barFill.style.width = '100%';
       if (rateLimited && !collected.length) { setStatus('Rate-limited', 'err'); toast('BeatSaver rate-limited the search before any maps came back - wait a moment and Search again.', 'warn'); }
       else if (!collected.length) { setStatus('No maps found', 'err'); if (bsrMode) toast('No BeatSaver map matched that code or link - double-check it.', 'warn'); else emptyProbe(f); }
       else if (rateLimited) { setStatus('Loaded ' + mapsSeen + ' maps (rate-limited)', 'on'); toast('Loaded ' + mapsSeen + ' of ' + (total || '?') + ' maps, then BeatSaver rate-limited - search again to pull the rest.', 'warn'); }
@@ -5840,6 +5870,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return String(name || '').replace(/auto[\s_-]*light(?:er|ing)?(?:\s+by\b[^,&\/|]*)?/gi, ' ');
   }
   // True when a mapper credit indicates auto-generated LIGHTING (e.g. "Autolighter 2 by Jonas").
+  // A mapper name matches only as a whole name: the characters around it can't be letters, digits or _,
+  // so "emi" finds "Emi" and "Emi & Joetastic" but not "Emir" or "Emiru".
+  var NAME_CH = /[\p{L}\p{N}_]/u;
+  function mapperNameIn(hay, t) {
+    for (var i = hay.indexOf(t); i !== -1; i = hay.indexOf(t, i + 1)) {
+      var a = i > 0 ? hay.charAt(i - 1) : '', b = hay.charAt(i + t.length);
+      if (!(a && NAME_CH.test(a)) && !(b && NAME_CH.test(b))) return true;
+    }
+    return false;
+  }
   function hasAutoCredit(name) { return /auto[\s_-]*light(?:er|ing)?/i.test(String(name || '')); }
   // "Last played" is meaningless for unplayed maps - disable + neutralize it
   // whenever the play-status filter is set to "Not played yet".
@@ -5901,7 +5941,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var recencyDays = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366 };
     var overDays = { 'o3m': 90, 'o6m': 180, 'o1y': 365, 'o2y': 730 };
     var hideAuto = state.source === 'beatsaver' && el.bsNoAuto && el.bsNoAuto.checked;
-    var ageCutoff = { '1w': 7, '1m': 31, '3m': 92, '6m': 183, '1y': 366 }[f.bsAge];
+    var ageCutoff = BS_AGE_DAYS[f.bsAge];
     // A BSR code / link lookup asked for those exact maps, so the filters don't hide them.
     var exact = state.source === 'beatsaver' && state.bsrLookup;
     // Oct 25 2026: count every Your plays chip in one pass. The play status is checked last, so the counts
@@ -5928,6 +5968,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (f.rankView === 'unranked' && isRanked) return false;
       }
       if (f.modes.length) { var emo = s.modes || [s.modeName]; if (!f.modes.some(function (m) { return emo.indexOf(m) !== -1; })) return false; }
+      if (state.source === 'beatsaver' && f.dcMin > 1 && s.dcByMode) {
+        var dcm = f.modes.length ? f.modes : Object.keys(s.dcByMode);
+        if (!dcm.some(function (m) { return (s.dcByMode[m] || 0) >= f.dcMin; })) return false;
+      }
       if (f.diffEnabled && f.diffs.length) { var edi = s.diffSet || (s.difficultyName ? [s.difficultyName] : null); if (!edi || !f.diffs.some(function (d) { return edi.indexOf(d) !== -1; })) return false; }
       if (state.player && (f.playStatus !== 'any' || f.accMax != null || f.recency !== 'any')) {
         var pi = playInfo(s), played = !!pi;
@@ -5972,13 +6016,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         var mapperHay = state.source === 'beatsaver'
           ? stripAutoCredits(s.mapper).toLowerCase()
           : (s.mapper + ' ' + s.author).toLowerCase();
-        if (!f.mapperTerms.some(function (t) { return mapperHay.indexOf(t) !== -1; })) return false;
+        if (!f.mapperTerms.some(function (t) { return mapperNameIn(mapperHay, t); })) return false;
       }
       // Exclude-mapper(s): drop any map whose mapper or artist matches (raw, so it also catches
       // "Auto Lighter by <name>" style credits). Applies on both sources.
       if (f.mapperExclude.length) {
         var exHay = (s.mapper + ' ' + s.author).toLowerCase();
-        if (f.mapperExclude.some(function (t) { return exHay.indexOf(t) !== -1; })) return false;
+        if (f.mapperExclude.some(function (t) { return mapperNameIn(exHay, t); })) return false;
       }
       if (favOnly && !lqIsFav(favDev, s.hash)) return false;
       if (modWant && !exact) { var pmd = playInfo(s); if (!pmd || pmd.sc.src === 'ss' || !modMatch(pmd.sc.md, modWant)) return false; }
@@ -6011,6 +6055,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       tryOff('rank', bl && base.rankView && base.rankView !== 'all', function () { f.rankView = 'all'; });
       tryOff('mode', base.modes.length, function () { f.modes = []; });
       tryOff('diff', base.diffEnabled && base.diffs.length, function () { f.diffEnabled = false; });
+      tryOff('dcount', !bl && base.dcMin > 1, function () { f.dcMin = 1; });
       tryOff('play', state.player && psWant !== 'any', function () { psWant = 'any'; });
       tryOff('acc', state.player && base.accMax != null, function () { f.accMax = null; });
       tryOff('recency', state.player && base.recency !== 'any', function () { f.recency = 'any'; });
@@ -6079,7 +6124,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function updateStale() {
     if (state.viewMode === 'plays' || state.viewMode === 'versus' || state.viewMode === 'clan') { el.staleHint.hidden = true; el.fetchBtn.classList.remove('stale'); el.fetchBtn2.classList.remove('stale'); return; }
-    var stale = state.source === 'beatleader' && state.raw.length > 0 && state.lastSig !== null && serverSig(getFilters()) !== state.lastSig;
+    var gf = getFilters();
+    var stale = state.source === 'beatleader' && state.raw.length > 0 && state.lastSig !== null && serverSig(gf) !== state.lastSig;
+    // BeatSaver: the last search only pulled maps inside its Uploaded window, so a wider window needs a new search.
+    if (state.source === 'beatsaver' && state.raw.length > 0 && state.lastSig === 'bs' && !state.bsrLookup && state.bsAgeFetched &&
+        (BS_AGE_DAYS[gf.bsAge] || Infinity) > (BS_AGE_DAYS[state.bsAgeFetched] || Infinity)) stale = true;
     el.staleHint.hidden = !stale;
     el.fetchBtn.classList.toggle('stale', stale);
     el.fetchBtn2.classList.toggle('stale', stale);
@@ -6721,6 +6770,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     rank: ['Show: ranked / unranked', function () { el.rankInline.value = 'all'; fireChange(el.rankInline); }],
     mode: ['Game mode', function () { document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = true; }); applyClientFilters(); }],
     diff: ['Difficulty', function () { el.diffEnable.checked = false; fireChange(el.diffEnable); }],
+    dcount: ['Diff count', function () { setDcMin(1); applyClientFilters(); }],
     play: ['Your plays', function () { el.playStatus.value = 'any'; fireChange(el.playStatus); }],
     acc: ['My acc below', function () { el.accMax.value = ''; fireChange(el.accMax); applyClientFilters(); }],
     recency: ['Last played', function () { el.playRecency.value = 'any'; fireChange(el.playRecency); }],
@@ -6886,6 +6936,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     state.lastSig = sig;
     if (ts.inc.length || ts.exc.length) steps.push({ k: 'tags', t: 'your tags', pl: 1, go: function () { o.noTags = true; } });
     if (el.bsCurated.checked) steps.push({ k: 'curated', t: 'Curated only', go: function () { o.noCurated = true; } });
+    if (BS_AGE_DAYS[f.bsAge]) steps.push({ k: 'age', t: 'your Uploaded window', go: function (x) { x.bsAge = 'any'; } });
     if (f.npsMin != null || f.npsMax != null) steps.push({ k: 'nps', t: 'your NPS limits', pl: 1, go: function (x) { x.npsMin = x.npsMax = null; } });
     if (f.bpmMin != null || f.bpmMax != null) steps.push({ k: 'bpm', t: 'your BPM limits', pl: 1, go: function (x) { x.bpmMin = x.bpmMax = null; } });
     if (f.durMin != null || f.durMax != null) steps.push({ k: 'dur', t: 'your length limits', pl: 1, go: function (x) { x.durMin = x.durMax = null; } });
@@ -6930,6 +6981,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       else if (x.k === 'mode') document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = true; });
       else if (x.k === 'tags') { Array.prototype.forEach.call(el.tagChips.querySelectorAll('.tag-chip'), function (c) { c.dataset.state = '0'; }); el.tagCustom.value = ''; }
       else if (x.k === 'curated') el.bsCurated.checked = false;
+      else if (x.k === 'age') el.bsAge.value = 'any';
       else if (x.k === 'nps') el.fNpsMin.value = el.fNpsMax.value = '';
       else if (x.k === 'bpm') el.fBpmMin.value = el.fBpmMax.value = '';
       else if (x.k === 'dur') el.fDurMin.value = el.fDurMax.value = '';
@@ -11633,7 +11685,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function captureFilters() {
     return { type: el.fType.value, sort: el.fSort.value, order: el.fOrder.value, maxScan: el.fMaxScan.value,
       starMin: el.starMinNum.value, starMax: el.starMaxNum.value, mapper: el.fMapper.value, search: el.fSearch.value,
-      modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'),
+      modes: checkedValues('modeChips'), diffEnabled: el.diffEnable.checked, diffs: checkedValues('diffChips'), dcMin: dcMin(),
       npsMin: el.fNpsMin.value, npsMax: el.fNpsMax.value, njsMin: el.fNjsMin.value, njsMax: el.fNjsMax.value,
       durMin: el.fDurMin.value, durMax: el.fDurMax.value, bpmMin: el.fBpmMin.value, bpmMax: el.fBpmMax.value,
       ppMin: el.ppMin.value, ppMax: el.ppMax.value, ppAcc: state.ppAcc, ppMod: state.ppMod, favOnly: !!state.favOnly, style: styleMask() };
@@ -11650,7 +11702,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.diffEnable.checked = !!p.diffEnabled;
     var diffs = p.diffs || ['Easy', 'Normal', 'Hard', 'Expert', 'ExpertPlus'];
     document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = diffs.indexOf(c.value) !== -1; });
-    el.diffChips.classList.toggle('off', !el.diffEnable.checked);
+    el.diffChips.classList.toggle('off', !el.diffEnable.checked); setDcMin(+p.dcMin || 1);
     el.ppMin.value = p.ppMin || ''; el.ppMax.value = p.ppMax || '';
     if (p.ppAcc) { state.ppAcc = Math.max(1, Math.min(100, p.ppAcc)); el.ppFilterAcc.value = state.ppAcc; }
     state.ppMod = p.ppMod || ''; buildGlobalPpMods();
@@ -14782,7 +14834,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.fType.value = savedRankType(); el.fSort.value = 'stars'; el.fOrder.value = 'desc'; el.fMaxScan.value = savedMaxScan(); state.sortTouched = false;
     el.bsMinRating.value = ''; el.bsAge.value = 'any';
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.checked = (c.value === 'Standard'); });
-    el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off');
+    el.diffEnable.checked = false; document.querySelectorAll('#diffChips input').forEach(function (c) { c.checked = true; }); el.diffChips.classList.add('off'); setDcMin(1);
     if (el.playStatus) el.playStatus.value = 'any'; if (el.playRecency) el.playRecency.value = 'any'; if (el.accMax) el.accMax.value = '';
     el.ppMin.value = ''; el.ppMax.value = ''; setStyleMask(0); state.modSel = []; modOpen(false);
     state.bandAuto = true; markLvl(null);
@@ -15060,6 +15112,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     el.bsAge.addEventListener('change', applyClientFilters);
     document.querySelectorAll('#modeChips input').forEach(function (c) { c.addEventListener('change', applyClientFilters); });
     el.diffEnable.addEventListener('change', function () { el.diffChips.classList.toggle('off', !el.diffEnable.checked); applyClientFilters(); });
+    var dcSeg = document.getElementById('dcSeg');
+    if (dcSeg) dcSeg.addEventListener('click', function (e) { var b = e.target.closest('.play-chip'); if (!b || b.classList.contains('active')) return; setDcMin(+b.dataset.dc || 1); applyClientFilters(); });
     document.querySelectorAll('#diffChips input').forEach(function (c) { c.addEventListener('change', applyClientFilters); });
     el.previewClose.addEventListener('click', closePreview);
     el.previewClose2.addEventListener('click', closePreview);
